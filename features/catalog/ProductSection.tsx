@@ -15,12 +15,18 @@ export function ProductSection({ products, categories, allCategoryId, category, 
     <section className="productsSec" id="products">
       <div className="wrap">
         <div className="centerHead"><div className="kicker">{uiContent.products.kicker}</div><h2>{uiContent.products.title}</h2><p>{uiContent.products.body}</p></div>
-        <div className="filters">{categories.map((item) => <button key={item.id} className={`chip ${category === item.id ? "active" : ""}`} onClick={() => onCategory(item.id)}>{item.label}</button>)}</div>
-        <div className="products">
+        <div className="filters" aria-label="Gift categories">{categories.map((item) => <button type="button" key={item.id} className={`chip ${category === item.id ? "active" : ""}`} aria-pressed={category === item.id} onClick={() => onCategory(item.id)}>{item.label}</button>)}</div>
+        <div className="products" aria-live="polite">
+          {visible.length === 0 && (
+            <div className="catalogEmptyState">
+              <b>No gifts in this category right now.</b>
+              <p>Try another category, or choose All to see every available option.</p>
+            </div>
+          )}
           {visible.map((product) => (
             <article className="product" key={product.id}>
               <div className="prodTop">
-                {product.imageUrl ? <img className="catalogProductImage" src={product.imageUrl} alt="" loading="lazy" /> : <div className="prodIcon">{product.icon || "🎁"}</div>}
+                {product.imageUrl ? <img className="catalogProductImage" src={product.imageUrl} alt={product.name} loading="lazy" /> : <div className="prodIcon" aria-hidden="true">{product.icon || "🎁"}</div>}
                 <div className="cat">{product.category}</div>
               </div>
               <h3>{product.name}</h3><p>{product.note}</p><div className="productUnlock">{uiContent.products.from} {formatMoney(product.minTier)}</div>
