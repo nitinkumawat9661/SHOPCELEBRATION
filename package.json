@@ -1,0 +1,37 @@
+{
+  "name": "celebration-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run audit",
+    "audit": "node scripts/audit-source.mjs && node scripts/audit-imports.mjs && node scripts/audit-import-duplicates.mjs && node scripts/syntax-check.mjs && node scripts/audit-config.mjs && node scripts/test-domain.mjs",
+    "syntax": "node scripts/syntax-check.mjs",
+    "audit:imports": "node scripts/audit-imports.mjs",
+    "db:migrate": "node scripts/migrate.mjs",
+    "config:check": "node scripts/check-config.mjs",
+    "test:domain": "node scripts/test-domain.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1137.0",
+    "@aws-sdk/s3-request-presigner": "3.1137.0",
+    "next": "16.3.5",
+    "pg": "8.16.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.17.57",
+    "@types/pg": "8.15.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

@@ -1,0 +1,368 @@
+{
+  "tiers": [
+    {
+      "id": "t299",
+      "price": 299,
+      "name": "Little Joy",
+      "size": "Mini",
+      "maxChoices": 2,
+      "pointBudget": 3,
+      "label": "STARTER"
+    },
+    {
+      "id": "t399",
+      "price": 399,
+      "name": "Sweet Smile",
+      "size": "Mini",
+      "maxChoices": 3,
+      "pointBudget": 4
+    },
+    {
+      "id": "t499",
+      "price": 499,
+      "name": "Celebration Mini",
+      "size": "6×6×3 in",
+      "maxChoices": 3,
+      "pointBudget": 6,
+      "label": "POPULAR"
+    },
+    {
+      "id": "t699",
+      "price": 699,
+      "name": "Classic",
+      "size": "8×8×4 in",
+      "maxChoices": 4,
+      "pointBudget": 8
+    },
+    {
+      "id": "t799",
+      "price": 799,
+      "name": "Premium Classic",
+      "size": "8×8×4 in",
+      "maxChoices": 4,
+      "pointBudget": 10
+    },
+    {
+      "id": "t999",
+      "price": 999,
+      "name": "Special",
+      "size": "8×8×4 in",
+      "maxChoices": 5,
+      "pointBudget": 12,
+      "label": "BESTSELLER"
+    },
+    {
+      "id": "t1299",
+      "price": 1299,
+      "name": "Grand",
+      "size": "10×10×4 in",
+      "maxChoices": 6,
+      "pointBudget": 15
+    },
+    {
+      "id": "t1499",
+      "price": 1499,
+      "name": "Grand Plus",
+      "size": "10×10×4 in",
+      "maxChoices": 7,
+      "pointBudget": 18
+    },
+    {
+      "id": "t1999",
+      "price": 1999,
+      "name": "Royal",
+      "size": "12×10×4.5 in",
+      "maxChoices": 8,
+      "pointBudget": 24,
+      "label": "PREMIUM"
+    },
+    {
+      "id": "t2499",
+      "price": 2499,
+      "name": "Royal Plus",
+      "size": "12×12×5 in",
+      "maxChoices": 9,
+      "pointBudget": 30
+    },
+    {
+      "id": "t3499",
+      "price": 3499,
+      "name": "Luxury",
+      "size": "12×12×5 in",
+      "maxChoices": 11,
+      "pointBudget": 40
+    },
+    {
+      "id": "t5000",
+      "price": 5000,
+      "name": "Signature",
+      "size": "Custom Luxury",
+      "maxChoices": 14,
+      "pointBudget": 60,
+      "label": "SIGNATURE"
+    }
+  ],
+  "products": [
+    {
+      "id": "custom-card",
+      "name": "Custom Message Card",
+      "category": "Personal",
+      "minTier": 299,
+      "points": 1,
+      "note": "Printed message for the receiver",
+      "icon": "💌"
+    },
+    {
+      "id": "photo-print",
+      "name": "Photo / Mini Print",
+      "category": "Personal",
+      "minTier": 299,
+      "points": 1,
+      "note": "A small personal memory",
+      "icon": "🖼️"
+    },
+    {
+      "id": "acrylic-keychain",
+      "name": "Acrylic Keychain",
+      "category": "Personal",
+      "minTier": 299,
+      "points": 1,
+      "note": "Simple personalized keepsake",
+      "icon": "🔑"
+    },
+    {
+      "id": "chocolates",
+      "name": "Customized Chocolates",
+      "category": "Treats",
+      "minTier": 299,
+      "points": 1,
+      "note": "Theme-ready sweet add-on",
+      "icon": "🍫"
+    },
+    {
+      "id": "small-snack",
+      "name": "Small Snack",
+      "category": "Treats",
+      "minTier": 299,
+      "points": 1,
+      "note": "Budget-friendly savory add-on",
+      "icon": "🥨"
+    },
+    {
+      "id": "fridge-magnet",
+      "name": "Photo / Fridge Magnet",
+      "category": "Personal",
+      "minTier": 399,
+      "points": 1,
+      "note": "Compact personalized keepsake",
+      "icon": "📸"
+    },
+    {
+      "id": "basic-bracelet",
+      "name": "Basic Bracelet",
+      "category": "Accessories",
+      "minTier": 399,
+      "points": 2,
+      "note": "Minimal wearable gift",
+      "icon": "📿"
+    },
+    {
+      "id": "mini-candle",
+      "name": "Mini Scented Candle",
+      "category": "Lifestyle",
+      "minTier": 399,
+      "points": 2,
+      "note": "Adds a warm premium touch",
+      "icon": "🕯️"
+    },
+    {
+      "id": "custom-mug",
+      "name": "Customized Mug",
+      "category": "Personal",
+      "minTier": 499,
+      "points": 3,
+      "note": "Name, photo or message",
+      "icon": "☕"
+    },
+    {
+      "id": "mini-teddy",
+      "name": "Mini Teddy",
+      "category": "Cute",
+      "minTier": 499,
+      "points": 2,
+      "note": "Soft gifting favourite",
+      "icon": "🧸"
+    },
+    {
+      "id": "chocolate-jar",
+      "name": "Chocolate Jar",
+      "category": "Treats",
+      "minTier": 499,
+      "points": 2,
+      "note": "Compact sweet jar",
+      "icon": "🍬"
+    },
+    {
+      "id": "mini-perfume",
+      "name": "Mini Perfume",
+      "category": "Fragrance",
+      "minTier": 699,
+      "points": 3,
+      "note": "Compact fragrance gifting",
+      "icon": "✨"
+    },
+    {
+      "id": "attar",
+      "name": "Attar",
+      "category": "Fragrance",
+      "minTier": 699,
+      "points": 3,
+      "note": "Traditional fragrance option",
+      "icon": "🌿"
+    },
+    {
+      "id": "notebook",
+      "name": "Premium Notebook",
+      "category": "Lifestyle",
+      "minTier": 699,
+      "points": 2,
+      "note": "Useful and elegant",
+      "icon": "📓"
+    },
+    {
+      "id": "mini-cosmetics",
+      "name": "Mini Cosmetics",
+      "category": "Beauty",
+      "minTier": 699,
+      "points": 3,
+      "note": "Beauty-focused add-on",
+      "icon": "💄"
+    },
+    {
+      "id": "dry-fruit",
+      "name": "Dry-Fruit Jar",
+      "category": "Treats",
+      "minTier": 799,
+      "points": 4,
+      "note": "Premium and festive-friendly",
+      "icon": "🥜"
+    },
+    {
+      "id": "medium-teddy",
+      "name": "Medium Teddy",
+      "category": "Cute",
+      "minTier": 799,
+      "points": 4,
+      "note": "Larger soft-toy option",
+      "icon": "🧸"
+    },
+    {
+      "id": "premium-candle",
+      "name": "Premium Scented Candle",
+      "category": "Lifestyle",
+      "minTier": 799,
+      "points": 3,
+      "note": "Premium presentation",
+      "icon": "🕯️"
+    },
+    {
+      "id": "premium-perfume",
+      "name": "Premium Perfume",
+      "category": "Fragrance",
+      "minTier": 999,
+      "points": 5,
+      "note": "Higher-value fragrance option",
+      "icon": "💎"
+    },
+    {
+      "id": "premium-mug",
+      "name": "Premium Customized Mug",
+      "category": "Personal",
+      "minTier": 999,
+      "points": 4,
+      "note": "Premium print / finish",
+      "icon": "☕"
+    },
+    {
+      "id": "beauty-set",
+      "name": "Beauty Mini Set",
+      "category": "Beauty",
+      "minTier": 999,
+      "points": 4,
+      "note": "Curated beauty picks",
+      "icon": "💄"
+    },
+    {
+      "id": "fragrance-set",
+      "name": "Fragrance Discovery Set",
+      "category": "Fragrance",
+      "minTier": 1299,
+      "points": 6,
+      "note": "Multiple scents in one gift",
+      "icon": "💫"
+    },
+    {
+      "id": "large-teddy",
+      "name": "Large Teddy",
+      "category": "Cute",
+      "minTier": 1299,
+      "points": 6,
+      "note": "Statement soft-toy choice",
+      "icon": "🧸"
+    },
+    {
+      "id": "premium-dryfruit",
+      "name": "Premium Dry-Fruit Pack",
+      "category": "Treats",
+      "minTier": 1299,
+      "points": 5,
+      "note": "Premium festive option",
+      "icon": "🥜"
+    },
+    {
+      "id": "premium-personalized",
+      "name": "Premium Personalized Keepsake",
+      "category": "Personal",
+      "minTier": 1499,
+      "points": 6,
+      "note": "Higher-value customization",
+      "icon": "🎀"
+    },
+    {
+      "id": "luxury-accessory",
+      "name": "Luxury Accessory",
+      "category": "Accessories",
+      "minTier": 1999,
+      "points": 8,
+      "note": "Premium accessory option",
+      "icon": "⌚"
+    },
+    {
+      "id": "signature-gift",
+      "name": "Signature Premium Gift",
+      "category": "Signature",
+      "minTier": 3499,
+      "points": 12,
+      "note": "Luxury-tier statement piece",
+      "icon": "🎁"
+    }
+  ],
+  "occasions": [
+    "Birthday",
+    "Anniversary",
+    "Wedding",
+    "Festival",
+    "For Her",
+    "For Him",
+    "Corporate",
+    "Just Because"
+  ],
+  "settings": {
+    "defaultTierId": "t499",
+    "defaultOccasion": "Birthday",
+    "allCategory": {
+      "id": "all",
+      "label": "All"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "currencyCode": "INR",
+  "upiScheme": "upi://pay",
+  "locale": "en-IN",
+  "minorUnitFactor": 100
+}

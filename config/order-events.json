@@ -1,0 +1,8 @@
+{
+  "created": "order_created",
+  "statusChanged": "status_changed",
+  "shippingUpdated": "shipping_updated",
+  "packingVideoUploaded": "packing_video_uploaded",
+  "issueReported": "issue_reported",
+  "customerApprovedPacking": "customer_approved_packing"
+}

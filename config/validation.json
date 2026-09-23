@@ -1,0 +1,150 @@
+{
+  "maxRequestBytes": 24000,
+  "catalogRequestMaxBytes": 524288,
+  "name": {
+    "min": 2,
+    "max": 80
+  },
+  "phone": {
+    "minDigits": 10,
+    "maxDigits": 13
+  },
+  "customerAccount": {
+    "passwordMin": 8,
+    "passwordMax": 72,
+    "displayNameMax": 80
+  },
+  "address": {
+    "min": 8,
+    "max": 500
+  },
+  "city": {
+    "max": 80
+  },
+  "state": {
+    "max": 80
+  },
+  "pincodeDigits": 6,
+  "occasionMax": 80,
+  "messageMax": 300,
+  "paymentReference": {
+    "min": 6,
+    "max": 64
+  },
+  "trackingTokenTtlSeconds": 3888000,
+  "adminSessionTtlSeconds": 43200,
+  "customerSessionTtlSeconds": 2592000,
+  "packingVideoMaxBytes": 83886080,
+  "catalogImageMaxBytes": 5242880,
+  "trackingToken": {
+    "min": 32,
+    "max": 200
+  },
+  "idempotencyKeyMax": 64,
+  "tierIdMax": 40,
+  "policyVersionMax": 40,
+  "publicOrderIdMax": 80,
+  "adminPasswordInputMax": 256,
+  "catalog": {
+    "maxTiers": 50,
+    "maxProducts": 500,
+    "maxOccasions": 50,
+    "idMax": 60,
+    "nameMax": 100,
+    "sizeMax": 80,
+    "labelMax": 40,
+    "categoryMax": 80,
+    "noteMax": 240,
+    "imageUrlMax": 1000,
+    "maxPrice": 1000000,
+    "maxPoints": 10000,
+    "maxChoices": 100
+  },
+  "campaign": {
+    "maxCampaigns": 50,
+    "idMax": 60,
+    "nameMax": 100,
+    "badgeMax": 40,
+    "messageMax": 180,
+    "maxPercent": 90,
+    "maxRupees": 1000000,
+    "maxUsageLimit": 1000000,
+    "offerQuoteTtlSeconds": 3600,
+    "sessionIdMax": 80
+  },
+  "customRequest": {
+    "budgetMin": 0,
+    "budgetMax": 1000000,
+    "messageMin": 10,
+    "messageMax": 1200
+  },
+  "storeSettings": {
+    "whatsappMax": 15,
+    "shortTextMax": 160,
+    "messageMax": 500
+  },
+  "shipping": {
+    "providerMax": 80,
+    "trackingMax": 120
+  },
+  "issue": {
+    "typeMax": 80,
+    "noteMin": 5,
+    "noteMax": 500
+  },
+  "rateLimits": {
+    "createOrder": {
+      "windowSeconds": 60,
+      "max": 8
+    },
+    "offerQuote": {
+      "windowSeconds": 60,
+      "max": 20
+    },
+    "analyticsEvent": {
+      "windowSeconds": 60,
+      "max": 60
+    },
+    "customerSignup": {
+      "windowSeconds": 900,
+      "max": 5
+    },
+    "customerLogin": {
+      "windowSeconds": 900,
+      "max": 10
+    },
+    "customerMutation": {
+      "windowSeconds": 60,
+      "max": 12
+    },
+    "customRequest": {
+      "windowSeconds": 900,
+      "max": 5
+    },
+    "trackOrder": {
+      "windowSeconds": 60,
+      "max": 30
+    },
+    "adminLogin": {
+      "windowSeconds": 900,
+      "max": 8
+    },
+    "adminMutation": {
+      "windowSeconds": 60,
+      "max": 60
+    },
+    "packingUpload": {
+      "windowSeconds": 60,
+      "max": 20
+    },
+    "catalogUpload": {
+      "windowSeconds": 60,
+      "max": 20
+    },
+    "trackLookup": {
+      "windowSeconds": 900,
+      "max": 10
+    }
+  },
+  "trackingLookupPhoneDigits": 4
+}

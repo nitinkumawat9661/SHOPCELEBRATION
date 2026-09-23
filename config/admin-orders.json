@@ -1,0 +1,45 @@
+{
+  "defaultFilter": "active",
+  "filters": [
+    {
+      "id": "active",
+      "statuses": [
+        "payment_verification_pending",
+        "payment_verified",
+        "preparing",
+        "packing_video_ready",
+        "customer_approved",
+        "shipped",
+        "issue_reported"
+      ]
+    },
+    {
+      "id": "payment",
+      "statuses": ["payment_verification_pending"]
+    },
+    {
+      "id": "packing",
+      "statuses": ["payment_verified", "preparing"]
+    },
+    {
+      "id": "approval",
+      "statuses": ["packing_video_ready"]
+    },
+    {
+      "id": "shipping",
+      "statuses": ["customer_approved", "shipped"]
+    },
+    {
+      "id": "issues",
+      "statuses": ["issue_reported"]
+    },
+    {
+      "id": "closed",
+      "statuses": ["delivered", "refund_or_replacement_resolved", "cancelled"]
+    },
+    {
+      "id": "all",
+      "statuses": []
+    }
+  ]
+}

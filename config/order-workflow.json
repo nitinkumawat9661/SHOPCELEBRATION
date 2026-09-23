@@ -1,0 +1,90 @@
+{
+  "statuses": [
+    "payment_verification_pending",
+    "payment_verified",
+    "preparing",
+    "packing_video_ready",
+    "customer_approved",
+    "shipped",
+    "delivered",
+    "issue_reported",
+    "refund_or_replacement_resolved",
+    "cancelled"
+  ],
+  "transitions": {
+    "payment_verification_pending": [
+      "payment_verified",
+      "cancelled"
+    ],
+    "payment_verified": [
+      "preparing",
+      "cancelled"
+    ],
+    "preparing": [
+      "packing_video_ready",
+      "cancelled"
+    ],
+    "packing_video_ready": [
+      "customer_approved",
+      "preparing"
+    ],
+    "customer_approved": [
+      "shipped"
+    ],
+    "shipped": [
+      "delivered",
+      "issue_reported"
+    ],
+    "delivered": [
+      "issue_reported"
+    ],
+    "issue_reported": [
+      "refund_or_replacement_resolved"
+    ],
+    "refund_or_replacement_resolved": [],
+    "cancelled": []
+  },
+  "customerTimeline": [
+    "payment_verification_pending",
+    "payment_verified",
+    "preparing",
+    "packing_video_ready",
+    "customer_approved",
+    "shipped",
+    "delivered"
+  ],
+  "paymentStatusByOrderStatus": {
+    "payment_verification_pending": "verification_pending",
+    "payment_verified": "verified"
+  },
+  "capabilities": {
+    "packingVideoUpload": [
+      "preparing",
+      "packing_video_ready"
+    ],
+    "packingVideoApproval": [
+      "packing_video_ready"
+    ],
+    "issueReport": [
+      "delivered"
+    ],
+    "shippingUpdate": [
+      "customer_approved",
+      "shipped"
+    ]
+  },
+  "actions": {
+    "packingVideoReady": "packing_video_ready",
+    "customerApproved": "customer_approved",
+    "issueReported": "issue_reported",
+    "shipped": "shipped"
+  },
+  "adminTransitionTargets": [
+    "payment_verified",
+    "preparing",
+    "shipped",
+    "delivered",
+    "refund_or_replacement_resolved",
+    "cancelled"
+  ]
+}

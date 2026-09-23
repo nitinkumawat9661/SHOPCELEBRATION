@@ -1,0 +1,26 @@
+/* Hero */
+.hero{overflow:hidden;background:radial-gradient(circle at 10% 10%,rgba(226,119,63,.13),transparent 30%),radial-gradient(circle at 85% 15%,rgba(116,25,29,.1),transparent 28%),linear-gradient(180deg,#fffaf5,#fff6ec)}
+.heroGrid{display:grid;grid-template-columns:1fr;gap:22px;padding-block:30px 38px}
+.heroCopy{text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:8px;letter-spacing:.11em;text-transform:uppercase;font-weight:800;color:#9a3e22;border:1px solid #d9b28d;background:#fff8;padding:8px 10px;border-radius:999px}
+.hero h1{font:700 39px/.98 'Playfair Display',Georgia,serif;letter-spacing:-.04em;color:#641317;margin:18px 0 15px}
+.hero h1 span{color:var(--m2)}
+.hero p{font-size:14px;line-height:1.65;color:#73544b;margin:0 auto;max-width:600px}
+.actions{display:grid;grid-template-columns:1fr;gap:9px;margin-top:22px}
+.actions .primary,.actions .secondary{width:100%}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:18px}
+.stat{background:#ffffffbd;border:1px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;min-width:0}
+.stat b{display:block;color:var(--m);font-size:11px;line-height:1.25}
+.stat small{display:block;color:#8f6e62;font-size:8.5px;margin-top:3px;line-height:1.2}
+.showcase{background:#f2dfca;border:1px solid #fff;border-radius:23px;padding:12px;box-shadow:0 24px 54px rgba(90,35,25,.11)}
+.box{background:#fff9ef;border:1px solid #d7b89e;border-radius:19px;padding:15px;box-shadow:0 14px 28px #6d2b1d12}
+.brandRow{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #ead6c4;padding-bottom:14px}
+.brandMark{font:700 24px 'Playfair Display',Georgia,serif;color:var(--m);letter-spacing:-.03em}
+.giftIcon{width:40px;height:40px;border-radius:13px;background:var(--peach);display:grid;place-items:center;font-size:21px;flex:0 0 auto}
+.showTitle{text-align:center;padding:17px 0}
+.showTitle b{display:block;font:700 21px/1.12 'Playfair Display',Georgia,serif;color:#7b1b1f}
+.showTitle small{display:block;margin-top:7px;text-transform:uppercase;letter-spacing:.12em;color:#ad6a4b;font-weight:800;font-size:7.5px;line-height:1.45}
+.miniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mini{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center}
+.mini i{font-style:normal;font-size:20px}.mini span{display:none}
+

@@ -1,0 +1,119 @@
+{
+  "brand": {
+    "name": "Celebration",
+    "tagline": "Mharo Surprise, Thari Smile",
+    "eyebrow": "✦ GIFTS • HAMPERS • MEMORIES",
+    "heroTitleLine1": "Make their day.",
+    "heroTitleLine2": "Your way.",
+    "heroBody": "Birthday, anniversary or just because — choose your budget, pick what they’ll love, and we’ll turn it into a hamper that feels personal.",
+    "footerLine": "Celebrating People, One Gift at a Time",
+    "themeColor": "#7a1f24",
+    "giftIcon": "🎁"
+  },
+  "support": {
+    "whatsapp": "917414853321",
+    "whatsappDisplay": "+91 74148 53321",
+    "assistTitle": "Not sure what to pick?",
+    "assistBody": "Tell us your budget and occasion. We’ll help you choose a better mix.",
+    "supportMessage": "Hi Celebration, I need help choosing a gift hamper."
+  },
+  "trustStrip": [
+    "✓ Clear hamper pricing",
+    "🎥 Packing video before dispatch",
+    "📦 Order tracking",
+    "🛡️ Protection for verified wrong, damaged or defective items"
+  ],
+  "showcaseItems": [
+    { "icon": "🧸", "label": "Teddy" },
+    { "icon": "🍫", "label": "Chocolate" },
+    { "icon": "✨", "label": "Perfume" },
+    { "icon": "☕", "label": "Mug" },
+    { "icon": "🕯️", "label": "Candle" },
+    { "icon": "💌", "label": "Card" }
+  ],
+  "promiseCards": [
+    {
+      "icon": "💳",
+      "title": "Clear payment",
+      "body": "Pay the exact shown amount and keep your transaction reference for confirmation."
+    },
+    {
+      "icon": "🎥",
+      "title": "See it before dispatch",
+      "body": "You’ll get a packing video of the finished hamper before it is sent."
+    },
+    {
+      "icon": "🛡️",
+      "title": "Issue protection",
+      "body": "Verified wrong, damaged or defective items are covered by our refund/replacement policy."
+    },
+    {
+      "icon": "📦",
+      "title": "Track your order",
+      "body": "Every order gets a Celebration ID so progress and shipping details stay easy to follow."
+    }
+  ],
+  "checkout": {
+    "defaultState": "Rajasthan",
+    "paymentSteps": [
+      "Pay {amount} using UPI.",
+      "Enter the UTR / transaction reference after payment.",
+      "Place your order and track every update from My Celebration."
+    ],
+    "policyConsent": "I agree to the order policy. This is a prepaid customized order. Change-of-mind returns do not apply to personalized/custom hampers. Verified wrong, damaged or defective item claims are covered as per the protection policy."
+  },
+  "policy": {
+    "title": "Know the important details before you order.",
+    "lead": "Payment, customization, packing and issue-protection terms are shown clearly so you know what to expect.",
+    "cards": [
+      {
+        "icon": "💳",
+        "title": "Payment",
+        "body": "Orders are prepaid. Payment is confirmed after the submitted UPI reference matches the received payment."
+      },
+      {
+        "icon": "🎀",
+        "title": "Customized orders",
+        "body": "Personalized hampers are made to your instructions, so normal change-of-mind returns do not apply."
+      },
+      {
+        "icon": "🛡️",
+        "title": "Wrong / damaged / defective",
+        "body": "Eligible verified issues are covered by refund or replacement protection. Relevant proof may be required for review."
+      },
+      {
+        "icon": "🎥",
+        "title": "Packing video",
+        "body": "A packing video is shared before dispatch so you can review the finished hamper."
+      },
+      {
+        "icon": "🔁",
+        "title": "Product substitutions",
+        "body": "If a major substitution is needed because of stock, size or presentation constraints, we’ll ask you before making the change."
+      },
+      {
+        "icon": "📅",
+        "title": "Required delivery date",
+        "body": "Your selected date is treated as a requirement. Final feasibility depends on preparation time, pincode and courier serviceability."
+      }
+    ]
+  },
+  "seo": {
+    "title": "Celebration | Custom Gift Hampers",
+    "description": "Build personalized Celebration gift hampers for birthdays, anniversaries, festivals and special moments."
+  },
+  "issues": {
+    "types": [
+      "Wrong item",
+      "Damaged item",
+      "Defective item",
+      "Missing item"
+    ],
+    "title": "Something wrong with your order?",
+    "body": "Report a wrong, damaged, defective or missing item here. Our team will review the issue and help with the eligible resolution.",
+    "submit": "Report issue",
+    "submitted": "Issue received. Our team will review it.",
+    "noteLabel": "What went wrong?",
+    "icon": "🛡️"
+  }
+}

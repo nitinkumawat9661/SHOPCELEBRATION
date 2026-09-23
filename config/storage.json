@@ -1,0 +1,16 @@
+{
+  "packingVideoPrefix": "packing",
+  "packingVideoTypes": {
+    "video/mp4": "mp4",
+    "video/webm": "webm"
+  },
+  "catalogImagePrefix": "catalog",
+  "catalogImageTypes": {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp"
+  },
+  "uploadUrlTtlSeconds": 600,
+  "viewUrlTtlSeconds": 1800,
+  "keyMaxLength": 260
+}

@@ -1,0 +1,6 @@
+{
+  "poolMaxConnections": 6,
+  "idleTimeoutMillis": 30000,
+  "adminOrderListDefault": 100,
+  "adminOrderListMax": 200
+}

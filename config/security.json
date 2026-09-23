@@ -1,0 +1,13 @@
+{
+  "adminCookieName": "celebration_admin",
+  "customerCookieName": "celebration_customer",
+  "minimumSecretLength": 32,
+  "scrypt": {
+    "minimumSaltBytes": 16,
+    "minimumHashBytes": 32,
+    "generatedSaltBytes": 16,
+    "generatedHashBytes": 64
+  },
+  "hashAlgorithm": "sha256",
+  "cookieSameSite": "strict"
+}

@@ -1,0 +1,315 @@
+{
+  "nav": {
+    "budgets": "Budget dekhein",
+    "products": "Gift options",
+    "builder": "Apna hamper",
+    "promise": "Trust & process",
+    "create": "Hamper banao",
+    "backToStore": "← Store"
+  },
+  "hero": {
+    "primary": "Apna hamper banao →",
+    "secondaryPrefix": "Starting",
+    "stats": [
+      "Har budget",
+      "Gift options",
+      "Apni choice"
+    ],
+    "showcaseSubline": "Thoughtful • Personal • Hamesha Special",
+    "customFeelValue": "Custom"
+  },
+  "budgets": {
+    "kicker": "APNA BUDGET CHUNO",
+    "title": "Har budget me ek thoughtful Celebration.",
+    "body": "Ye total hamper budget hai, sirf empty box ki price nahi. Final mix budget, size, availability aur presentation ke hisaab se curate hoga.",
+    "choices": "choices",
+    "points": "mix points"
+  },
+  "products": {
+    "kicker": "HAMPER ME KYA-KYA?",
+    "title": "Products nahi, unki pasand se choose karo.",
+    "body": "Har item ki availability selected budget ke hisaab se controlled hai. Locked item par clearly dikhega ki wo kis hamper se available hai.",
+    "from": "From"
+  },
+  "builder": {
+    "kicker": "APNA HAMPER BANAO",
+    "title": "4 simple steps me apna Celebration hamper banao.",
+    "body": "Budget rules mix ko automatically safe rakhte hain. Aapko sirf wahi options dikhenge jo selected hamper me fit hote hain.",
+    "stepLabels": [
+      "1. Budget",
+      "2. Products",
+      "3. Details",
+      "4. Payment"
+    ],
+    "budget": {
+      "title": "1. Kitne budget me banana hai?",
+      "body": "Budget se product eligibility, quantity, packaging aur finishing decide hoti hai.",
+      "next": "Products choose karo →"
+    },
+    "products": {
+      "title": "2. Unhe kya pasand aayega?",
+      "search": "Product search karein",
+      "back": "← Back",
+      "next": "Details add karein →",
+      "selectedSuffix": "preferences selected",
+      "pointSingular": "pt",
+      "pointPlural": "pts",
+      "selected": "✓",
+      "locked": "🔒",
+      "add": "+",
+      "choicesLabel": "choices",
+      "mixPointsLabel": "mix points",
+      "availableFrom": "{amount} se available",
+      "maxChoices": "Max {count} choices",
+      "mixExceedsBudget": "Ye mix selected hamper budget se bahar ja raha hai"
+    },
+    "details": {
+      "title": "3. Thoda personal banate hain",
+      "body": "Required date batana zaroori hai, taaki hum preparation aur delivery feasibility pehle check kar saken.",
+      "fields": {
+        "customerName": [
+          "Aapka naam *",
+          "Poora naam"
+        ],
+        "phone": [
+          "Mobile / WhatsApp *",
+          "10-digit number"
+        ],
+        "receiverName": [
+          "Gift kiske liye? *",
+          "Receiver ka naam"
+        ],
+        "requiredDate": [
+          "Kis date tak chahiye? *",
+          ""
+        ],
+        "occasion": [
+          "Occasion",
+          ""
+        ],
+        "pincode": [
+          "Pincode *",
+          "6 digits"
+        ],
+        "address": [
+          "Delivery address *",
+          "House / street / area"
+        ],
+        "city": [
+          "City",
+          "City"
+        ],
+        "state": [
+          "State",
+          "State"
+        ],
+        "message": [
+          "Gift message",
+          "Message card par kya likhna hai"
+        ]
+      },
+      "back": "← Back",
+      "nextHint": "Next: secure prepaid payment",
+      "next": "Payment →"
+    },
+    "summary": {
+      "kicker": "AAPKA CELEBRATION",
+      "hamper": "Hamper",
+      "box": "Box",
+      "occasion": "Occasion",
+      "products": "Products",
+      "requiredBy": "Chahiye by",
+      "notSet": "Not set",
+      "curate": "Aap curate kar do",
+      "note": "Final mix stock, size aur presentation ke hisaab se balance ho sakta hai. Major substitution se pehle aapse confirmation li jayegi."
+    },
+    "payment": {
+      "title": "4. Prepaid payment",
+      "body": "Payment bank/UPI credit verify hone ke baad hi Paid maana jayega.",
+      "payable": "ABHI PAYABLE",
+      "upiPrefix": "UPI:",
+      "setupPending": "Business UPI setup abhi pending hai.",
+      "payButton": "UPI se pay karein",
+      "setupButton": "UPI setup pending",
+      "referenceLabel": "UPI UTR / Transaction Reference *",
+      "referencePlaceholder": "Transaction reference",
+      "back": "← Back",
+      "hint": "Dispatch se pehle packing video",
+      "submit": "Order place karein",
+      "submitting": "Order bana rahe hain…",
+      "successPrefix": "Order created:",
+      "successBody": "Payment verify hone ke baad order processing start hogi.",
+      "trackingButton": "Order track karein",
+      "whatsappButton": "WhatsApp support",
+      "paymentIcon": "💳",
+      "protectionIcon": "🛡️",
+      "protectionBullet": "✓",
+      "policyArrow": "→"
+    }
+  },
+  "promise": {
+    "kicker": "CELEBRATION PROTECTION",
+    "title": "Har step clear. Har order trackable.",
+    "body": "Payment se dispatch tak aapko clear process, proof aur order updates milte rahenge."
+  },
+  "cta": {
+    "icon": "🎁",
+    "title": "Kisi ke liye kuch special banana hai?",
+    "body": "Budget choose karo, unki pasand batao aur baaki curation Celebration par chhod do.",
+    "button": "Apna custom hamper banao"
+  },
+  "footer": {
+    "policy": "Order & Protection Policy"
+  },
+  "tracking": {
+    "title": "Apna Celebration order track karein",
+    "loading": "Order load ho raha hai…",
+    "invalid": "Ye tracking link invalid ya expired hai.",
+    "lookupTitle": "Apna order dhoondhein",
+    "lookupBody": "Order ID aur order wale phone ke last digits se secure tracking kholen.",
+    "lookupOrderId": "Order ID",
+    "lookupOrderPlaceholder": "CEL-…",
+    "lookupPhonePrefix": "Phone ke last",
+    "lookupPhoneSuffix": "digits",
+    "lookupButton": "Tracking kholen",
+    "lookupBusy": "Order dhoondh rahe hain…",
+    "lookupValidation": "Order ID aur phone ke required last digits enter karein.",
+    "lookupFailed": "Order details match nahi hui. Order ID aur phone digits dobara check karein.",
+    "lookupPrivacy": "Security ke liye full phone number yahan show nahi kiya jata.",
+    "orderId": "Order ID",
+    "requiredBy": "Chahiye by",
+    "payment": "Payment",
+    "status": "Status",
+    "packingVideo": "Packing video",
+    "approve": "Dispatch approve karein",
+    "approved": "Packing dispatch ke liye approved hai.",
+    "shipping": "Shipping",
+    "notAvailable": "Abhi available nahi",
+    "packingVideoIcon": "🎥",
+    "shippingIcon": "📦",
+    "issueIcon": "🛡️",
+    "timelineComplete": "✓",
+    "timelineCurrent": "•",
+    "busy": "…",
+    "approvalKicker": "PACKING APPROVAL",
+    "approvalTitle": "Packing video dekhkar dispatch approve karein",
+    "approvalBody": "Video dhyan se check karein. Approval ke baad order courier handover ke liye ready maana jayega.",
+    "approvalConsent": "Maine packing video dekh liya hai aur isi packing ke saath dispatch approve karta/karti hoon.",
+    "approvalNote": "Approval ke baad team courier aur tracking details add karegi.",
+    "approvalBusy": "Approve ho raha hai…",
+    "approvalWaitingTitle": "Packing approval abhi pending nahi hai",
+    "approvalWaitingBody": "Packing video upload hone ke baad yahin approval button active hoga.",
+    "approvalUnavailableTitle": "Approval abhi available nahi hai",
+    "approvalUnavailableBody": "Order packing-video-ready stage par aane ke baad yahin se approval diya ja sakega.",
+    "approvedTitle": "Packing dispatch ke liye approved",
+    "approvedBody": "Aapka approval record ho gaya hai. Ab order shipping ke liye ready hai.",
+    "approvedAtPrefix": "Approved:"
+  },
+  "admin": {
+    "title": "Celebration Admin",
+    "password": "Admin password",
+    "login": "Sign in",
+    "logout": "Logout",
+    "orders": "Orders",
+    "refresh": "Refresh",
+    "upload": "Packing video upload",
+    "saveStatus": "Status update",
+    "paymentReference": "UTR / Payment Ref",
+    "shippingProvider": "Shipping provider",
+    "shippingTracking": "Tracking number",
+    "saveShipping": "Shipping save karein",
+    "loading": "Orders load ho rahe hain…",
+    "busy": "Working…",
+    "noOrders": "Abhi koi order nahi hai.",
+    "videoTooLarge": "Packing video allowed size limit se badi hai.",
+    "videoTypeInvalid": "Selected video format allowed nahi hai.",
+    "shippingNotAvailable": "Shipping details customer approval ke baad available hongi.",
+    "loadingIndicator": "…",
+    "operationsSubtitle": "Payment, packing, approval aur shipping ek hi jagah manage karein.",
+    "orderTools": "Order tools",
+    "searchLabel": "Orders search karein",
+    "searchPlaceholder": "Order ID, customer, phone, UTR, pincode ya tracking search karein",
+    "sortLabel": "Sort",
+    "sortNewest": "Newest first",
+    "sortRequiredDate": "Required date first",
+    "filterLabel": "Order stages",
+    "filterLabels": {
+      "active": "Active",
+      "payment": "Payment",
+      "packing": "Packing",
+      "approval": "Approval",
+      "shipping": "Shipping",
+      "issues": "Issues",
+      "closed": "Closed",
+      "all": "All"
+    },
+    "showingOrders": "{total} me se {visible} orders dikh rahe hain",
+    "noMatchingOrders": "Is search/filter me koi order nahi mila.",
+    "nextActionLabel": "NEXT ACTION",
+    "nextAction": {
+      "payment_verification_pending": "Bank/UPI credit verify karke payment mark karein.",
+      "payment_verified": "Hamper preparation start karein.",
+      "preparing": "Packing complete karke video upload karein.",
+      "packing_video_ready": "Customer packing approval ka wait karein.",
+      "customer_approved": "Courier aur tracking save karke order ship karein.",
+      "shipped": "Delivery confirm hone par Delivered mark karein.",
+      "delivered": "Order complete hai; issue window monitor karein.",
+      "issue_reported": "Issue review karke refund/replacement resolve karein.",
+      "refund_or_replacement_resolved": "Issue resolved; koi action pending nahi.",
+      "cancelled": "Order cancelled hai; koi action pending nahi."
+    },
+    "hamper": "Hamper",
+    "requiredDate": "Required date",
+    "giftFor": "Gift for",
+    "deliveryAddress": "Delivery address",
+    "orderDetails": "Complete order details dekhein",
+    "occasion": "Occasion",
+    "products": "Products",
+    "giftMessage": "Gift message",
+    "createdAt": "Created",
+    "issueHeading": "Customer issue",
+    "statusAction": "Order status",
+    "chooseStatus": "Next status choose karein",
+    "noStatusActions": "Koi status action available nahi",
+    "applyStatus": "Status apply karein",
+    "cancelConfirm": "Is order ko cancel karna hai? Is action ko carefully karein.",
+    "working": "Working…",
+    "videoUploaded": "Packing video uploaded",
+    "videoStored": "Packing video safely stored hai.",
+    "waitingCustomerApproval": "Video customer approval ke liye ready hai.",
+    "viewVideo": "Video dekhein",
+    "replaceVideo": "Video replace karein",
+    "videoNeeded": "Packing video pending",
+    "videoNeededHint": "Dispatch approval se pehle packing video upload karein.",
+    "uploadingVideo": "Uploading…",
+    "videoUploadedNotice": "Packing video uploaded. Customer approval ab pending hai.",
+    "statusUpdated": "Status updated",
+    "shippingSavedNotice": "Shipping details saved.",
+    "shippingHeading": "Shipping",
+    "shippingReadyHint": "Customer approval complete. Courier aur tracking add karein.",
+    "shippingUpdateHint": "Courier/tracking zarurat ho to update karein.",
+    "shippingSavedHeading": "Shipping details"
+  },
+  "common": {
+    "loadingEllipsis": "…",
+    "separator": " • ",
+    "none": "None",
+    "yes": "✓",
+    "current": "•"
+  },
+  "whatsapp": {
+    "titleSuffix": "Order",
+    "orderId": "Order ID",
+    "hamper": "Hamper",
+    "occasion": "Occasion",
+    "requiredBy": "Required by",
+    "preferences": "Preferences",
+    "customer": "Customer",
+    "phone": "Phone",
+    "giftFor": "Gift for",
+    "address": "Address",
+    "giftMessage": "Gift message",
+    "tracking": "Tracking",
+    "curate": "Aap curate kar do"
+  }
+}

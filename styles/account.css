@@ -1,0 +1,110 @@
+.navAccountActions{display:flex;align-items:center;gap:7px}
+.navAccountLink{min-height:40px;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 9px;border:1px solid var(--line);background:#fff;border-radius:999px;color:var(--m);text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap}
+.navAccountLink span{font-size:16px;line-height:1}
+.navAccountLink b{display:none}
+.navStoreLink{font-size:10px;padding:8px 11px;min-height:40px}
+.assistBar{border-top:1px solid rgba(234,216,202,.7);background:linear-gradient(90deg,#fff8ec,#fffdf9)}
+.assistBarInner{min-height:38px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:var(--muted);padding-block:6px}
+.assistBarInner>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.assistBarInner b{color:var(--text)}
+.assistBarInner>div{display:flex;gap:5px;flex:0 0 auto}
+.assistBarInner a{color:var(--m);font-weight:800;text-decoration:none;border-left:1px solid var(--line);padding-left:6px}
+.whatsappDock{position:fixed;right:12px;bottom:14px;z-index:55;display:flex;align-items:center;gap:7px;background:#fff;color:var(--m);border:1px solid var(--line);border-radius:999px;padding:7px 9px;text-decoration:none;box-shadow:0 14px 36px rgba(58,23,23,.15)}
+.whatsappDock span{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#176b3a;color:#fff;font-size:10px;font-weight:900}
+.whatsappDock b{font-size:10px;padding-right:4px}
+
+.checkoutAccount{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:18px;padding:13px;margin-bottom:14px;background:#fff}
+.checkoutAccount>div{display:grid;gap:3px;min-width:0}
+.checkoutAccount span{font-size:9px;letter-spacing:.12em;font-weight:900;color:var(--orange)}
+.checkoutAccount b{font-size:13px;color:var(--text)}
+.checkoutAccount small{font-size:10px;color:var(--muted);line-height:1.45}
+.checkoutAccount.ready{background:#fbfff9;border-color:#cfe0ca}
+.checkoutAccount.needed{background:#fff9f2}
+
+.customerAuthOverlay{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center}
+.customerAuthBackdrop{position:absolute;inset:0;border:0;background:rgba(40,15,16,.48);backdrop-filter:blur(3px);width:100%;height:100%;cursor:pointer}
+.customerAuthSheet{position:relative;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;background:var(--cream);padding:18px 14px 24px;box-shadow:0 -24px 70px rgba(58,23,23,.24)}
+.customerAuthClose{position:absolute;right:14px;top:12px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--text);font-size:22px;z-index:2}
+.customerAuthCard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 16px 45px rgba(80,35,25,.08)}
+.customerAuthIntro{padding-right:34px}
+.customerAuthIntro h2{font:700 28px/1.05 'Playfair Display',Georgia,serif;margin:0;color:#641317}
+.customerAuthIntro p{font-size:12px;line-height:1.6;color:var(--muted);margin:10px 0 16px}
+.customerAuthTabs{display:grid;grid-template-columns:1fr 1fr;background:#fff7ef;border:1px solid var(--line);padding:4px;border-radius:14px;margin-bottom:15px}
+.customerAuthTabs button{min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:800}
+.customerAuthTabs button.active{background:#fff;color:var(--m);box-shadow:0 5px 16px rgba(80,35,25,.08)}
+.customerAuthForm{display:grid;gap:12px}
+.customerAuthForm .field{display:grid;gap:6px}
+.customerAuthForm .field span{font-size:11px;font-weight:800;color:var(--text)}
+.customerAuthHelp{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;font-size:10px;color:var(--muted)}
+.customerAuthHelp a{color:var(--m);font-weight:800;text-decoration:none}
+.customerAuthPrivacy{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:9px;line-height:1.5}
+
+.accountPage{padding-top:28px;min-height:68vh}
+.accountPublicWrap{max-width:560px;margin:0 auto}
+.accountState{padding:34px;text-align:center;border:1px solid var(--line);border-radius:20px;background:#fff;color:var(--muted)}
+.customerDashboard{display:grid;gap:18px}
+.customerDashHero{padding:22px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(135deg,#fff,#fff2e4);display:grid;gap:18px}
+.customerDashHero h1{font:700 31px/1.05 'Playfair Display',Georgia,serif;color:#641317;margin:0;max-width:780px}
+.customerDashHero p{color:var(--muted);font-size:12px;line-height:1.65;margin:10px 0 0;max-width:650px}
+.customerDashActions{display:flex;gap:8px;flex-wrap:wrap}
+.customerStats{padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.customerStats>div{background:#fff;border:1px solid var(--line);border-radius:17px;padding:13px;display:grid;gap:4px}
+.customerStats span{font-size:9px;color:var(--muted);font-weight:700}
+.customerStats b{font:700 24px/1 'Playfair Display',Georgia,serif;color:var(--m)}
+.customerDashToolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-top:4px}
+.customerDashToolbar h2{margin:0;font:700 25px/1.1 'Playfair Display',Georgia,serif;color:#641317}
+.customerOrderList{display:grid;gap:13px}
+.customerOrderCard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:0 10px 30px rgba(80,35,25,.05)}
+.customerOrderHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.customerOrderHead>div{display:grid;gap:3px}
+.customerOrderHead>div:last-child{text-align:right;justify-items:end}
+.customerOrderHead small,.customerOrderHead span{font-size:9px;color:var(--muted)}
+.customerOrderHead h3{margin:0;font-size:17px;color:var(--text)}
+.customerOrderHead strong{font-size:17px;color:var(--m)}
+.customerStatus{display:inline-flex!important;border-radius:999px;padding:5px 8px;background:#fff4e8;color:var(--m)!important;font-weight:800}
+.customerOrderMeta{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 0}
+.customerOrderMeta>div{display:grid;gap:2px;background:#fffaf5;border-radius:12px;padding:9px}
+.customerOrderMeta span,.customerOrderProducts span,.customerUpdateCard span{font-size:9px;color:var(--muted);font-weight:700}
+.customerOrderMeta b,.customerUpdateCard b{font-size:11px;color:var(--text)}
+.customerProgress{display:grid;gap:6px;margin:3px 0 13px}
+.customerProgress>div{display:grid;grid-template-columns:24px 1fr;align-items:center;gap:8px;min-height:31px;color:#aa948c;position:relative}
+.customerProgress>div:not(:last-child):before{content:"";position:absolute;left:11px;top:24px;width:2px;height:15px;background:#eadfd7}
+.customerProgress i{width:24px;height:24px;border-radius:50%;border:1px solid #ddcec4;display:grid;place-items:center;font-style:normal;font-size:9px;background:#fff}
+.customerProgress span{font-size:10px;font-weight:700}
+.customerProgress .done,.customerProgress .current{color:var(--text)}
+.customerProgress .done i,.customerProgress .current i{background:var(--m);border-color:var(--m);color:#fff}
+.customerProgress .current span{font-weight:900;color:var(--m)}
+.customerOrderProducts{padding:11px;background:#fff8ef;border-radius:13px;margin-bottom:10px}
+.customerOrderProducts p{margin:5px 0 0;font-size:10px;line-height:1.55;color:var(--text)}
+.customerOrderUpdates{display:grid;gap:8px}
+.customerUpdateCard{display:grid;gap:4px;border:1px solid var(--line);border-radius:13px;padding:10px}
+.customerUpdateCard a{font-size:11px;color:var(--m);font-weight:800}
+.customerPackingApproval{display:grid;gap:10px;margin-top:10px;padding:13px;border:1px solid #e4cfa9;background:#fff9eb;border-radius:15px}
+.customerPackingApproval>div{display:grid;gap:4px}.customerPackingApproval>div b{font-size:12px;color:var(--text)}.customerPackingApproval>div p{font-size:10px;color:var(--muted);line-height:1.5;margin:0}
+.customerPackingApproval label{display:flex;align-items:flex-start;gap:8px;font-size:10px;line-height:1.45;color:var(--text)}.customerPackingApproval label input{margin-top:2px;flex:0 0 auto}.customerPackingApproval .primary{justify-self:start;min-height:40px;font-size:10px}
+.customerOrderFooter{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.customerOrderFooter small{font-size:8.5px;color:var(--muted)}
+.customerOrderFooter .secondary{font-size:9px;min-height:38px;padding:7px 10px}
+.customerEmptyOrders,.accountSecurityNote{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px}
+.customerEmptyOrders h3{margin:0 0 6px}.customerEmptyOrders p,.accountSecurityNote p{font-size:11px;color:var(--muted);line-height:1.6}
+.accountSecurityNote b{color:var(--text)}
+
+@media(min-width:760px){
+  .navAccountLink b{display:inline}
+  .assistBarInner{font-size:11px}
+  .assistBarInner a{padding-left:10px}
+  .whatsappDock{right:22px;bottom:22px;padding:8px 12px}
+  .customerAuthOverlay{align-items:center;padding:22px}
+  .customerAuthSheet{border-radius:26px;padding:0;background:transparent;overflow:visible}
+  .customerAuthClose{right:10px;top:10px}
+  .customerDashHero{grid-template-columns:1fr auto;align-items:flex-end;padding:30px}
+  .customerDashHero h1{font-size:42px}
+  .customerStats{max-width:620px}
+  .customerOrderMeta{grid-template-columns:repeat(4,1fr)}
+  .customerProgress{grid-template-columns:repeat(7,1fr);gap:0;margin-block:18px}
+  .customerProgress>div{grid-template-columns:1fr;text-align:center;justify-items:center;gap:6px}
+  .customerProgress>div:not(:last-child):before{left:50%;top:11px;width:calc(100% + 1px);height:2px;z-index:0}
+  .customerProgress i{z-index:1}
+  .customerProgress span{font-size:9px}
+  .customerOrderUpdates{grid-template-columns:1fr 1fr}
+}

@@ -1,0 +1,5 @@
+{
+  "initialStatus": "payment_verification_pending",
+  "initialPaymentStatus": "verification_pending",
+  "policyVersion": "2026-09-15"
+}

@@ -1,0 +1,12 @@
+{
+  "payment_verification_pending": "Payment check pending",
+  "payment_verified": "Payment verified",
+  "preparing": "Hamper ban raha hai",
+  "packing_video_ready": "Packing video ready",
+  "customer_approved": "Dispatch approved",
+  "shipped": "Courier me hai",
+  "delivered": "Delivered",
+  "issue_reported": "Issue report hua hai",
+  "refund_or_replacement_resolved": "Issue resolved",
+  "cancelled": "Cancelled"
+}
