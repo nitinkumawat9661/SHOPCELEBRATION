@@ -1,86 +1,86 @@
 {
   "nav": {
-    "budgets": "Budget dekhein",
+    "budgets": "Choose budget",
     "products": "Gift options",
-    "builder": "Apna hamper",
-    "promise": "Trust & process",
-    "create": "Hamper banao",
-    "backToStore": "← Store"
+    "builder": "Build hamper",
+    "promise": "Why Celebration",
+    "create": "Build yours",
+    "backToStore": "← Back to store"
   },
   "hero": {
-    "primary": "Apna hamper banao →",
+    "primary": "Build your hamper →",
     "secondaryPrefix": "Starting",
     "stats": [
-      "Har budget",
-      "Gift options",
-      "Apni choice"
+      "Budgets",
+      "Gift choices",
+      "Your style"
     ],
-    "showcaseSubline": "Thoughtful • Personal • Hamesha Special",
+    "showcaseSubline": "Thoughtful • Personal • Made for them",
     "customFeelValue": "Custom"
   },
   "budgets": {
-    "kicker": "APNA BUDGET CHUNO",
-    "title": "Har budget me ek thoughtful Celebration.",
-    "body": "Ye total hamper budget hai, sirf empty box ki price nahi. Final mix budget, size, availability aur presentation ke hisaab se curate hoga.",
+    "kicker": "CHOOSE YOUR BUDGET",
+    "title": "Start with a budget that feels right.",
+    "body": "This is your total hamper budget. Pick a range and we’ll show gift choices that fit it.",
     "choices": "choices",
     "points": "mix points"
   },
   "products": {
-    "kicker": "HAMPER ME KYA-KYA?",
-    "title": "Products nahi, unki pasand se choose karo.",
-    "body": "Har item ki availability selected budget ke hisaab se controlled hai. Locked item par clearly dikhega ki wo kis hamper se available hai.",
-    "from": "From"
+    "kicker": "PICK THEIR FAVOURITES",
+    "title": "Choose what they’ll actually love.",
+    "body": "Browse available gifts by category. Options automatically adapt to your selected budget.",
+    "from": "Available from"
   },
   "builder": {
-    "kicker": "APNA HAMPER BANAO",
-    "title": "4 simple steps me apna Celebration hamper banao.",
-    "body": "Budget rules mix ko automatically safe rakhte hain. Aapko sirf wahi options dikhenge jo selected hamper me fit hote hain.",
+    "kicker": "BUILD YOUR HAMPER",
+    "title": "Your hamper, ready in 4 simple steps.",
+    "body": "Choose a budget, pick gifts, add delivery details and place your order.",
     "stepLabels": [
       "1. Budget",
-      "2. Products",
+      "2. Gifts",
       "3. Details",
       "4. Payment"
     ],
     "budget": {
-      "title": "1. Kitne budget me banana hai?",
-      "body": "Budget se product eligibility, quantity, packaging aur finishing decide hoti hai.",
-      "next": "Products choose karo →"
+      "title": "1. What budget are you thinking?",
+      "body": "Pick a budget first. You can change it anytime before payment.",
+      "next": "Choose gifts →"
     },
     "products": {
-      "title": "2. Unhe kya pasand aayega?",
-      "search": "Product search karein",
+      "title": "2. Pick their favourites",
+      "search": "Search gifts",
       "back": "← Back",
-      "next": "Details add karein →",
-      "selectedSuffix": "preferences selected",
+      "next": "Add details →",
+      "selectedSuffix": "selected",
       "pointSingular": "pt",
       "pointPlural": "pts",
       "selected": "✓",
       "locked": "🔒",
       "add": "+",
-      "choicesLabel": "choices",
-      "mixPointsLabel": "mix points",
+      "choicesLabel": "items",
+      "mixPointsLabel": "selection limit",
       "availableFrom": "{amount} se available",
-      "maxChoices": "Max {count} choices",
-      "mixExceedsBudget": "Ye mix selected hamper budget se bahar ja raha hai"
+      "maxChoices": "Up to {count} gifts",
+      "mixExceedsBudget": "This combination does not fit the selected hamper"
     },
     "details": {
-      "title": "3. Thoda personal banate hain",
-      "body": "Required date batana zaroori hai, taaki hum preparation aur delivery feasibility pehle check kar saken.",
+      "title": "3. Add the final details",
+      "body": "Tell us who it’s for and when you need it. We’ll use this to prepare and deliver it right.",
       "fields": {
         "customerName": [
-          "Aapka naam *",
-          "Poora naam"
+          "Your name *",
+          "Full name"
         ],
         "phone": [
           "Mobile / WhatsApp *",
           "10-digit number"
         ],
         "receiverName": [
-          "Gift kiske liye? *",
-          "Receiver ka naam"
+          "Who is this for? *",
+          "Receiver name"
         ],
         "requiredDate": [
-          "Kis date tak chahiye? *",
+          "Need it by *",
           ""
         ],
         "occasion": [
@@ -105,41 +105,41 @@
         ],
         "message": [
           "Gift message",
-          "Message card par kya likhna hai"
+          "What should we write on the card?"
         ]
       },
       "back": "← Back",
-      "nextHint": "Next: secure prepaid payment",
-      "next": "Payment →"
+      "nextHint": "Next: review & payment",
+      "next": "Review & pay →"
     },
     "summary": {
-      "kicker": "AAPKA CELEBRATION",
+      "kicker": "YOUR HAMPER",
       "hamper": "Hamper",
-      "box": "Box",
+      "box": "Size",
       "occasion": "Occasion",
-      "products": "Products",
-      "requiredBy": "Chahiye by",
+      "products": "Gifts",
+      "requiredBy": "Need by",
       "notSet": "Not set",
-      "curate": "Aap curate kar do",
-      "note": "Final mix stock, size aur presentation ke hisaab se balance ho sakta hai. Major substitution se pehle aapse confirmation li jayegi."
+      "curate": "Help me choose",
+      "note": "Final presentation may vary slightly with stock and size. We’ll confirm with you before any major substitution."
     },
     "payment": {
-      "title": "4. Prepaid payment",
-      "body": "Payment bank/UPI credit verify hone ke baad hi Paid maana jayega.",
-      "payable": "ABHI PAYABLE",
+      "title": "4. Review & pay",
+      "body": "Pay the shown amount via UPI. Your order starts after payment verification.",
+      "payable": "PAY NOW",
       "upiPrefix": "UPI:",
-      "setupPending": "Business UPI setup abhi pending hai.",
-      "payButton": "UPI se pay karein",
-      "setupButton": "UPI setup pending",
+      "setupPending": "UPI is temporarily unavailable.",
+      "payButton": "Pay via UPI",
+      "setupButton": "UPI unavailable",
       "referenceLabel": "UPI UTR / Transaction Reference *",
-      "referencePlaceholder": "Transaction reference",
+      "referencePlaceholder": "Enter transaction reference",
       "back": "← Back",
-      "hint": "Dispatch se pehle packing video",
-      "submit": "Order place karein",
-      "submitting": "Order bana rahe hain…",
-      "successPrefix": "Order created:",
-      "successBody": "Payment verify hone ke baad order processing start hogi.",
-      "trackingButton": "Order track karein",
+      "hint": "Packing video before dispatch",
+      "submit": "Place order",
+      "submitting": "Placing your order…",
+      "successPrefix": "Order placed:",
+      "successBody": "We’ll start processing after payment verification.",
+      "trackingButton": "View order progress",
       "whatsappButton": "WhatsApp support",
       "paymentIcon": "💳",
       "protectionIcon": "🛡️",
@@ -148,43 +148,43 @@
     }
   },
   "promise": {
-    "kicker": "CELEBRATION PROTECTION",
-    "title": "Har step clear. Har order trackable.",
-    "body": "Payment se dispatch tak aapko clear process, proof aur order updates milte rahenge."
+    "kicker": "WHY CELEBRATION",
+    "title": "Clear from payment to delivery.",
+    "body": "You’ll know what happens next at every stage — from payment verification to packing and shipping."
   },
   "cta": {
     "icon": "🎁",
-    "title": "Kisi ke liye kuch special banana hai?",
-    "body": "Budget choose karo, unki pasand batao aur baaki curation Celebration par chhod do.",
-    "button": "Apna custom hamper banao"
+    "title": "Still deciding what to send?",
+    "body": "Choose a budget, tell us a little about them, and we’ll help shape the hamper.",
+    "button": "Build a custom hamper"
   },
   "footer": {
     "policy": "Order & Protection Policy"
   },
   "tracking": {
-    "title": "Apna Celebration order track karein",
-    "loading": "Order load ho raha hai…",
-    "invalid": "Ye tracking link invalid ya expired hai.",
-    "lookupTitle": "Apna order dhoondhein",
-    "lookupBody": "Order ID aur order wale phone ke last digits se secure tracking kholen.",
+    "title": "Track your Celebration order",
+    "loading": "Loading your order…",
+    "invalid": "This tracking link is invalid or expired.",
+    "lookupTitle": "Find your order",
+    "lookupBody": "Enter your Order ID and the requested phone digits to open secure tracking.",
     "lookupOrderId": "Order ID",
     "lookupOrderPlaceholder": "CEL-…",
-    "lookupPhonePrefix": "Phone ke last",
-    "lookupPhoneSuffix": "digits",
-    "lookupButton": "Tracking kholen",
-    "lookupBusy": "Order dhoondh rahe hain…",
-    "lookupValidation": "Order ID aur phone ke required last digits enter karein.",
-    "lookupFailed": "Order details match nahi hui. Order ID aur phone digits dobara check karein.",
-    "lookupPrivacy": "Security ke liye full phone number yahan show nahi kiya jata.",
+    "lookupPhonePrefix": "Last",
+    "lookupPhoneSuffix": "digits of phone",
+    "lookupButton": "Open tracking",
+    "lookupBusy": "Finding your order…",
+    "lookupValidation": "Enter the Order ID and required phone digits.",
+    "lookupFailed": "We couldn’t match those details. Check the Order ID and phone digits and try again.",
+    "lookupPrivacy": "Your full phone number is never shown here.",
     "orderId": "Order ID",
-    "requiredBy": "Chahiye by",
+    "requiredBy": "Need by",
     "payment": "Payment",
     "status": "Status",
     "packingVideo": "Packing video",
-    "approve": "Dispatch approve karein",
-    "approved": "Packing dispatch ke liye approved hai.",
+    "approve": "Approve dispatch",
+    "approved": "Packing approved for dispatch.",
     "shipping": "Shipping",
-    "notAvailable": "Abhi available nahi",
+    "notAvailable": "Not available yet",
     "packingVideoIcon": "🎥",
     "shippingIcon": "📦",
     "issueIcon": "🛡️",
@@ -192,17 +192,17 @@
     "timelineCurrent": "•",
     "busy": "…",
     "approvalKicker": "PACKING APPROVAL",
-    "approvalTitle": "Packing video dekhkar dispatch approve karein",
-    "approvalBody": "Video dhyan se check karein. Approval ke baad order courier handover ke liye ready maana jayega.",
-    "approvalConsent": "Maine packing video dekh liya hai aur isi packing ke saath dispatch approve karta/karti hoon.",
-    "approvalNote": "Approval ke baad team courier aur tracking details add karegi.",
-    "approvalBusy": "Approve ho raha hai…",
-    "approvalWaitingTitle": "Packing approval abhi pending nahi hai",
-    "approvalWaitingBody": "Packing video upload hone ke baad yahin approval button active hoga.",
-    "approvalUnavailableTitle": "Approval abhi available nahi hai",
-    "approvalUnavailableBody": "Order packing-video-ready stage par aane ke baad yahin se approval diya ja sakega.",
-    "approvedTitle": "Packing dispatch ke liye approved",
-    "approvedBody": "Aapka approval record ho gaya hai. Ab order shipping ke liye ready hai.",
+    "approvalTitle": "Review the packing before dispatch",
+    "approvalBody": "Watch the packing video and approve when everything looks right.",
+    "approvalConsent": "I reviewed the packing video and approve this hamper for dispatch.",
+    "approvalNote": "After approval, the team will add courier and tracking details.",
+    "approvalBusy": "Approving…",
+    "approvalWaitingTitle": "Packing approval is not ready yet",
+    "approvalWaitingBody": "The approval button will appear here after the packing video is uploaded.",
+    "approvalUnavailableTitle": "Approval is not available yet",
+    "approvalUnavailableBody": "You can approve once the order reaches the packing-video stage.",
+    "approvedTitle": "Packing approved for dispatch",
+    "approvedBody": "Your approval is recorded. The order can now move to shipping.",
     "approvedAtPrefix": "Approved:"
   },
   "admin": {
