@@ -1,0 +1,144 @@
+/* Final pre-animation production polish.
+   Intentional: no transitions, keyframes or decorative motion in this layer. */
+
+:root{
+  --surface:#fff;
+  --surface-soft:#fff8f1;
+  --surface-warm:#f8eee4;
+  --text-strong:#2f1112;
+  --success:#23623c;
+  --danger:#9d2925;
+  --focus:rgba(116,25,29,.22);
+  --shadow-soft:0 14px 40px rgba(77,28,22,.07);
+  --shadow-card:0 18px 50px rgba(77,28,22,.09);
+}
+
+body{line-height:1.5;color:var(--text)}
+a,button,input,select,textarea{outline-color:var(--m)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button:disabled{cursor:not-allowed}
+::selection{background:#f3d4c2;color:var(--text-strong)}
+
+.wrap{max-width:1180px}
+.sectionHead p,.centerHead p{font-size:13px;line-height:1.7}
+.primary,.secondary{font-size:12px;letter-spacing:-.01em}
+.primary{box-shadow:0 10px 26px rgba(116,25,29,.16)}
+.secondary{box-shadow:0 6px 18px rgba(58,23,23,.04)}
+
+.nav{box-shadow:0 1px 0 rgba(116,25,29,.04)}
+.navin{min-height:64px;height:auto;padding-block:8px}
+.navAccountActions{min-width:0}
+.navAccountLink,.navCta{flex:0 0 auto}
+.assistBarInner>span{min-width:0}
+.assistBarInner a{min-height:32px;display:inline-flex;align-items:center}
+.whatsappDock{bottom:calc(86px + env(safe-area-inset-bottom,0px));box-shadow:0 14px 38px rgba(26,74,44,.15)}
+
+.heroGrid{padding-top:34px}
+.heroCopy{max-width:720px;margin-inline:auto}
+.hero h1{max-width:760px;margin-inline:auto}
+.hero p{max-width:620px}
+.actions{max-width:520px;margin-inline:auto}
+.stats{max-width:620px;margin-inline:auto}
+.stat{box-shadow:0 8px 24px rgba(77,28,22,.045)}
+.showcase{max-width:680px;width:100%;margin-inline:auto}
+
+.occasionFlex,.tiers,.filters{scroll-padding-inline:14px}
+.tiers{padding-bottom:20px}
+.tier{box-shadow:0 10px 28px rgba(77,28,22,.055);min-height:164px}
+.tier.active{box-shadow:0 14px 36px rgba(116,25,29,.14)}
+.badge{font-size:8px;padding:5px 8px}
+.budgetDecisionHint{box-shadow:var(--shadow-soft)}
+
+.products{align-items:stretch}
+.product{display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(77,28,22,.045);min-height:170px}
+.product .prodTop{align-items:flex-start}
+.catalogProductImage{width:48px;height:48px;object-fit:cover;border-radius:14px;background:#fff6ed;border:1px solid var(--line)}
+.prodIcon{width:48px;height:48px}
+.product h3{font-size:14px;line-height:1.25;margin-top:14px}
+.product p{font-size:11px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.productUnlock{margin-top:auto;align-self:flex-start}
+.catalogEmptyState{grid-column:1/-1;text-align:center;background:#fff;border:1px dashed #d9c2b4;border-radius:20px;padding:28px 18px;color:var(--muted)}
+.catalogEmptyState b{display:block;color:var(--text);font-size:14px;margin-bottom:6px}
+.catalogEmptyState p{margin:0;font-size:11px;line-height:1.6}
+
+.builder{background:linear-gradient(180deg,#fffaf5 0%,#fff7ee 100%)}
+.builderCard{box-shadow:var(--shadow-card);border-color:#e6d3c4}
+.steps{border-radius:16px}
+.stepBtn{min-height:46px}
+.builderTitle h3{line-height:1.15}
+.builderTitle p{font-size:12px;line-height:1.6}
+.control,.selectOcc,.search{font-size:16px;background:#fff;min-height:50px}
+.control::placeholder,.search::placeholder{color:#aa8f85}
+.field>span,.field label{font-size:12px}
+.pick{min-height:64px}
+.pick b{font-size:13px}
+.pick small{font-size:10px;line-height:1.45}
+.summary{box-shadow:0 12px 30px rgba(77,28,22,.05)}
+.paymentBox{box-shadow:0 10px 28px rgba(77,28,22,.045)}
+.policyCheck{background:#fffaf4}
+.errorBox,.successBox{font-size:11px;line-height:1.55}
+.successBox{padding:14px}
+
+.customerAuthBackdrop{background:rgba(40,15,16,.56)}
+.customerAuthCard{box-shadow:0 22px 70px rgba(58,23,23,.16)}
+.customerAuthForm .control{font-size:16px;min-height:50px}
+.customerOrderCard{box-shadow:0 14px 34px rgba(80,35,25,.06)}
+.customerStatus{font-size:9px}
+.customerUpdateCard{background:#fffdf9}
+
+.uxToast{box-shadow:0 20px 60px rgba(58,23,23,.2)}
+.uxToastCopy strong{font-size:13px}
+.uxToastCopy span{font-size:10.5px}
+
+.policyCards article,.promiseGrid article,.trackingCard,.customerEmptyOrders,.accountSecurityNote{box-shadow:0 10px 30px rgba(77,28,22,.045)}
+
+@media(max-width:389px){
+  .logo{font-size:21px}
+  .tag{font-size:6.3px}
+  .navAccountLink{padding-inline:8px}
+  .navCta{padding-inline:9px;font-size:9.5px}
+  .hero h1{font-size:37px}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat:last-child{grid-column:1/-1}
+  .tier{flex-basis:84vw}
+}
+
+@media(max-width:639px){
+  section{padding-block:44px}
+  .sectionHead h2,.centerHead h2{font-size:31px;line-height:1.08}
+  .centerHead{margin-bottom:20px}
+  .heroGrid{gap:26px}
+  .hero p{font-size:14px}
+  .actions .primary,.actions .secondary{min-height:50px}
+  .assistBarInner{align-items:flex-start}
+  .assistBarInner>span{white-space:normal;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .assistBarInner>div{align-self:center}
+  .product{min-height:160px}
+  .builderCard{padding:13px}
+  .stepBtn{flex-basis:112px;font-size:9.5px}
+  .customerAuthSheet{max-height:94dvh}
+}
+
+@media(min-width:640px){
+  .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .product{min-height:190px}
+  .catalogProductImage,.prodIcon{width:56px;height:56px}
+}
+
+@media(min-width:900px){
+  .heroCopy{max-width:none;margin:0}
+  .hero h1{margin-inline:0}
+  .actions,.stats{margin-inline:0}
+  .showcase{margin-inline:0}
+  .tiers{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .tier{min-height:184px}
+  .products{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  .product{min-height:210px}
+  .builderCard{padding:32px}
+  .customerAuthCard{padding:26px}
+  .whatsappDock{bottom:22px}
+}
+
+@media(min-width:1180px){
+  .tiers{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
