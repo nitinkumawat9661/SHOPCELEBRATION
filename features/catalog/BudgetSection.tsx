@@ -40,7 +40,7 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
             const isMostChosen = Boolean(socialProof && item.name === socialProof.tierName)
             const badge = tierBadge(item, recommendedTierId, bestValueId, socialProof)
             return (
-              <button key={item.id} className={`tier ${selectedTierId === item.id ? "active" : ""}`} onClick={() => onSelect(item.id)}>
+              <button type="button" key={item.id} className={`tier ${selectedTierId === item.id ? "active" : ""}`} aria-pressed={selectedTierId === item.id} onClick={() => onSelect(item.id)}>
                 {badge && <span className="badge">{badge}</span>}
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
