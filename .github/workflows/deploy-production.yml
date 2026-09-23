@@ -1,0 +1,163 @@
+name: Deploy Celebration Production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-production-deploy
+  cancel-in-progress: false
+
+env:
+  APP_ROOT: /var/www/celebration
+  PM2_APP: celebration-site
+  PM2_HOME: /home/nitin/.pm2
+  RUNTIME_USER: nitin
+  APP_PORT: "3040"
+  PUBLIC_HEALTH_URL: https://shopcelebration.in/api/health
+
+jobs:
+  deploy:
+    name: Verify, release and health-check Celebration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Verify Celebration source before VPS upload
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f package.json
+          test -f package-lock.json
+          test ! -e .env
+          test ! -e .env.production
+          npm ci
+          npm audit --omit=dev
+          npm run audit
+          npm run typecheck
+
+      - name: Package Celebration source only
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCHIVE="/tmp/celebration-${GITHUB_SHA}.tar.gz"
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.next' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='*.log' \
+            -czf "$ARCHIVE" .
+          test -s "$ARCHIVE"
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+          echo "REMOTE_ARCHIVE=/tmp/celebration-${GITHUB_SHA}.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Configure verified SSH access
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!name:-}" ] || { echo "Missing required value: $name" >&2; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration_deploy"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration_deploy" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/celebration_deploy" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+
+      - name: Upload immutable source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -P "$VPS_PORT" -i "$HOME/.ssh/celebration_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$ARCHIVE" "$VPS_USER@$VPS_HOST:$REMOTE_ARCHIVE"
+
+      - name: Build and switch Celebration release with rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s -- "$APP_ROOT" "$PM2_APP" "$PM2_HOME" "$RUNTIME_USER" "$APP_PORT" "$REMOTE_ARCHIVE" "$GITHUB_SHA" <<'REMOTE'
+          set -euo pipefail
+          APP_ROOT="$1"; PM2_APP="$2"; PM2_HOME="$3"; RUNTIME_USER="$4"; APP_PORT="$5"; ARCHIVE="$6"; SHA="$7"
+          test "$APP_ROOT" = "/var/www/celebration"
+          test "$PM2_APP" = "celebration-site"
+          test "$RUNTIME_USER" = "nitin"
+          test "$APP_PORT" = "3040"
+          test -s "$ARCHIVE"
+          test -f "$APP_ROOT/shared/.env.production"
+
+          OLD_RELEASE="$(readlink -f "$APP_ROOT/current")"
+          case "$OLD_RELEASE" in "$APP_ROOT"/releases/*) ;; *) echo "Unsafe current Celebration release: $OLD_RELEASE" >&2; exit 1 ;; esac
+          SHORT_SHA="$(printf '%s' "$SHA" | cut -c1-12)"
+          NEW_RELEASE="$APP_ROOT/releases/github-${SHORT_SHA}"
+          case "$NEW_RELEASE" in "$APP_ROOT"/releases/github-*) ;; *) echo "Unsafe new release path" >&2; exit 1 ;; esac
+
+          [ ! -e "$NEW_RELEASE" ] || sudo rm -rf -- "$NEW_RELEASE"
+          RUNTIME_GROUP="$(id -gn "$RUNTIME_USER")"
+          sudo install -d -o "$RUNTIME_USER" -g "$RUNTIME_GROUP" "$NEW_RELEASE"
+          sudo -u "$RUNTIME_USER" tar -xzf "$ARCHIVE" -C "$NEW_RELEASE"
+          sudo rm -f -- "$ARCHIVE"
+          sudo -u "$RUNTIME_USER" ln -s "$APP_ROOT/shared/.env.production" "$NEW_RELEASE/.env.production"
+
+          run_as_runtime() { sudo -u "$RUNTIME_USER" env HOME="/home/$RUNTIME_USER" PM2_HOME="$PM2_HOME" "$@"; }
+          echo "Installing and verifying new Celebration release"
+          run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run typecheck && npm run build' _ "$NEW_RELEASE"
+          echo "Applying idempotent database migrations"
+          run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/migrate.mjs\")"' _ "$NEW_RELEASE"
+
+          start_release() {
+            local release="$1"
+            run_as_runtime pm2 delete "$PM2_APP" >/dev/null 2>&1 || true
+            run_as_runtime pm2 start "$release/node_modules/next/dist/bin/next" --name "$PM2_APP" --cwd "$release" -- start -H 127.0.0.1 -p "$APP_PORT"
+            run_as_runtime pm2 save >/dev/null
+          }
+          rollback() {
+            echo "Deployment health check failed. Restoring previous Celebration release." >&2
+            sudo ln -sfn "$OLD_RELEASE" "$APP_ROOT/current.rollback"
+            sudo mv -Tf "$APP_ROOT/current.rollback" "$APP_ROOT/current"
+            start_release "$OLD_RELEASE"
+            for attempt in $(seq 1 20); do
+              curl --silent --show-error --fail --max-time 3 "http://127.0.0.1:${APP_PORT}/api/health" >/dev/null && return 0
+              sleep 1
+            done
+            return 1
+          }
+
+          sudo ln -sfn "$NEW_RELEASE" "$APP_ROOT/current.next"
+          sudo mv -Tf "$APP_ROOT/current.next" "$APP_ROOT/current"
+          start_release "$NEW_RELEASE"
+          HEALTHY=0
+          for attempt in $(seq 1 30); do
+            if curl --silent --show-error --fail --max-time 3 "http://127.0.0.1:${APP_PORT}/api/health" >/dev/null; then HEALTHY=1; break; fi
+            sleep 1
+          done
+          if [ "$HEALTHY" -ne 1 ]; then rollback; exit 1; fi
+          ACTIVE="$(readlink -f "$APP_ROOT/current")"
+          test "$ACTIVE" = "$NEW_RELEASE"
+          run_as_runtime pm2 describe "$PM2_APP" >/dev/null
+          echo "Celebration release active: $NEW_RELEASE"
+          REMOTE
+
+      - name: Verify public production health
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(curl --silent --show-error --fail --max-time 15 "$PUBLIC_HEALTH_URL")"
+          printf '%s\n' "$BODY"
+          printf '%s' "$BODY" | grep -q '"ok":true'
+          printf '%s' "$BODY" | grep -q '"service":"Celebration"'
