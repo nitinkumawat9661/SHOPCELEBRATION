@@ -22,9 +22,10 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 14 }:
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const canvasElement = canvasRef.current
-    if (!canvasElement) return
-    const context = canvasElement.getContext("2d", { alpha: true })
+    const currentCanvas = canvasRef.current
+    if (!currentCanvas) return
+    const canvas: HTMLCanvasElement = currentCanvas
+    const context = canvas.getContext("2d", { alpha: true })
     if (!context) return
     const ctx: CanvasRenderingContext2D = context
 
@@ -37,11 +38,11 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 14 }:
     const dpr = Math.min(window.devicePixelRatio || 1, 1.75)
 
     function resize() {
-      const rect = canvasElement.getBoundingClientRect()
+      const rect = canvas.getBoundingClientRect()
       width = Math.max(1, Math.round(rect.width))
       height = Math.max(1, Math.round(rect.height))
-      canvasElement.width = Math.round(width * dpr)
-      canvasElement.height = Math.round(height * dpr)
+      canvas.width = Math.round(width * dpr)
+      canvas.height = Math.round(height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       draw(performance.now())
     }
@@ -91,12 +92,12 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 14 }:
     }
 
     const resizeObserver = new ResizeObserver(resize)
-    resizeObserver.observe(canvasElement)
+    resizeObserver.observe(canvas)
     const intersectionObserver = new IntersectionObserver(([entry]) => {
       visible = Boolean(entry?.isIntersecting)
       if (visible) draw(performance.now())
     }, { rootMargin: "120px" })
-    intersectionObserver.observe(canvasElement)
+    intersectionObserver.observe(canvas)
 
     resize()
     if (!reduced) {
