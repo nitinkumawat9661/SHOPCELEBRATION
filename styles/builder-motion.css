@@ -1,0 +1,3 @@
+.builderCard>div,.builderCard>form,.builderCard>section{animation:builderForward .34s cubic-bezier(.22,1,.36,1) both}
+.stepBtn.active{box-shadow:inset 0 -3px 0 #d78d59}
+@media(prefers-reduced-motion:reduce){.builderCard>div,.builderCard>form,.builderCard>section{animation:none!important}}
