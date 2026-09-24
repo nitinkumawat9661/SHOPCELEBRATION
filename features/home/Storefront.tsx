@@ -10,6 +10,7 @@ import { CustomRequestSection } from "./CustomRequestSection"
 import { FinalCta } from "./FinalCta"
 import { Hero } from "./Hero"
 import { PromiseSection } from "./PromiseSection"
+import { ProofAndReviews } from "./ProofAndReviews"
 import { SiteFooter } from "../shell/SiteFooter"
 import { SiteHeader } from "../shell/SiteHeader"
 import { TrustStrip } from "../shell/TrustStrip"
@@ -50,6 +51,7 @@ export function Storefront() {
       <OccasionRail value={state.checkout.occasion} occasions={state.occasions} onChange={pickOccasion} />
       <BudgetSection tiers={state.tiers} selectedTierId={state.tierId} recommendedTierId={state.catalog.settings.defaultTierId} socialProof={state.socialProof} onSelect={pickTier} />
       <ProductSection products={state.products} categories={state.categories} allCategoryId={state.catalog.settings.allCategory.id} category={state.category} onCategory={state.setCategory} />
+      <ProofAndReviews socialProof={state.socialProof} />
       <CustomRequestSection />
       <HamperBuilder state={state} />
       <PromiseSection />
