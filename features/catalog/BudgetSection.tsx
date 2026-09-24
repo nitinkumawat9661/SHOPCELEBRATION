@@ -2,6 +2,7 @@
 
 import { formatMoney, type Tier } from "../../lib/domain/catalog"
 import { uiContent } from "../../lib/domain/content"
+import { TiltTierButton } from "../motion/InteractiveSurface"
 
 const UNSUPPORTED_SOCIAL_PROOF = new Set(["POPULAR", "BESTSELLER", "MOST POPULAR", "CUSTOMER FAVORITE", "CUSTOMER FAVOURITE"])
 
@@ -40,13 +41,13 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
             const isMostChosen = Boolean(socialProof && item.name === socialProof.tierName)
             const badge = tierBadge(item, recommendedTierId, bestValueId, socialProof)
             return (
-              <button type="button" key={item.id} className={`tier ${selectedTierId === item.id ? "active" : ""}`} aria-pressed={selectedTierId === item.id} onClick={() => onSelect(item.id)}>
+              <TiltTierButton type="button" key={item.id} rotationFactor={11} className={`tier ${selectedTierId === item.id ? "active" : ""}`} aria-pressed={selectedTierId === item.id} onClick={() => onSelect(item.id)}>
                 {badge && <span className="badge">{badge}</span>}
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
                 <div className="name">{item.name}</div>
                 <div className="note">{isMostChosen ? `${socialProof!.sharePercent}% of tracked Celebration orders` : `Up to ${item.maxChoices} gifts`}</div>
-              </button>
+              </TiltTierButton>
             )
           })}
         </div>
