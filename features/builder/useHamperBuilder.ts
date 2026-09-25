@@ -29,6 +29,8 @@ export type TierSocialProof = {
 type InitialBuilderData = {
   catalog?: CatalogConfig
   socialProof?: TierSocialProof | null
+  tierId?: string
+  occasion?: string
 }
 
 function defaultTierFor(catalog: CatalogConfig) {
@@ -37,7 +39,10 @@ function defaultTierFor(catalog: CatalogConfig) {
   return tier
 }
 
-function checkoutDefaults(catalog: CatalogConfig, identity?: { customerName?: string; phone?: string }): CheckoutData {
+function checkoutDefaults(catalog: CatalogConfig, identity?: { customerName?: string; phone?: string }, initialOccasion?: string): CheckoutData {
+  const occasion = initialOccasion && catalog.occasions.includes(initialOccasion)
+    ? initialOccasion
+    : catalog.settings.defaultOccasion
   return {
     customerName: identity?.customerName || "",
     phone: identity?.phone || "",
@@ -47,7 +52,7 @@ function checkoutDefaults(catalog: CatalogConfig, identity?: { customerName?: st
     state: storeContent.checkout.defaultState,
     pincode: "",
     requiredDate: "",
-    occasion: catalog.settings.defaultOccasion,
+    occasion,
     message: "",
     paymentReference: ""
   }
@@ -97,7 +102,8 @@ function readBuilderDraft(catalog: CatalogConfig) {
 
 export function useHamperBuilder(initial: InitialBuilderData = {}) {
   const initialCatalog = initial.catalog || defaultCatalog
-  const initialTier = defaultTierFor(initialCatalog)
+  const requestedTier = initial.tierId ? tierById(initialCatalog, initial.tierId) : undefined
+  const initialTier = requestedTier || defaultTierFor(initialCatalog)
   const hasServerCatalog = Boolean(initial.catalog)
   const [catalog, setCatalog] = useState<CatalogConfig>(initialCatalog)
   const [catalogLoading, setCatalogLoading] = useState(!hasServerCatalog)
@@ -111,7 +117,7 @@ export function useHamperBuilder(initial: InitialBuilderData = {}) {
   const [accepted, setAccepted] = useState(false)
   const [detailsError, setDetailsError] = useState("")
   const [detailsFieldErrors, setDetailsFieldErrors] = useState<CheckoutFieldErrors>({})
-  const [checkout, setCheckout] = useState<CheckoutData>(() => checkoutDefaults(initialCatalog))
+  const [checkout, setCheckout] = useState<CheckoutData>(() => checkoutDefaults(initialCatalog, undefined, initial.occasion))
   const [draftReady, setDraftReady] = useState(false)
   const [draftRestored, setDraftRestored] = useState(false)
 
