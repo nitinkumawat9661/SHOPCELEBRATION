@@ -2,7 +2,6 @@
 
 import { formatMoney, type GiftProduct, type Tier } from "../../lib/domain/catalog"
 import { storeContent, uiContent } from "../../lib/domain/content"
-import { Reveal } from "../motion/Reveal"
 import { ShapeWaves } from "../motion/ShapeWaves"
 
 export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers: Tier[]; products: GiftProduct[] }) {
@@ -15,7 +14,7 @@ export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers:
     <header className="hero heroRefresh">
       <ShapeWaves className="heroShapeWaves" color="#8b2529" cellSize={15} />
       <div className="wrap heroGrid">
-        <Reveal className="heroCopy">
+        <div className="heroCopy heroImmediate">
           <div className="eyebrow">{storeContent.brand.eyebrow}</div>
           <h1>
             <span className="heroLead">{storeContent.brand.heroTitleLine1}</span>
@@ -31,9 +30,9 @@ export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers:
             <div><b>{products.length}+</b><small>{uiContent.hero.stats[1]}</small></div>
             <div><b>{uiContent.hero.customFeelValue}</b><small>{uiContent.hero.stats[2]}</small></div>
           </div>
-        </Reveal>
+        </div>
 
-        <Reveal className="heroVisual" delay={100}>
+        <div className="heroVisual heroImmediateVisual">
           <div className="heroVisualTop">
             <span>Made around their moment</span>
             <i aria-hidden="true">{storeContent.brand.giftIcon}</i>
@@ -50,7 +49,7 @@ export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers:
           <div className="heroVisualFooter">
             <span>Clear pricing</span><span>Packing video</span><span>Trackable order</span>
           </div>
-        </Reveal>
+        </div>
       </div>
     </header>
   )
