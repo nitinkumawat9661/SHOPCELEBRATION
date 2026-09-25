@@ -1,7 +1,6 @@
 import type { GiftProduct, Tier } from "../../lib/domain/catalog"
 import { storeContent, uiContent } from "../../lib/domain/content"
 import { formatMoney } from "../../lib/domain/money"
-import { BuilderTrigger } from "../builder/BuilderTrigger"
 import { ShapeWaves } from "../motion/ShapeWaves"
 
 export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct[] }) {
@@ -22,7 +21,7 @@ export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct
           </h1>
           <p>{storeContent.brand.heroBody}</p>
           <div className="actions heroActions">
-            <BuilderTrigger className="primary" step={1}>{uiContent.hero.primary}</BuilderTrigger>
+            <a className="primary heroPrimaryLink" href="#budgets">{uiContent.hero.primary}</a>
             <a className="secondary" href="#budgets">{uiContent.hero.secondaryPrefix} {formatMoney(minPrice)}</a>
           </div>
           <div className="heroFacts" aria-label="Hamper highlights">
