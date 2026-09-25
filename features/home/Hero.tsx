@@ -9,32 +9,46 @@ export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers:
   const prices = tiers.map((tier) => tier.price)
   const minPrice = prices.length ? Math.min(...prices) : 0
   const maxPrice = prices.length ? Math.max(...prices) : 0
+  const showcaseItems = storeContent.showcaseItems.slice(0, 3)
+
   return (
-    <header className="hero">
-      <ShapeWaves className="heroShapeWaves" color="#8b2529" cellSize={11} />
+    <header className="hero heroRefresh">
+      <ShapeWaves className="heroShapeWaves" color="#8b2529" cellSize={15} />
       <div className="wrap heroGrid">
         <Reveal className="heroCopy">
           <div className="eyebrow">{storeContent.brand.eyebrow}</div>
-          <h1>{storeContent.brand.heroTitleLine1}<br /><span className="heroTextAccent">{storeContent.brand.heroTitleLine2}</span></h1>
+          <h1>
+            <span className="heroLead">{storeContent.brand.heroTitleLine1}</span>
+            <span className="heroItalic">{storeContent.brand.heroTitleLine2}</span>
+          </h1>
           <p>{storeContent.brand.heroBody}</p>
-          <div className="actions">
+          <div className="actions heroActions">
             <button className="primary" onClick={onBuild}>{uiContent.hero.primary}</button>
             <a className="secondary" href="#budgets">{uiContent.hero.secondaryPrefix} {formatMoney(minPrice)}</a>
           </div>
-          <div className="stats">
-            <div className="stat"><b>{formatMoney(minPrice)}–{formatMoney(maxPrice)}</b><small>{uiContent.hero.stats[0]}</small></div>
-            <div className="stat"><b>{products.length}+</b><small>{uiContent.hero.stats[1]}</small></div>
-            <div className="stat"><b>{uiContent.hero.customFeelValue}</b><small>{uiContent.hero.stats[2]}</small></div>
+          <div className="heroFacts" aria-label="Hamper highlights">
+            <div><b>{formatMoney(minPrice)}–{formatMoney(maxPrice)}</b><small>{uiContent.hero.stats[0]}</small></div>
+            <div><b>{products.length}+</b><small>{uiContent.hero.stats[1]}</small></div>
+            <div><b>{uiContent.hero.customFeelValue}</b><small>{uiContent.hero.stats[2]}</small></div>
           </div>
         </Reveal>
-        <Reveal className="showcase" delay={120}>
-          <div className="box">
-            <div className="brandRow">
-              <div><div className="brandMark">{storeContent.brand.name}</div><div className="tag">{storeContent.brand.tagline}</div></div>
-              <div className="giftIcon">{storeContent.brand.giftIcon}</div>
-            </div>
-            <div className="showTitle"><b>{storeContent.brand.heroTitleLine1}<br />{storeContent.brand.heroTitleLine2}</b><small>{uiContent.hero.showcaseSubline}</small></div>
-            <div className="miniGrid">{storeContent.showcaseItems.map((item) => <div className="mini" key={item.label}><i>{item.icon}</i><span>{item.label}</span></div>)}</div>
+
+        <Reveal className="heroVisual" delay={100}>
+          <div className="heroVisualTop">
+            <span>Made around their moment</span>
+            <i aria-hidden="true">{storeContent.brand.giftIcon}</i>
+          </div>
+          <p className="heroVisualLine">Pick a budget. Add what feels right. We’ll pack it beautifully.</p>
+          <div className="heroVisualItems">
+            {showcaseItems.map((item) => (
+              <div className="heroVisualItem" key={item.label}>
+                <i aria-hidden="true">{item.icon}</i>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="heroVisualFooter">
+            <span>Clear pricing</span><span>Packing video</span><span>Trackable order</span>
           </div>
         </Reveal>
       </div>
