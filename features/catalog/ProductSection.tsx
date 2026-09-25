@@ -1,7 +1,6 @@
 "use client"
 
-import type { CategoryOption, GiftProduct } from "../../lib/domain/catalog"
-import { formatMoney } from "../../lib/domain/catalog"
+import { formatMoney, type CategoryOption, type GiftProduct } from "../../lib/domain/catalog"
 import { uiContent } from "../../lib/domain/content"
 
 export function ProductSection({ products, categories, allCategoryId, category, onCategory }: {
