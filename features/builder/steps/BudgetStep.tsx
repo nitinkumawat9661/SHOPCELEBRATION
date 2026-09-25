@@ -15,10 +15,10 @@ export function BudgetStep({ tierId, occasion, tiers, occasions, onTier, onOccas
     <div className="stepPane active">
       <div className="builderTitle">
         <div><h3>{copy.title}</h3><p>{copy.body}</p></div>
-        <select className="selectOcc" value={occasion} onChange={(event) => onOccasion(event.target.value)}>{occasions.map((item) => <option key={item}>{item}</option>)}</select>
+        <select className="selectOcc" aria-label="Occasion" value={occasion} onChange={(event) => onOccasion(event.target.value)}>{occasions.map((item) => <option key={item}>{item}</option>)}</select>
       </div>
-      <div className="tierSmall">{tiers.map((item) => <button key={item.id} className={tierId === item.id ? "active" : ""} onClick={() => onTier(item.id)}><b>{formatMoney(item.price)}</b><span>{item.name} • {item.size}</span></button>)}</div>
-      <div className="nextRow"><button className="primary" onClick={onNext}>{copy.next}</button></div>
+      <div className="tierSmall">{tiers.map((item) => <button type="button" key={item.id} className={tierId === item.id ? "active" : ""} onClick={() => onTier(item.id)}><b>{formatMoney(item.price)}</b><span>{item.name} • {item.size}</span></button>)}</div>
+      <div className="nextRow"><button type="button" className="primary" onClick={onNext}>{copy.next}</button></div>
     </div>
   )
 }
