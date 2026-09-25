@@ -65,9 +65,11 @@
 .product:hover .catalogProductImage{transform:scale(1.06) rotate(-1deg);box-shadow:0 10px 24px rgba(77,28,22,.09)}
 .productUnlock{border-radius:999px;background:#fff2e7;padding:5px 8px}
 
-/* Generic premium cards. */
-.promiseGrid article,.proofCard,.reviewIntegrityCard,.customRequestCard{border-color:var(--modern-border);background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,249,244,.94));box-shadow:0 12px 34px rgba(77,28,22,.055);transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease}
-.promiseGrid article:hover,.proofCard:hover,.reviewIntegrityCard:hover,.customRequestCard:hover{transform:translateY(-4px);box-shadow:var(--modern-shadow);border-color:rgba(116,25,29,.18)}
+/* Premium cards: preserve each section's native palette. */
+.promiseGrid article,.reviewIntegrityCard,.customRequestCard{border-color:var(--modern-border);box-shadow:0 12px 34px rgba(77,28,22,.055);transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease}
+.promiseGrid article:hover,.reviewIntegrityCard:hover,.customRequestCard:hover{transform:translateY(-4px);box-shadow:var(--modern-shadow);border-color:rgba(116,25,29,.18)}
+.proofCard{transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease}
+.proofCard:hover{transform:translateY(-4px);box-shadow:0 24px 58px rgba(20,3,5,.24);border-color:rgba(255,238,221,.28)}
 
 /* Native CSS scroll reveal where supported; browsers without it simply show the cards. */
 @supports (animation-timeline:view()){
@@ -76,7 +78,7 @@
     animation-timeline:view();
     animation-range:entry 8% cover 30%;
   }
-  @keyframes storefrontReveal{from{opacity:.45;transform:translateY(18px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes storefrontReveal{from{opacity:.45;translate:0 18px;scale:.985}to{opacity:1;translate:0 0;scale:1}}
 }
 
 @media(max-width:759px){
@@ -87,11 +89,12 @@
 }
 
 @media(pointer:coarse){
+  .heroVisualItem,.heroVisualFooter span,.budgetDecisionHint{backdrop-filter:none}
   .heroVisual:hover,.heroVisualItem:hover,.tier:hover,.product:hover,.promiseGrid article:hover,.proofCard:hover,.reviewIntegrityCard:hover,.customRequestCard:hover,.chip:hover,.occasionPill:hover{transform:none}
 }
 
 @media(prefers-reduced-motion:reduce){
   .heroAmbientShapes span,.heroRefresh .heroPrimaryLink::after{animation:none!important}
   .heroRefresh .primary,.heroRefresh .secondary,.heroVisual,.heroVisualItem,.tier,.chip,.occasionPill,.product,.catalogProductImage,.promiseGrid article,.proofCard,.reviewIntegrityCard,.customRequestCard{transition:none!important}
-  .tiers .tier,.products .productReveal,.promiseGrid article,.proofCard,.reviewIntegrityCard{animation:none!important;opacity:1!important;transform:none!important}
+  .tiers .tier,.products .productReveal,.promiseGrid article,.proofCard,.reviewIntegrityCard{animation:none!important;opacity:1!important;translate:none!important;scale:none!important}
 }
