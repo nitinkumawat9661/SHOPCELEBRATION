@@ -1,7 +1,8 @@
 "use client"
 
-import { formatMoney, type Tier } from "../../lib/domain/catalog"
+import type { Tier } from "../../lib/domain/catalog"
 import { uiContent } from "../../lib/domain/content"
+import { formatMoney } from "../../lib/domain/money"
 import { TiltTierButton } from "../motion/InteractiveSurface"
 
 const UNSUPPORTED_SOCIAL_PROOF = new Set(["POPULAR", "BESTSELLER", "MOST POPULAR", "CUSTOMER FAVORITE", "CUSTOMER FAVOURITE"])

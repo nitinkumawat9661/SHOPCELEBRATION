@@ -2,23 +2,20 @@ import { Storefront } from "../features/home/Storefront"
 import { defaultCatalog } from "../lib/domain/catalog"
 import { getCatalogConfig } from "../lib/server/catalog"
 import { getTierPopularity } from "../lib/server/orders"
+import { defaultStoreSettings, getStoreSettings } from "../lib/server/store-settings"
 
 export const dynamic = "force-dynamic"
 
 export default async function HomePage() {
-  let catalog = defaultCatalog
-  let socialProof = null
+  const [catalogResult, proofResult, settingsResult] = await Promise.all([
+    getCatalogConfig().catch(() => null),
+    getTierPopularity().catch(() => null),
+    getStoreSettings().catch(() => null)
+  ])
 
-  try {
-    const [catalogResult, proofResult] = await Promise.all([
-      getCatalogConfig(),
-      getTierPopularity().catch(() => null)
-    ])
-    catalog = catalogResult.catalog
-    socialProof = proofResult
-  } catch (error) {
-    console.error("storefront-initial-catalog", error)
-  }
+  const catalog = catalogResult?.catalog || defaultCatalog
+  const socialProof = proofResult || null
+  const settings = settingsResult?.settings || defaultStoreSettings
 
-  return <Storefront initialCatalog={catalog} initialSocialProof={socialProof} />
+  return <Storefront initialCatalog={catalog} initialSocialProof={socialProof} initialSettings={settings} />
 }

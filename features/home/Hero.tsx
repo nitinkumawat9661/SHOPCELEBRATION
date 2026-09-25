@@ -1,10 +1,10 @@
-"use client"
-
-import { formatMoney, type GiftProduct, type Tier } from "../../lib/domain/catalog"
+import type { GiftProduct, Tier } from "../../lib/domain/catalog"
 import { storeContent, uiContent } from "../../lib/domain/content"
+import { formatMoney } from "../../lib/domain/money"
+import { BuilderTrigger } from "../builder/BuilderTrigger"
 import { ShapeWaves } from "../motion/ShapeWaves"
 
-export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers: Tier[]; products: GiftProduct[] }) {
+export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct[] }) {
   const prices = tiers.map((tier) => tier.price)
   const minPrice = prices.length ? Math.min(...prices) : 0
   const maxPrice = prices.length ? Math.max(...prices) : 0
@@ -22,7 +22,7 @@ export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers:
           </h1>
           <p>{storeContent.brand.heroBody}</p>
           <div className="actions heroActions">
-            <button className="primary" onClick={onBuild}>{uiContent.hero.primary}</button>
+            <BuilderTrigger className="primary" step={1}>{uiContent.hero.primary}</BuilderTrigger>
             <a className="secondary" href="#budgets">{uiContent.hero.secondaryPrefix} {formatMoney(minPrice)}</a>
           </div>
           <div className="heroFacts" aria-label="Hamper highlights">
@@ -37,7 +37,7 @@ export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers:
             <span>Made around their moment</span>
             <i aria-hidden="true">{storeContent.brand.giftIcon}</i>
           </div>
-          <p className="heroVisualLine">Pick a budget. Add what feels right. We’ll pack it beautifully.</p>
+          <p className="heroVisualLine">A little box of reasons to smile.</p>
           <div className="heroVisualItems">
             {showcaseItems.map((item) => (
               <div className="heroVisualItem" key={item.label}>

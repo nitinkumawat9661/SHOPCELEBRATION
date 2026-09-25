@@ -5,7 +5,7 @@ import { categoriesForCatalog, visibleProducts, visibleTiers, type CatalogConfig
 import { BudgetSection } from "../catalog/BudgetSection"
 import { OccasionRail } from "../catalog/OccasionRail"
 import { ProductSection } from "../catalog/ProductSection"
-import { Hero } from "../home/Hero"
+import { AdminPreviewHero } from "./AdminPreviewHero"
 
 export function AdminCatalogPreview({ catalog, liveVersion, isDraft }: { catalog: CatalogConfig; liveVersion: number; isDraft: boolean }) {
   const tiers = useMemo(() => visibleTiers(catalog), [catalog])
@@ -21,7 +21,7 @@ export function AdminCatalogPreview({ catalog, liveVersion, isDraft }: { catalog
         <div><b>{isDraft ? "DRAFT PREVIEW" : "LIVE PREVIEW"}</b><span>Public website abhi v{liveVersion} use kar rahi hai. Preview se koi order place nahi hoga.</span></div>
         <a className="secondary" href="/admin">Back to admin</a>
       </div>
-      <Hero onBuild={() => document.getElementById("budgets")?.scrollIntoView({ behavior: "smooth" })} tiers={tiers} products={products} />
+      <AdminPreviewHero onBuild={() => document.getElementById("budgets")?.scrollIntoView({ behavior: "smooth" })} tiers={tiers} products={products} />
       <OccasionRail value={occasion} occasions={catalog.occasions} onChange={setOccasion} />
       <BudgetSection tiers={tiers} selectedTierId={tierId} recommendedTierId={catalog.settings.defaultTierId} socialProof={null} onSelect={setTierId} />
       <ProductSection products={products} categories={categories} allCategoryId={catalog.settings.allCategory.id} category={category} onCategory={setCategory} />
