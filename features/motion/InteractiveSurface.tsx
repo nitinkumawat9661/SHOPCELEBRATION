@@ -11,12 +11,19 @@ export function TiltTierButton({ children, className = "", rotationFactor = 11, 
   const ref = useRef<HTMLButtonElement>(null)
 
   function move(event: PointerEvent<HTMLButtonElement>) {
-    if (event.pointerType === "touch") return
     const node = ref.current
     if (!node) return
     const rect = node.getBoundingClientRect()
     const px = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
     const py = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height))
+
+    if (event.pointerType === "touch") {
+      node.dataset.touchActive = "true"
+      node.style.setProperty("--shine-x", `${(px * 100).toFixed(1)}%`)
+      node.style.setProperty("--shine-y", `${(py * 100).toFixed(1)}%`)
+      return
+    }
+
     const rotateX = -((py - 0.5) * 2 * rotationFactor)
     const rotateY = (px - 0.5) * 2 * rotationFactor
     node.style.setProperty("--tilt-x", `${rotateX.toFixed(2)}deg`)
@@ -28,6 +35,7 @@ export function TiltTierButton({ children, className = "", rotationFactor = 11, 
   function reset() {
     const node = ref.current
     if (!node) return
+    delete node.dataset.touchActive
     node.style.setProperty("--tilt-x", "0deg")
     node.style.setProperty("--tilt-y", "0deg")
   }
@@ -37,7 +45,9 @@ export function TiltTierButton({ children, className = "", rotationFactor = 11, 
       {...props}
       ref={ref}
       className={`tiltSurface ${className}`.trim()}
+      onPointerDown={(event) => { move(event); props.onPointerDown?.(event) }}
       onPointerMove={(event) => { move(event); props.onPointerMove?.(event) }}
+      onPointerUp={(event) => { reset(); props.onPointerUp?.(event) }}
       onPointerLeave={(event) => { reset(); props.onPointerLeave?.(event) }}
       onPointerCancel={(event) => { reset(); props.onPointerCancel?.(event) }}
     >
@@ -58,16 +68,31 @@ export function SpotlightCard({ children, className = "", ariaLabel }: Spotlight
 
   function move(event: PointerEvent<HTMLElement>) {
     const node = ref.current
-    if (!node || event.pointerType === "touch") return
+    if (!node) return
     const rect = node.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
     node.style.setProperty("--spot-x", `${x.toFixed(1)}%`)
     node.style.setProperty("--spot-y", `${y.toFixed(1)}%`)
+    if (event.pointerType === "touch") node.dataset.touchActive = "true"
+  }
+
+  function resetTouch() {
+    const node = ref.current
+    if (!node) return
+    delete node.dataset.touchActive
   }
 
   return (
-    <article ref={ref} className={`premiumSpotlight ${className}`.trim()} aria-label={ariaLabel} onPointerMove={move}>
+    <article
+      ref={ref}
+      className={`premiumSpotlight ${className}`.trim()}
+      aria-label={ariaLabel}
+      onPointerDown={move}
+      onPointerMove={move}
+      onPointerUp={resetTouch}
+      onPointerCancel={resetTouch}
+    >
       <span className="premiumSpotlightGlow" aria-hidden="true" />
       <div className="premiumSpotlightContent">{children}</div>
     </article>
