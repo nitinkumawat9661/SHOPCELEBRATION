@@ -37,35 +37,24 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 12 }:
     let lastFrame = 0
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     const coarsePointer = window.matchMedia("(pointer: coarse)").matches
-    const dpr = Math.min(window.devicePixelRatio || 1, coarsePointer ? 1.15 : 1.5)
-    const frameInterval = 1000 / (coarsePointer ? 20 : 32)
-
-    function resize() {
-      const rect = canvas.getBoundingClientRect()
-      width = Math.max(1, Math.round(rect.width))
-      height = Math.max(1, Math.round(rect.height))
-      canvas.width = Math.round(width * dpr)
-      canvas.height = Math.round(height * dpr)
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      draw(performance.now())
-    }
+    const dpr = Math.min(window.devicePixelRatio || 1, coarsePointer ? 1 : 1.5)
+    const frameInterval = 1000 / 32
 
     function draw(now: number) {
       ctx.clearRect(0, 0, width, height)
-      const t = reduced ? 0 : now * 0.001
-      const step = Math.max(coarsePointer ? 14 : 12, cellSize)
+      const t = reduced || coarsePointer ? 0 : now * 0.001
+      const step = Math.max(coarsePointer ? 15 : 12, cellSize)
       const cols = Math.ceil(width / step) + 3
       const rows = Math.ceil(height / step) + 3
-      const driftX = reduced ? 0 : Math.sin(t * 0.38) * step * 1.45
+      const driftX = reduced || coarsePointer ? 0 : Math.sin(t * 0.38) * step * 1.45
 
       for (let row = -2; row < rows; row++) {
         const y = row * step
         for (let col = -2; col < cols; col++) {
           const x = col * step + driftX
-          const mobileBoost = coarsePointer ? 1.12 : 1
-          const waveA = height * 0.28 + Math.sin(x * 0.021 + t * 1.02) * 28 * mobileBoost + Math.sin(x * 0.007 - t * 0.66) * 18
-          const waveB = height * 0.54 + Math.sin(x * 0.017 - t * 0.82 + 1.7) * 31 * mobileBoost
-          const waveC = height * 0.79 + Math.sin(x * 0.024 + t * 0.72 + 3.2) * 23 * mobileBoost
+          const waveA = height * 0.28 + Math.sin(x * 0.021 + t * 1.02) * 28 + Math.sin(x * 0.007 - t * 0.66) * 18
+          const waveB = height * 0.54 + Math.sin(x * 0.017 - t * 0.82 + 1.7) * 31
+          const waveC = height * 0.79 + Math.sin(x * 0.024 + t * 0.72 + 3.2) * 23
           const distanceA = Math.abs(y - waveA)
           const distanceB = Math.abs(y - waveB)
           const distanceC = Math.abs(y - waveC)
@@ -75,7 +64,7 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 12 }:
           const band = nearest === distanceA ? 0 : nearest === distanceB ? 1 : 2
           const intensity = Math.max(0, 1 - nearest / (step * 2.25))
           const size = step * (0.3 + intensity * 0.46)
-          ctx.globalAlpha = (coarsePointer ? 0.085 : 0.065) + intensity * (coarsePointer ? 0.26 : 0.21)
+          ctx.globalAlpha = (coarsePointer ? 0.105 : 0.065) + intensity * (coarsePointer ? 0.24 : 0.21)
           ctx.fillStyle = color
 
           if (band === 0) {
@@ -96,6 +85,16 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 12 }:
       ctx.globalAlpha = 1
     }
 
+    function resize() {
+      const rect = canvas.getBoundingClientRect()
+      width = Math.max(1, Math.round(rect.width))
+      height = Math.max(1, Math.round(rect.height))
+      canvas.width = Math.round(width * dpr)
+      canvas.height = Math.round(height * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      draw(performance.now())
+    }
+
     function loop(now: number) {
       if (!running) return
       if (visible && !document.hidden && now - lastFrame >= frameInterval) {
@@ -109,12 +108,12 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 12 }:
     resizeObserver.observe(canvas)
     const intersectionObserver = new IntersectionObserver(([entry]) => {
       visible = Boolean(entry?.isIntersecting)
-      if (visible) draw(performance.now())
+      if (visible && !coarsePointer) draw(performance.now())
     }, { rootMargin: "100px" })
     intersectionObserver.observe(canvas)
 
     resize()
-    if (!reduced) {
+    if (!reduced && !coarsePointer) {
       running = true
       raf = requestAnimationFrame(loop)
     }
