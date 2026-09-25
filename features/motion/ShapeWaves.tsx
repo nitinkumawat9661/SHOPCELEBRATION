@@ -32,7 +32,6 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 12 }:
     let width = 0
     let height = 0
     let raf = 0
-    let startTimer = 0
     let running = false
     let visible = true
     let lastFrame = 0
@@ -110,23 +109,18 @@ export function ShapeWaves({ className = "", color = "#8b2529", cellSize = 12 }:
     resizeObserver.observe(canvas)
     const intersectionObserver = new IntersectionObserver(([entry]) => {
       visible = Boolean(entry?.isIntersecting)
-      if (visible && running) draw(performance.now())
+      if (visible) draw(performance.now())
     }, { rootMargin: "100px" })
     intersectionObserver.observe(canvas)
 
     resize()
     if (!reduced) {
-      const start = () => {
-        running = true
-        raf = requestAnimationFrame(loop)
-      }
-      if (coarsePointer) startTimer = window.setTimeout(start, 900)
-      else start()
+      running = true
+      raf = requestAnimationFrame(loop)
     }
 
     return () => {
       running = false
-      window.clearTimeout(startTimer)
       cancelAnimationFrame(raf)
       resizeObserver.disconnect()
       intersectionObserver.disconnect()
