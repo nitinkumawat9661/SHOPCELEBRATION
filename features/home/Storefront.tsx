@@ -6,6 +6,7 @@ import { OccasionRail } from "../catalog/OccasionRail"
 import { ProductSection } from "../catalog/ProductSection"
 import { HamperBuilder } from "../builder/HamperBuilder"
 import { useHamperBuilder } from "../builder/useHamperBuilder"
+import { AmbientMotion } from "../motion/AmbientMotion"
 import { CustomRequestSection } from "./CustomRequestSection"
 import { FinalCta } from "./FinalCta"
 import { Hero } from "./Hero"
@@ -44,7 +45,8 @@ export function Storefront() {
   }
 
   return (
-    <main>
+    <main className="storefrontMotionRoot">
+      <AmbientMotion />
       <TrustStrip />
       <SiteHeader onCreate={() => goBuilder(1)} />
       <Hero onBuild={() => goBuilder(1)} tiers={state.tiers} products={state.products} />
