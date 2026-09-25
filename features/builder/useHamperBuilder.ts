@@ -26,6 +26,11 @@ export type TierSocialProof = {
   sharePercent: number
 }
 
+type InitialBuilderData = {
+  catalog?: CatalogConfig
+  socialProof?: TierSocialProof | null
+}
+
 function defaultTierFor(catalog: CatalogConfig) {
   const tier = tierById(catalog, catalog.settings.defaultTierId) || visibleTiers(catalog)[0]
   if (!tier) throw new Error("Configured catalog has no active tier")
@@ -90,21 +95,23 @@ function readBuilderDraft(catalog: CatalogConfig) {
   }
 }
 
-export function useHamperBuilder() {
-  const initialTier = defaultTierFor(defaultCatalog)
-  const [catalog, setCatalog] = useState<CatalogConfig>(defaultCatalog)
-  const [catalogLoading, setCatalogLoading] = useState(true)
+export function useHamperBuilder(initial: InitialBuilderData = {}) {
+  const initialCatalog = initial.catalog || defaultCatalog
+  const initialTier = defaultTierFor(initialCatalog)
+  const hasServerCatalog = Boolean(initial.catalog)
+  const [catalog, setCatalog] = useState<CatalogConfig>(initialCatalog)
+  const [catalogLoading, setCatalogLoading] = useState(!hasServerCatalog)
   const [catalogError, setCatalogError] = useState("")
-  const [socialProof, setSocialProof] = useState<TierSocialProof | null>(null)
+  const [socialProof, setSocialProof] = useState<TierSocialProof | null>(initial.socialProof || null)
   const [tierId, setTierId] = useState(initialTier.id)
   const [selected, setSelected] = useState<string[]>([])
   const [step, setStep] = useState(1)
-  const [category, setCategory] = useState(defaultCatalog.settings.allCategory.id)
+  const [category, setCategory] = useState(initialCatalog.settings.allCategory.id)
   const [search, setSearch] = useState("")
   const [accepted, setAccepted] = useState(false)
   const [detailsError, setDetailsError] = useState("")
   const [detailsFieldErrors, setDetailsFieldErrors] = useState<CheckoutFieldErrors>({})
-  const [checkout, setCheckout] = useState<CheckoutData>(() => checkoutDefaults(defaultCatalog))
+  const [checkout, setCheckout] = useState<CheckoutData>(() => checkoutDefaults(initialCatalog))
   const [draftReady, setDraftReady] = useState(false)
   const [draftRestored, setDraftRestored] = useState(false)
 
@@ -137,7 +144,9 @@ export function useHamperBuilder() {
     }
   }, [])
 
-  useEffect(() => { loadCatalog() }, [loadCatalog])
+  useEffect(() => {
+    if (!hasServerCatalog) loadCatalog()
+  }, [hasServerCatalog, loadCatalog])
 
   useEffect(() => {
     if (catalogLoading || catalogError || draftReady) return
