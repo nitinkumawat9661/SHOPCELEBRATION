@@ -1,0 +1,22 @@
+/* Section-level ambient motion kept above section paint and below real content. */
+:is(#budgets,.productsSec,#custom-request,#builder){position:relative;isolation:isolate;overflow:hidden}
+:is(#budgets,.productsSec,#custom-request,#builder)::before{content:"";position:absolute;inset:-20%;z-index:0;pointer-events:none;background:radial-gradient(circle at 18% 32%,rgba(217,132,82,.15) 0%,transparent 28%),radial-gradient(circle at 82% 66%,rgba(116,25,29,.09) 0%,transparent 31%),linear-gradient(112deg,transparent 28%,rgba(210,142,98,.045) 48%,transparent 68%);transform:translate3d(-4%,0,0) rotate(-2deg) scale(1.04);animation:sectionAmbientOrbit 14s ease-in-out infinite alternate;will-change:transform;opacity:.72}
+:is(#budgets,.productsSec,#custom-request,#builder)>.wrap{position:relative;z-index:1}
+.productsSec::before{opacity:.82;background:radial-gradient(circle at 16% 24%,rgba(255,249,239,.72) 0%,transparent 26%),radial-gradient(circle at 82% 70%,rgba(171,67,52,.10) 0%,transparent 33%),linear-gradient(118deg,transparent 25%,rgba(255,255,255,.16) 48%,transparent 70%)}
+#builder::before{animation-duration:17s;opacity:.58}
+#custom-request::before{animation-duration:15.5s;animation-direction:alternate-reverse}
+@keyframes sectionAmbientOrbit{0%{transform:translate3d(-5%,-2%,0) rotate(-3deg) scale(1.02)}52%{transform:translate3d(4%,4%,0) rotate(1deg) scale(1.08)}100%{transform:translate3d(9%,-3%,0) rotate(4deg) scale(1.03)}}
+
+@media(pointer:coarse){
+  :is(#budgets,.productsSec,#custom-request,#builder)::before{opacity:.86;animation-duration:12s}
+  .productsSec::before{opacity:.94}
+}
+
+@media(min-width:900px){
+  :is(#budgets,.productsSec,#custom-request,#builder)::before{opacity:.44;animation-duration:18s}
+  .productsSec::before{opacity:.56}
+}
+
+@media(prefers-reduced-motion:reduce){
+  :is(#budgets,.productsSec,#custom-request,#builder)::before{animation:none!important;transform:none!important;opacity:.25}
+}
