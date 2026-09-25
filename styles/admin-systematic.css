@@ -1,0 +1,47 @@
+.adminGroupedNav{display:grid!important;gap:18px!important}
+.adminNavGroup{display:grid;gap:7px}
+.adminNavGroupLabel{padding:0 9px;font-size:7.5px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#ac8b80}
+.adminNavGroupItems{display:grid;gap:4px}
+.adminSidebar .adminNavButton{border:0;background:transparent;border-radius:12px;min-height:50px;text-align:left;padding:8px 10px;color:#75574f;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}
+.adminSidebar .adminNavButton>span{display:grid;gap:2px;min-width:0}
+.adminSidebar .adminNavButton b{font-size:10px;line-height:1.2;color:inherit}
+.adminSidebar .adminNavButton small{font-size:7.5px;line-height:1.25;color:#a4867c;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adminSidebar .adminNavButton em{min-width:22px;height:22px;border-radius:999px;display:grid;place-items:center;background:#f6e9df;color:var(--m);font-size:8px;font-style:normal;font-weight:900}
+.adminSidebar .adminNavButton:hover{background:#fff8ef}
+.adminSidebar .adminNavButton.active{background:var(--m);color:#fff}
+.adminSidebar .adminNavButton.active small{color:#e7cbc0}
+.adminSidebar .adminNavButton.active em{background:#fff;color:var(--m)}
+.adminSidebarBottom{display:grid;gap:8px}
+.adminStoreLink{min-height:40px;border:1px solid var(--line);border-radius:11px;padding:9px 10px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--m);font-size:9px;font-weight:900;background:#fffaf5}
+
+.adminMobileSectionPicker{position:sticky;top:62px;z-index:31;margin:-14px -14px 16px;padding:10px 14px;background:rgba(255,250,245,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:end}
+.adminMobileSectionPicker label{grid-column:1/-1;font-size:7.5px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:#9c766b}
+.adminMobileSectionPicker select{width:100%;min-height:42px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--m);padding:8px 34px 8px 10px;font:800 10px/1.2 inherit}
+.adminMobileSectionPicker a{min-height:42px;padding:8px 11px;border:1px solid var(--line);border-radius:12px;background:#fff;text-decoration:none;color:var(--m);display:grid;place-items:center;font-size:9px;font-weight:900;white-space:nowrap}
+
+.adminBreadcrumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;font-size:8px;color:#a4867c;font-weight:800}
+.adminBreadcrumb i{font-style:normal;color:#d1b7ad}.adminBreadcrumb strong{color:var(--m)}
+.adminViewStoreButton{text-decoration:none;display:none}
+
+.adminPriorityBlock{border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,#fff 0%,#fffaf4 100%);padding:14px;box-shadow:0 12px 32px rgba(77,28,22,.035)}
+.adminPriorityHead{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.adminPriorityHead h2{font:700 24px/1.08 'Playfair Display',Georgia,serif;color:var(--m);margin:4px 0}
+.adminPriorityHead p{font-size:9px;color:var(--muted);margin:0}
+.adminQuickActions button{display:grid!important;gap:3px!important}
+.adminQuickActions button b{font-size:10px;color:var(--m)}
+.adminQuickActions button span{font-size:8.5px;color:var(--muted);font-weight:600}
+
+@media(min-width:640px){
+  .adminMobileSectionPicker{grid-template-columns:minmax(280px,420px) auto;justify-content:space-between}
+  .adminPriorityHead{flex-direction:row;align-items:flex-start;justify-content:space-between}
+}
+
+@media(min-width:980px){
+  .adminV2Shell{grid-template-columns:252px minmax(0,1fr);gap:22px}
+  .adminSidebar{top:78px;padding:14px}
+  .adminMobileSectionPicker{display:none}
+  .adminViewStoreButton{display:inline-flex}
+  .adminSidebarBrand{padding-bottom:16px;margin-bottom:14px}
+  .adminSidebarBrand b{font-size:7.5px}
+  .adminPriorityBlock{padding:18px}
+}
