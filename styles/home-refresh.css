@@ -4,7 +4,7 @@
 .trustStrip{overflow:hidden;contain:paint}
 .trustStripViewport{width:100%;overflow:hidden;white-space:nowrap}
 .trustStripTrack{display:flex;width:max-content;min-height:36px;align-items:center;transform:translate3d(0,0,0);animation:trustStripMarquee 22s linear infinite;will-change:transform}
-.trustStripGroup{display:flex;align-items:center;gap:18px;flex:0 0 auto;padding:7px 18px 7px 0;font-size:9px;line-height:1;letter-spacing:.01em}
+.trustStripGroup{display:flex;align-items:center;gap:18px;flex:0 0 auto;padding:7px 18px 7px 0;font-size:10px;line-height:1;letter-spacing:.01em}
 .trustStripGroup>*{display:inline-flex;align-items:center;gap:18px;flex:0 0 auto}
 .trustStripGroup>*::after{content:"•";color:rgba(255,224,182,.48);font-size:8px}
 .trustStripGroup b{color:#ffe0b6;font-weight:800}
@@ -17,7 +17,7 @@
 .heroRefresh .heroShapeWaves{opacity:.82}
 .heroRefresh .heroGrid{gap:24px;padding-block:34px 34px}
 .heroRefresh .heroCopy{text-align:left}
-.heroRefresh .eyebrow{background:rgba(255,250,245,.72);border-color:rgba(166,91,60,.28);font-size:8px;padding:7px 10px}
+.heroRefresh .eyebrow{background:rgba(255,250,245,.72);border-color:rgba(166,91,60,.28);font-size:9px;padding:7px 10px}
 .heroRefresh h1{margin:16px 0 14px;font-family:var(--font-display);font-size:clamp(42px,12vw,58px);line-height:.9;letter-spacing:-.055em;color:#5f1418}
 .heroLead,.heroItalic{display:block}
 .heroLead{font-style:normal;font-weight:700}
@@ -29,20 +29,20 @@
 .heroFacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:21px;border-top:1px solid rgba(116,25,29,.13);border-bottom:1px solid rgba(116,25,29,.13)}
 .heroFacts>div{padding:12px 8px 11px 0;min-width:0}
 .heroFacts>div+div{padding-left:10px;border-left:1px solid rgba(116,25,29,.11)}
-.heroFacts b{display:block;color:#66171b;font-size:10.5px;line-height:1.2;white-space:nowrap}
-.heroFacts small{display:block;color:#8a6b61;font-size:7.8px;line-height:1.25;margin-top:4px}
+.heroFacts b{display:block;color:#66171b;font-size:11px;line-height:1.2;white-space:nowrap}
+.heroFacts small{display:block;color:#71574f;font-size:9px;line-height:1.25;margin-top:4px}
 
 .heroVisual{position:relative;overflow:hidden;border-radius:24px;padding:20px;background:linear-gradient(145deg,#6a171c 0%,#8d2a2d 62%,#a24735 100%);color:#fff;box-shadow:0 22px 52px rgba(80,20,22,.18);border:1px solid rgba(255,255,255,.24)}
 .heroVisual::before{content:"";position:absolute;width:210px;height:210px;right:-95px;top:-118px;border-radius:50%;background:radial-gradient(circle,rgba(255,224,182,.26),rgba(255,255,255,0) 68%);pointer-events:none}
-.heroVisualTop{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;text-transform:uppercase;letter-spacing:.12em;font-size:8px;font-weight:800;color:#ffd9b4}
+.heroVisualTop{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:800;color:#ffd9b4}
 .heroVisualTop i{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;background:rgba(255,255,255,.12);font-style:normal;font-size:20px}
 .heroVisualLine{position:relative;z-index:1!important;margin:22px 0 18px!important;max-width:300px!important;color:#fff8ef!important;font-family:var(--font-display);font-style:italic;font-size:24px!important;line-height:1.08!important;letter-spacing:-.02em}
 .heroVisualItems{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .heroVisualItem{min-width:0;border:1px solid rgba(255,244,229,.15);border-radius:15px;padding:11px 7px;background:rgba(255,255,255,.075);text-align:center}
 .heroVisualItem i{display:block;font-style:normal;font-size:20px;line-height:1}
-.heroVisualItem span{display:block;margin-top:6px;color:#f7ddd0;font-size:7.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heroVisualItem span{display:block;margin-top:6px;color:#f7ddd0;font-size:9px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .heroVisualFooter{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
-.heroVisualFooter span{border:1px solid rgba(255,238,221,.18);border-radius:999px;padding:6px 8px;background:rgba(255,255,255,.06);font-size:7.6px;font-weight:750;color:#ffe3c8}
+.heroVisualFooter span{border:1px solid rgba(255,238,221,.18);border-radius:999px;padding:6px 8px;background:rgba(255,255,255,.06);font-size:9px;font-weight:750;color:#ffe3c8}
 
 /* Mobile performance: keep motion visible, reduce paint/compositing cost. */
 @media(pointer:coarse){
@@ -59,8 +59,14 @@
 /* Skip expensive below-fold layout/paint until it is close to the viewport. */
 #products,.proofReviewsSection,#builder{content-visibility:auto;contain-intrinsic-size:1px 720px}
 
+/* Readable storefront text and sufficient contrast on small screens. */
+.tag{color:#8f402c;font-size:8px}
+.footer .tiny{color:#6b5149}
+.product p,.proofCard p,.promiseGrid p,.reviewIntegrityCard p{font-size:12px;line-height:1.5}
+.builderInlineNotice,.catalogLoadNotice,.paymentReturnHint{font-size:12px;line-height:1.45}
+
 @media(min-width:720px){
-  .trustStripGroup{gap:28px;padding-right:28px;font-size:9.5px}
+  .trustStripGroup{gap:28px;padding-right:28px;font-size:10px}
   .trustStripGroup>*{gap:28px}
   .heroRefresh .heroGrid{grid-template-columns:minmax(0,1.05fr) minmax(330px,.75fr);align-items:center;gap:48px;padding-block:58px 60px}
   .heroRefresh h1{font-size:clamp(58px,6vw,82px)}
