@@ -3,7 +3,6 @@ import { routes } from "../../config/routes"
 import { storeContent, uiContent } from "../../lib/domain/content"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 import type { StoreSettings } from "../../lib/server/store-settings"
-import { BuilderTrigger } from "../builder/BuilderTrigger"
 
 export function StorefrontHeader({ settings }: { settings: StoreSettings }) {
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
@@ -26,7 +25,7 @@ export function StorefrontHeader({ settings }: { settings: StoreSettings }) {
             <Link className="navAccountLink" href={routes.account} prefetch={false} aria-label="My Celebration dashboard">
               <span aria-hidden="true">♡</span><b>My Celebration</b>
             </Link>
-            <BuilderTrigger className="primary navCta" step={1}>{uiContent.nav.create}</BuilderTrigger>
+            <a className="primary navCta navCtaLink" href={`${routes.home}#budgets`}>{uiContent.nav.create}</a>
           </div>
         </div>
         <div className="assistBar">
