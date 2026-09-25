@@ -3,21 +3,15 @@
 import { useEffect, useState } from "react"
 import { BudgetSection } from "../catalog/BudgetSection"
 import { OccasionRail } from "../catalog/OccasionRail"
-import { ProductSection } from "../catalog/ProductSection"
-import { LazyHamperBuilder } from "../builder/LazyHamperBuilder"
 import { useHamperBuilder, type TierSocialProof } from "../builder/useHamperBuilder"
 import { AmbientMotion } from "../motion/AmbientMotion"
-import { CustomRequestSection } from "./CustomRequestSection"
-import { FinalCta } from "./FinalCta"
-import { Hero } from "./Hero"
-import { PromiseSection } from "./PromiseSection"
-import { ProofAndReviews } from "./ProofAndReviews"
-import { SiteFooter } from "../shell/SiteFooter"
 import { SiteHeader } from "../shell/SiteHeader"
 import { TrustStrip } from "../shell/TrustStrip"
 import { notifyUx } from "../ux/UxMessenger"
 import { trackConversion } from "../analytics/conversion"
 import { formatMoney, type CatalogConfig } from "../../lib/domain/catalog"
+import { Hero } from "./Hero"
+import { LazyStorefrontTail } from "./LazyStorefrontTail"
 
 type StorefrontProps = {
   initialCatalog?: CatalogConfig
@@ -63,13 +57,7 @@ export function Storefront({ initialCatalog, initialSocialProof = null }: Storef
         <Hero onBuild={() => goBuilder(1)} tiers={state.tiers} products={state.products} />
         <OccasionRail value={state.checkout.occasion} occasions={state.occasions} onChange={pickOccasion} />
         <BudgetSection tiers={state.tiers} selectedTierId={state.tierId} recommendedTierId={state.catalog.settings.defaultTierId} socialProof={state.socialProof} onSelect={pickTier} />
-        <ProductSection products={state.products} categories={state.categories} allCategoryId={state.catalog.settings.allCategory.id} category={state.category} onCategory={state.setCategory} />
-        <ProofAndReviews socialProof={state.socialProof} />
-        <CustomRequestSection />
-        <LazyHamperBuilder state={state} active={builderActive} />
-        <PromiseSection />
-        <FinalCta onBuild={() => goBuilder(1)} />
-        <SiteFooter />
+        <LazyStorefrontTail state={state} builderActive={builderActive} onBuild={goBuilder} />
       </div>
     </main>
   )
