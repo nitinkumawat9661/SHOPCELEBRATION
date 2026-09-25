@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
-
 :root{
   --m:#74191d;--m2:#a62927;--cream:#fffaf5;--peach:#fff1df;--line:#ead8ca;
   --text:#3a1717;--muted:#80645c;--orange:#bc5c32;--white:#fff;
+  --font-sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-display:"Iowan Old Style",Baskerville,"Times New Roman",Georgia,serif;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--cream);color:var(--text);font-family:'DM Sans',Arial,sans-serif;overflow-x:hidden}
+body{margin:0;background:var(--cream);color:var(--text);font-family:var(--font-sans);overflow-x:hidden}
 button,input,textarea,select{font:inherit}
 button,a{-webkit-tap-highlight-color:transparent}
 button{touch-action:manipulation}
@@ -21,7 +21,7 @@ button{touch-action:manipulation}
 .nav{position:sticky;top:0;z-index:40;background:rgba(255,250,245,.96);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
 .navin{height:62px;display:flex;align-items:center;justify-content:space-between;gap:9px}
 .brand{min-width:0}
-.logo{font:700 22px/1 'Playfair Display',Georgia,serif;color:var(--m);letter-spacing:-.02em}
+.logo{font:700 22px/1 var(--font-display);color:var(--m);letter-spacing:-.02em}
 .tag{font-size:6.8px;letter-spacing:.08em;color:var(--orange);font-weight:800;white-space:nowrap;margin-top:3px}
 .links{display:none}
 .primary,.secondary,.wa,.chip,.tier,.pick,.stepBtn,.tierSmall button{min-height:44px}
@@ -36,7 +36,7 @@ section{padding:48px 0;scroll-margin-top:104px}
 .sectionHead{display:block}
 .centerHead{text-align:center}
 .kicker{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:var(--orange);margin-bottom:7px}
-.sectionHead h2,.centerHead h2{font:700 30px/1.05 'Playfair Display',Georgia,serif;letter-spacing:-.035em;color:#641317;margin:0}
+.sectionHead h2,.centerHead h2{font:700 30px/1.05 var(--font-display);letter-spacing:-.035em;color:#641317;margin:0}
 .sectionHead p,.centerHead p{color:var(--muted);font-size:12px;line-height:1.6;margin:11px 0 0;max-width:560px}
 .centerHead p{margin-inline:auto}
 
