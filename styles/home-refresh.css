@@ -51,8 +51,10 @@
   .ambientMotion{opacity:.72}
   .ambientOrb,.ambientRibbon{will-change:auto}
   .heroVisual{animation:heroVisualBreath 6.5s ease-in-out infinite}
+  .heroRefresh .heroShapeWaves{animation:mobileShapeWaveDrift 8s ease-in-out infinite alternate;will-change:transform}
 }
 @keyframes heroVisualBreath{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-4px,0)}}
+@keyframes mobileShapeWaveDrift{from{transform:translate3d(-1.5%,0,0) scale(1.03)}to{transform:translate3d(1.5%,-1%,0) scale(1.045)}}
 
 /* Skip expensive below-fold layout/paint until it is close to the viewport. */
 #products,.proofReviewsSection,#builder{content-visibility:auto;contain-intrinsic-size:1px 720px}
@@ -71,5 +73,5 @@
 }
 
 @media(prefers-reduced-motion:reduce){
-  .trustStripTrack,.heroVisual{animation:none!important}
+  .trustStripTrack,.heroVisual,.heroRefresh .heroShapeWaves{animation:none!important}
 }
