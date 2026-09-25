@@ -11,7 +11,7 @@ export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers:
   const maxPrice = prices.length ? Math.max(...prices) : 0
   return (
     <header className="hero">
-      <ShapeWaves className="heroShapeWaves" color="#8b2529" cellSize={14} />
+      <ShapeWaves className="heroShapeWaves" color="#8b2529" cellSize={11} />
       <div className="wrap heroGrid">
         <Reveal className="heroCopy">
           <div className="eyebrow">{storeContent.brand.eyebrow}</div>
