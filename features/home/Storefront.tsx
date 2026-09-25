@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { BudgetSection } from "../catalog/BudgetSection"
 import { OccasionRail } from "../catalog/OccasionRail"
 import { ProductSection } from "../catalog/ProductSection"
-import { HamperBuilder } from "../builder/HamperBuilder"
+import { LazyHamperBuilder } from "../builder/LazyHamperBuilder"
 import { useHamperBuilder, type TierSocialProof } from "../builder/useHamperBuilder"
 import { AmbientMotion } from "../motion/AmbientMotion"
 import { CustomRequestSection } from "./CustomRequestSection"
@@ -26,13 +26,15 @@ type StorefrontProps = {
 
 export function Storefront({ initialCatalog, initialSocialProof = null }: StorefrontProps) {
   const state = useHamperBuilder({ catalog: initialCatalog, socialProof: initialSocialProof })
+  const [builderActive, setBuilderActive] = useState(false)
 
   useEffect(() => { trackConversion("storefront_view") }, [])
 
   function goBuilder(step = 1) {
     state.setStep(step)
+    setBuilderActive(true)
     trackConversion("builder_started", { tierId: state.tierId })
-    setTimeout(() => document.getElementById("builder")?.scrollIntoView({ behavior: "smooth", block: "start" }), 20)
+    window.setTimeout(() => document.getElementById("builder")?.scrollIntoView({ behavior: "smooth", block: "start" }), 30)
   }
 
   function pickTier(id: string) {
@@ -61,7 +63,7 @@ export function Storefront({ initialCatalog, initialSocialProof = null }: Storef
         <ProductSection products={state.products} categories={state.categories} allCategoryId={state.catalog.settings.allCategory.id} category={state.category} onCategory={state.setCategory} />
         <ProofAndReviews socialProof={state.socialProof} />
         <CustomRequestSection />
-        <HamperBuilder state={state} />
+        <LazyHamperBuilder state={state} active={builderActive} />
         <PromiseSection />
         <FinalCta onBuild={() => goBuilder(1)} />
         <SiteFooter />
