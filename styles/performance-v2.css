@@ -1,0 +1,17 @@
+/* Mobile-first Lighthouse pass: keep visible motion while reducing initial compositing/hydration cost. */
+.heroPrimaryLink,.navCtaLink{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+
+@media(pointer:coarse){
+  /* Two drifting orbs are enough to keep the background alive on phones. */
+  .ambientOrbThree,.ambientRibbon{display:none!important}
+  .ambientMotion{opacity:.76}
+  .ambientOrb{width:62vw;height:62vw;max-width:300px;max-height:300px;will-change:transform}
+  .ambientOrbOne{animation-duration:16s}
+  .ambientOrbTwo{animation-duration:19s}
+
+  /* Avoid a second always-running transform on the above-fold visual card. */
+  .heroVisual{animation:none!important}
+}
+
+/* Heavy storefront content remains outside the initial rendering budget until approached. */
+.storefrontTailPlaceholder{content-visibility:auto;contain-intrinsic-size:1px 520px}
