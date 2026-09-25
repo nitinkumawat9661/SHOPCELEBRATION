@@ -1,7 +1,8 @@
 "use client"
 
-import { formatMoney, type GiftProduct, type Tier } from "../../lib/domain/catalog"
+import type { GiftProduct, Tier } from "../../lib/domain/catalog"
 import { storeContent, uiContent } from "../../lib/domain/content"
+import { formatMoney } from "../../lib/domain/money"
 import { ShapeWaves } from "../motion/ShapeWaves"
 
 export function Hero({ onBuild, tiers, products }: { onBuild: () => void; tiers: Tier[]; products: GiftProduct[] }) {
