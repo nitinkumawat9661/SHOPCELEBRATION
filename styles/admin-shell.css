@@ -1,0 +1,8 @@
+.adminAppPage{min-height:100vh;background:#fffaf5}
+.adminAppSection{padding:14px 0 28px}
+.adminAppPage .adminMobileSectionPicker{top:0}
+
+@media(min-width:980px){
+  .adminAppSection{padding:18px 0 34px}
+  .adminAppPage .adminSidebar{top:18px;min-height:calc(100vh - 36px);max-height:calc(100vh - 36px);overflow-y:auto}
+}
