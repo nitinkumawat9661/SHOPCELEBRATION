@@ -1,14 +1,27 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState, type ComponentType } from "react"
-import type { useHamperBuilder } from "../builder/useHamperBuilder"
+import type { CatalogConfig } from "../../lib/domain/catalog"
 
-type StoreState = ReturnType<typeof useHamperBuilder>
-type TailProps = {
-  state: StoreState
-  builderActive: boolean
-  onBuild: (step?: number) => void
+type TierSocialProof = {
+  tierName: string
+  orderCount: number
+  totalOrders: number
+  sharePercent: number
 }
+
+type TailProps = {
+  catalog: CatalogConfig
+  socialProof: TierSocialProof | null
+  selectedTierId: string
+  occasion: string
+  builderActive: boolean
+  requestedStep: number
+  requestVersion: number
+  onBuild: (step?: number) => void
+  onSelectionSync: (tierId: string, occasion: string) => void
+}
+
 type TailComponent = ComponentType<TailProps>
 
 export function LazyStorefrontTail(props: TailProps) {
@@ -38,7 +51,7 @@ export function LazyStorefrontTail(props: TailProps) {
       if (!entry?.isIntersecting) return
       observer.disconnect()
       void loadTail()
-    }, { rootMargin: "120px 0px" })
+    }, { rootMargin: "80px 0px" })
     observer.observe(target)
 
     return () => observer.disconnect()
