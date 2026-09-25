@@ -10,92 +10,45 @@ export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct
   const showcaseItems = storeContent.showcaseItems.slice(0, 3)
 
   return (
-    <header className="hero heroPremiumV2">
-      <ShapeWaves className="heroShapeWaves heroPixelField" color="#8b2529" cellSize={16} />
-      <div className="heroPremiumVeil" aria-hidden="true" />
-
-      <div className="wrap heroPremiumGrid">
-        <div className="heroPremiumCopy">
-          <div className="heroPremiumEyebrow">
-            <span>Celebration custom hampers</span>
-            <b>Made around your budget</b>
-          </div>
-
+    <header className="hero heroRefresh heroClassicMotion">
+      <ShapeWaves className="heroShapeWaves heroPixelField" color="#8b2529" cellSize={15} />
+      <div className="wrap heroGrid">
+        <div className="heroCopy heroImmediate">
+          <div className="eyebrow">Premium hampers · made to fit your budget</div>
           <h1>
-            <span>Looks premium.</span>
-            <span>Feels personal.</span>
-            <em>Stays in your budget.</em>
+            <span className="heroLead">Make their day.</span>
+            <span className="heroItalic">Without overspending.</span>
           </h1>
+          <p>Choose your budget. We turn it into a hamper that looks premium, feels personal and arrives beautifully packed.</p>
 
-          <p className="heroPremiumBody">
-            Pick your budget first. We turn it into a hamper that feels thoughtfully put together, not randomly packed.
-          </p>
-
-          <div className="heroPremiumActions">
-            <a className="primary heroPremiumPrimary" href="#budgets">Build my hamper</a>
-            <a className="heroPremiumSecondary" href="#budgets">Explore from {formatMoney(minPrice)} <span aria-hidden="true">→</span></a>
+          <div className="actions heroActions">
+            <a className="primary heroPrimaryLink" href="#budgets">Build my hamper</a>
+            <a className="secondary" href="#budgets">Starts at {formatMoney(minPrice)}</a>
           </div>
 
-          <div className="heroPremiumProof" aria-label="Celebration order benefits">
-            <span><i aria-hidden="true">✓</i> Clear pricing</span>
-            <span><i aria-hidden="true">✓</i> Packing proof</span>
-            <span><i aria-hidden="true">✓</i> Trackable order</span>
-          </div>
-
-          <div className="heroPremiumRange">
-            <div><small>Starting at</small><b>{formatMoney(minPrice)}</b></div>
-            <div><small>Budget range</small><b>{formatMoney(minPrice)}–{formatMoney(maxPrice)}</b></div>
-            <div><small>Gift choices</small><b>{products.length}+</b></div>
+          <div className="heroFacts" aria-label="Hamper highlights">
+            <div><b>{formatMoney(minPrice)}–{formatMoney(maxPrice)}</b><small>clear budget options</small></div>
+            <div><b>{products.length}+</b><small>gift choices</small></div>
+            <div><b>Personal</b><small>made for them</small></div>
           </div>
         </div>
 
-        <div className="heroPremiumStage" aria-label="Example Celebration hamper presentation">
-          <div className="heroPremiumPricePill">
-            <small>Hampers from</small>
-            <b>{formatMoney(minPrice)}</b>
+        <div className="heroVisual heroImmediateVisual">
+          <div className="heroVisualTop">
+            <span>Curated for their moment</span>
+            <i aria-hidden="true">{storeContent.brand.giftIcon}</i>
           </div>
-
-          <div className="heroPremiumCard">
-            <div className="heroPremiumCardTop">
-              <span>The Celebration Edit</span>
-              <i>01</i>
-            </div>
-
-            <div className="heroGiftScene">
-              <div className="heroGiftBox" aria-hidden="true">
-                <span className="heroRibbonHorizontal" />
-                <span className="heroRibbonVertical" />
-                <i>{storeContent.brand.giftIcon}</i>
+          <p className="heroVisualLine">A little luxury, made personal.</p>
+          <div className="heroVisualItems">
+            {showcaseItems.map((item) => (
+              <div className="heroVisualItem" key={item.label}>
+                <i aria-hidden="true">{item.icon}</i>
+                <span>{item.label}</span>
               </div>
-              <div className="heroGiftCopy">
-                <small>Made for their moment</small>
-                <strong>A gift that looks considered.</strong>
-              </div>
-            </div>
-
-            <div className="heroPremiumItems">
-              {showcaseItems.map((item) => (
-                <div key={item.label}>
-                  <i aria-hidden="true">{item.icon}</i>
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="heroPremiumCardBottom">
-              <span>You set the budget.</span>
-              <b>We build the moment.</b>
-            </div>
+            ))}
           </div>
-
-          <div className="heroPremiumFloat heroPremiumFloatOne">
-            <i aria-hidden="true">▶</i>
-            <div><small>Before dispatch</small><b>Packing video</b></div>
-          </div>
-
-          <div className="heroPremiumFloat heroPremiumFloatTwo">
-            <i aria-hidden="true">↗</i>
-            <div><small>After dispatch</small><b>Order tracking</b></div>
+          <div className="heroVisualFooter">
+            <span>Clear pricing</span><span>Packing video</span><span>Trackable order</span>
           </div>
         </div>
       </div>
