@@ -4,11 +4,14 @@ import Link from "next/link"
 import { routes } from "../../config/routes"
 import { storeContent, uiContent } from "../../lib/domain/content"
 import { supportWhatsappUrl } from "../../lib/domain/support"
+import { requestBuilderOpen } from "../builder/builder-events"
 import { useStoreSettings } from "./useStoreSettings"
 
-export function SiteHeader({ onCreate, showAccount = true }: { onCreate?: () => void; showAccount?: boolean }) {
+export function SiteHeader({ onCreate, builderTrigger = false, showAccount = true }: { onCreate?: () => void; builderTrigger?: boolean; showAccount?: boolean }) {
   const settings = useStoreSettings()
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
+  const canCreate = Boolean(onCreate || builderTrigger)
+
   return (
     <>
       <header className="nav">
@@ -25,7 +28,9 @@ export function SiteHeader({ onCreate, showAccount = true }: { onCreate?: () => 
           </nav>
           <div className="navAccountActions">
             {showAccount && <Link className="navAccountLink" href={routes.account} prefetch={false} aria-label="My Celebration dashboard"><span aria-hidden="true">♡</span><b>My Celebration</b></Link>}
-            {onCreate ? <button className="primary navCta" type="button" onClick={onCreate}>{uiContent.nav.create}</button> : <Link className="secondary navStoreLink" href={routes.home} prefetch={false}>{uiContent.nav.backToStore}</Link>}
+            {canCreate
+              ? <button className="primary navCta" type="button" onClick={() => onCreate ? onCreate() : requestBuilderOpen(1)}>{uiContent.nav.create}</button>
+              : <Link className="secondary navStoreLink" href={routes.home} prefetch={false}>{uiContent.nav.backToStore}</Link>}
           </div>
         </div>
         {showAccount && <div className="assistBar"><div className="wrap assistBarInner"><span><b>{settings.assistTitle}</b> {settings.assistBody}</span><div><a href={`${routes.home}#custom-request`}>Use my budget</a><a href={supportUrl} target="_blank" rel="noreferrer">WhatsApp</a></div></div></div>}
