@@ -1,7 +1,6 @@
 import type { GiftProduct, Tier } from "../../lib/domain/catalog"
 import { storeContent, uiContent } from "../../lib/domain/content"
 import { formatMoney } from "../../lib/domain/money"
-import { ShapeWaves } from "../motion/ShapeWaves"
 
 export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct[] }) {
   const prices = tiers.map((tier) => tier.price)
@@ -11,7 +10,7 @@ export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct
 
   return (
     <header className="hero heroRefresh">
-      <ShapeWaves className="heroShapeWaves" color="#8b2529" cellSize={15} />
+      <div className="heroAmbientShapes" aria-hidden="true"><span /><span /><span /></div>
       <div className="wrap heroGrid">
         <div className="heroCopy heroImmediate">
           <div className="eyebrow">{storeContent.brand.eyebrow}</div>
