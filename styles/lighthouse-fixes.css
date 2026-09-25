@@ -1,0 +1,19 @@
+/* Lighthouse/mobile legibility fixes. Keep compact hierarchy while avoiding sub-12px body copy. */
+@media(max-width:719px){
+  .trustStripGroup{font-size:12px;line-height:1.2}
+  .budgetDecisionHint span,
+  .tier .note,
+  .tier .size,
+  .chip{font-size:12px}
+
+  .heroRefresh .eyebrow,
+  .heroFacts b,
+  .heroFacts small,
+  .heroVisualTop,
+  .heroVisualItem span,
+  .heroVisualFooter span,
+  .badge,
+  .kicker,
+  .whatsappDock b,
+  .tag{font-size:11px}
+}
