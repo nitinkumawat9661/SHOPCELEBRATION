@@ -1,1 +1,100 @@
-/* placeholder */
+/* Modern storefront polish — CSS-only motion and visual depth. No JS animation required. */
+
+:root{
+  --modern-shadow:0 18px 60px rgba(74,20,24,.10);
+  --modern-shadow-hover:0 24px 70px rgba(74,20,24,.16);
+  --modern-border:rgba(116,25,29,.12);
+}
+
+/* Hero: layered CSS background instead of canvas animation. */
+.heroRefresh{position:relative;isolation:isolate;overflow:hidden;background:
+  radial-gradient(circle at 12% 18%,rgba(255,210,170,.42),transparent 30%),
+  radial-gradient(circle at 88% 18%,rgba(161,52,48,.16),transparent 28%),
+  linear-gradient(180deg,#fffaf5 0%,#fff6ed 58%,#fffaf6 100%)}
+.heroRefresh::before{content:"";position:absolute;inset:0;z-index:-2;opacity:.34;background-image:
+  linear-gradient(rgba(116,25,29,.045) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(116,25,29,.045) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 82%)}
+.heroAmbientShapes{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.heroAmbientShapes span{position:absolute;display:block;border-radius:999px;opacity:.5;animation:heroFloat 9s ease-in-out infinite}
+.heroAmbientShapes span:nth-child(1){width:120px;height:120px;right:10%;top:16%;background:radial-gradient(circle,rgba(255,219,177,.9),rgba(255,219,177,0) 70%)}
+.heroAmbientShapes span:nth-child(2){width:82px;height:82px;left:4%;bottom:13%;background:radial-gradient(circle,rgba(146,43,43,.16),rgba(146,43,43,0) 72%);animation-delay:-3s}
+.heroAmbientShapes span:nth-child(3){width:56px;height:56px;right:34%;bottom:10%;border:1px solid rgba(132,46,43,.16);background:rgba(255,255,255,.28);animation-delay:-5.5s}
+@keyframes heroFloat{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-10px,0)}}
+
+.heroRefresh .eyebrow{box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);backdrop-filter:blur(8px)}
+.heroRefresh h1{max-width:760px;text-wrap:balance}
+.heroRefresh .heroPrimaryLink{position:relative;overflow:hidden;background:linear-gradient(135deg,#6b171b,#8d2a2d 58%,#a24635);box-shadow:0 14px 34px rgba(116,25,29,.22)}
+.heroRefresh .heroPrimaryLink::after{content:"";position:absolute;inset:-20% auto -20% -35%;width:28%;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);animation:buttonSheen 5.8s ease-in-out infinite}
+@keyframes buttonSheen{0%,68%{left:-35%}86%,100%{left:130%}}
+.heroRefresh .primary,.heroRefresh .secondary{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease,background .25s ease}
+.heroRefresh .primary:hover,.heroRefresh .secondary:hover{transform:translateY(-2px)}
+
+.heroVisual{isolation:isolate;box-shadow:0 24px 64px rgba(80,20,22,.20);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease}
+.heroVisual::after{content:"";position:absolute;inset:1px;border-radius:23px;pointer-events:none;background:linear-gradient(125deg,rgba(255,255,255,.13),transparent 32%,transparent 68%,rgba(255,223,192,.09));mix-blend-mode:screen}
+.heroVisual:hover{transform:translateY(-4px);box-shadow:0 30px 76px rgba(80,20,22,.24)}
+.heroVisualItem,.heroVisualFooter span{backdrop-filter:blur(10px)}
+.heroVisualItem{transition:transform .25s ease,border-color .25s ease,background .25s ease}
+.heroVisualItem:hover{transform:translateY(-3px);border-color:rgba(255,244,229,.3);background:rgba(255,255,255,.11)}
+
+/* Section rhythm and editorial separators. */
+#budgets,.productsSec,.proofReviewsSection,#custom-request{position:relative}
+#budgets::before,.productsSec::before{content:"";position:absolute;left:50%;top:0;width:min(92%,1160px);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(116,25,29,.12),transparent)}
+.sectionHead h2,.centerHead h2{text-wrap:balance;letter-spacing:-.035em}
+.sectionHead .kicker,.centerHead .kicker{letter-spacing:.14em}
+
+/* Budget cards: native button + CSS micro-interaction. */
+.tier{position:relative;overflow:hidden;border-color:var(--modern-border);background:linear-gradient(180deg,#fff 0%,#fffaf6 100%);transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease,border-color .28s ease,background .28s ease}
+.tier::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 85% 10%,rgba(168,70,54,.10),transparent 34%);opacity:0;transition:opacity .28s ease}
+.tier:hover{transform:translateY(-5px);box-shadow:var(--modern-shadow-hover);border-color:rgba(116,25,29,.22)}
+.tier:hover::before,.tier.active::before{opacity:1}
+.tier.active{background:linear-gradient(180deg,#fff 0%,#fff4ec 100%)}
+.tier .price{letter-spacing:-.035em}
+.badge{box-shadow:0 6px 18px rgba(116,25,29,.10)}
+.budgetDecisionHint{border:1px solid rgba(116,25,29,.10);background:linear-gradient(135deg,rgba(255,255,255,.86),rgba(255,247,239,.86));backdrop-filter:blur(12px)}
+
+/* Chips / occasion controls. */
+.chip,.occasionPill{transition:transform .2s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease}
+.chip:hover,.occasionPill:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(77,28,22,.07)}
+
+/* Product cards: CSS-only reveal + hover polish. */
+.productReveal{opacity:1;transform:none}
+.product{position:relative;overflow:hidden;border-color:var(--modern-border);background:linear-gradient(180deg,#fff 0%,#fffaf7 100%);transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease,border-color .28s ease}
+.product::after{content:"";position:absolute;inset:auto -22% -46% auto;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(163,69,53,.10),transparent 68%);pointer-events:none}
+.product:hover{transform:translateY(-6px);box-shadow:var(--modern-shadow-hover);border-color:rgba(116,25,29,.2)}
+.catalogProductImage{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease}
+.product:hover .catalogProductImage{transform:scale(1.06) rotate(-1deg);box-shadow:0 10px 24px rgba(77,28,22,.09)}
+.productUnlock{border-radius:999px;background:#fff2e7;padding:5px 8px}
+
+/* Premium cards: preserve each section's native palette. */
+.promiseGrid article,.reviewIntegrityCard,.customRequestCard{border-color:var(--modern-border);box-shadow:0 12px 34px rgba(77,28,22,.055);transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease}
+.promiseGrid article:hover,.reviewIntegrityCard:hover,.customRequestCard:hover{transform:translateY(-4px);box-shadow:var(--modern-shadow);border-color:rgba(116,25,29,.18)}
+.proofCard{transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease}
+.proofCard:hover{transform:translateY(-4px);box-shadow:0 24px 58px rgba(20,3,5,.24);border-color:rgba(255,238,221,.28)}
+
+/* Native CSS scroll reveal where supported; browsers without it simply show the cards. */
+@supports (animation-timeline:view()){
+  .tiers .tier,.products .productReveal,.promiseGrid article,.proofCard,.reviewIntegrityCard{
+    animation:storefrontReveal linear both;
+    animation-timeline:view();
+    animation-range:entry 8% cover 30%;
+  }
+  @keyframes storefrontReveal{from{opacity:.45;translate:0 18px;scale:.985}to{opacity:1;translate:0 0;scale:1}}
+}
+
+@media(max-width:759px){
+  .heroAmbientShapes span:nth-child(1){right:-16%;top:9%;opacity:.38}
+  .heroAmbientShapes span:nth-child(2){left:-12%;bottom:22%;opacity:.3}
+  .heroRefresh .heroPrimaryLink::after{animation-duration:7.2s}
+  .heroVisual{border-radius:22px}
+}
+
+@media(pointer:coarse){
+  .heroVisualItem,.heroVisualFooter span,.budgetDecisionHint{backdrop-filter:none}
+  .heroVisual:hover,.heroVisualItem:hover,.tier:hover,.product:hover,.promiseGrid article:hover,.proofCard:hover,.reviewIntegrityCard:hover,.customRequestCard:hover,.chip:hover,.occasionPill:hover{transform:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .heroAmbientShapes span,.heroRefresh .heroPrimaryLink::after{animation:none!important}
+  .heroRefresh .primary,.heroRefresh .secondary,.heroVisual,.heroVisualItem,.tier,.chip,.occasionPill,.product,.catalogProductImage,.promiseGrid article,.proofCard,.reviewIntegrityCard,.customRequestCard{transition:none!important}
+  .tiers .tier,.products .productReveal,.promiseGrid article,.proofCard,.reviewIntegrityCard{animation:none!important;opacity:1!important;translate:none!important;scale:none!important}
+}
