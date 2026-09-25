@@ -28,7 +28,10 @@ export function Storefront({ initialCatalog, initialSocialProof = null }: Storef
   const state = useHamperBuilder({ catalog: initialCatalog, socialProof: initialSocialProof })
   const [builderActive, setBuilderActive] = useState(false)
 
-  useEffect(() => { trackConversion("storefront_view") }, [])
+  useEffect(() => {
+    const timer = window.setTimeout(() => trackConversion("storefront_view"), 2200)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   function goBuilder(step = 1) {
     state.setStep(step)
