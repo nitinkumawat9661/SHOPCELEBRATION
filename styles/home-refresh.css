@@ -65,6 +65,26 @@
 .product p,.proofCard p,.promiseGrid p,.reviewIntegrityCard p{font-size:12px;line-height:1.5}
 .builderInlineNotice,.catalogLoadNotice,.paymentReturnHint{font-size:12px;line-height:1.45}
 
+/* Compact mobile header: motion strip + slim nav + small help row. */
+@media(max-width:759px){
+  .navin{min-height:56px!important;height:56px!important;padding-block:6px!important;gap:7px}
+  .logo{font-size:21px!important;line-height:1}
+  .brand .tag{font-size:7.4px!important;margin-top:3px}
+  .navAccountActions{gap:6px}
+  .navAccountLink{width:36px;min-width:36px;height:36px;min-height:36px;padding:0!important;border-radius:50%}
+  .navAccountLink b{display:none!important}
+  .navAccountLink span{font-size:16px}
+  .navCta{min-height:36px!important;padding:7px 10px!important;font-size:9.5px!important}
+  .assistBarInner{min-height:28px!important;padding-block:3px!important;align-items:center!important;justify-content:center!important}
+  .assistBarInner>span{display:none!important}
+  .assistBarInner>div{width:100%;justify-content:center;gap:16px!important}
+  .assistBarInner a{min-height:24px!important;border-left:0!important;padding-left:0!important;font-size:9px}
+  .whatsappDock{right:10px!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;padding:5px!important;border-radius:50%!important}
+  .whatsappDock span{width:36px!important;height:36px!important}
+  .whatsappDock b{display:none!important}
+  .heroRefresh .heroGrid{padding-top:28px}
+}
+
 @media(min-width:720px){
   .trustStripGroup{gap:28px;padding-right:28px;font-size:10px}
   .trustStripGroup>*{gap:28px}
