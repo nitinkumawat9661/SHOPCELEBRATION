@@ -9,11 +9,20 @@ export const metadata = { robots: { index: false, follow: false } }
 
 export default async function AdminPage() {
   const authenticated = await isAdminRequest()
+
+  if (!authenticated) {
+    return (
+      <main>
+        <TrustStrip />
+        <SiteHeader showAccount={false} />
+        <section><div className="wrap adminWrap"><AdminLogin /></div></section>
+      </main>
+    )
+  }
+
   return (
-    <main>
-      <TrustStrip />
-      <SiteHeader showAccount={false} />
-      <section><div className="wrap adminWrap">{authenticated ? <AdminDashboard /> : <AdminLogin />}</div></section>
+    <main className="adminAppPage">
+      <section className="adminAppSection"><div className="wrap adminWrap"><AdminDashboard /></div></section>
     </main>
   )
 }
