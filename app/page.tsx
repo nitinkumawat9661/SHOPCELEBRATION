@@ -1,4 +1,6 @@
 import { unstable_cache } from "next/cache"
+import { redirect } from "next/navigation"
+import { routes } from "../config/routes"
 import { Storefront } from "../features/home/Storefront"
 import { defaultCatalog } from "../lib/domain/catalog"
 import { getCatalogConfig } from "../lib/server/catalog"
@@ -25,7 +27,18 @@ const getCachedStoreSettings = unstable_cache(
   { revalidate: 60 }
 )
 
-export default async function HomePage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>
+
+export default async function HomePage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams
+  const paymentReturn = Array.isArray(params.payment_return) ? params.payment_return[0] : params.payment_return
+  const rawOrderId = Array.isArray(params.order_id) ? params.order_id[0] : params.order_id
+  const providerOrderId = rawOrderId?.trim() || ""
+
+  if (paymentReturn === "1" && providerOrderId) {
+    redirect(`${routes.paymentReturn}?provider_order_id=${encodeURIComponent(providerOrderId)}`)
+  }
+
   const [catalogResult, proofResult, settingsResult] = await Promise.all([
     getCachedCatalog().catch(() => null),
     getCachedTierPopularity().catch(() => null),

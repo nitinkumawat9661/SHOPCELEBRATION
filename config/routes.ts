@@ -3,6 +3,7 @@ export const routes = {
   policies: "/policies",
   track: "/track",
   account: "/account",
+  paymentReturn: "/payment/return",
   admin: "/admin",
   api: {
     orders: "/api/orders",
@@ -10,6 +11,7 @@ export const routes = {
     paymentCreate: "/api/payments/create",
     paymentVerify: "/api/payments/verify",
     paymentStatus: "/api/payments/status",
+    paymentReturnStatus: "/api/payments/return-status",
     offerQuote: "/api/offers/quote",
     analyticsEvent: "/api/analytics/event",
     tracking: "/api/track",
