@@ -1,6 +1,7 @@
 export const routes = {
   home: "/",
   policies: "/policies",
+  privacy: "/privacy",
   track: "/track",
   account: "/account",
   paymentReturn: "/payment/return",
@@ -9,6 +10,7 @@ export const routes = {
     orders: "/api/orders",
     paymentConfig: "/api/payments/config",
     paymentCreate: "/api/payments/create",
+    paymentRetry: "/api/payments/retry",
     paymentVerify: "/api/payments/verify",
     paymentStatus: "/api/payments/status",
     paymentReturnStatus: "/api/payments/return-status",
