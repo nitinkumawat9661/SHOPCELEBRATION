@@ -6,6 +6,10 @@ export const routes = {
   admin: "/admin",
   api: {
     orders: "/api/orders",
+    paymentConfig: "/api/payments/config",
+    paymentCreate: "/api/payments/create",
+    paymentVerify: "/api/payments/verify",
+    paymentStatus: "/api/payments/status",
     offerQuote: "/api/offers/quote",
     analyticsEvent: "/api/analytics/event",
     tracking: "/api/track",
