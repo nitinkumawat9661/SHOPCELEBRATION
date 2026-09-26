@@ -1,14 +1,14 @@
+import { env } from "./env"
+
 export type PaymentProviderName = "razorpay" | "cashfree"
 export type PaymentMode = "test" | "live"
 
-const read = (key: string) => process.env[key]?.trim() || ""
-
 function mode(): PaymentMode {
-  return read("PAYMENT_MODE").toLowerCase() === "live" ? "live" : "test"
+  return env.paymentMode.toLowerCase() === "live" ? "live" : "test"
 }
 
 function provider(): PaymentProviderName | null {
-  const value = read("PAYMENT_PROVIDER").toLowerCase()
+  const value = env.paymentProvider.toLowerCase()
   if (value === "razorpay" || value === "cashfree") return value
   return null
 }
@@ -16,17 +16,17 @@ function provider(): PaymentProviderName | null {
 export const paymentGatewayConfig = {
   provider: provider(),
   mode: mode(),
-  appBaseUrl: read("APP_BASE_URL"),
+  appBaseUrl: env.appBaseUrl,
   razorpay: {
-    keyId: read("RAZORPAY_KEY_ID"),
-    keySecret: read("RAZORPAY_KEY_SECRET"),
-    webhookSecret: read("RAZORPAY_WEBHOOK_SECRET")
+    keyId: env.razorpayKeyId,
+    keySecret: env.razorpayKeySecret,
+    webhookSecret: env.razorpayWebhookSecret
   },
   cashfree: {
-    appId: read("CASHFREE_APP_ID"),
-    secretKey: read("CASHFREE_SECRET_KEY"),
-    webhookSecret: read("CASHFREE_WEBHOOK_SECRET") || read("CASHFREE_SECRET_KEY"),
-    apiVersion: read("CASHFREE_API_VERSION") || "2023-08-01"
+    appId: env.cashfreeAppId,
+    secretKey: env.cashfreeSecretKey,
+    webhookSecret: env.cashfreeWebhookSecret || env.cashfreeSecretKey,
+    apiVersion: env.cashfreeApiVersion || "2023-08-01"
   }
 } as const
 
