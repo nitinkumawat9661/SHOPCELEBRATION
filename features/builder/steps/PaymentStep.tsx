@@ -11,7 +11,7 @@ import { storeContent, uiContent } from "../../../lib/domain/content"
 import { trackConversion } from "../../analytics/conversion"
 import { scrollToUxTarget } from "../../ux/UxMessenger"
 import type { CustomerAccountView } from "../../account/useCustomerAccount"
-import type { CreatedOrder } from "../../checkout/useOrderSubmit"
+import type { CreatedOrder, PaymentUiState } from "../../checkout/useOrderSubmit"
 import type { CheckoutData } from "../types"
 import { validatePaymentReference } from "../validation"
 
@@ -19,7 +19,6 @@ export function PaymentStep({
   tier,
   checkout,
   selectedProductIds,
-  selectedNames,
   accepted,
   submitting,
   error,
@@ -29,11 +28,14 @@ export function PaymentStep({
   gatewayLoading,
   gatewayEnabled,
   gatewayProvider,
+  paymentState,
+  paymentOrderId,
   onAccepted,
   onReference,
   onBack,
   onSubmit,
   onPay,
+  onRefreshPayment,
   onWhatsapp,
   onLogin,
   onNewOrder
@@ -51,11 +53,14 @@ export function PaymentStep({
   gatewayLoading: boolean
   gatewayEnabled: boolean
   gatewayProvider: "razorpay" | "cashfree" | null
+  paymentState: PaymentUiState
+  paymentOrderId: string | null
   onAccepted: (value: boolean) => void
   onReference: (value: string) => void
   onBack: () => void
   onSubmit: (offerQuoteId?: string | null) => void
   onPay: (offerQuoteId?: string | null) => void
+  onRefreshPayment: () => void
   onWhatsapp: () => void
   onLogin: () => void
   onNewOrder: () => void
@@ -177,17 +182,21 @@ export function PaymentStep({
 
   const automatedSteps = [
     `Pay ${formatMoney(payablePaise / 100)} securely`,
-    "Payment is verified automatically",
-    "Your order appears in My Celebration"
+    "Payment status is verified automatically",
+    "Confirmed order appears in My Celebration"
   ]
+
+  const paymentBusy = submitting || paymentState === "processing"
+  const paymentPending = paymentState === "pending"
+  const paymentFailed = paymentState === "failed"
 
   return (
     <div className="stepPane active">
-      <div className="builderTitle"><div><h3>{copy.title}</h3><p>{gatewayEnabled ? "Secure checkout. No UTR or payment screenshot needed." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
+      <div className="builderTitle"><div><h3>{copy.title}</h3><p>{gatewayEnabled ? "Secure checkout with automatic payment verification. No UTR or screenshot needed." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
       <div className="paymentGrid">
         <div>
           <div className={`checkoutAccount ${customerAccount ? "ready" : "needed"}`}>
-            <div><span>{customerAccount ? "READY TO ORDER" : "SAVE YOUR ORDER"}</span><b>{accountLoading ? "Checking your account…" : customerAccount ? `${customerAccount.displayName} • ${customerAccount.phone}` : "Login to continue to payment"}</b><small>{customerAccount ? "Your best available checkout price is checked automatically." : "Your hamper stays exactly as you built it."}</small></div>
+            <div><span>{customerAccount ? "READY TO ORDER" : "SAVE YOUR ORDER"}</span><b>{accountLoading ? "Checking your account…" : customerAccount ? `${customerAccount.displayName} • ${customerAccount.phone}` : "Login to continue to payment"}</b><small>{customerAccount ? "Your order, payment status and tracking stay linked to this account." : "Your hamper stays exactly as you built it."}</small></div>
             {!customerAccount && !accountLoading && <button className="primary" type="button" onClick={onLogin}>Login / Create account</button>}
             {customerAccount && <Link className="secondary" href={routes.account}>My Celebration</Link>}
           </div>
@@ -207,7 +216,7 @@ export function PaymentStep({
               <strong>{formatMoney(payablePaise / 100)}</strong>
               {discountPaise > 0 && <small className="paymentSaving">Saved {formatMoney(discountPaise / 100)} automatically</small>}
               {gatewayEnabled
-                ? <small>UPI, cards and supported payment apps • automatic verification</small>
+                ? <small>UPI, cards and supported payment apps • server-side verification</small>
                 : manualPaymentReady
                   ? <small>{copy.upiPrefix} {publicEnv.upiId}</small>
                   : <small className="setupPending">{copy.setupPending}</small>}
@@ -217,7 +226,7 @@ export function PaymentStep({
               : quoteLoading || gatewayLoading
                 ? <button className="secondary payButton" disabled>Checking payment…</button>
                 : gatewayEnabled
-                  ? <button className="primary payButton" type="button" disabled={submitting || Boolean(created) || !accepted} onClick={automatedPaymentClick}>{submitting ? "Verifying…" : `Pay ${formatMoney(payablePaise / 100)}`}</button>
+                  ? <button className="primary payButton" type="button" disabled={paymentBusy || paymentPending || Boolean(created) || !accepted} onClick={automatedPaymentClick}>{paymentBusy ? "Verifying…" : paymentFailed ? "Try payment again" : paymentPending ? "Payment pending" : `Pay ${formatMoney(payablePaise / 100)}`}</button>
                   : manualPaymentReady
                     ? <a className="primary payButton" href={upiUrl} onClick={paymentClick}>{copy.payButton}</a>
                     : <button className="secondary payButton" disabled>{copy.setupButton}</button>}
@@ -227,12 +236,25 @@ export function PaymentStep({
             {(gatewayEnabled ? automatedSteps : storeContent.checkout.paymentSteps.map((text) => text.replace("{amount}", formatMoney(payablePaise / 100)))).map((text, index) => <div key={text}><b>{index + 1}</b><span>{text}</span></div>)}
           </div>
 
+          {gatewayEnabled && paymentPending && <div className="paymentStateCard pending" role="status">
+            <div className="paymentStateIcon">…</div>
+            <div className="paymentStateCopy"><strong>Payment pending</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is saved. ` : ""}If money was debited, do not pay again. Check the status while the bank/provider confirmation completes.</span></div>
+            <div className="paymentStateActions"><button className="primary" type="button" disabled={submitting} onClick={onRefreshPayment}>{submitting ? "Checking…" : "Check payment status"}</button><button className="secondary" type="button" disabled={submitting} onClick={automatedPaymentClick}>No debit? Continue payment</button></div>
+          </div>}
+
+          {gatewayEnabled && paymentFailed && <div className="paymentStateCard failed" role="alert">
+            <div className="paymentStateIcon">!</div>
+            <div className="paymentStateCopy"><strong>Payment not completed</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is still saved. ` : ""}No order processing starts until payment is verified. You can retry without rebuilding your hamper.</span></div>
+            <div className="paymentStateActions"><button className="primary" type="button" disabled={submitting} onClick={automatedPaymentClick}>{submitting ? "Opening…" : "Try payment again"}</button><button className="secondary" type="button" disabled={submitting} onClick={onRefreshPayment}>Check status</button></div>
+          </div>}
+
           {!gatewayEnabled && showPaymentReturn && !created && <div className="paymentReturnHint" role="status"><span><b>Payment done?</b> Paste your UPI transaction reference below to continue.</span><button className="secondary" type="button" onClick={focusUtr}>Add reference</button></div>}
           {!gatewayEnabled && <label className="field utrField"><span>{copy.referenceLabel} <b className="requiredMark">*</b></span><input ref={utrRef} className="control" value={checkout.paymentReference} onChange={(e) => onReference(e.target.value)} placeholder={copy.referencePlaceholder} autoComplete="off" inputMode="text" /></label>}
 
-          <label className="policyCheck"><input type="checkbox" checked={accepted} onChange={(e) => onAccepted(e.target.checked)} /><span>{storeContent.checkout.policyConsent}</span></label>
-          {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Accept the order policy to enable secure payment.</div>}
-          {error && <div className="errorBox" role="alert">{error}</div>}
+          <label className="policyCheck"><input type="checkbox" checked={accepted} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order &amp; Protection Policy</Link> and acknowledge the <Link href={routes.privacy} target="_blank">Privacy Policy</Link>. This is a prepaid customized order; eligible wrong, damaged, defective or missing-item claims remain covered by the protection policy.</span></label>
+          <div className="paymentPolicyHint">Payment processing starts only after you accept these terms. We do not ask you to share card PINs, UPI PINs or OTPs with Celebration.</div>
+          {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Accept the order and privacy terms to enable secure payment.</div>}
+          {error && !paymentPending && <div className="errorBox" role="alert">{error}</div>}
           {created && <div className="successBox" data-order-success tabIndex={-1}><strong>{copy.successPrefix} {created.orderId}</strong><span>{created.discountPaise > 0 ? `Payment verified and order saved — you saved ${formatMoney(created.discountPaise / 100)} with ${created.campaignTitle || "your offer"}.` : gatewayEnabled ? "Payment verified automatically. Your order is confirmed." : "Your order is saved."} Follow packing and shipping updates from My Celebration.</span><div className="successActions"><Link className="primary" href={routes.account}>View my order</Link><Link className="secondary" href={created.trackingPath}>{copy.trackingButton}</Link><button className="secondary" type="button" onClick={onWhatsapp}>WhatsApp support</button><button className="secondary" type="button" onClick={onNewOrder}>Build another hamper</button></div></div>}
 
           <div className="navRow paymentActions">
