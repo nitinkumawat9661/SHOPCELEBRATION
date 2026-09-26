@@ -35,7 +35,7 @@
     {
       "icon": "💳",
       "title": "Clear payment",
-      "body": "Pay the exact shown amount and keep your transaction reference for confirmation."
+      "body": "Gateway payments are verified automatically. If manual UPI is offered, a transaction reference may be required for confirmation."
     },
     {
       "icon": "🎥",
@@ -45,7 +45,7 @@
     {
       "icon": "🛡️",
       "title": "Issue protection",
-      "body": "Verified wrong, damaged or defective items are covered by our refund/replacement policy."
+      "body": "Verified wrong, damaged, defective or missing-item issues can be reviewed for an eligible refund or replacement, subject to the policy and applicable rights."
     },
     {
       "icon": "📦",
@@ -60,41 +60,41 @@
       "Enter the UTR / transaction reference after payment.",
       "Place your order and track every update from My Celebration."
     ],
-    "policyConsent": "I agree to the order policy. This is a prepaid customized order. Change-of-mind returns do not apply to personalized/custom hampers. Verified wrong, damaged or defective item claims are covered as per the protection policy."
+    "policyConsent": "I agree to the order and protection policy and acknowledge the privacy policy. This is a prepaid customized order. Eligible wrong, damaged, defective or missing-item claims remain subject to the protection policy and applicable rights."
   },
   "policy": {
     "title": "Know the important details before you order.",
-    "lead": "Payment, customization, packing and issue-protection terms are shown clearly so you know what to expect.",
+    "lead": "Payment, customization, packing, delivery and issue-protection terms are shown clearly so you know what to expect.",
     "cards": [
       {
         "icon": "💳",
         "title": "Payment",
-        "body": "Orders are prepaid. Payment is confirmed after the submitted UPI reference matches the received payment."
+        "body": "Orders are prepaid. Gateway payments are confirmed from the payment provider/server status. Manual UPI, when available, may require a transaction reference for verification. Order processing starts only after payment is verified."
       },
       {
         "icon": "🎀",
         "title": "Customized orders",
-        "body": "Personalized hampers are made to your instructions, so normal change-of-mind returns do not apply."
+        "body": "Personalized or custom hampers are prepared to your instructions, so change-of-mind cancellation or return eligibility may be limited. This does not affect rights that cannot legally be excluded."
       },
       {
         "icon": "🛡️",
-        "title": "Wrong / damaged / defective",
-        "body": "Eligible verified issues are covered by refund or replacement protection. Relevant proof may be required for review."
+        "title": "Wrong / damaged / defective / missing",
+        "body": "Eligible verified issues can be reviewed for refund, replacement or another appropriate resolution. Relevant photos, video, packaging or other proof may be requested where reasonably needed."
       },
       {
         "icon": "🎥",
         "title": "Packing video",
-        "body": "A packing video is shared before dispatch so you can review the finished hamper."
+        "body": "Where the packing-video feature is available for your order, a video of the finished hamper is shared before dispatch for review."
       },
       {
         "icon": "🔁",
         "title": "Product substitutions",
-        "body": "If a major substitution is needed because of stock, size or presentation constraints, we’ll ask you before making the change."
+        "body": "If a material substitution is needed because of stock, size or presentation constraints, we’ll seek confirmation before making that major change."
       },
       {
         "icon": "📅",
-        "title": "Required delivery date",
-        "body": "Your selected date is treated as a requirement. Final feasibility depends on preparation time, pincode and courier serviceability."
+        "title": "Requested delivery date",
+        "body": "The date you select is your requested delivery-by date. Feasibility depends on preparation time, pincode and courier serviceability, and is not guaranteed until confirmed."
       }
     ]
   },
