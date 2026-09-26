@@ -4,6 +4,7 @@
 @import "../styles/builder.css";
 @import "../styles/promise.css";
 @import "../styles/policy.css";
+@import "../styles/account.css";
 @import "../styles/runtime-config.css";
 @import "../styles/ux.css";
 @import "../styles/campaigns.css";
@@ -18,3 +19,4 @@
 @import "../styles/storefront-modern.css";
 @import "../styles/hero-premium-v2.css";
 @import "../styles/payment-return.css";
+@import "../styles/checkout-v2.css";
