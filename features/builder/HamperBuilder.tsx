@@ -208,6 +208,15 @@ export function HamperBuilder({ state }: { state: ReturnType<typeof useHamperBui
     await order.submit({ ...submitArgs, offerQuoteId, checkout: { ...state.checkout, phone: customer.account.phone } })
   }
 
+  async function pay(offerQuoteId?: string | null) {
+    if (!customer.account) {
+      notifyUx({ title: "Almost there", body: "Login or create your account, then continue to secure payment without losing your hamper choices.", tone: "info" })
+      openAuth()
+      return
+    }
+    await order.pay({ ...submitArgs, offerQuoteId, checkout: { ...state.checkout, phone: customer.account.phone } })
+  }
+
   async function authenticated(account: NonNullable<typeof customer.account>) {
     const customerName = state.checkout.customerName.trim() || account.displayName
     state.updateField("phone", account.phone)
@@ -240,7 +249,7 @@ export function HamperBuilder({ state }: { state: ReturnType<typeof useHamperBui
           {state.step === 1 && <BudgetStep tierId={state.tierId} occasion={state.checkout.occasion} tiers={state.tiers} occasions={state.occasions} onTier={state.selectTier} onOccasion={(value) => state.updateField("occasion", value)} onNext={() => moveToStep(2)} />}
           {state.step === 2 && <ProductStep catalog={state.catalog} tier={state.tier} products={state.filteredProducts} categories={state.categories} category={state.category} search={state.search} selected={state.selected} pointsUsed={state.pointsUsed} onCategory={state.setCategory} onSearch={state.setSearch} onToggle={state.toggleProduct} onBack={() => moveToStep(1)} onNext={() => moveToStep(3)} />}
           {state.step === 3 && <DetailsStep tier={state.tier} checkout={state.checkout} selectedNames={state.selectedNames} occasions={state.occasions} error={state.detailsError} fieldErrors={state.detailsFieldErrors} updateField={state.updateField} onBack={() => moveToStep(2)} onNext={moveToPayment} />}
-          {state.step === 4 && <PaymentStep tier={state.tier} checkout={state.checkout} selectedProductIds={state.selected} selectedNames={state.selectedNames} accepted={state.accepted} submitting={order.submitting} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} onAccepted={state.setAccepted} onReference={(value) => state.updateField("paymentReference", value)} onBack={() => moveToStep(3)} onSubmit={submit} onWhatsapp={openWhatsapp} onLogin={openAuth} onNewOrder={startAnotherOrder} />}
+          {state.step === 4 && <PaymentStep tier={state.tier} checkout={state.checkout} selectedProductIds={state.selected} selectedNames={state.selectedNames} accepted={state.accepted} submitting={order.submitting} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} gatewayProvider={order.gatewayProvider} onAccepted={state.setAccepted} onReference={(value) => state.updateField("paymentReference", value)} onBack={() => moveToStep(3)} onSubmit={submit} onPay={pay} onWhatsapp={openWhatsapp} onLogin={openAuth} onNewOrder={startAnotherOrder} />}
         </div>
       </div>
 

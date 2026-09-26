@@ -42,7 +42,7 @@ export type NormalizedOrder = {
   pincode: string
   occasion: string
   message: string
-  paymentReference: string
+  paymentReference: string | null
   policyVersion: string
   idempotencyKey: string
 }
@@ -66,7 +66,13 @@ function isRealIsoDate(value: string) {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
 }
 
-export function normalizeOrderInput(input: CreateOrderInput, timezone: string, catalog: CatalogConfig): NormalizedOrder {
+export function normalizeOrderInput(
+  input: CreateOrderInput,
+  timezone: string,
+  catalog: CatalogConfig,
+  options: { requirePaymentReference?: boolean } = {}
+): NormalizedOrder {
+  const requirePaymentReference = options.requirePaymentReference !== false
   const tierId = sanitizeText(input.tierId, validation.tierIdMax)
   const tier = tierById(catalog, tierId)
   if (!tier) throw new OrderValidationError("INVALID_TIER")
@@ -89,7 +95,8 @@ export function normalizeOrderInput(input: CreateOrderInput, timezone: string, c
   const requiredDate = sanitizeText(input.requiredDate, 10)
   const occasion = sanitizeText(input.occasion, validation.occasionMax)
   const message = sanitizeText(input.message, validation.messageMax)
-  const paymentReference = normalizePaymentReference(input.paymentReference)
+  const paymentReferenceValue = normalizePaymentReference(input.paymentReference)
+  const paymentReference = paymentReferenceValue || null
   const policyVersion = sanitizeText(input.policyVersion, validation.policyVersionMax)
   const idempotencyKey = sanitizeText(input.idempotencyKey, validation.idempotencyKeyMax)
 
@@ -104,7 +111,9 @@ export function normalizeOrderInput(input: CreateOrderInput, timezone: string, c
     !occasion
 
   if (missing) throw new OrderValidationError("MISSING_REQUIRED_FIELDS")
-  if (paymentReference.length < validation.paymentReference.min) throw new OrderValidationError("INVALID_PAYMENT_REFERENCE")
+  if (requirePaymentReference && (!paymentReference || paymentReference.length < validation.paymentReference.min)) {
+    throw new OrderValidationError("INVALID_PAYMENT_REFERENCE")
+  }
   if (!catalog.occasions.includes(occasion)) throw new OrderValidationError("INVALID_OCCASION")
   if (policyVersion !== orderConfig.policyVersion || input.policyAccepted !== true) throw new OrderValidationError("POLICY_VERSION_MISMATCH")
   if (!isUuidV4(idempotencyKey)) throw new OrderValidationError("INVALID_IDEMPOTENCY_KEY")

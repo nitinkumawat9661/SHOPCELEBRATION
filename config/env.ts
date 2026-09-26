@@ -16,7 +16,17 @@ export const env = {
   r2AccountId: read("R2_ACCOUNT_ID"),
   r2AccessKeyId: read("R2_ACCESS_KEY_ID"),
   r2SecretAccessKey: read("R2_SECRET_ACCESS_KEY"),
-  r2Bucket: read("R2_BUCKET")
+  r2Bucket: read("R2_BUCKET"),
+  paymentProvider: read("PAYMENT_PROVIDER"),
+  paymentMode: read("PAYMENT_MODE"),
+  appBaseUrl: read("APP_BASE_URL"),
+  razorpayKeyId: read("RAZORPAY_KEY_ID"),
+  razorpayKeySecret: read("RAZORPAY_KEY_SECRET"),
+  razorpayWebhookSecret: read("RAZORPAY_WEBHOOK_SECRET"),
+  cashfreeAppId: read("CASHFREE_APP_ID"),
+  cashfreeSecretKey: read("CASHFREE_SECRET_KEY"),
+  cashfreeWebhookSecret: read("CASHFREE_WEBHOOK_SECRET"),
+  cashfreeApiVersion: read("CASHFREE_API_VERSION")
 } as const
 
 export function requireEnv<K extends keyof typeof env>(key: K) {
