@@ -33,6 +33,29 @@ CREATE UNIQUE INDEX IF NOT EXISTS orders_provider_payment_uq
   ON orders (payment_provider, provider_payment_id)
   WHERE provider_payment_id IS NOT NULL;
 
+CREATE TABLE IF NOT EXISTS payment_attempts (
+  id text PRIMARY KEY,
+  order_id text NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  attempt_no integer NOT NULL CHECK (attempt_no > 0),
+  provider text NOT NULL,
+  provider_order_id text NOT NULL,
+  provider_session_id text,
+  provider_payment_id text,
+  status text NOT NULL DEFAULT 'pending',
+  error_code text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT payment_attempts_order_no_uq UNIQUE (order_id, attempt_no),
+  CONSTRAINT payment_attempts_provider_order_uq UNIQUE (provider, provider_order_id)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS payment_attempts_provider_payment_uq
+  ON payment_attempts (provider, provider_payment_id)
+  WHERE provider_payment_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS payment_attempts_order_created_idx
+  ON payment_attempts (order_id, created_at DESC);
+
 CREATE TABLE IF NOT EXISTS payment_events (
   id text PRIMARY KEY,
   provider text NOT NULL,
