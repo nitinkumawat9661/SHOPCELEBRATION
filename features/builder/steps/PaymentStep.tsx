@@ -171,7 +171,7 @@ export function PaymentStep({
   function automatedPaymentClick() {
     setPaymentStarted(true)
     setShowPaymentReturn(false)
-    trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId, provider: gatewayProvider || "gateway" })
+    trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId })
     onPay(quote?.id)
   }
 
@@ -200,7 +200,7 @@ export function PaymentStep({
           </div>}
           {customerAccount && quoteError && <div className="checkoutPriceNote">{quoteError}</div>}
 
-          <div className={`paymentBox ${gatewayEnabled ? "automatedPaymentBox" : ""}`}>
+          <div className={`paymentBox ${gatewayEnabled ? "automatedPaymentBox" : ""}`} data-payment-provider={gatewayProvider || undefined}>
             <div className="paymentSticker">{gatewayEnabled ? "✓" : copy.paymentIcon}</div>
             <div>
               <span>{gatewayEnabled ? "SECURE ONLINE PAYMENT" : copy.payable}</span>
