@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 import { routes } from "../../../../config/routes"
 import { getCustomerSession } from "../../../../lib/security/customer-session"
 import { paymentAttemptPublicOrderId } from "../../../../lib/server/payments/access"
-import { getPaymentOrder, paymentOrderClientResult } from "../../../../lib/server/payments/store"
+import { verifyProviderReturn } from "../../../../lib/server/payments/provider"
+import { applyProviderPaymentResult, getPaymentOrder, paymentOrderClientResult } from "../../../../lib/server/payments/store"
 
 export async function GET(request: Request) {
   const session = await getCustomerSession()
@@ -18,8 +19,17 @@ export async function GET(request: Request) {
   })
   if (!publicOrderId) return NextResponse.json({ ok: false, error: "PAYMENT_ORDER_NOT_FOUND" }, { status: 404 })
 
-  const order = await getPaymentOrder(publicOrderId, session.accountId)
+  let order = await getPaymentOrder(publicOrderId, session.accountId)
   if (!order) return NextResponse.json({ ok: false, error: "PAYMENT_ORDER_NOT_FOUND" }, { status: 404 })
+
+  if (order.paymentStatus !== "paid" && order.status !== "payment_verified") {
+    try {
+      const providerResult = await verifyProviderReturn({ provider: "cashfree", providerOrderId })
+      order = await applyProviderPaymentResult(providerResult)
+    } catch (error) {
+      console.warn("payment-return-status-refresh", error)
+    }
+  }
 
   const client = paymentOrderClientResult(order)
   return NextResponse.json({
