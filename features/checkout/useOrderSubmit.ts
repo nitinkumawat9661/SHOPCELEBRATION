@@ -29,6 +29,8 @@ export type CreatedOrder = {
   campaignTitle: string | null
 }
 
+export type PaymentUiState = "idle" | "processing" | "pending" | "failed" | "paid"
+
 type PaymentCheckout =
   | { provider: "razorpay"; mode: "test" | "live"; providerOrderId: string; keyId: string; amountPaise: number; currency: "INR" }
   | { provider: "cashfree"; mode: "test" | "live"; providerOrderId: string; paymentSessionId: string; amountPaise: number; currency: "INR" }
@@ -45,6 +47,8 @@ type PaymentResult = {
   payablePaise?: number
   campaignId?: string | null
   campaignTitle?: string | null
+  paymentStatus?: string
+  status?: string
   checkout?: PaymentCheckout
 }
 
@@ -109,6 +113,8 @@ export function useOrderSubmit() {
   const [gatewayLoading, setGatewayLoading] = useState(true)
   const [gatewayEnabled, setGatewayEnabled] = useState(false)
   const [gatewayProvider, setGatewayProvider] = useState<"razorpay" | "cashfree" | null>(null)
+  const [paymentState, setPaymentState] = useState<PaymentUiState>("idle")
+  const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -160,6 +166,8 @@ export function useOrderSubmit() {
   async function submit(args: SubmitArgs) {
     setError("")
     setCreated(null)
+    setPaymentState("idle")
+    setPaymentOrderId(null)
 
     const detailsError = validateBase(args)
     if (detailsError) {
@@ -212,12 +220,14 @@ export function useOrderSubmit() {
   }
 
   async function waitForWebhook(orderId: string) {
+    let latest: PaymentResult | null = null
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const result = await fetchPaymentStatus(orderId)
-      if (result?.paid) return result
+      if (result) latest = result
+      if (result?.paid || result?.paymentStatus === "failed") return result
       await new Promise((resolve) => window.setTimeout(resolve, 1200 + attempt * 300))
     }
-    return null
+    return latest
   }
 
   async function launchRazorpay(checkout: Extract<PaymentCheckout, { provider: "razorpay" }>, args: SubmitArgs, publicOrderId: string) {
@@ -271,6 +281,16 @@ export function useOrderSubmit() {
     return verified.paid ? verified : waitForWebhook(publicOrderId)
   }
 
+  function applyUnpaidState(result: PaymentResult | null) {
+    if (result?.paymentStatus === "failed") {
+      setPaymentState("failed")
+      setError("Payment was not completed. Your order is saved; you can try payment again safely.")
+      return
+    }
+    setPaymentState("pending")
+    setError("")
+  }
+
   async function pay(args: SubmitArgs) {
     setError("")
     setCreated(null)
@@ -284,6 +304,7 @@ export function useOrderSubmit() {
       return null
     }
 
+    setPaymentState("processing")
     setSubmitting(true)
     try {
       const response = await fetch(routes.api.paymentCreate, {
@@ -293,9 +314,11 @@ export function useOrderSubmit() {
       })
       const started = await response.json() as PaymentResult
       if (!response.ok || !started.ok) throw new Error(paymentError(started.error))
+      if (started.orderId) setPaymentOrderId(started.orderId)
       if (started.paid) {
         const completed = createdFromResult(started)
         if (!completed) throw new Error(paymentError())
+        setPaymentState("paid")
         setCreated(completed)
         return completed
       }
@@ -306,13 +329,42 @@ export function useOrderSubmit() {
         : await launchCashfree(started.checkout, started.orderId)
 
       if (!result?.paid) {
-        setError("Payment was not confirmed. If money was debited, the status will update automatically; you can safely check or retry.")
+        applyUnpaidState(result)
         return null
       }
       const completed = createdFromResult(result)
       if (!completed) throw new Error(paymentError())
+      setPaymentState("paid")
       setCreated(completed)
       return completed
+    } catch (cause) {
+      setPaymentState((current) => current === "processing" ? "idle" : current)
+      setError(cause instanceof Error ? cause.message : paymentError())
+      return null
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function refreshPayment() {
+    if (!paymentOrderId) return null
+    setSubmitting(true)
+    setError("")
+    try {
+      const result = await fetchPaymentStatus(paymentOrderId)
+      if (!result) {
+        setError("We couldn’t refresh the payment status right now. Try again in a moment.")
+        return null
+      }
+      if (result.paid) {
+        const completed = createdFromResult(result)
+        if (!completed) throw new Error(paymentError())
+        setPaymentState("paid")
+        setCreated(completed)
+        return completed
+      }
+      applyUnpaidState(result)
+      return null
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : paymentError())
       return null
@@ -326,6 +378,8 @@ export function useOrderSubmit() {
     setSubmitting(false)
     setError("")
     setCreated(null)
+    setPaymentState("idle")
+    setPaymentOrderId(null)
   }
 
   function whatsappUrl(args: SubmitArgs, createdOrder: CreatedOrder, supportNumber?: string) {
@@ -354,10 +408,13 @@ export function useOrderSubmit() {
     created,
     submit,
     pay,
+    refreshPayment,
     reset,
     whatsappUrl,
     gatewayLoading,
     gatewayEnabled,
-    gatewayProvider
+    gatewayProvider,
+    paymentState,
+    paymentOrderId
   }
 }
