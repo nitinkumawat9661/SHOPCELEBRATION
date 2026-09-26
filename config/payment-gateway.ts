@@ -33,9 +33,17 @@ export const paymentGatewayConfig = {
 export function paymentGatewayReady() {
   if (!paymentGatewayConfig.provider || !paymentGatewayConfig.appBaseUrl) return false
   if (paymentGatewayConfig.provider === "razorpay") {
-    return Boolean(paymentGatewayConfig.razorpay.keyId && paymentGatewayConfig.razorpay.keySecret)
+    return Boolean(
+      paymentGatewayConfig.razorpay.keyId &&
+      paymentGatewayConfig.razorpay.keySecret &&
+      paymentGatewayConfig.razorpay.webhookSecret
+    )
   }
-  return Boolean(paymentGatewayConfig.cashfree.appId && paymentGatewayConfig.cashfree.secretKey)
+  return Boolean(
+    paymentGatewayConfig.cashfree.appId &&
+    paymentGatewayConfig.cashfree.secretKey &&
+    paymentGatewayConfig.cashfree.webhookSecret
+  )
 }
 
 export function requirePaymentGateway() {
