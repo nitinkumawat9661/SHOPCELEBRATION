@@ -17,7 +17,8 @@ export function BudgetStep({ tierId, occasion, tiers, occasions, onTier, onOccas
         <div><h3>{copy.title}</h3><p>{copy.body}</p></div>
         <select className="selectOcc" aria-label="Occasion" value={occasion} onChange={(event) => onOccasion(event.target.value)}>{occasions.map((item) => <option key={item}>{item}</option>)}</select>
       </div>
-      <div className="tierSmall">{tiers.map((item) => <button type="button" key={item.id} className={tierId === item.id ? "active" : ""} onClick={() => onTier(item.id)}><b>{formatMoney(item.price)}</b><span>{item.name} • {item.size}</span></button>)}</div>
+      <div className="tierSmall">{tiers.map((item) => <button type="button" key={item.id} className={tierId === item.id ? "active" : ""} onClick={() => onTier(item.id)}><b>{formatMoney(item.price)}</b><span>{item.name} • {item.maxChoices} items included • {item.size}</span></button>)}</div>
+      <div className="curatedMixNotice"><span aria-hidden="true">✦</span><div><b>Celebration curates the gift mix</b><small>You choose the budget and occasion. We choose the products that fit the hamper; the item count shown above stays fixed.</small></div></div>
       <div className="nextRow"><button type="button" className="primary" onClick={onNext}>{copy.next}</button></div>
     </div>
   )
