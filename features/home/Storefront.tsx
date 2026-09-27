@@ -21,7 +21,6 @@ type StorefrontProps = {
 
 export function Storefront({ initialCatalog, initialSocialProof = null, initialSettings }: StorefrontProps) {
   const tiers = initialCatalog.tiers.filter((item) => item.active !== false)
-  const products = initialCatalog.products.filter((item) => item.active !== false)
 
   return (
     <main className="storefrontMotionRoot">
@@ -29,7 +28,7 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
       <div className="storefrontMotionContent">
         <TrustStrip />
         <StorefrontHeader settings={initialSettings} />
-        <Hero tiers={tiers} products={products} />
+        <Hero tiers={tiers} />
         <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={initialSocialProof} />
       </div>
     </main>
