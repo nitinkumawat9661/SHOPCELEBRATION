@@ -14,6 +14,13 @@
     "passwordMax": 72,
     "displayNameMax": 80
   },
+  "passwordReset": {
+    "otpDigits": 6,
+    "otpTtlSeconds": 600,
+    "verificationTtlSeconds": 600,
+    "resendCooldownSeconds": 45,
+    "maxOtpAttempts": 5
+  },
   "address": {
     "min": 8,
     "max": 500
@@ -112,6 +119,18 @@
     "customerLogin": {
       "windowSeconds": 900,
       "max": 10
+    },
+    "passwordResetRequest": {
+      "windowSeconds": 900,
+      "max": 5
+    },
+    "passwordResetVerify": {
+      "windowSeconds": 900,
+      "max": 10
+    },
+    "passwordResetComplete": {
+      "windowSeconds": 900,
+      "max": 5
     },
     "customerMutation": {
       "windowSeconds": 60,

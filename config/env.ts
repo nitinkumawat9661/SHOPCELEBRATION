@@ -26,7 +26,12 @@ export const env = {
   cashfreeAppId: read("CASHFREE_APP_ID"),
   cashfreeSecretKey: read("CASHFREE_SECRET_KEY"),
   cashfreeWebhookSecret: read("CASHFREE_WEBHOOK_SECRET"),
-  cashfreeApiVersion: read("CASHFREE_API_VERSION")
+  cashfreeApiVersion: read("CASHFREE_API_VERSION"),
+  smsProvider: read("SMS_PROVIDER"),
+  msg91AuthKey: read("MSG91_AUTH_KEY"),
+  msg91TemplateId: read("MSG91_TEMPLATE_ID"),
+  msg91OtpVariable: read("MSG91_OTP_VARIABLE"),
+  passwordResetSecret: read("PASSWORD_RESET_SECRET")
 } as const
 
 export function requireEnv<K extends keyof typeof env>(key: K) {
@@ -44,7 +49,7 @@ export function requirePositiveIntegerEnv<K extends "issueReportWindowHours">(ke
   return value
 }
 
-export function requireSecret<K extends "trackingSecret" | "adminSessionSecret">(key: K) {
+export function requireSecret<K extends "trackingSecret" | "adminSessionSecret" | "passwordResetSecret">(key: K) {
   const value = requireEnv(key)
   if (value.length < securityConfig.minimumSecretLength) {
     throw new Error(`Environment secret is too short: ${String(key)}`)
