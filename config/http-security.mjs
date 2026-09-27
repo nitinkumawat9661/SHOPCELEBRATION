@@ -4,14 +4,14 @@ export const httpSecurity = {
     "base-uri 'self'",
     "form-action 'self' https://*.razorpay.com https://*.cashfree.com",
     "frame-ancestors 'none'",
-    "frame-src 'self' https://*.razorpay.com https://*.cashfree.com https://www.google.com https://recaptcha.google.com",
+    "frame-src 'self' https://*.razorpay.com https://*.cashfree.com https://www.google.com https://recaptcha.google.com https://hcaptcha.com https://*.hcaptcha.com",
     "object-src 'none'",
     "img-src 'self' data: blob: https://*.razorpay.com https://*.cashfree.com https://www.gstatic.com https://www.google.com",
     "media-src 'self' blob: https:",
     "font-src 'self' https://fonts.gstatic.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://sdk.cashfree.com https://verify.msg91.com https://www.google.com https://www.gstatic.com",
-    "connect-src 'self' https://*.r2.cloudflarestorage.com https://*.razorpay.com https://*.cashfree.com https://verify.msg91.com https://control.msg91.com https://www.google.com https://www.gstatic.com"
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://hcaptcha.com https://*.hcaptcha.com",
+    "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://sdk.cashfree.com https://verify.msg91.com https://www.google.com https://www.gstatic.com https://hcaptcha.com https://*.hcaptcha.com",
+    "connect-src 'self' https://*.r2.cloudflarestorage.com https://*.razorpay.com https://*.cashfree.com https://verify.msg91.com https://control.msg91.com https://www.google.com https://www.gstatic.com https://hcaptcha.com https://*.hcaptcha.com"
   ].join("; "),
   headers: [
     ["X-Content-Type-Options", "nosniff"],
