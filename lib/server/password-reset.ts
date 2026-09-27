@@ -1,30 +1,18 @@
-import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto"
+import { createHmac, randomUUID } from "node:crypto"
 import { env, requireSecret } from "../../config/env"
 import { securityConfig } from "../../config/security"
-import { smsReady } from "../../config/sms"
+import { smsConfig, smsReady } from "../../config/sms"
 import { validation } from "../../config/validation"
 import { isValidCustomerPassword } from "../security/customer-password"
 import { signValue, verifySignedValue } from "../security/tokens"
 import { customerAccountView, findCustomerAccountByPhone, normalizeCustomerPhone, resetCustomerPassword } from "./customer-accounts"
 import { query } from "./db"
-import { sendPasswordResetOtp, SmsProviderError } from "./sms/provider"
+import { verifyPasswordResetAccessToken as verifyMsg91AccessToken, SmsProviderError } from "./sms/provider"
 
 export class PasswordResetError extends Error {
   constructor(public readonly code: string, public readonly status = 422) {
     super(code)
   }
-}
-
-type ChallengeRow = {
-  id: string
-  customer_account_id: string
-  phone: string
-  otp_hash: string
-  expires_at: Date
-  verified_at: Date | null
-  consumed_at: Date | null
-  attempts: number
-  created_at: Date
 }
 
 type ResetTokenPayload = {
@@ -38,16 +26,10 @@ function resetSecretReady() {
   return env.passwordResetSecret.length >= securityConfig.minimumSecretLength
 }
 
-function otpHash(challengeId: string, otp: string) {
+function challengeProof(challengeId: string, accessToken: string) {
   return createHmac(securityConfig.hashAlgorithm, requireSecret("passwordResetSecret"))
-    .update(`password-reset:${challengeId}:${otp}`)
+    .update(`msg91-widget:${challengeId}:${accessToken}`)
     .digest("hex")
-}
-
-function equalHex(a: string, b: string) {
-  const left = Buffer.from(a, "hex")
-  const right = Buffer.from(b, "hex")
-  return left.length === right.length && timingSafeEqual(left, right)
 }
 
 function createResetToken(challengeId: string, accountId: string) {
@@ -75,35 +57,39 @@ function parseResetToken(token: unknown): ResetTokenPayload | null {
 }
 
 export async function requestPasswordReset(phoneInput: unknown) {
-  const phone = normalizeCustomerPhone(phoneInput)
+  normalizeCustomerPhone(phoneInput)
   if (!smsReady() || !resetSecretReady()) throw new PasswordResetError("SMS_OTP_UNAVAILABLE", 503)
 
-  const account = await findCustomerAccountByPhone(phone)
-  const generic = {
+  return {
     ok: true as const,
-    requestId: randomUUID(),
+    widgetId: smsConfig.msg91.widgetId,
+    tokenAuth: smsConfig.msg91.widgetToken,
     expiresInSeconds: validation.passwordReset.otpTtlSeconds,
     resendAfterSeconds: validation.passwordReset.resendCooldownSeconds
   }
+}
 
-  if (!account) return generic
+export async function verifyPasswordResetAccessToken(input: { phone?: unknown; accessToken?: unknown }) {
+  const phone = normalizeCustomerPhone(input.phone)
+  const accessToken = typeof input.accessToken === "string" ? input.accessToken.trim() : ""
+  if (!accessToken) throw new PasswordResetError("INVALID_OTP", 401)
+  if (!smsReady() || !resetSecretReady()) throw new PasswordResetError("SMS_OTP_UNAVAILABLE", 503)
 
-  const latest = await query<{ id: string; created_at: Date }>(
-    `SELECT id, created_at FROM customer_password_reset_challenges
-      WHERE customer_account_id = $1 AND consumed_at IS NULL
-      ORDER BY created_at DESC LIMIT 1`,
-    [account.id]
-  )
-  const latestChallenge = latest.rows[0]
-  const lastCreated = latestChallenge?.created_at?.getTime() || 0
-  const cooldownMs = validation.passwordReset.resendCooldownSeconds * 1000
-  if (latestChallenge && lastCreated && Date.now() - lastCreated < cooldownMs) {
-    return {
-      ...generic,
-      requestId: latestChallenge.id,
-      resendAfterSeconds: Math.ceil((cooldownMs - (Date.now() - lastCreated)) / 1000)
+  let verifiedIdentifier = ""
+  try {
+    const verified = await verifyMsg91AccessToken(accessToken)
+    verifiedIdentifier = normalizeCustomerPhone(verified.identifier)
+  } catch (error) {
+    if (error instanceof SmsProviderError) {
+      throw new PasswordResetError(error.code === "SMS_PROVIDER_UNAVAILABLE" ? "SMS_OTP_UNAVAILABLE" : "INVALID_OTP", error.code === "SMS_PROVIDER_UNAVAILABLE" ? 503 : 401)
     }
+    throw error
   }
+
+  if (verifiedIdentifier !== phone) throw new PasswordResetError("INVALID_OTP", 401)
+
+  const account = await findCustomerAccountByPhone(phone)
+  if (!account) throw new PasswordResetError("ACCOUNT_NOT_FOUND", 404)
 
   await query(
     `UPDATE customer_password_reset_challenges
@@ -112,59 +98,16 @@ export async function requestPasswordReset(phoneInput: unknown) {
     [account.id]
   )
 
-  const otp = String(randomInt(10 ** (validation.passwordReset.otpDigits - 1), 10 ** validation.passwordReset.otpDigits))
   const challengeId = randomUUID()
-  const expiresAt = new Date(Date.now() + validation.passwordReset.otpTtlSeconds * 1000)
+  const expiresAt = new Date(Date.now() + validation.passwordReset.verificationTtlSeconds * 1000)
   await query(
     `INSERT INTO customer_password_reset_challenges
-      (id, customer_account_id, phone, otp_hash, expires_at)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [challengeId, account.id, phone, otpHash(challengeId, otp), expiresAt]
+      (id, customer_account_id, phone, otp_hash, expires_at, verified_at)
+     VALUES ($1, $2, $3, $4, $5, now())`,
+    [challengeId, account.id, phone, challengeProof(challengeId, accessToken), expiresAt]
   )
 
-  try {
-    await sendPasswordResetOtp(phone, otp)
-  } catch (error) {
-    await query(`DELETE FROM customer_password_reset_challenges WHERE id = $1`, [challengeId]).catch(() => undefined)
-    if (error instanceof SmsProviderError) throw new PasswordResetError(error.code, 503)
-    throw error
-  }
-
-  return { ...generic, requestId: challengeId }
-}
-
-export async function verifyPasswordResetOtp(input: { phone?: unknown; requestId?: unknown; otp?: unknown }) {
-  const phone = normalizeCustomerPhone(input.phone)
-  const requestId = typeof input.requestId === "string" ? input.requestId.trim() : ""
-  const otp = typeof input.otp === "string" ? input.otp.trim() : ""
-  if (!requestId || !new RegExp(`^\\d{${validation.passwordReset.otpDigits}}$`).test(otp)) {
-    throw new PasswordResetError("INVALID_OTP", 401)
-  }
-
-  const result = await query<ChallengeRow>(
-    `SELECT id, customer_account_id, phone, otp_hash, expires_at, verified_at, consumed_at, attempts, created_at
-       FROM customer_password_reset_challenges
-      WHERE id = $1 AND phone = $2 LIMIT 1`,
-    [requestId, phone]
-  )
-  const challenge = result.rows[0]
-  if (!challenge || challenge.consumed_at || challenge.expires_at.getTime() <= Date.now() || challenge.attempts >= validation.passwordReset.maxOtpAttempts) {
-    throw new PasswordResetError("INVALID_OTP", 401)
-  }
-
-  await query(
-    `UPDATE customer_password_reset_challenges SET attempts = attempts + 1, updated_at = now() WHERE id = $1`,
-    [challenge.id]
-  )
-
-  if (!equalHex(challenge.otp_hash, otpHash(challenge.id, otp))) throw new PasswordResetError("INVALID_OTP", 401)
-
-  await query(
-    `UPDATE customer_password_reset_challenges SET verified_at = now(), updated_at = now() WHERE id = $1`,
-    [challenge.id]
-  )
-
-  return { ok: true as const, resetToken: createResetToken(challenge.id, challenge.customer_account_id) }
+  return { ok: true as const, resetToken: createResetToken(challengeId, account.id) }
 }
 
 export async function completePasswordReset(input: { resetToken?: unknown; password?: unknown }) {
