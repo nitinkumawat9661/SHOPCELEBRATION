@@ -28,9 +28,9 @@ export const env = {
   cashfreeWebhookSecret: read("CASHFREE_WEBHOOK_SECRET"),
   cashfreeApiVersion: read("CASHFREE_API_VERSION"),
   smsProvider: read("SMS_PROVIDER"),
+  msg91WidgetId: read("MSG91_WIDGET_ID"),
+  msg91WidgetToken: read("MSG91_WIDGET_TOKEN"),
   msg91AuthKey: read("MSG91_AUTH_KEY"),
-  msg91TemplateId: read("MSG91_TEMPLATE_ID"),
-  msg91OtpVariable: read("MSG91_OTP_VARIABLE"),
   passwordResetSecret: read("PASSWORD_RESET_SECRET")
 } as const
 
