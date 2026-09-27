@@ -278,9 +278,14 @@ export function CustomerAuthPanel({
     try {
       const localPhone = normalizeIndianMobile(phone)
       setPhone(localPhone)
-      const config = await fetchResetConfig(localPhone)
-      if (!config) return
-      await initializeWidget(config, localPhone)
+      let resendAfterSeconds = 45
+
+      if (!widgetReady) {
+        const config = await fetchResetConfig(localPhone)
+        if (!config) return
+        resendAfterSeconds = config.resendAfterSeconds
+        await initializeWidget(config, localPhone)
+      }
 
       const captchaBox = document.getElementById("celebration-msg91-captcha")
       if (captchaBox?.childElementCount && window.isCaptchaVerified?.() === false) {
@@ -291,7 +296,7 @@ export function CustomerAuthPanel({
       if (!window.sendOtp) throw new Error("SMS_OTP_UNAVAILABLE")
       const result = await providerCall((success, failure) => window.sendOtp?.(`91${localPhone}`, success, failure))
       setRequestId(extractReqId(result))
-      setResendIn(config.resendAfterSeconds)
+      setResendIn(resendAfterSeconds)
       setOtp("")
       setScreen("forgot-otp")
     } catch (cause) {
