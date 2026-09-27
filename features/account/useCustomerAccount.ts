@@ -13,8 +13,9 @@ export type CustomerAccountView = {
 
 type Mode = "login" | "signup"
 
-type PasswordResetRequest = {
-  requestId: string
+export type PasswordResetRequest = {
+  widgetId: string
+  tokenAuth: string
   expiresInSeconds: number
   resendAfterSeconds: number
 }
@@ -73,10 +74,11 @@ export function useCustomerAccount() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone })
       })
-      const data = await response.json() as { ok?: boolean; requestId?: string; expiresInSeconds?: number; resendAfterSeconds?: number; error?: string }
-      if (!response.ok || !data.ok || !data.requestId) throw new Error(data.error || "PASSWORD_RESET_UNAVAILABLE")
+      const data = await response.json() as { ok?: boolean; widgetId?: string; tokenAuth?: string; expiresInSeconds?: number; resendAfterSeconds?: number; error?: string }
+      if (!response.ok || !data.ok || !data.widgetId || !data.tokenAuth) throw new Error(data.error || "PASSWORD_RESET_UNAVAILABLE")
       return {
-        requestId: data.requestId,
+        widgetId: data.widgetId,
+        tokenAuth: data.tokenAuth,
         expiresInSeconds: Number(data.expiresInSeconds) || 600,
         resendAfterSeconds: Number(data.resendAfterSeconds) || 45
       }
@@ -88,14 +90,14 @@ export function useCustomerAccount() {
     }
   }
 
-  async function verifyPasswordReset(phone: string, requestId: string, otp: string) {
+  async function verifyPasswordReset(phone: string, accessToken: string) {
     setBusy(true)
     setError("")
     try {
       const response = await fetch(routes.api.customerPasswordResetVerify, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, requestId, otp })
+        body: JSON.stringify({ phone, accessToken })
       })
       const data = await response.json() as { ok?: boolean; resetToken?: string; error?: string }
       if (!response.ok || !data.ok || !data.resetToken) throw new Error(data.error || "INVALID_OTP")
