@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { routes } from "../../config/routes"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import type { CustomerAccountView } from "./useCustomerAccount"
 
 type Mode = "login" | "signup"
 type Screen = "auth" | "forgot-phone" | "forgot-otp" | "forgot-password"
-
 type ResetRequest = { requestId: string; expiresInSeconds: number; resendAfterSeconds: number }
 
 const errorCopy: Record<string, string> = {
@@ -46,9 +46,9 @@ export function CustomerAuthPanel({
   initialName?: string
   autoFocusPhone?: boolean
   onAuthenticate: (mode: Mode, values: { phone: string; password: string; displayName?: string }) => Promise<CustomerAccountView | null>
-  onRequestPasswordReset: (phone: string) => Promise<ResetRequest | null>
-  onVerifyPasswordReset: (phone: string, requestId: string, otp: string) => Promise<string | null>
-  onCompletePasswordReset: (resetToken: string, password: string) => Promise<CustomerAccountView | null>
+  onRequestPasswordReset?: (phone: string) => Promise<ResetRequest | null>
+  onVerifyPasswordReset?: (phone: string, requestId: string, otp: string) => Promise<string | null>
+  onCompletePasswordReset?: (resetToken: string, password: string) => Promise<CustomerAccountView | null>
   onSuccess?: (account: CustomerAccountView) => void
   onClearError?: () => void
 }) {
@@ -66,6 +66,8 @@ export function CustomerAuthPanel({
   const [confirmPassword, setConfirmPassword] = useState("")
   const [resendIn, setResendIn] = useState(0)
   const [localError, setLocalError] = useState("")
+  const [resetBusy, setResetBusy] = useState(false)
+  const actionBusy = busy || resetBusy
 
   useEffect(() => {
     if (resendIn <= 0) return
@@ -76,6 +78,74 @@ export function CustomerAuthPanel({
   function clearErrors() {
     setLocalError("")
     onClearError?.()
+  }
+
+  function showApiError(code: string) {
+    setLocalError(errorCopy[code] || "We couldn’t continue. Please try again.")
+  }
+
+  async function requestReset(targetPhone: string): Promise<ResetRequest | null> {
+    if (onRequestPasswordReset) return onRequestPasswordReset(targetPhone)
+    setResetBusy(true)
+    try {
+      const response = await fetch(routes.api.customerPasswordResetRequest, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: targetPhone })
+      })
+      const data = await response.json() as { ok?: boolean; requestId?: string; expiresInSeconds?: number; resendAfterSeconds?: number; error?: string }
+      if (!response.ok || !data.ok || !data.requestId) {
+        showApiError(data.error || "PASSWORD_RESET_UNAVAILABLE")
+        return null
+      }
+      return {
+        requestId: data.requestId,
+        expiresInSeconds: Number(data.expiresInSeconds) || 600,
+        resendAfterSeconds: Number(data.resendAfterSeconds) || 45
+      }
+    } finally {
+      setResetBusy(false)
+    }
+  }
+
+  async function verifyReset(targetPhone: string, targetRequestId: string, targetOtp: string) {
+    if (onVerifyPasswordReset) return onVerifyPasswordReset(targetPhone, targetRequestId, targetOtp)
+    setResetBusy(true)
+    try {
+      const response = await fetch(routes.api.customerPasswordResetVerify, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: targetPhone, requestId: targetRequestId, otp: targetOtp })
+      })
+      const data = await response.json() as { ok?: boolean; resetToken?: string; error?: string }
+      if (!response.ok || !data.ok || !data.resetToken) {
+        showApiError(data.error || "INVALID_OTP")
+        return null
+      }
+      return data.resetToken
+    } finally {
+      setResetBusy(false)
+    }
+  }
+
+  async function completeReset(targetToken: string, targetPassword: string) {
+    if (onCompletePasswordReset) return onCompletePasswordReset(targetToken, targetPassword)
+    setResetBusy(true)
+    try {
+      const response = await fetch(routes.api.customerPasswordResetComplete, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resetToken: targetToken, password: targetPassword })
+      })
+      const data = await response.json() as { ok?: boolean; account?: CustomerAccountView; error?: string }
+      if (!response.ok || !data.ok || !data.account) {
+        showApiError(data.error || "PASSWORD_RESET_UNAVAILABLE")
+        return null
+      }
+    } finally {
+      setResetBusy(false)
+    }
+    return onAuthenticate("login", { phone, password: targetPassword })
   }
 
   function changeMode(next: Mode) {
@@ -112,7 +182,7 @@ export function CustomerAuthPanel({
   async function sendOtp(event?: React.FormEvent) {
     event?.preventDefault()
     clearErrors()
-    const result = await onRequestPasswordReset(phone)
+    const result = await requestReset(phone)
     if (!result) return
     setRequestId(result.requestId)
     setResendIn(result.resendAfterSeconds)
@@ -123,7 +193,7 @@ export function CustomerAuthPanel({
   async function verifyOtp(event: React.FormEvent) {
     event.preventDefault()
     clearErrors()
-    const token = await onVerifyPasswordReset(phone, requestId, otp)
+    const token = await verifyReset(phone, requestId, otp)
     if (!token) return
     setResetToken(token)
     setScreen("forgot-password")
@@ -140,7 +210,7 @@ export function CustomerAuthPanel({
       setLocalError("New passwords do not match.")
       return
     }
-    const account = await onCompletePasswordReset(resetToken, newPassword)
+    const account = await completeReset(resetToken, newPassword)
     if (account) onSuccess?.(account)
   }
 
@@ -153,7 +223,7 @@ export function CustomerAuthPanel({
         <form className="customerAuthForm" onSubmit={sendOtp}>
           <label className="field"><span>Mobile number <b className="requiredMark">*</b></span><input className="control" inputMode="tel" autoComplete="tel" value={phone} required onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "").slice(0, 13)); clearErrors() }} placeholder="10-digit mobile" /></label>
           {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-          <button className="primary fullWidth" disabled={busy} type="submit">{busy ? "Sending OTP…" : "Send SMS OTP"}</button>
+          <button className="primary fullWidth" disabled={actionBusy} type="submit">{actionBusy ? "Sending OTP…" : "Send SMS OTP"}</button>
           <button className="authTextButton" type="button" onClick={backToLogin}>← Back to login</button>
         </form>
       </div>
@@ -167,8 +237,8 @@ export function CustomerAuthPanel({
         <form className="customerAuthForm" onSubmit={verifyOtp}>
           <label className="field"><span>6-digit OTP <b className="requiredMark">*</b></span><input className="control otpControl" inputMode="numeric" autoComplete="one-time-code" value={otp} required maxLength={6} pattern="[0-9]{6}" onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); clearErrors() }} placeholder="••••••" /></label>
           {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-          <button className="primary fullWidth" disabled={busy || otp.length !== 6} type="submit">{busy ? "Verifying…" : "Verify OTP"}</button>
-          <div className="resetResendRow"><span>Didn’t get it?</span><button className="authTextButton" type="button" disabled={busy || resendIn > 0} onClick={() => void sendOtp()}>{resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}</button></div>
+          <button className="primary fullWidth" disabled={actionBusy || otp.length !== 6} type="submit">{actionBusy ? "Verifying…" : "Verify OTP"}</button>
+          <div className="resetResendRow"><span>Didn’t get it?</span><button className="authTextButton" type="button" disabled={actionBusy || resendIn > 0} onClick={() => void sendOtp()}>{resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}</button></div>
           <button className="authTextButton" type="button" onClick={() => setScreen("forgot-phone")}>← Change mobile number</button>
         </form>
       </div>
@@ -183,7 +253,7 @@ export function CustomerAuthPanel({
           <label className="field"><span>New password <b className="requiredMark">*</b></span><input className="control" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={newPassword} required onChange={(event) => { setNewPassword(event.target.value); clearErrors() }} placeholder="Minimum 8 characters" /></label>
           <label className="field"><span>Confirm new password <b className="requiredMark">*</b></span><input className="control" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={confirmPassword} required onChange={(event) => { setConfirmPassword(event.target.value); clearErrors() }} placeholder="Enter it again" /></label>
           {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-          <button className="primary fullWidth" disabled={busy} type="submit">{busy ? "Resetting password…" : "Reset password & continue"}</button>
+          <button className="primary fullWidth" disabled={actionBusy} type="submit">{actionBusy ? "Resetting password…" : "Reset password & continue"}</button>
         </form>
       </div>
     )
@@ -196,12 +266,10 @@ export function CustomerAuthPanel({
         <h2>{mode === "login" ? "Welcome back" : "Create your Celebration account"}</h2>
         <p>{mode === "login" ? "Login to place your order and keep all updates in one place." : "Save your orders, packing updates and shipping details in one simple dashboard."}</p>
       </div>
-
       <div className="customerAuthTabs" role="tablist" aria-label="Login or create account">
         <button type="button" role="tab" aria-selected={mode === "login"} className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")}>Login</button>
         <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "active" : ""} onClick={() => changeMode("signup")}>Create account</button>
       </div>
-
       <form className="customerAuthForm" onSubmit={submit}>
         {mode === "signup" && <label className="field"><span>Your name <b className="requiredMark">*</b></span><input className="control" value={displayName} required minLength={2} maxLength={80} autoComplete="name" onChange={(event) => { setDisplayName(event.target.value); clearErrors() }} placeholder="Full name" /></label>}
         <label className="field"><span>Mobile number <b className="requiredMark">*</b></span><input className="control" inputMode="tel" autoComplete="tel" value={phone} required autoFocus={autoFocusPhone} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "").slice(0, 13)); clearErrors() }} placeholder="10-digit mobile" /></label>
@@ -210,7 +278,6 @@ export function CustomerAuthPanel({
         {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
         <button className="primary fullWidth" disabled={busy} type="submit">{busy ? (mode === "login" ? "Signing in…" : "Creating account…") : mode === "login" ? "Login & continue" : "Create account & continue"}</button>
       </form>
-
       <div className="customerAuthHelp">
         <span>Need help?</span>
         <a href={supportWhatsappUrl("Hi Celebration, I need help with my account.", settings.whatsapp)} target="_blank" rel="noreferrer">Chat on WhatsApp</a>
