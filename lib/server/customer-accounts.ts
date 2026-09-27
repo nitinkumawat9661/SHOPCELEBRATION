@@ -18,6 +18,7 @@ export type CustomerAccount = {
   phone: string
   displayName: string
   createdAt: string
+  sessionVersion: number
 }
 
 export type CustomerOrderSummary = {
@@ -45,6 +46,7 @@ type AccountRow = {
   display_name: string
   password_hash: string
   status: string
+  session_version: number
   created_at: Date
 }
 
@@ -91,7 +93,17 @@ function publicAccount(row: AccountRow): CustomerAccount {
     id: row.id,
     phone: row.phone,
     displayName: row.display_name,
-    createdAt: row.created_at.toISOString()
+    createdAt: row.created_at.toISOString(),
+    sessionVersion: row.session_version
+  }
+}
+
+export function customerAccountView(account: CustomerAccount) {
+  return {
+    id: account.id,
+    phone: account.phone,
+    displayName: account.displayName,
+    createdAt: account.createdAt
   }
 }
 
@@ -104,7 +116,7 @@ export async function createCustomerAccount(input: { phone?: unknown; password?:
     const result = await query<AccountRow>(
       `INSERT INTO customer_accounts (id, phone, display_name, password_hash, status)
        VALUES ($1, $2, $3, $4, 'active')
-       RETURNING id, phone, display_name, password_hash, status, created_at`,
+       RETURNING id, phone, display_name, password_hash, status, session_version, created_at`,
       [randomUUID(), phone, displayName, passwordHash]
     )
     return publicAccount(result.rows[0])
@@ -120,7 +132,7 @@ export async function authenticateCustomerAccount(input: { phone?: unknown; pass
   const password = typeof input.password === "string" ? input.password : ""
   if (!isValidCustomerPassword(password)) throw new CustomerAccountError("INVALID_CREDENTIALS", 401)
   const result = await query<AccountRow>(
-    `SELECT id, phone, display_name, password_hash, status, created_at
+    `SELECT id, phone, display_name, password_hash, status, session_version, created_at
      FROM customer_accounts WHERE phone = $1 LIMIT 1`,
     [phone]
   )
@@ -133,11 +145,37 @@ export async function authenticateCustomerAccount(input: { phone?: unknown; pass
 
 export async function findCustomerAccountById(id: string) {
   const result = await query<AccountRow>(
-    `SELECT id, phone, display_name, password_hash, status, created_at
+    `SELECT id, phone, display_name, password_hash, status, session_version, created_at
      FROM customer_accounts WHERE id = $1 AND status = 'active' LIMIT 1`,
     [id]
   )
   return result.rows[0] ? publicAccount(result.rows[0]) : null
+}
+
+export async function findCustomerAccountByPhone(phone: string) {
+  const result = await query<AccountRow>(
+    `SELECT id, phone, display_name, password_hash, status, session_version, created_at
+     FROM customer_accounts WHERE phone = $1 AND status = 'active' LIMIT 1`,
+    [phone]
+  )
+  return result.rows[0] ? publicAccount(result.rows[0]) : null
+}
+
+export async function resetCustomerPassword(accountId: string, password: unknown) {
+  if (!isValidCustomerPassword(password)) throw new CustomerAccountError("INVALID_PASSWORD")
+  const passwordHash = hashCustomerPassword(password)
+  const result = await query<AccountRow>(
+    `UPDATE customer_accounts
+        SET password_hash = $2,
+            session_version = session_version + 1,
+            updated_at = now(),
+            last_login_at = now()
+      WHERE id = $1 AND status = 'active'
+      RETURNING id, phone, display_name, password_hash, status, session_version, created_at`,
+    [accountId, passwordHash]
+  )
+  if (!result.rows[0]) throw new CustomerAccountError("ACCOUNT_NOT_FOUND", 404)
+  return publicAccount(result.rows[0])
 }
 
 export async function listCustomerOrders(accountId: string, limit = 50): Promise<CustomerOrderSummary[]> {
