@@ -106,12 +106,35 @@ function nestedString(value: unknown, keys: string[]) {
   return typeof current === "string" ? current.trim() : ""
 }
 
+function directString(value: unknown) {
+  return typeof value === "string" ? value.trim() : ""
+}
+
 function extractReqId(value: unknown) {
-  return nestedString(value, ["reqId"]) || nestedString(value, ["req_id"]) || nestedString(value, ["data", "reqId"]) || nestedString(value, ["data", "req_id"])
+  return nestedString(value, ["reqId"]) ||
+    nestedString(value, ["req_id"]) ||
+    nestedString(value, ["requestId"]) ||
+    nestedString(value, ["data", "reqId"]) ||
+    nestedString(value, ["data", "req_id"]) ||
+    nestedString(value, ["data", "requestId"]) ||
+    nestedString(value, ["message"]) ||
+    nestedString(value, ["data", "message"]) ||
+    directString(value)
 }
 
 function extractAccessToken(value: unknown) {
-  return nestedString(value, ["access-token"]) || nestedString(value, ["accessToken"]) || nestedString(value, ["token"]) || nestedString(value, ["data", "access-token"]) || nestedString(value, ["data", "accessToken"]) || nestedString(value, ["data", "token"])
+  const token = nestedString(value, ["access-token"]) ||
+    nestedString(value, ["accessToken"]) ||
+    nestedString(value, ["access_token"]) ||
+    nestedString(value, ["token"]) ||
+    nestedString(value, ["data", "access-token"]) ||
+    nestedString(value, ["data", "accessToken"]) ||
+    nestedString(value, ["data", "access_token"]) ||
+    nestedString(value, ["data", "token"]) ||
+    nestedString(value, ["message"]) ||
+    nestedString(value, ["data", "message"]) ||
+    directString(value)
+  return token.length >= 20 && token.length <= 8000 ? token : ""
 }
 
 function safeProviderReason(value: unknown) {
@@ -183,6 +206,7 @@ export function CustomerAuthPanel({
   const [requestId, setRequestId] = useState("")
   const [otp, setOtp] = useState("")
   const [resetToken, setResetToken] = useState("")
+  const [verifiedAccessToken, setVerifiedAccessToken] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [resendIn, setResendIn] = useState(0)
@@ -224,6 +248,7 @@ export function CustomerAuthPanel({
     setCaptchaVerified(false)
     setResetConfig(null)
     setRequestId("")
+    setVerifiedAccessToken("")
     if (typeof document !== "undefined") document.getElementById("celebration-msg91-captcha")?.replaceChildren()
   }
 
@@ -271,7 +296,11 @@ export function CustomerAuthPanel({
     })
     const data = await response.json() as { ok?: boolean; resetToken?: string; error?: string }
     if (!response.ok || !data.ok || !data.resetToken) {
-      showApiError(data.error || "INVALID_OTP")
+      if (data.error === "INVALID_OTP") {
+        setLocalError("OTP was verified, but the secure reset handoff could not finish. Tap Continue securely to retry.")
+      } else {
+        showApiError(data.error || "PASSWORD_RESET_UNAVAILABLE")
+      }
       return null
     }
     return data.resetToken
@@ -348,6 +377,7 @@ export function CustomerAuthPanel({
       if (!window.sendOtp) throw new Error("SMS_OTP_UNAVAILABLE")
       const result = await providerCall((success, failure) => window.sendOtp?.(`91${localPhone}`, success, failure), "SMS_OTP_PROVIDER_FAILED")
       setRequestId(extractReqId(result))
+      setVerifiedAccessToken("")
       setResendIn(resetConfig?.resendAfterSeconds || 45)
       setOtp("")
       setScreen("forgot-otp")
@@ -362,6 +392,10 @@ export function CustomerAuthPanel({
 
   async function resendOtp() {
     clearErrors()
+    if (verifiedAccessToken) {
+      setLocalError("Your OTP is already verified. Tap Continue securely to finish the reset.")
+      return
+    }
     setResetBusy(true)
     try {
       if (!widgetReady || !window.retryOtp) throw new Error("SMS_OTP_UNAVAILABLE")
@@ -382,16 +416,26 @@ export function CustomerAuthPanel({
     clearErrors()
     setResetBusy(true)
     try {
-      if (!widgetReady || !window.verifyOtp) throw new Error("INVALID_OTP")
-      const result = await providerCall((success, failure) => window.verifyOtp?.(Number(otp), success, failure, requestId || undefined), "INVALID_OTP")
-      const accessToken = extractAccessToken(result)
-      if (!accessToken) throw new Error("INVALID_OTP")
+      let accessToken = verifiedAccessToken
+      if (!accessToken) {
+        if (!widgetReady || !window.verifyOtp) throw new Error("INVALID_OTP")
+        const result = await providerCall((success, failure) => window.verifyOtp?.(otp, success, failure, requestId || undefined), "INVALID_OTP")
+        accessToken = extractAccessToken(result)
+        if (!accessToken) throw new Error("INVALID_OTP")
+        setVerifiedAccessToken(accessToken)
+      }
+
       const token = await verifyAccessToken(phone, accessToken)
       if (!token) return
       setResetToken(token)
       setScreen("forgot-password")
-    } catch {
-      showApiError("INVALID_OTP")
+    } catch (cause) {
+      if (verifiedAccessToken) {
+        setLocalError("OTP is already verified. Tap Continue securely to finish the reset.")
+      } else {
+        const reason = cause instanceof Error ? safeProviderReason({ message: cause.message }) : ""
+        setLocalError(reason && !/^INVALID_OTP$/i.test(reason) ? `OTP verification failed (${reason}).` : errorCopy.INVALID_OTP)
+      }
     } finally {
       setResetBusy(false)
     }
@@ -445,12 +489,13 @@ export function CustomerAuthPanel({
   if (screen === "forgot-otp") {
     return (
       <div className="customerAuthCard customerResetCard">
-        <div className="customerAuthIntro"><div className="kicker">VERIFY MOBILE</div><h2>Enter the SMS OTP</h2><p>We sent a 6-digit code to <b>+91 {phone.slice(-10)}</b>.</p></div>
+        <div className="customerAuthIntro"><div className="kicker">VERIFY MOBILE</div><h2>{verifiedAccessToken ? "Mobile verified" : "Enter the SMS OTP"}</h2><p>{verifiedAccessToken ? "Your OTP is verified. Finish the secure handoff to choose a new password." : <>We sent a 6-digit code to <b>+91 {phone.slice(-10)}</b>.</>}</p></div>
         <form className="customerAuthForm" onSubmit={verifyOtp}>
-          <label className="field"><span>6-digit OTP <b className="requiredMark">*</b></span><input className="control otpControl" inputMode="numeric" autoComplete="one-time-code" value={otp} required maxLength={6} pattern="[0-9]{6}" onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); clearErrors() }} placeholder="••••••" /></label>
+          {!verifiedAccessToken && <label className="field"><span>6-digit OTP <b className="requiredMark">*</b></span><input className="control otpControl" inputMode="numeric" autoComplete="one-time-code" value={otp} required maxLength={6} pattern="[0-9]{6}" onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); clearErrors() }} placeholder="••••••" /></label>}
+          {verifiedAccessToken && <div className="resetVerifiedNotice"><span aria-hidden="true">✓</span><div><b>OTP verified</b><small>No need to enter or resend the OTP again.</small></div></div>}
           {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-          <button className="primary fullWidth" disabled={actionBusy || otp.length !== 6} type="submit">{actionBusy ? "Verifying…" : "Verify OTP"}</button>
-          <div className="resetResendRow"><span>Didn’t get it?</span><button className="authTextButton" type="button" disabled={actionBusy || resendIn > 0} onClick={() => void resendOtp()}>{resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}</button></div>
+          <button className="primary fullWidth" disabled={actionBusy || (!verifiedAccessToken && otp.length !== 6)} type="submit">{actionBusy ? (verifiedAccessToken ? "Finishing verification…" : "Verifying…") : verifiedAccessToken ? "Continue securely" : "Verify OTP"}</button>
+          {!verifiedAccessToken && <div className="resetResendRow"><span>Didn’t get it?</span><button className="authTextButton" type="button" disabled={actionBusy || resendIn > 0} onClick={() => void resendOtp()}>{resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}</button></div>}
           <button className="authTextButton" type="button" onClick={() => { setScreen("forgot-phone"); resetOtpWidget() }}>← Change mobile number</button>
         </form>
       </div>
