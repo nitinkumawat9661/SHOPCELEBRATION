@@ -14,7 +14,7 @@ type TierSocialProof = {
 }
 
 function valueScore(tier: Tier) {
-  return tier.price > 0 ? tier.pointBudget / tier.price : 0
+  return tier.price > 0 ? tier.maxChoices / tier.price : 0
 }
 
 function tierBadge(item: Tier, recommendedTierId: string, bestValueId: string, socialProof: TierSocialProof | null) {
@@ -38,7 +38,6 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
         </div>
         <div className="tiers">
           {tiers.map((item) => {
-            const isMostChosen = Boolean(socialProof && item.name === socialProof.tierName)
             const badge = tierBadge(item, recommendedTierId, bestValueId, socialProof)
             return (
               <button type="button" key={item.id} className={`tier ${selectedTierId === item.id ? "active" : ""}`} aria-pressed={selectedTierId === item.id} onClick={() => onSelect(item.id)}>
@@ -46,13 +45,13 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
                 <div className="name">{item.name}</div>
-                <div className="note">{isMostChosen ? `${socialProof!.sharePercent}% of tracked Celebration orders` : `Up to ${item.maxChoices} gifts`}</div>
+                <div className="note">{item.maxChoices} items included</div>
               </button>
             )
           })}
         </div>
         <div className="budgetDecisionHint">
-          <div><b>Not sure which one to choose?</b><span>Start with Recommended, or tell us your exact budget and we’ll suggest a better fit.</span></div>
+          <div><b>Not sure which one to choose?</b><span>Pick the budget that feels right. Celebration curates the products inside; the item count stays exactly as shown.</span></div>
           <a className="secondary" href="#custom-request">Build around my budget</a>
         </div>
       </div>

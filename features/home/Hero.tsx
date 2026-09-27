@@ -1,9 +1,9 @@
-import type { GiftProduct, Tier } from "../../lib/domain/catalog"
+import type { Tier } from "../../lib/domain/catalog"
 import { storeContent } from "../../lib/domain/content"
 import { formatMoney } from "../../lib/domain/money"
 import { ShapeWaves } from "../motion/ShapeWaves"
 
-export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct[] }) {
+export function Hero({ tiers }: { tiers: Tier[] }) {
   const prices = tiers.map((tier) => tier.price)
   const minPrice = prices.length ? Math.min(...prices) : 0
   const maxPrice = prices.length ? Math.max(...prices) : 0
@@ -19,7 +19,7 @@ export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct
             <span className="heroLead">Make their day.</span>
             <span className="heroItalic">Without overspending.</span>
           </h1>
-          <p>Choose your budget. We turn it into a hamper that looks premium, feels personal and arrives beautifully packed.</p>
+          <p>Choose your budget and occasion. Celebration curates the gift mix, packs it beautifully and keeps the item count clear before you order.</p>
 
           <div className="actions heroActions">
             <a className="primary heroPrimaryLink" href="#budgets">Build my hamper</a>
@@ -28,8 +28,8 @@ export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct
 
           <div className="heroFacts" aria-label="Hamper highlights">
             <div><b>{formatMoney(minPrice)}–{formatMoney(maxPrice)}</b><small>clear budget options</small></div>
-            <div><b>{products.length}+</b><small>gift choices</small></div>
-            <div><b>Personal</b><small>made for them</small></div>
+            <div><b>Curated</b><small>gift mix selected by us</small></div>
+            <div><b>Personal</b><small>made for their moment</small></div>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export function Hero({ tiers, products }: { tiers: Tier[]; products: GiftProduct
             ))}
           </div>
           <div className="heroVisualFooter">
-            <span>Clear pricing</span><span>Packing video</span><span>Trackable order</span>
+            <span>Clear pricing</span><span>Fixed item count</span><span>Trackable order</span>
           </div>
         </div>
       </div>

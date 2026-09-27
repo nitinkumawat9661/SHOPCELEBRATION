@@ -2,7 +2,6 @@
 
 import { useEffect } from "react"
 import type { CatalogConfig } from "../../lib/domain/catalog"
-import { ProductSection } from "../catalog/ProductSection"
 import { LazyHamperBuilder } from "../builder/LazyHamperBuilder"
 import { useHamperBuilder } from "../builder/useHamperBuilder"
 import { SiteFooter } from "../shell/SiteFooter"
@@ -46,7 +45,7 @@ export function StorefrontTail({
     if (!builderActive) return
     if (selectedTierId && selectedTierId !== state.tierId) state.selectTier(selectedTierId)
     if (occasion && occasion !== state.checkout.occasion) state.updateField("occasion", occasion)
-    state.setStep(Math.min(4, Math.max(1, requestedStep)))
+    state.setStep(Math.min(3, Math.max(1, requestedStep)))
     const timer = window.setTimeout(() => {
       document.getElementById("builder")?.scrollIntoView({ behavior: "smooth", block: "start" })
     }, 80)
@@ -62,7 +61,6 @@ export function StorefrontTail({
   return (
     <>
       <UxMessenger />
-      <ProductSection products={state.products} categories={state.categories} allCategoryId={state.catalog.settings.allCategory.id} category={state.category} onCategory={state.setCategory} />
       <ProofAndReviews socialProof={state.socialProof} />
       <CustomRequestSection />
       <LazyHamperBuilder state={state} active={builderActive} />
