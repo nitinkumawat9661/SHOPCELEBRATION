@@ -17,7 +17,6 @@ export function StorefrontHeader({ settings }: { settings: StoreSettings }) {
           </Link>
           <nav className="links" aria-label="Store navigation">
             <a href={`${routes.home}#budgets`}>{uiContent.nav.budgets}</a>
-            <a href={`${routes.home}#products`}>{uiContent.nav.products}</a>
             <a href={`${routes.home}#builder`}>{uiContent.nav.builder}</a>
             <a href={`${routes.home}#trust`}>{uiContent.nav.promise}</a>
           </nav>
