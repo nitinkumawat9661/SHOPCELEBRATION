@@ -3,6 +3,7 @@ import { env, requireSecret } from "../../config/env"
 import { securityConfig } from "../../config/security"
 import { smsReady } from "../../config/sms"
 import { validation } from "../../config/validation"
+import { isValidCustomerPassword } from "../security/customer-password"
 import { signValue, verifySignedValue } from "../security/tokens"
 import { customerAccountView, findCustomerAccountByPhone, normalizeCustomerPhone, resetCustomerPassword } from "./customer-accounts"
 import { query } from "./db"
@@ -78,26 +79,30 @@ export async function requestPasswordReset(phoneInput: unknown) {
   if (!smsReady() || !resetSecretReady()) throw new PasswordResetError("SMS_OTP_UNAVAILABLE", 503)
 
   const account = await findCustomerAccountByPhone(phone)
-  const requestId = randomUUID()
   const generic = {
     ok: true as const,
-    requestId,
+    requestId: randomUUID(),
     expiresInSeconds: validation.passwordReset.otpTtlSeconds,
     resendAfterSeconds: validation.passwordReset.resendCooldownSeconds
   }
 
   if (!account) return generic
 
-  const latest = await query<{ created_at: Date }>(
-    `SELECT created_at FROM customer_password_reset_challenges
+  const latest = await query<{ id: string; created_at: Date }>(
+    `SELECT id, created_at FROM customer_password_reset_challenges
       WHERE customer_account_id = $1 AND consumed_at IS NULL
       ORDER BY created_at DESC LIMIT 1`,
     [account.id]
   )
-  const lastCreated = latest.rows[0]?.created_at?.getTime() || 0
+  const latestChallenge = latest.rows[0]
+  const lastCreated = latestChallenge?.created_at?.getTime() || 0
   const cooldownMs = validation.passwordReset.resendCooldownSeconds * 1000
-  if (lastCreated && Date.now() - lastCreated < cooldownMs) {
-    return { ...generic, requestId: "cooldown", resendAfterSeconds: Math.ceil((cooldownMs - (Date.now() - lastCreated)) / 1000) }
+  if (latestChallenge && lastCreated && Date.now() - lastCreated < cooldownMs) {
+    return {
+      ...generic,
+      requestId: latestChallenge.id,
+      resendAfterSeconds: Math.ceil((cooldownMs - (Date.now() - lastCreated)) / 1000)
+    }
   }
 
   await query(
@@ -164,6 +169,7 @@ export async function verifyPasswordResetOtp(input: { phone?: unknown; requestId
 
 export async function completePasswordReset(input: { resetToken?: unknown; password?: unknown }) {
   if (!resetSecretReady()) throw new PasswordResetError("SMS_OTP_UNAVAILABLE", 503)
+  if (!isValidCustomerPassword(input.password)) throw new PasswordResetError("INVALID_PASSWORD", 422)
   const token = parseResetToken(input.resetToken)
   if (!token) throw new PasswordResetError("RESET_SESSION_EXPIRED", 401)
 
