@@ -13,6 +13,12 @@ export type CustomerAccountView = {
 
 type Mode = "login" | "signup"
 
+type PasswordResetRequest = {
+  requestId: string
+  expiresInSeconds: number
+  resendAfterSeconds: number
+}
+
 export function useCustomerAccount() {
   const [account, setAccount] = useState<CustomerAccountView | null>(null)
   const [loading, setLoading] = useState(true)
@@ -58,6 +64,71 @@ export function useCustomerAccount() {
     }
   }
 
+  async function requestPasswordReset(phone: string): Promise<PasswordResetRequest | null> {
+    setBusy(true)
+    setError("")
+    try {
+      const response = await fetch(routes.api.customerPasswordResetRequest, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      })
+      const data = await response.json() as { ok?: boolean; requestId?: string; expiresInSeconds?: number; resendAfterSeconds?: number; error?: string }
+      if (!response.ok || !data.ok || !data.requestId) throw new Error(data.error || "PASSWORD_RESET_UNAVAILABLE")
+      return {
+        requestId: data.requestId,
+        expiresInSeconds: Number(data.expiresInSeconds) || 600,
+        resendAfterSeconds: Number(data.resendAfterSeconds) || 45
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "PASSWORD_RESET_UNAVAILABLE")
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function verifyPasswordReset(phone: string, requestId: string, otp: string) {
+    setBusy(true)
+    setError("")
+    try {
+      const response = await fetch(routes.api.customerPasswordResetVerify, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, requestId, otp })
+      })
+      const data = await response.json() as { ok?: boolean; resetToken?: string; error?: string }
+      if (!response.ok || !data.ok || !data.resetToken) throw new Error(data.error || "INVALID_OTP")
+      return data.resetToken
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "INVALID_OTP")
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function completePasswordReset(resetToken: string, password: string) {
+    setBusy(true)
+    setError("")
+    try {
+      const response = await fetch(routes.api.customerPasswordResetComplete, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resetToken, password })
+      })
+      const data = await response.json() as { ok?: boolean; account?: CustomerAccountView; error?: string }
+      if (!response.ok || !data.ok || !data.account) throw new Error(data.error || "PASSWORD_RESET_UNAVAILABLE")
+      setAccount(data.account)
+      return data.account
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "PASSWORD_RESET_UNAVAILABLE")
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function logout() {
     setBusy(true)
     setError("")
@@ -75,5 +146,17 @@ export function useCustomerAccount() {
     }
   }
 
-  return { account, loading, busy, error, setError, refresh, authenticate, logout }
+  return {
+    account,
+    loading,
+    busy,
+    error,
+    setError,
+    refresh,
+    authenticate,
+    requestPasswordReset,
+    verifyPasswordReset,
+    completePasswordReset,
+    logout
+  }
 }
