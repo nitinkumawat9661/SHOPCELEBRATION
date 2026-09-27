@@ -24,7 +24,7 @@ type TailProps = {
 
 type TailComponent = ComponentType<TailProps>
 
-const DEFERRED_HASHES = new Set(["#products", "#builder", "#custom-request", "#trust"])
+const DEFERRED_HASHES = new Set(["#builder", "#custom-request", "#trust"])
 
 export function LazyStorefrontTail(props: TailProps) {
   const loadingRef = useRef<Promise<void> | null>(null)
