@@ -20,10 +20,9 @@ function RequiredLabel({ children }: { children: string }) {
   return <span>{cleanLabel(children)} <b className="requiredMark" aria-hidden="true">*</b></span>
 }
 
-export function DetailsStep({ tier, checkout, selectedNames, occasions, error, fieldErrors, updateField, onBack, onNext }: {
+export function DetailsStep({ tier, checkout, occasions, error, fieldErrors, updateField, onBack, onNext }: {
   tier: Tier
   checkout: CheckoutData
-  selectedNames: string[]
   occasions: string[]
   error: string
   fieldErrors: CheckoutFieldErrors
@@ -49,7 +48,7 @@ export function DetailsStep({ tier, checkout, selectedNames, occasions, error, f
             </section>
 
             <section className="checkoutSectionCard" aria-labelledby="checkout-gift-title">
-              <div className="checkoutSectionHead"><div><span>GIFT DETAILS</span><h4 id="checkout-gift-title">Who is the hamper for?</h4></div><small>Helps us prepare the hamper for the right moment.</small></div>
+              <div className="checkoutSectionHead"><div><span>GIFT DETAILS</span><h4 id="checkout-gift-title">Who is the hamper for?</h4></div><small>Helps us curate the hamper for the right moment.</small></div>
               <div className="checkoutFormGrid">
                 <label className={fieldClass(fieldErrors.receiverName)}><RequiredLabel>{fields.receiverName[0]}</RequiredLabel><input data-checkout-field="receiverName" className="control" value={checkout.receiverName} onChange={(e) => updateField("receiverName", e.target.value)} placeholder={fields.receiverName[1]} autoComplete="off" aria-invalid={Boolean(fieldErrors.receiverName)} /><FieldError text={fieldErrors.receiverName} /></label>
                 <label className={fieldClass(fieldErrors.requiredDate)}><RequiredLabel>{fields.requiredDate[0]}</RequiredLabel><input data-checkout-field="requiredDate" className="control" type="date" min={todayForDateInput()} value={checkout.requiredDate} onChange={(e) => updateField("requiredDate", e.target.value)} aria-invalid={Boolean(fieldErrors.requiredDate)} /><FieldError text={fieldErrors.requiredDate} /></label>
@@ -79,7 +78,7 @@ export function DetailsStep({ tier, checkout, selectedNames, occasions, error, f
           <div className="checkoutProgressNote"><span>✓</span><span><b>Before payment:</b> we validate the required fields and take you directly to anything that still needs attention.</span></div>
           <div className="navRow detailActions"><button className="secondary" type="button" onClick={onBack}>{copy.back}</button><span className="tiny">{copy.nextHint}</span><button className="primary" type="button" onClick={onNext}>{copy.next}</button></div>
         </div>
-        <OrderSummary tier={tier} checkout={checkout} selectedNames={selectedNames} />
+        <OrderSummary tier={tier} checkout={checkout} />
       </div>
     </div>
   )
