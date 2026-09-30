@@ -66,21 +66,19 @@ export async function verifyPasswordResetAccessToken(accessToken: string) {
   const token = accessToken.trim()
   if (token.length < 20 || token.length > 8000) throw new SmsProviderError("INVALID_OTP")
 
-  // MSG91's server-side access-token verification endpoint expects the
-  // authkey and access-token as form fields. Sending JSON can be answered
-  // with HTTP 200 while the payload itself reports AuthenticationFailure.
-  const body = new URLSearchParams({
-    authkey: smsConfig.msg91.authKey,
-    "access-token": token
-  })
-
+  // MSG91's verifyAccessToken endpoint accepts authkey and access-token in
+  // a JSON body. A live VPS probe confirms form-encoded data is ignored by
+  // this endpoint, while JSON reaches token validation.
   const response = await fetch("https://control.msg91.com/api/v5/widget/verifyAccessToken", {
     method: "POST",
     headers: {
       accept: "application/json",
-      "content-type": "application/x-www-form-urlencoded"
+      "content-type": "application/json"
     },
-    body: body.toString(),
+    body: JSON.stringify({
+      authkey: smsConfig.msg91.authKey,
+      "access-token": token
+    }),
     cache: "no-store",
     signal: AbortSignal.timeout(10000)
   })
