@@ -8,6 +8,7 @@ export type OrderStatus =
   | "packing_video_ready"
   | "customer_approved"
   | "shipped"
+  | "out_for_delivery"
   | "delivered"
   | "issue_reported"
   | "refund_or_replacement_resolved"
