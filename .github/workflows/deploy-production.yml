@@ -101,6 +101,9 @@ jobs:
           test "$PM2_APP" = "celebration-site"
           test "$RUNTIME_USER" = "nitin"
           test "$APP_PORT" = "3040"
+          test "$(id -un)" = "$RUNTIME_USER"
+          test -w "$APP_ROOT"
+          test -w "$APP_ROOT/releases"
           test -s "$ARCHIVE"
           test -f "$APP_ROOT/shared/.env.production"
 
@@ -110,14 +113,13 @@ jobs:
           NEW_RELEASE="$APP_ROOT/releases/github-${SHORT_SHA}"
           case "$NEW_RELEASE" in "$APP_ROOT"/releases/github-*) ;; *) echo "Unsafe new release path" >&2; exit 1 ;; esac
 
-          [ ! -e "$NEW_RELEASE" ] || sudo rm -rf -- "$NEW_RELEASE"
-          RUNTIME_GROUP="$(id -gn "$RUNTIME_USER")"
-          sudo install -d -o "$RUNTIME_USER" -g "$RUNTIME_GROUP" "$NEW_RELEASE"
-          sudo -u "$RUNTIME_USER" tar -xzf "$ARCHIVE" -C "$NEW_RELEASE"
-          sudo rm -f -- "$ARCHIVE"
-          sudo -u "$RUNTIME_USER" ln -s "$APP_ROOT/shared/.env.production" "$NEW_RELEASE/.env.production"
+          [ ! -e "$NEW_RELEASE" ] || rm -rf -- "$NEW_RELEASE"
+          install -d "$NEW_RELEASE"
+          tar -xzf "$ARCHIVE" -C "$NEW_RELEASE"
+          rm -f -- "$ARCHIVE"
+          ln -s "$APP_ROOT/shared/.env.production" "$NEW_RELEASE/.env.production"
 
-          run_as_runtime() { sudo -u "$RUNTIME_USER" env HOME="/home/$RUNTIME_USER" PM2_HOME="$PM2_HOME" "$@"; }
+          run_as_runtime() { env HOME="/home/$RUNTIME_USER" PM2_HOME="$PM2_HOME" "$@"; }
           echo "Installing and verifying new Celebration release"
           run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run typecheck && npm run build' _ "$NEW_RELEASE"
           echo "Applying idempotent database migrations"
@@ -131,8 +133,8 @@ jobs:
           }
           rollback() {
             echo "Deployment health check failed. Restoring previous Celebration release." >&2
-            sudo ln -sfn "$OLD_RELEASE" "$APP_ROOT/current.rollback"
-            sudo mv -Tf "$APP_ROOT/current.rollback" "$APP_ROOT/current"
+            ln -sfn "$OLD_RELEASE" "$APP_ROOT/current.rollback"
+            mv -Tf "$APP_ROOT/current.rollback" "$APP_ROOT/current"
             start_release "$OLD_RELEASE"
             for attempt in $(seq 1 20); do
               curl --silent --show-error --fail --max-time 3 "http://127.0.0.1:${APP_PORT}/api/health" >/dev/null && return 0
@@ -141,8 +143,8 @@ jobs:
             return 1
           }
 
-          sudo ln -sfn "$NEW_RELEASE" "$APP_ROOT/current.next"
-          sudo mv -Tf "$APP_ROOT/current.next" "$APP_ROOT/current"
+          ln -sfn "$NEW_RELEASE" "$APP_ROOT/current.next"
+          mv -Tf "$APP_ROOT/current.next" "$APP_ROOT/current"
           start_release "$NEW_RELEASE"
           HEALTHY=0
           for attempt in $(seq 1 30); do
