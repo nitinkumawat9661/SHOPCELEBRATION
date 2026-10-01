@@ -37,7 +37,7 @@ const hamper = render({ ...order, orderType: "hamper", lineItems: [], tierName: 
 assert(hamper.includes("Test Hamper") && !hamper.includes('aria-label="Purchased items"'), "Hamper presentation must remain separate")
 const { PackingApprovalCard } = require(join(out, "features/tracking/PackingApprovalCard.js"))
 const approval = renderToStaticMarkup(createElement(PackingApprovalCard, { isIndividual: true, status: "packing_video_ready", packingVideoUrl: "/test-video", approving: false, approvedAt: null, async onApprove() {} }))
-assert(approval.includes("approve this order for dispatch") && approval.includes('disabled=""'), "Individual packing approval must retain explicit consent before dispatch")
+assert(approval.includes("approve this order for shipping") && approval.includes('disabled=""'), "Individual packing approval must retain explicit consent before shipping")
 console.log("Order presentation checks passed: snapshots, exact prices, hamper compatibility and packing consent.")
 } finally {
   await rm(out, { recursive: true, force: true })
