@@ -74,6 +74,14 @@ export function LazyStorefrontTail(props: TailProps) {
     }
   }, [props.builderActive, Tail, loadTail])
 
+  useEffect(() => {
+    if (!Tail || !DEFERRED_HASHES.has(window.location.hash)) return
+    document.getElementById(window.location.hash.slice(1))?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+      block: "start"
+    })
+  }, [Tail])
+
   if (Tail) return <Tail {...props} />
 
   return (

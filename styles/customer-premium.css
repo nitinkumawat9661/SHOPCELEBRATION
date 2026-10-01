@@ -1,0 +1,172 @@
+/* Approved Celebration palette, scoped to customer account and checkout. */
+body:has(.customerAuthCard) .celebrationSupport{display:none}
+#builder .steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+.accountPage{padding-block:30px 56px;background:#fcf8f1}
+.accountPublicWrap{display:grid;place-items:center;max-width:none;min-height:650px;padding:52px 24px;border:1px solid #e5d4c0;border-radius:24px;background:linear-gradient(90deg,rgba(247,232,215,.38),rgba(251,239,225,.16),rgba(247,232,215,.38)),url('/images/campaign/occasion-1600.webp') center/cover #e9d5bf}
+.customerAuthCard{width:100%;max-width:460px;margin-inline:auto;padding:34px;background:#fffcf7;border:1px solid #e8d8c7;border-radius:22px;box-shadow:0 18px 60px rgba(70,27,20,.15),inset 0 0 0 5px rgba(255,255,255,.45)}
+.customerAuthIntro{padding-right:0;text-align:center}
+.customerAuthIntro .kicker{margin-bottom:13px;color:#8e1828;font-size:10px;letter-spacing:.17em}
+.customerAuthIntro h2{font:600 clamp(29px,3vw,36px)/1.13 var(--font-display);letter-spacing:-.025em;color:#790d1d;text-wrap:balance}
+.customerAuthIntro p{margin:12px 0 24px;color:#695349;font-size:13px;line-height:1.65}
+.customerAuthTabs{margin-bottom:22px;padding:4px;background:#f6eee4;border-color:#e9d9c9;border-radius:12px}
+.customerAuthTabs button{min-height:44px;color:#685046;font-size:12px;font-weight:650}
+.customerAuthTabs button.active{background:#fffcf7;color:#860e20;box-shadow:0 3px 10px rgba(91,41,22,.07)}
+.customerAuthForm{gap:15px}
+.customerAuthForm .field{margin:0;gap:7px;min-width:0}
+.customerAuthForm .field>span{margin:0;color:#49372e;font-size:12px;font-weight:600}
+.customerAuthForm .control{min-width:0;min-height:50px;background:#fffefa;border-color:#ddcaba;border-radius:10px;color:#34241e;padding:12px 14px}
+.customerAuthForm .control::placeholder{color:#877366;opacity:1}
+.customerAuthCard .passwordToggle{min-width:48px;min-height:44px;color:#881224;font-size:11px;font-weight:700}
+.customerAuthCard .authTextButton{min-height:40px;color:#861024;font-size:12px;font-weight:600}
+.customerAuthCard .forgotPasswordRow{margin-top:-9px}
+.customerAuthHelp{margin-top:22px;padding-top:18px;border-top:1px solid #eaded1;color:#725d51;font-size:12px;flex-wrap:wrap}
+.customerAuthHelp a{color:#7b1420;min-height:36px;display:inline-flex;align-items:center;font-weight:650;text-underline-offset:3px}
+.customerAuthHelp a:hover{text-decoration:underline}
+.customerAuthPrivacy{margin-top:8px;padding-top:4px;border:0;font-size:11px;line-height:1.6;text-align:center;color:#796356}
+.customerResetCard{min-height:0}
+.customerResetCard .customerAuthIntro{padding-right:0}
+.customerResetCard .resetSecurityCard{width:100%;background:#f9f3eb;border-color:#e7d7c6;box-shadow:none}
+.customerResetCard .resetSecurityCard.verified{background:#f2f8ed;border-color:#c5d8b7}
+.customerResetCard .resetSecurityHead b{font-size:12px;line-height:1.4}
+.customerResetCard .resetSecurityHead small{font-size:10px;line-height:1.5;color:#6d5a4c}
+.customerResetCard .resetSecurityMark{border-radius:50%;color:#8c1425;background:#f4e4d2}
+.customerResetCard .resetResendRow{font-size:12px;flex-wrap:wrap}
+.customerResetCard .resetVerifiedNotice small{font-size:11px;color:#42694b}
+.customerResetCard .otpControl{min-height:58px;letter-spacing:.3em}
+.customerAuthSheet .customerAuthCard{max-width:none;box-shadow:none;padding-top:44px}
+.customerAuthSheet .customerAuthClose{width:38px;height:38px;border-color:#e3d0be;background:#fffcf7;color:#801121}
+
+:is(.customerAuthCard,.customerDashboard,#builder) .primary{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;border:1px solid #9b1028;border-radius:12px;background:linear-gradient(180deg,#a8142c,#8d0c23);box-shadow:0 6px 15px rgba(132,16,34,.13),inset 0 1px 0 rgba(255,255,255,.12);color:#fff;font-size:13px;font-weight:650;line-height:1.4;text-decoration:none;text-align:center;white-space:normal;transition:background .18s ease,box-shadow .18s ease}
+:is(.customerAuthCard,.customerDashboard,#builder) .primary:hover:not(:disabled){background:#80091e;box-shadow:0 8px 20px rgba(132,16,34,.18)}
+:is(.customerAuthCard,.customerDashboard,#builder) .primary:disabled{opacity:.55;box-shadow:none;cursor:not-allowed}
+:is(.customerDashboard,#builder) .secondary{min-height:44px;border-radius:12px;border-color:#e3cfba;background:#fff9ef;color:#831222;font-size:12px;font-weight:650;white-space:normal;text-align:center}
+:is(.customerAuthCard,.customerDashboard,#builder) :is(a,button,input,select,textarea):focus-visible{outline:3px solid #ae6937;outline-offset:3px}
+:is(.customerAuthCard,#builder) .control:focus{border-color:#99152c;box-shadow:0 0 0 3px rgba(153,21,44,.1)}
+
+.customerDashboard{gap:24px}
+.customerDashboard .customerDashHero{background:#f7ebda;border-color:#e6d4bd;border-radius:20px;padding:30px;gap:24px}
+.customerDashHero h1{font:600 clamp(29px,3.6vw,44px)/1.15 var(--font-display);color:#78101e;overflow-wrap:anywhere}
+.customerDashHero p{font-size:14px;color:#6b5547}
+.customerDashActions{align-items:center}
+.customerStats{max-width:740px;gap:12px}
+.customerStats>div{background:#fffdf8;border-color:#e8dac9;border-radius:14px;padding:18px}
+.customerStats span{font-size:12px;color:#705a4b}
+.customerStats b{font-size:30px;color:#821125}
+.customerDashToolbar h2{font:600 30px/1.2 var(--font-display);color:#78101e}
+.customerOrderCard{padding:24px;border-color:#e5d5c3;background:#fffdf8;border-radius:18px;box-shadow:0 7px 24px rgba(73,32,17,.035)}
+.customerOrderHead h3{font-size:20px}
+.customerOrderHead small,.customerOrderHead span{font-size:11px}
+.customerOrderHead strong{font-size:22px;color:#831222}
+.customerOrderMeta{gap:14px;padding-block:18px}
+.customerOrderMeta>div{background:transparent;padding:0}
+.customerOrderMeta span,.customerOrderProducts span,.customerUpdateCard span{font-size:11px;color:#715b4c}
+.customerOrderMeta b,.customerUpdateCard b{font-size:13px;overflow-wrap:anywhere}
+.customerOrderProducts{background:#f8f0e5;padding:14px}
+.customerOrderProducts p,.customerUpdateCard a{font-size:12px}
+.customerUpdateCard{padding:14px;border-color:#e8d9c7;background:transparent}
+.customerProgress>div{color:#776354}
+.customerProgress span{font-size:11px;line-height:1.45}
+.customerOrderFooter small{font-size:11px}
+.customerOrderFooter .secondary{font-size:12px}
+.customerPackingApproval label,.customerPackingApproval>div p{font-size:12px;line-height:1.6}
+.customerPackingApproval input{width:18px;height:18px;accent-color:#8d1024}
+
+#builder .builderCard{background:#fffcf7;border-color:#e4d2bd;border-radius:20px;box-shadow:0 12px 36px rgba(80,37,18,.06)}
+#builder .steps{border-color:#e6d5c0;background:#fcf6ed;box-shadow:none;border-radius:12px}
+#builder .stepBtn{min-height:48px;background:transparent;color:#715447;font-size:12px;letter-spacing:.01em}
+#builder .stepBtn.active{background:#921024;color:#fff}
+#builder .stepBtn.done{background:#f3e2ca;color:#821125}
+#builder .builderTitle h3{font:600 clamp(26px,3vw,34px)/1.2 var(--font-display);color:#78101e}
+#builder .builderTitle p{font-size:13px;color:#705a4b}
+#builder :is(.detailsGrid,.paymentGrid){gap:24px;align-items:start;grid-template-columns:minmax(0,1fr)}
+#builder :is(.detailsGrid,.paymentGrid)>*{min-width:0}
+#builder .checkoutSectionStack{gap:0}
+#builder .checkoutSectionCard{padding:22px 0;border:0;border-bottom:1px solid #ebddce;border-radius:0;background:transparent;box-shadow:none}
+#builder .checkoutSectionCard:first-child{padding-top:0}
+#builder .checkoutSectionCard:last-child{border-bottom:0}
+#builder .checkoutSectionHead{padding-bottom:0;margin-bottom:17px;border:0;gap:16px}
+#builder .checkoutSectionHead span{color:#8c492b;font-size:10px;letter-spacing:.12em}
+#builder .checkoutSectionHead h4{font:600 23px/1.2 var(--font-display);color:#791222}
+#builder .checkoutSectionHead small{font-size:11px;color:#75604f;line-height:1.55}
+#builder .checkoutFormGrid{gap:17px 15px}
+#builder .checkoutFormGrid .field>span{color:#503c30;font-size:12px;font-weight:600}
+#builder .checkoutFormGrid .control{border-radius:10px;border-color:#dac4ae;background:#fffefa;box-shadow:none}
+#builder .checkoutFormGrid .control::placeholder{color:#8a7667;opacity:1}
+#builder .checkoutFormGrid .field.invalid .control{border-color:#b43b35;background:#fff5f2}
+#builder .optionalLabel{color:#776355;font-size:9px}
+#builder .fieldError{font-size:11px;color:#a12829}
+#builder .summary{align-self:start;background:#f9efdf;border-color:#e4d0b5;border-radius:16px;padding:23px;box-shadow:none}
+#builder .sumPrice{font:600 40px/1.2 var(--font-display);color:#801124}
+#builder .sumRow{padding-block:14px;border-color:#e8d9c4;font-size:13px;flex-wrap:wrap;gap:8px 16px}
+#builder .sumRow span:first-child{color:#6e5643}
+#builder .sumRow b{margin-left:auto;overflow-wrap:anywhere}
+#builder .summaryChips span{font-size:11px;background:#fff9ee;border-color:#e5d3bb}
+#builder .summary .note{background:transparent;border-top:1px solid #e5d3bb;border-radius:0;padding:14px 0 0;color:#695243;font-size:12px}
+#builder .checkoutProgressNote{font-size:12px;line-height:1.6;border-color:#e5d4bf;background:#f9f2e7;color:#644d3e}
+#builder .checkoutAccount{border-color:#e4d0b8;background:#f9efdf;border-radius:14px!important}
+#builder .checkoutAccount.ready{background:#f3f6ed;border-color:#d3dfc4}
+#builder .checkoutAccount small{font-size:12px!important;color:#6e5646}
+#builder .paymentBox{background:#f9efdf;border-color:#e3cfb4;border-radius:16px;box-shadow:none;padding:22px;gap:16px}
+#builder .automatedPaymentBox{background:#f9efdf!important;border-color:#e3cfb4!important}
+#builder .paymentSticker{background:#fff9ee;color:#8b1225;border:1px solid #ead7bc;box-shadow:none}
+#builder .paymentBox small{font-size:12px!important;line-height:1.6;color:#69503d;overflow-wrap:anywhere}
+#builder .paymentBox strong{color:#821024;font:600 36px/1.15 var(--font-display)}
+#builder .paymentSteps div{padding:12px 0!important;background:transparent;border:0;border-bottom:1px solid #eee0cf;border-radius:0!important}
+#builder .paymentSteps b{background:#f2e1c8;color:#7b1827}
+#builder .paymentSteps span{font-size:12px!important;color:#695243}
+#builder .policyCheck{background:transparent!important;border-color:#e4d3bf;border-radius:12px}
+#builder .policyCheck span{font-size:12px!important;color:#624b3d}
+#builder .paymentPolicyHint{font-size:11px;color:#735d4d;line-height:1.7}
+#builder .trustCard{background:#f6ead7;color:#771426;border:1px solid #e2cbaa;border-top:3px solid #9c2635;border-radius:16px;padding:25px;box-shadow:none}
+#builder .trustCard .kicker{color:#8b482b}
+#builder .trustCard h3{font:600 30px/1.15 var(--font-display)}
+#builder .trustCard li{color:#69503e;font-size:13px;line-height:1.65}
+#builder .trustCard .policyLink{color:#841425;border-color:#c9927a;font-size:12px}
+#builder .navRow .tiny{font-size:11px;color:#705b4c;line-height:1.55}
+#builder .paymentStateCopy strong{font-size:14px}
+#builder .paymentStateCopy span{font-size:12px;overflow-wrap:anywhere}
+#builder .paymentStateActions{flex-wrap:wrap}
+
+@media(min-width:760px){
+  .customerAuthOverlay .customerAuthSheet{width:min(100%,480px)!important;max-width:480px!important;border-radius:22px!important}
+  .customerAuthSheet .customerAuthCard{padding:40px 34px 30px}
+  .customerProgress span{font-size:10px}
+}
+@media(min-width:980px){
+  #builder .detailsGrid{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+  #builder .paymentGrid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+  #builder .summary{position:sticky;top:140px}
+}
+@media(max-width:759px){
+  .accountPage{padding-block:18px 32px}
+  .accountPublicWrap{min-height:0;padding:28px 14px;border-radius:18px;background-image:linear-gradient(90deg,rgba(247,232,215,.26),rgba(251,239,225,.1)),url('/images/campaign/occasion-800.webp')}
+  .customerAuthCard{padding:28px 22px;border-radius:18px}
+  .customerAuthIntro p{font-size:12px;margin-bottom:20px}
+  .customerAuthHelp{font-size:11px}
+  .customerDashboard .customerDashHero{padding:23px}
+  .customerStats{gap:8px}
+  .customerStats>div{padding:14px 10px}
+  .customerStats span{font-size:10px}
+  .customerOrderCard{padding:18px}
+  .customerOrderHead,.customerOrderFooter{flex-wrap:wrap}
+  .customerOrderHead>div{min-width:0;overflow-wrap:anywhere}
+  #builder .builderCard{padding:20px 16px}
+  #builder .checkoutSectionHead{flex-direction:column;gap:5px}
+  #builder .checkoutSectionHead small{max-width:none;text-align:left}
+  #builder .paymentBox .payButton{white-space:normal}
+  #builder .stepBtn{font-size:11px;padding-inline:6px}
+}
+@media(max-width:389px){
+  .accountPublicWrap{padding:24px 0}
+  .customerAuthSheet .customerAuthCard{padding-top:44px!important}
+  .customerAuthCard .resetSecurityCard{padding-inline:6px}
+  .customerAuthCard .resetCaptchaViewport.ready{width:224px;max-width:100%;height:58px}
+  .customerAuthCard .resetCaptcha{transform:scale(.735)}
+  .customerAuthCard .resetSecurityHead small{font-size:10px}
+  #builder .builderCard{padding:18px 12px}
+  #builder .checkoutSectionHead h4{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+  :is(.customerAuthCard,.customerDashboard,#builder) :is(button,a,input,select,textarea){transition:none!important}
+  .customerResetCard .resetSecurityCard{transition:none!important}
+}

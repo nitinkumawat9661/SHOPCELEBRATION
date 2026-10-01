@@ -1,45 +1,32 @@
 import Link from "next/link"
 import { routes } from "../../config/routes"
-import { storeContent, uiContent } from "../../lib/domain/content"
+import { storeContent } from "../../lib/domain/content"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 import type { StoreSettings } from "../../lib/server/store-settings"
+import { StoreIcon } from "./StoreIcon"
 
-export function StorefrontHeader({ settings }: { settings: StoreSettings }) {
+export function StorefrontHeader({ settings, onCreate, showAccount = true }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean }) {
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
-
-  return (
-    <>
-      <header className="nav">
-        <div className="wrap navin">
-          <Link href={routes.home} className="brand policyBrand" prefetch={false}>
-            <div className="logo">{storeContent.brand.name}</div>
-            <div className="tag">{storeContent.brand.tagline}</div>
-          </Link>
-          <nav className="links" aria-label="Store navigation">
-            <a href={`${routes.home}#budgets`}>{uiContent.nav.budgets}</a>
-            <a href={`${routes.home}#builder`}>{uiContent.nav.builder}</a>
-            <a href={`${routes.home}#trust`}>{uiContent.nav.promise}</a>
-          </nav>
-          <div className="navAccountActions">
-            <Link className="navAccountLink" href={routes.account} prefetch={false} aria-label="My Celebration dashboard">
-              <span aria-hidden="true">♡</span><b>My Celebration</b>
-            </Link>
-            <a className="primary navCta navCtaLink" href={`${routes.home}#budgets`}>{uiContent.nav.create}</a>
-          </div>
+  return <>
+    <header className="celebrationHeader">
+      <div className="wrap celebrationHeaderTop">
+        <Link href={routes.home} className="celebrationBrand" prefetch={false}>
+          <span>{storeContent.brand.name}</span><small>{storeContent.brand.tagline}</small>
+        </Link>
+        <form className="celebrationSearch" action="/jewelry" role="search">
+          <input type="hidden" name="view" value="all" />
+          <input type="search" name="q" aria-label="Search gifts" placeholder="Find a little something they'll love…" maxLength={100} />
+          <button type="submit" aria-label="Search gifts"><StoreIcon name="search" size={19} /></button>
+        </form>
+        <div className="celebrationHeaderActions">
+          {showAccount && <Link href={routes.account} className="celebrationIconLink" aria-label="My Celebration account" prefetch={false}><StoreIcon name="account" /><span>My account</span></Link>}
+          {onCreate ? <button className="celebrationIconLink" onClick={onCreate} type="button" aria-label="Build your hamper"><StoreIcon name="gift" /><span>My hamper</span></button> : <a className="celebrationIconLink" href="/#budgets" aria-label="Build your hamper"><StoreIcon name="gift" /><span>My hamper</span></a>}
         </div>
-        <div className="assistBar">
-          <div className="wrap assistBarInner">
-            <span><b>{settings.assistTitle}</b> {settings.assistBody}</span>
-            <div>
-              <a href={`${routes.home}#custom-request`}>Use my budget</a>
-              <a href={supportUrl} target="_blank" rel="noreferrer">WhatsApp</a>
-            </div>
-          </div>
-        </div>
-      </header>
-      <a className="whatsappDock" href={supportUrl} target="_blank" rel="noreferrer" aria-label="WA Need help? Celebration WhatsApp support">
-        <span aria-hidden="true">WA</span><b>Need help?</b>
-      </a>
-    </>
-  )
+      </div>
+      <nav className="celebrationNav wrap" aria-label="Store navigation">
+        <a href="/#budgets">Hampers</a><Link href="/jewelry" prefetch={false}>Jewelry</Link><Link href="/jewelry?view=all" prefetch={false}>All Gifts</Link><a href="/#occasions">Occasions</a><a href="/#budgets">Budget</a><a href="/#trust">Why Celebration</a>
+      </nav>
+    </header>
+    <a className="celebrationSupport" href={supportUrl} target="_blank" rel="noreferrer" aria-label="Chat with Celebration on WhatsApp"><span aria-hidden="true">♡</span> Need a hand?</a>
+  </>
 }

@@ -6,10 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "npm run audit",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run audit",
-    "audit": "node scripts/audit-source.mjs && node scripts/audit-imports.mjs && node scripts/audit-import-duplicates.mjs && node scripts/syntax-check.mjs && node scripts/audit-config.mjs && node scripts/test-domain.mjs",
+    "audit": "node scripts/audit-source.mjs && node scripts/audit-imports.mjs && node scripts/audit-import-duplicates.mjs && node scripts/syntax-check.mjs && node scripts/audit-config.mjs && node scripts/test-domain.mjs && node scripts/test-catalog-discovery.mjs",
     "syntax": "node scripts/syntax-check.mjs",
     "audit:imports": "node scripts/audit-imports.mjs",
     "db:migrate": "node scripts/migrate.mjs",
@@ -19,7 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.1137.0",
     "@aws-sdk/s3-request-presigner": "3.1137.0",
-    "next": "16.3.5",
+    "next": "16.3.8",
     "pg": "8.16.3",
     "react": "19.3.0",
     "react-dom": "19.3.0"
