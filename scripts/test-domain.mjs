@@ -48,10 +48,14 @@ const catalog = require(join(out, "lib", "domain", "catalog.js"))
 const order = require(join(out, "lib", "domain", "order.js"))
 const orderConfig = require(join(out, "config", "order.js")).orderConfig
 const fixtureCatalog = catalog.defaultCatalog
+const ui = require(join(out, "lib", "domain", "content.js")).uiContent
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
 }
+
+assert(ui.builder.stepLabels.length === 3, "Builder copy must match the three-step checkout")
+assert(ui.builder.details.title.startsWith("2.") && ui.builder.payment.title.startsWith("3."), "Checkout section numbering does not match its steps")
 
 const lowTier = catalog.tierById(fixtureCatalog, "t299")
 const premium = catalog.productById(fixtureCatalog, "premium-perfume")

@@ -9,7 +9,6 @@ import { UxMessenger } from "../ux/UxMessenger"
 import { CustomRequestSection } from "./CustomRequestSection"
 import { FinalCta } from "./FinalCta"
 import { PromiseSection } from "./PromiseSection"
-import { ProofAndReviews } from "./ProofAndReviews"
 
 type TierSocialProof = {
   tierName: string
@@ -47,7 +46,7 @@ export function StorefrontTail({
     if (occasion && occasion !== state.checkout.occasion) state.updateField("occasion", occasion)
     state.setStep(Math.min(3, Math.max(1, requestedStep)))
     const timer = window.setTimeout(() => {
-      document.getElementById("builder")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      document.getElementById("builder")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" })
     }, 80)
     return () => window.clearTimeout(timer)
     // requestVersion intentionally represents a new top-of-storefront builder request.
@@ -61,10 +60,9 @@ export function StorefrontTail({
   return (
     <>
       <UxMessenger />
-      <ProofAndReviews socialProof={state.socialProof} />
-      <CustomRequestSection />
       <LazyHamperBuilder state={state} active={builderActive} />
       <PromiseSection />
+      <CustomRequestSection />
       <FinalCta onBuild={() => onBuild(1)} />
       <SiteFooter />
     </>

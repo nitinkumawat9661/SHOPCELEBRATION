@@ -38,14 +38,14 @@ const customerUi = {
   builder: {
     ...ui.builder,
     kicker: "BUILD YOUR HAMPER",
-    title: "Four clear steps. One personal gift.",
-    body: "Choose a budget, pick the gifts, add delivery details and pay. We’ll take care of the presentation.",
-    stepLabels: ["1. Budget", "2. Gifts", "3. Delivery", "4. Payment"],
+    title: ui.builder.title,
+    body: ui.builder.body,
+    stepLabels: ui.builder.stepLabels,
     budget: {
       ...ui.builder.budget,
       title: "1. Choose your budget",
-      body: "Start with the amount you want to spend. We’ll keep the available gift options within that budget.",
-      next: "Choose gifts →"
+      body: ui.builder.budget.body,
+      next: ui.builder.budget.next
     },
     products: {
       ...ui.builder.products,
@@ -62,7 +62,7 @@ const customerUi = {
     },
     details: {
       ...ui.builder.details,
-      title: "3. Where should we send it?",
+      title: "2. Where should we send it?",
       body: "Add the delivery details and the date you need it by.",
       fields: {
         customerName: ["Your name *", "Full name"],
@@ -86,7 +86,7 @@ const customerUi = {
       hamper: "Hamper",
       box: "Size",
       occasion: "Occasion",
-      products: "Selected gifts",
+      products: "Curated gifts",
       requiredBy: "Needed by",
       notSet: "Not added",
       curate: "Choose for me",
@@ -94,7 +94,7 @@ const customerUi = {
     },
     payment: {
       ...ui.builder.payment,
-      title: "4. Secure payment",
+      title: "3. Secure payment",
       body: "Pay via UPI, add the transaction reference and place your order.",
       payable: "TOTAL TO PAY",
       payButton: "Pay with UPI",
@@ -120,7 +120,7 @@ const customerUi = {
   cta: {
     ...ui.cta,
     title: "Ready to make someone smile?",
-    body: "Pick a budget and a few things they’ll love. We’ll turn it into a hamper that feels made for them.",
+    body: "Pick a budget and share their occasion. We’ll turn it into a hamper that feels made for them.",
     button: "Build my hamper"
   },
   footer: {

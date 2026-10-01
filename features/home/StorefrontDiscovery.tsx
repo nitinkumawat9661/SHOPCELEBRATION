@@ -108,8 +108,8 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
 
   return (
     <>
-      <OccasionRail value={occasion} occasions={initialCatalog.occasions} onChange={pickOccasion} />
       <BudgetSection tiers={tiers} selectedTierId={selectedTierId} recommendedTierId={initialCatalog.settings.defaultTierId} socialProof={initialSocialProof} onSelect={pickTier} />
+      <OccasionRail value={occasion} occasions={initialCatalog.occasions} onChange={pickOccasion} />
       <LazyStorefrontTail
         catalog={initialCatalog}
         socialProof={initialSocialProof}

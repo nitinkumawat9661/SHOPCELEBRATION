@@ -1,57 +1,26 @@
+import Link from "next/link"
+import Image from "next/image"
 import type { Tier } from "../../lib/domain/catalog"
-import { storeContent } from "../../lib/domain/content"
 import { formatMoney } from "../../lib/domain/money"
-import { ShapeWaves } from "../motion/ShapeWaves"
+import { StoreIcon } from "../shell/StoreIcon"
 
 export function Hero({ tiers }: { tiers: Tier[] }) {
-  const prices = tiers.map((tier) => tier.price)
-  const minPrice = prices.length ? Math.min(...prices) : 0
-  const maxPrice = prices.length ? Math.max(...prices) : 0
-  const showcaseItems = storeContent.showcaseItems.slice(0, 3)
-
-  return (
-    <header className="hero heroRefresh heroClassicMotion">
-      <ShapeWaves className="heroShapeWaves heroPixelField" color="#8b2529" cellSize={15} />
-      <div className="wrap heroGrid">
-        <div className="heroCopy heroImmediate">
-          <div className="eyebrow">Premium hampers · made to fit your budget</div>
-          <h1>
-            <span className="heroLead">Make their day.</span>
-            <span className="heroItalic">Without overspending.</span>
-          </h1>
-          <p>Choose your budget and occasion. Celebration curates the gift mix, packs it beautifully and keeps the item count clear before you order.</p>
-
-          <div className="actions heroActions">
-            <a className="primary heroPrimaryLink" href="#budgets">Build my hamper</a>
-            <a className="secondary" href="#budgets">Starts at {formatMoney(minPrice)}</a>
-          </div>
-
-          <div className="heroFacts" aria-label="Hamper highlights">
-            <div><b>{formatMoney(minPrice)}–{formatMoney(maxPrice)}</b><small>clear budget options</small></div>
-            <div><b>Curated</b><small>gift mix selected by us</small></div>
-            <div><b>Personal</b><small>made for their moment</small></div>
-          </div>
-        </div>
-
-        <div className="heroVisual heroImmediateVisual">
-          <div className="heroVisualTop">
-            <span>Curated for their moment</span>
-            <i aria-hidden="true">{storeContent.brand.giftIcon}</i>
-          </div>
-          <p className="heroVisualLine">A little luxury, made personal.</p>
-          <div className="heroVisualItems">
-            {showcaseItems.map((item) => (
-              <div className="heroVisualItem" key={item.label}>
-                <i aria-hidden="true">{item.icon}</i>
-                <span>{item.label}</span>
-              </div>
-            ))}
-          </div>
-          <div className="heroVisualFooter">
-            <span>Clear pricing</span><span>Fixed item count</span><span>Trackable order</span>
-          </div>
-        </div>
+  const minPrice = tiers.length ? Math.min(...tiers.map((tier) => tier.price)) : null
+  return <section className="celebrationHero" aria-labelledby="gift-hero-title">
+    <picture className="celebrationHeroPhoto">
+      <source media="(max-width: 640px)" srcSet="/images/campaign/hero-800.webp" />
+      <Image src="/images/campaign/hero-1600.webp" alt="" width={1600} height={900} unoptimized fetchPriority="high" />
+    </picture>
+    <div className="wrap celebrationHeroInner">
+      <div className="celebrationHeroCopy">
+        <span className="celebrationEyebrow">A little thought. A lot of love.</span>
+        <h1 id="gift-hero-title">Gifts that<br />speak from<br />the <em>heart.</em></h1>
+        <p>Thoughtful hampers. Beautiful little details.<br />For every person, and every kind of love.</p>
+        <div className="celebrationHeroActions"><a className="celebrationButton" href="#budgets">Shop Hampers <StoreIcon name="arrow" size={17} /></a><Link className="celebrationButton light" href="/jewelry" prefetch={false}>Explore Jewelry</Link></div>
+        {minPrice !== null && <small className="celebrationHeroFoot">Made personal. From {formatMoney(minPrice)}.</small>}
       </div>
-    </header>
-  )
+    </div>
+    <div className="celebrationHeroNote" aria-hidden="true">Make every occasion<br /><em>a Celebration</em></div>
+    <small className="celebrationImageCaption">Gifting inspiration · hamper contents vary</small>
+  </section>
 }
