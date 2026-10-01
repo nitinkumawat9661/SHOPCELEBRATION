@@ -29,10 +29,16 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.48), 0 10px 28px rgba(70, 35, 21, .035);
 }
 
+/* Let the parchment canvas stay visible through the main shopping journey. */
 .celebrationCategories,
 .celebrationFeatured,
 .celebrationEdits,
-.celebrationHome .celebrationBudgets {
+.celebrationHome .celebrationBudgets,
+.celebrationOccasions,
+.builder,
+.promiseSec,
+.customRequestSection,
+.ctaSec {
   position: relative;
   isolation: isolate;
   background: transparent;
@@ -40,7 +46,10 @@
 
 .celebrationCategories::before,
 .celebrationFeatured::before,
-.celebrationHome .celebrationBudgets::before {
+.celebrationHome .celebrationBudgets::before,
+.celebrationOccasions::before,
+.promiseSec::before,
+.customRequestSection::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -65,16 +74,33 @@
     linear-gradient(180deg, rgba(233, 213, 190, .26), rgba(250, 241, 230, .12));
 }
 
+.celebrationOccasions::before {
+  background:
+    radial-gradient(circle at 82% 32%, rgba(126, 20, 33, .045), transparent 27%),
+    linear-gradient(180deg, rgba(246, 232, 216, .18), rgba(230, 205, 178, .12));
+}
+
+.promiseSec::before,
+.customRequestSection::before {
+  background: linear-gradient(180deg, rgba(255, 249, 240, .16), rgba(236, 217, 196, .10));
+}
+
 /* Preserve card legibility while making them feel placed on physical paper. */
 .celebrationCategoryArt,
-.celebrationBudgets .tier {
+.celebrationBudgets .tier,
+.promiseGrid article,
+.customRequestCard,
+.builderCard {
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.48),
     0 10px 24px rgba(82, 48, 29, .075);
 }
 
 .celebrationSectionHead h2,
-.celebrationBudgets .sectionHead h2 {
+.celebrationBudgets .sectionHead h2,
+.celebrationOccasions h2,
+.promiseSec h2,
+.customRequestSection h2 {
   text-shadow: 0 1px 0 rgba(255, 250, 242, .72);
 }
 
