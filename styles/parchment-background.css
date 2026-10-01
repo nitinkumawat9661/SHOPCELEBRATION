@@ -16,10 +16,7 @@
   background-attachment: scroll;
 }
 
-/* Keep the dark campaign hero photographic, then ease into the tactile paper below it. */
-.celebrationHero {
-  background-color: #27140c;
-}
+.celebrationHero { background-color: #27140c; }
 
 .celebrationBenefits {
   background:
@@ -51,23 +48,18 @@
   border-block: 1px solid rgba(117, 72, 45, .06);
 }
 
-.celebrationCategories::before {
-  background: linear-gradient(180deg, rgba(255, 249, 240, .18), rgba(229, 205, 178, .10));
-}
-
+.celebrationCategories::before { background: linear-gradient(180deg, rgba(255, 249, 240, .18), rgba(229, 205, 178, .10)); }
 .celebrationFeatured::before {
   background:
     radial-gradient(circle at 88% 18%, rgba(128, 17, 35, .045), transparent 25%),
     linear-gradient(180deg, rgba(242, 224, 210, .23), rgba(255, 249, 241, .10));
 }
-
 .celebrationHome .celebrationBudgets::before {
   background:
     radial-gradient(circle at 8% 82%, rgba(181, 132, 74, .065), transparent 26%),
     linear-gradient(180deg, rgba(233, 213, 190, .26), rgba(250, 241, 230, .12));
 }
 
-/* Give cards enough separation from the textured paper without making them float unnaturally. */
 .celebrationCategoryArt,
 .celebrationBudgets .tier {
   box-shadow:
@@ -76,23 +68,12 @@
 }
 
 .celebrationSectionHead h2,
-.celebrationBudgets .sectionHead h2 {
-  text-shadow: 0 1px 0 rgba(255, 250, 242, .72);
-}
+.celebrationBudgets .sectionHead h2 { text-shadow: 0 1px 0 rgba(255, 250, 242, .72); }
 
 @media (max-width: 760px) {
   .celebrationHome {
     background-size: 520px 520px, 620px 620px, auto, 560px 560px;
     background-position: -220px 100px, calc(100% + 260px) 38%, 0 0, 0 0;
   }
-
-  .celebrationBenefits {
-    background-size: auto, 620px 620px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .celebrationHome {
-    background-attachment: scroll;
-  }
+  .celebrationBenefits { background-size: auto, 620px 620px; }
 }
