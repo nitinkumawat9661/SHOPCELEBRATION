@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { formatMoney } from "../../lib/domain/catalog"
 import { fromMinorUnits } from "../../lib/domain/payment"
-import { orderStatusLabels, statusHasCapability, workflowActionTarget } from "../../lib/domain/order-status"
+import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../../lib/domain/order-status"
 import { storeContent, uiContent } from "../../lib/domain/content"
 import { SiteHeader } from "../shell/SiteHeader"
 import { TrustStrip } from "../shell/TrustStrip"
@@ -16,6 +16,17 @@ import { PackingApprovalCard } from "./PackingApprovalCard"
 import { TrackingLookup } from "./TrackingLookup"
 import { useTrackedOrder } from "./useTrackedOrder"
 
+function customerStatusLabel(status: OrderStatus) {
+  if (status === "payment_verification_pending") return "Confirming payment"
+  if (status === "payment_verified" || status === "preparing") return "Confirmed"
+  if (status === "packing_video_ready" || status === "customer_approved") return "Packing video"
+  if (status === "shipped") return "On the way"
+  if (status === "delivered") return "Delivered"
+  if (status === "issue_reported") return "Support in progress"
+  if (status === "refund_or_replacement_resolved") return "Resolved"
+  return "Cancelled"
+}
+
 export function TrackingPage() {
   const token = useSearchParams().get("token") || ""
   const tracked = useTrackedOrder(token)
@@ -23,11 +34,12 @@ export function TrackingPage() {
   const [issueSubmitted, setIssueSubmitted] = useState(false)
   const copy = uiContent.tracking
   const order = tracked.order
+  const individualItemCount = order?.orderType === "individual" ? (order.lineItems || []).reduce((total, item) => total + item.quantity, 0) : 0
 
   async function approve() {
     if (await tracked.approvePacking()) {
       setApproved(true)
-      notifyUx({ title: "Packing approved ✓", body: "Team ab dispatch process continue kar sakti hai.", tone: "success", durationMs: 4000 })
+      notifyUx({ title: "Packing approved ✓", body: "Your order can now move to shipping.", tone: "success", durationMs: 4000 })
       window.setTimeout(() => scrollToUxTarget(document.querySelector("[data-tracking-approved]"), "center"), 80)
     } else {
       notifyUx({ title: "Approval nahi hua", body: "Dobara try karein ya WhatsApp support use karein.", tone: "error" })
@@ -61,13 +73,13 @@ export function TrackingPage() {
           {token && tracked.loading && <div className="trackingState">{copy.loading}</div>}
           {token && tracked.error && !order && <><div className="errorBox" role="alert">{tracked.error}</div><TrackingLookup /></>}
           {order && <>
-            <div className="trackingHero"><div><small>{order.orderType === "individual" ? "Individual purchase" : "Hamper"}</small><h1>{order.tierName}</h1><p>{order.receiverName}{uiContent.common.separator}{order.occasion}</p></div><strong>{formatMoney(fromMinorUnits(order.amountPaise))}</strong></div>
+            <div className="trackingHero"><div><small>{order.orderType === "individual" ? "ORDER" : "HAMPER"}</small><h1>{order.orderType === "individual" ? `${individualItemCount} ${individualItemCount === 1 ? "item" : "items"}` : order.tierName}</h1><p>{order.orderType === "individual" ? `Deliver to ${order.receiverName}` : `${order.receiverName}${uiContent.common.separator}${order.occasion}`}</p></div><strong>{formatMoney(fromMinorUnits(order.amountPaise))}</strong></div>
             {order.orderType === "individual" && <ul className="individualOrderLines" aria-label="Purchased items">{(order.lineItems || []).map((item) => <li key={item.productId}><div><b>{item.name}</b><span>{item.quantity} × {formatMoney(item.unitPricePaise / 100)} each</span></div><strong>{formatMoney(item.lineTotalPaise / 100)}</strong></li>)}</ul>}
             <div className="trackingMeta">
               <div><span>{copy.orderId}</span><b>{order.publicId}</b></div>
               <div><span>{copy.requiredBy}</span><b>{order.requiredDate}</b></div>
               <div><span>{copy.payment}</span><b>{order.paymentStatus}</b></div>
-              <div><span>{copy.status}</span><b>{orderStatusLabels[order.status]}</b></div>
+              <div><span>{copy.status}</span><b>{customerStatusLabel(order.status)}</b></div>
             </div>
             {tracked.error && <div className="errorBox" role="alert">{tracked.error}</div>}
             <TrackingTimeline status={order.status} />
@@ -80,9 +92,8 @@ export function TrackingPage() {
               onApprove={approve}
             />
             {approved && <div className="successBox" data-tracking-approved>{copy.approved}</div>}
-            <div className="trackingCards">
-              <article><div className="promiseIcon">{copy.packingVideoIcon}</div><h2>{copy.packingVideo}</h2>{order.packingVideoUrl ? <video className="packingVideo" src={order.packingVideoUrl} controls playsInline preload="metadata" /> : <p>{copy.notAvailable}</p>}</article>
-              <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingProvider || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Tracking number copy karein</button></> : <p>{copy.notAvailable}</p>}</article>
+            <div className="trackingCards" style={{ gridTemplateColumns: "1fr" }}>
+              <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingProvider || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></> : <p>Courier details will appear after shipping.</p>}</article>
             </div>
             {statusHasCapability(order.status, "issueReport") && !issueSubmitted && <IssueForm token={token} onSubmitted={issueDone} onError={tracked.setError} />}
             {(issueSubmitted || order.status === workflowActionTarget("issueReported")) && <div className="successBox" data-issue-success>{storeContent.issues.submitted}</div>}
