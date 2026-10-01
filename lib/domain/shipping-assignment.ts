@@ -64,10 +64,16 @@ export function shippingDistanceKm(origin: ShippingCoordinate | null | undefined
   return 2 * EARTH_RADIUS_KM * Math.atan2(Math.sqrt(bounded), Math.sqrt(1 - bounded))
 }
 
+function validCarrierId(value: string | number) {
+  return typeof value === "string"
+    ? value.trim().length > 0
+    : Number.isSafeInteger(value) && value > 0
+}
+
 function quoteIsEligible(quote: ShippingRateQuote) {
   return quote.serviceable !== false &&
     typeof quote.provider === "string" && quote.provider.trim().length > 0 &&
-    (typeof quote.carrierId === "string" || typeof quote.carrierId === "number") &&
+    validCarrierId(quote.carrierId) &&
     Number.isSafeInteger(quote.totalPaise) && quote.totalPaise > 0
 }
 
@@ -80,8 +86,9 @@ export function cheapestServiceableQuote(quotes: ShippingRateQuote[]) {
   const eligible = quotes.filter(quoteIsEligible)
   eligible.sort((a, b) => {
     if (a.totalPaise !== b.totalPaise) return a.totalPaise - b.totalPaise
-    const etaDifference = deliveryDays(a) - deliveryDays(b)
-    if (Number.isFinite(etaDifference) && etaDifference !== 0) return etaDifference
+    const etaA = deliveryDays(a)
+    const etaB = deliveryDays(b)
+    if (etaA !== etaB) return etaA < etaB ? -1 : 1
     const providerDifference = a.provider.localeCompare(b.provider)
     if (providerDifference !== 0) return providerDifference
     return String(a.carrierId).localeCompare(String(b.carrierId))
