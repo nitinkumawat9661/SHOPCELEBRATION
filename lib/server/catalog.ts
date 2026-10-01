@@ -68,6 +68,13 @@ function normalizeTier(input: unknown): Tier {
 
 function normalizeProduct(input: unknown): GiftProduct {
   const item = (input && typeof input === "object" ? input : {}) as Record<string, unknown>
+  if (item.sellIndividually !== undefined && typeof item.sellIndividually !== "boolean") throw new CatalogValidationError("INVALID_INDIVIDUAL_SALE_SETTING")
+  const sellIndividually = item.sellIndividually === true
+  if (item.salePricePaise != null && typeof item.salePricePaise !== "number") throw new CatalogValidationError("INVALID_SALE_PRICE")
+  const salePricePaise = item.salePricePaise === undefined || item.salePricePaise === null
+    ? undefined
+    : integer(item.salePricePaise, 100, Math.min(validation.catalog.maxPrice * 100, 2147483647), "INVALID_SALE_PRICE")
+  if (sellIndividually && salePricePaise === undefined) throw new CatalogValidationError("SALE_PRICE_REQUIRED")
   return {
     id: cleanId(item.id),
     name: cleanRequired(item.name, validation.catalog.nameMax, "INVALID_PRODUCT_NAME"),
@@ -77,7 +84,9 @@ function normalizeProduct(input: unknown): GiftProduct {
     note: cleanOptional(item.note, validation.catalog.noteMax),
     icon: cleanOptional(item.icon, 16) || undefined,
     imageUrl: imageUrl(item.imageUrl) || undefined,
-    active: item.active !== false
+    active: item.active !== false,
+    sellIndividually,
+    salePricePaise
   }
 }
 

@@ -11,7 +11,7 @@ import { getCatalogConfig } from "../../../../lib/server/catalog"
 import { findCustomerAccountById } from "../../../../lib/server/customer-accounts"
 import { createOrder } from "../../../../lib/server/orders"
 import { createProviderCheckout, type ProviderCheckout } from "../../../../lib/server/payments/provider"
-import { bindPaymentAttempt, failPaymentAttempt, paymentOrderClientResult, reservePaymentAttempt } from "../../../../lib/server/payments/store"
+import { bindPaymentAttempt, failPaymentAttempt, getPaymentOrder, paymentOrderClientResult, reservePaymentAttempt } from "../../../../lib/server/payments/store"
 import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
 
 function reusableCheckout(input: {
@@ -43,6 +43,7 @@ function reusableCheckout(input: {
 
 export async function POST(request: Request) {
   let attemptId = ""
+  let savedOrder: { publicId: string; customerAccountId: string } | null = null
   try {
     enforceSameOrigin(request)
     if (!paymentGatewayReady() || !paymentGatewayConfig.provider) {
@@ -63,10 +64,11 @@ export async function POST(request: Request) {
       { ...body, phone: account.phone },
       requireEnv("businessTimezone"),
       catalog,
-      { requirePaymentReference: false }
+      { requirePaymentReference: false, checkExpectedSubtotal: false }
     )
 
     const created = await createOrder(order, account.id, body.offerQuoteId, { paymentProvider: paymentGatewayConfig.provider })
+    savedOrder = { publicId: created.publicId, customerAccountId: account.id }
     const reserved = await reservePaymentAttempt(created.publicId, account.id, paymentGatewayConfig.provider)
     attemptId = reserved.attemptId
     const clientOrder = paymentOrderClientResult(reserved.order)
@@ -119,7 +121,9 @@ export async function POST(request: Request) {
     }
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })
     const code = error instanceof Error ? error.message : "PAYMENT_PROVIDER_UNAVAILABLE"
+    const snapshot = savedOrder ? await getPaymentOrder(savedOrder.publicId, savedOrder.customerAccountId).catch(() => null) : null
+    const clientOrder = snapshot ? paymentOrderClientResult(snapshot) : null
     console.error("create-payment", error)
-    return NextResponse.json({ ok: false, error: code }, { status: code === "PAYMENT_ATTEMPT_INITIALIZING" ? 409 : 503 })
+    return NextResponse.json({ ok: false, error: code, ...(clientOrder ? { ...clientOrder, trackingPath: `${routes.track}?token=${encodeURIComponent(clientOrder.trackingToken)}` } : {}) }, { status: ["PAYMENT_ATTEMPT_INITIALIZING", "PAYMENT_ORDER_CANCELLED", "PAYMENT_ALREADY_CONFIRMED"].includes(code) ? 409 : 503 })
   }
 }

@@ -17,6 +17,9 @@ import { validatePaymentReference } from "../validation"
 
 export function PaymentStep({
   tier,
+  individual,
+  orderTotalPaise,
+  paymentBlocked = false,
   checkout,
   selectedProductIds,
   accepted,
@@ -40,7 +43,10 @@ export function PaymentStep({
   onLogin,
   onNewOrder
 }: {
-  tier: Tier
+  tier?: Tier
+  individual?: { subtotalPaise: number; itemKey: string; label: string }
+  orderTotalPaise?: number | null
+  paymentBlocked?: boolean
   checkout: CheckoutData
   selectedProductIds: string[]
   selectedNames: string[]
@@ -66,6 +72,8 @@ export function PaymentStep({
   onNewOrder: () => void
 }) {
   const copy = uiContent.builder.payment
+  const checkoutId = tier?.id || "individual"
+  const checkoutName = individual?.label || tier?.name || "Order"
   const [paymentStarted, setPaymentStarted] = useState(false)
   const [showPaymentReturn, setShowPaymentReturn] = useState(false)
   const [quote, setQuote] = useState<OfferQuote | null>(null)
@@ -74,16 +82,16 @@ export function PaymentStep({
   const [quoteError, setQuoteError] = useState("")
   const [hesitationChecked, setHesitationChecked] = useState(false)
   const utrRef = useRef<HTMLInputElement>(null)
-  const manualPaymentReady = Boolean(publicEnv.upiId && publicEnv.upiName)
-  const selectedKey = useMemo(() => [...selectedProductIds].sort().join(","), [selectedProductIds])
-  const subtotalPaise = Math.round(tier.price * 100)
-  const payablePaise = quote?.payablePaise ?? subtotalPaise
+  const manualPaymentReady = Boolean(!individual && publicEnv.upiId && publicEnv.upiName)
+  const selectedKey = useMemo(() => individual?.itemKey || [...selectedProductIds].sort().join(","), [selectedProductIds, individual?.itemKey])
+  const subtotalPaise = individual?.subtotalPaise ?? Math.round((tier?.price || 0) * 100)
+  const payablePaise = created?.payablePaise ?? orderTotalPaise ?? quote?.payablePaise ?? subtotalPaise
   const discountPaise = quote?.discountPaise ?? 0
   const upiUrl = manualPaymentReady ? buildUpiUrl({
     upiId: publicEnv.upiId,
     upiName: publicEnv.upiName,
     amountRupees: payablePaise / 100,
-    note: `${storeContent.brand.name} ${tier.name}`
+    note: `${storeContent.brand.name} ${checkoutName}`
   }) : ""
 
   function focusUtr() {
@@ -94,7 +102,7 @@ export function PaymentStep({
   }
 
   async function loadOffer(trigger: "checkout" | "hesitation") {
-    if (!customerAccount) return null
+    if (!customerAccount || individual || !tier) return null
     setQuoteLoading(true)
     setQuoteError("")
     try {
@@ -121,8 +129,8 @@ export function PaymentStep({
   }
 
   useEffect(() => {
-    trackConversion("checkout_reached", { tierId: tier.id })
-  }, [tier.id])
+    if (!individual && tier) trackConversion("checkout_reached", { tierId: tier.id })
+  }, [checkoutId])
 
   useEffect(() => {
     setQuote(null)
@@ -131,17 +139,17 @@ export function PaymentStep({
     setHesitationChecked(false)
     setPaymentStarted(false)
     setShowPaymentReturn(false)
-    if (customerAccount) void loadOffer("checkout")
-  }, [customerAccount?.id, tier.id, selectedKey])
+    if (customerAccount && !individual) void loadOffer("checkout")
+  }, [customerAccount?.id, checkoutId, selectedKey])
 
   useEffect(() => {
-    if (!customerAccount || !quoteChecked || quote || quoteLoading || paymentStarted || hesitationChecked) return
+    if (individual || !customerAccount || !quoteChecked || quote || quoteLoading || paymentStarted || hesitationChecked) return
     const timer = window.setTimeout(() => {
       setHesitationChecked(true)
       void loadOffer("hesitation")
     }, 12000)
     return () => window.clearTimeout(timer)
-  }, [customerAccount?.id, hesitationChecked, paymentStarted, quote, quoteChecked, quoteLoading, tier.id, selectedKey])
+  }, [customerAccount?.id, hesitationChecked, paymentStarted, quote, quoteChecked, quoteLoading, checkoutId, selectedKey])
 
   useEffect(() => {
     if (gatewayEnabled || !paymentStarted) return
@@ -170,13 +178,13 @@ export function PaymentStep({
   function paymentClick() {
     setPaymentStarted(true)
     setShowPaymentReturn(false)
-    trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId })
+    if (!individual && tier) trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId })
   }
 
   function automatedPaymentClick() {
     setPaymentStarted(true)
     setShowPaymentReturn(false)
-    trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId })
+    if (!individual && tier) trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId })
     onPay(quote?.id)
   }
 
@@ -192,11 +200,11 @@ export function PaymentStep({
 
   return (
     <div className="stepPane active">
-      <div className="builderTitle"><div><h3>{copy.title}</h3><p>{gatewayEnabled ? "Secure checkout with automatic payment verification. No UTR or screenshot needed." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
+      <div className="builderTitle"><div><h3>{individual ? "3. Payment" : copy.title}</h3><p>{gatewayEnabled ? "Secure checkout with automatic payment verification. No UTR or screenshot needed." : individual ? "Your cart stays saved. Individual purchases use verified online checkout." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
       <div className="paymentGrid">
         <div>
           <div className={`checkoutAccount ${customerAccount ? "ready" : "needed"}`}>
-            <div><span>{customerAccount ? "READY TO ORDER" : "SAVE YOUR ORDER"}</span><b>{accountLoading ? "Checking your account…" : customerAccount ? `${customerAccount.displayName} • ${customerAccount.phone}` : "Login to continue to payment"}</b><small>{customerAccount ? "Your order, payment status and tracking stay linked to this account." : "Your hamper stays exactly as you built it."}</small></div>
+            <div><span>{customerAccount ? "READY TO ORDER" : "SAVE YOUR ORDER"}</span><b>{accountLoading ? "Checking your account…" : customerAccount ? `${customerAccount.displayName} • ${customerAccount.phone}` : "Login to continue to payment"}</b><small>{customerAccount ? "Your order, payment status and tracking stay linked to this account." : individual ? "Your cart stays saved while you sign in." : "Your hamper stays exactly as you built it."}</small></div>
             {!customerAccount && !accountLoading && <button className="primary" type="button" onClick={onLogin}>Login / Create account</button>}
             {customerAccount && <Link className="secondary" href={routes.account}>My Celebration</Link>}
           </div>
@@ -219,22 +227,22 @@ export function PaymentStep({
                 ? <small>UPI, cards and supported payment apps • server-side verification</small>
                 : manualPaymentReady
                   ? <small>{copy.upiPrefix} {publicEnv.upiId}</small>
-                  : <small className="setupPending">{copy.setupPending}</small>}
+                  : <small className="setupPending">{individual ? "Online payment is currently unavailable. Your items remain saved in your cart. Contact Celebration for help or return when online payments are enabled." : copy.setupPending}</small>}
             </div>
             {!customerAccount
               ? <button className="primary payButton" type="button" onClick={onLogin}>Login to continue</button>
               : quoteLoading || gatewayLoading
                 ? <button className="secondary payButton" disabled>Checking payment…</button>
                 : gatewayEnabled
-                  ? <button className="primary payButton" type="button" disabled={paymentBusy || paymentPending || Boolean(created) || !accepted} onClick={automatedPaymentClick}>{paymentBusy ? "Verifying…" : paymentFailed ? "Try payment again" : paymentPending ? "Payment pending" : `Pay ${formatMoney(payablePaise / 100)}`}</button>
+                  ? <button className="primary payButton" type="button" disabled={paymentBusy || paymentPending || Boolean(created) || !accepted || paymentBlocked} onClick={automatedPaymentClick}>{paymentBusy ? "Verifying…" : paymentBlocked ? "Review your cart first" : paymentFailed ? "Try payment again" : paymentPending ? "Payment pending" : `Pay ${formatMoney(payablePaise / 100)}`}</button>
                   : manualPaymentReady
-                    ? <a className="primary payButton" href={upiUrl} onClick={paymentClick}>{copy.payButton}</a>
-                    : <button className="secondary payButton" disabled>{copy.setupButton}</button>}
+                    ? accepted && !created && !paymentBusy ? <a className="primary payButton" href={upiUrl} onClick={paymentClick}>{copy.payButton}</a> : <button className="primary payButton" type="button" disabled>{created ? "Order saved" : "Accept terms to pay"}</button>
+                    : <button className="secondary payButton" disabled>{individual ? "Online payment unavailable" : copy.setupButton}</button>}
           </div>
 
-          <div className="paymentSteps">
+          {(gatewayEnabled || !individual) && <div className="paymentSteps">
             {(gatewayEnabled ? automatedSteps : storeContent.checkout.paymentSteps.map((text) => text.replace("{amount}", formatMoney(payablePaise / 100)))).map((text, index) => <div key={text}><b>{index + 1}</b><span>{text}</span></div>)}
-          </div>
+          </div>}
 
           {gatewayEnabled && paymentPending && <div className="paymentStateCard pending" role="status">
             <div className="paymentStateIcon">…</div>
@@ -244,23 +252,23 @@ export function PaymentStep({
 
           {gatewayEnabled && paymentFailed && <div className="paymentStateCard failed" role="alert">
             <div className="paymentStateIcon">!</div>
-            <div className="paymentStateCopy"><strong>Payment not completed</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is still saved. ` : ""}No order processing starts until payment is verified. You can retry without rebuilding your hamper.</span></div>
+            <div className="paymentStateCopy"><strong>Payment not completed</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is still saved. ` : ""}No order processing starts until payment is verified. You can retry {individual ? "this order safely." : "without rebuilding your hamper."}</span></div>
             <div className="paymentStateActions"><button className="primary" type="button" disabled={submitting} onClick={automatedPaymentClick}>{submitting ? "Opening…" : "Try payment again"}</button><button className="secondary" type="button" disabled={submitting} onClick={onRefreshPayment}>Check status</button></div>
           </div>}
 
-          {!gatewayEnabled && showPaymentReturn && !created && <div className="paymentReturnHint" role="status"><span><b>Payment done?</b> Paste your UPI transaction reference below to continue.</span><button className="secondary" type="button" onClick={focusUtr}>Add reference</button></div>}
-          {!gatewayEnabled && <label className="field utrField"><span>{copy.referenceLabel} <b className="requiredMark">*</b></span><input ref={utrRef} className="control" value={checkout.paymentReference} onChange={(e) => onReference(e.target.value)} placeholder={copy.referencePlaceholder} autoComplete="off" inputMode="text" /></label>}
+          {!gatewayEnabled && !individual && showPaymentReturn && !created && <div className="paymentReturnHint" role="status"><span><b>Payment done?</b> Paste your UPI transaction reference below to continue.</span><button className="secondary" type="button" onClick={focusUtr}>Add reference</button></div>}
+          {!gatewayEnabled && !individual && <label className="field utrField"><span>{copy.referenceLabel} <b className="requiredMark">*</b></span><input ref={utrRef} className="control" value={checkout.paymentReference} disabled={submitting || Boolean(created)} onChange={(e) => onReference(e.target.value)} placeholder={copy.referencePlaceholder} autoComplete="off" inputMode="text" /></label>}
 
-          <label className="policyCheck"><input type="checkbox" checked={accepted} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order &amp; Protection Policy</Link> and acknowledge the <Link href={routes.privacy} target="_blank">Privacy Policy</Link>. This is a prepaid customized order; eligible wrong, damaged, defective or missing-item claims remain covered by the protection policy.</span></label>
+          <label className="policyCheck"><input type="checkbox" checked={accepted} disabled={submitting || Boolean(created) || Boolean(individual && paymentOrderId)} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order &amp; Protection Policy</Link> and acknowledge the <Link href={routes.privacy} target="_blank">Privacy Policy</Link>. This is a prepaid {individual ? "product" : "customized"} order; eligible wrong, damaged, defective or missing-item claims remain covered by the protection policy.</span></label>
           <div className="paymentPolicyHint">Payment processing starts only after you accept these terms. We do not ask you to share card PINs, UPI PINs or OTPs with Celebration.</div>
           {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Accept the order and privacy terms to enable secure payment.</div>}
           {error && !paymentPending && <div className="errorBox" role="alert">{error}</div>}
-          {created && <div className="successBox" data-order-success tabIndex={-1}><strong>{copy.successPrefix} {created.orderId}</strong><span>{created.discountPaise > 0 ? `Payment verified and order saved — you saved ${formatMoney(created.discountPaise / 100)} with ${created.campaignTitle || "your offer"}.` : gatewayEnabled ? "Payment verified automatically. Your order is confirmed." : "Your order is saved."} Follow packing and shipping updates from My Celebration.</span><div className="successActions"><Link className="primary" href={routes.account}>View my order</Link><Link className="secondary" href={created.trackingPath}>{copy.trackingButton}</Link><button className="secondary" type="button" onClick={onWhatsapp}>WhatsApp support</button><button className="secondary" type="button" onClick={onNewOrder}>Build another hamper</button></div></div>}
+          {created && <div className="successBox" data-order-success tabIndex={-1}><strong>{copy.successPrefix} {created.orderId}</strong><span>{created.discountPaise > 0 ? `Payment verified and order saved — you saved ${formatMoney(created.discountPaise / 100)} with ${created.campaignTitle || "your offer"}.` : paymentState === "paid" ? "Payment verified automatically. Your order is confirmed." : "Your order is saved. Manual UPI payment is awaiting verification."} Follow packing and shipping updates from My Celebration.</span><div className="successActions"><Link className="primary" href={routes.account}>View my order</Link><Link className="secondary" href={created.trackingPath}>{copy.trackingButton}</Link><button className="secondary" type="button" onClick={onWhatsapp}>WhatsApp support</button><button className="secondary" type="button" onClick={onNewOrder}>{individual ? "Continue shopping" : "Build another hamper"}</button></div></div>}
 
           <div className="navRow paymentActions">
-            <button className="secondary" type="button" onClick={onBack}>{copy.back}</button>
-            <span className="tiny">{gatewayEnabled ? "Order processing starts only after server-verified payment." : customerAccount ? copy.hint : "Login before payment so your order and any eligible offer stay linked"}</span>
-            {!gatewayEnabled && <button className="primary" type="button" disabled={submitting || Boolean(created) || !manualPaymentReady || accountLoading || !customerAccount || quoteLoading} onClick={() => onSubmit(quote?.id)}>{submitting ? copy.submitting : customerAccount ? "Place order" : "Login to continue"}</button>}
+            <button className="secondary" type="button" disabled={submitting || Boolean(individual && (created || paymentOrderId))} onClick={onBack}>{copy.back}</button>
+            <span className="tiny">{gatewayEnabled || individual ? "Order processing starts only after server-verified payment." : customerAccount ? copy.hint : "Login before payment so your order and any eligible offer stay linked"}</span>
+            {!gatewayEnabled && !individual && <button className="primary" type="button" disabled={submitting || Boolean(created) || !accepted || !manualPaymentReady || accountLoading || !customerAccount || quoteLoading} onClick={() => onSubmit(quote?.id)}>{submitting ? copy.submitting : customerAccount ? "Place order" : "Login to continue"}</button>}
           </div>
         </div>
         <div className="trustCard"><div className="trustCardIcon">{copy.protectionIcon}</div><div className="kicker">{uiContent.promise.kicker}</div><h3>{uiContent.promise.title}</h3><ul>{storeContent.promiseCards.map((card) => <li key={card.title}>{copy.protectionBullet} {card.title}</li>)}</ul><Link className="policyLink" href={routes.policies}>{uiContent.footer.policy} {copy.policyArrow}</Link></div>

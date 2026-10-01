@@ -5,6 +5,7 @@ import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../
 import { uiContent } from "../../lib/domain/content"
 
 type Props = {
+  isIndividual?: boolean
   status: OrderStatus
   packingVideoUrl: string | null
   approving: boolean
@@ -12,7 +13,7 @@ type Props = {
   onApprove: () => Promise<void>
 }
 
-export function PackingApprovalCard({ status, packingVideoUrl, approving, approvedAt, onApprove }: Props) {
+export function PackingApprovalCard({ isIndividual = false, status, packingVideoUrl, approving, approvedAt, onApprove }: Props) {
   const [confirmed, setConfirmed] = useState(false)
   const copy = uiContent.tracking
   const canApprove = Boolean(packingVideoUrl) && statusHasCapability(status, "packingVideoApproval")
@@ -56,10 +57,10 @@ export function PackingApprovalCard({ status, packingVideoUrl, approving, approv
     <article className="approvalCard approvalCardAction">
       <div className="approvalEyebrow">{copy.approvalKicker}</div>
       <h2>{copy.approvalTitle}</h2>
-      <p>{copy.approvalBody}</p>
+      <p>{isIndividual ? "Watch the video, check your items, then approve the order for dispatch." : copy.approvalBody}</p>
       <label className="approvalConsent">
         <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />
-        <span>{copy.approvalConsent}</span>
+        <span>{isIndividual ? "I’ve reviewed the packing video and approve this order for dispatch." : copy.approvalConsent}</span>
       </label>
       <button className="primary approvalButton" type="button" onClick={onApprove} disabled={!confirmed || approving}>
         {approving ? copy.approvalBusy : copy.approve}

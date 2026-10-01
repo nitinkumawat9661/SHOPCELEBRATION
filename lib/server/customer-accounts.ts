@@ -4,6 +4,7 @@ import { hasUnsafeText, sanitizeText } from "../validation/text"
 import { hashCustomerPassword, isValidCustomerPassword, verifyCustomerPassword } from "../security/customer-password"
 import { query } from "./db"
 import type { OrderStatus } from "../domain/order-status"
+import type { OrderLineItem } from "../domain/order"
 
 const DUMMY_PASSWORD_HASH = `${"00".repeat(16)}:${"00".repeat(64)}`
 
@@ -22,6 +23,8 @@ export type CustomerAccount = {
 }
 
 export type CustomerOrderSummary = {
+  orderType: "hamper" | "individual"
+  lineItems: OrderLineItem[]
   publicId: string
   amountPaise: number
   tierName: string
@@ -51,6 +54,8 @@ type AccountRow = {
 }
 
 type OrderRow = {
+  order_type: "hamper" | "individual"
+  line_items: OrderLineItem[]
   public_id: string
   amount_paise: number
   tier_name: string
@@ -181,7 +186,7 @@ export async function resetCustomerPassword(accountId: string, password: unknown
 export async function listCustomerOrders(accountId: string, limit = 50): Promise<CustomerOrderSummary[]> {
   const safeLimit = Math.min(Math.max(limit, 1), 100)
   const result = await query<OrderRow>(
-    `SELECT public_id, amount_paise, tier_name, selected_product_ids, selected_product_names, required_date::text, occasion, status,
+    `SELECT order_type, line_items, public_id, amount_paise, tier_name, selected_product_ids, selected_product_names, required_date::text, occasion, status,
             payment_status, receiver_name, packing_video_key, shipping_provider, shipping_tracking_number,
             customer_approved_at, created_at, updated_at
        FROM orders
@@ -191,6 +196,8 @@ export async function listCustomerOrders(accountId: string, limit = 50): Promise
     [accountId, safeLimit]
   )
   return result.rows.map((row) => ({
+    orderType: row.order_type,
+    lineItems: row.line_items,
     publicId: row.public_id,
     amountPaise: row.amount_paise,
     tierName: row.tier_name,

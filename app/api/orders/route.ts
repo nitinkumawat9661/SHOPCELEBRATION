@@ -19,13 +19,14 @@ export async function POST(request: Request) {
     if (!session) return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 })
     const account = await findCustomerAccountById(session.accountId)
     if (!account) return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 })
-    if (!publicEnv.upiId || !publicEnv.upiName) return NextResponse.json({ ok: false, error: "PAYMENT_NOT_CONFIGURED" }, { status: 503 })
     const allowed = await consumeRequestRateLimit("order", request, validation.rateLimits.createOrder)
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
 
     const body = await readJsonBody<CreateOrderInput>(request)
+    if (body.orderType === "individual") return NextResponse.json({ ok: false, error: "MANUAL_PAYMENT_NOT_SUPPORTED" }, { status: 422 })
+    if (!publicEnv.upiId || !publicEnv.upiName) return NextResponse.json({ ok: false, error: "PAYMENT_NOT_CONFIGURED" }, { status: 503 })
     const { catalog } = await getCatalogConfig()
-    const order = normalizeOrderInput({ ...body, phone: account.phone }, requireEnv("businessTimezone"), catalog)
+    const order = normalizeOrderInput({ ...body, phone: account.phone }, requireEnv("businessTimezone"), catalog, { checkExpectedSubtotal: false })
     const created = await createOrder(order, account.id, body.offerQuoteId)
 
     return NextResponse.json({

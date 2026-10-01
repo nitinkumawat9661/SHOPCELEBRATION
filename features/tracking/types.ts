@@ -1,6 +1,9 @@
 import type { OrderStatus } from "../../lib/domain/order-status"
+import type { OrderLineItem } from "../../lib/domain/order"
 
 export type TrackedOrder = {
+  orderType: "hamper" | "individual"
+  lineItems: OrderLineItem[]
   publicId: string
   amountPaise: number
   tierName: string

@@ -61,7 +61,8 @@ export function TrackingPage() {
           {token && tracked.loading && <div className="trackingState">{copy.loading}</div>}
           {token && tracked.error && !order && <><div className="errorBox" role="alert">{tracked.error}</div><TrackingLookup /></>}
           {order && <>
-            <div className="trackingHero"><div><h1>{order.tierName}</h1><p>{order.receiverName}{uiContent.common.separator}{order.occasion}</p></div><strong>{formatMoney(fromMinorUnits(order.amountPaise))}</strong></div>
+            <div className="trackingHero"><div><small>{order.orderType === "individual" ? "Individual purchase" : "Hamper"}</small><h1>{order.tierName}</h1><p>{order.receiverName}{uiContent.common.separator}{order.occasion}</p></div><strong>{formatMoney(fromMinorUnits(order.amountPaise))}</strong></div>
+            {order.orderType === "individual" && <ul className="individualOrderLines" aria-label="Purchased items">{(order.lineItems || []).map((item) => <li key={item.productId}><div><b>{item.name}</b><span>{item.quantity} × {formatMoney(item.unitPricePaise / 100)} each</span></div><strong>{formatMoney(item.lineTotalPaise / 100)}</strong></li>)}</ul>}
             <div className="trackingMeta">
               <div><span>{copy.orderId}</span><b>{order.publicId}</b></div>
               <div><span>{copy.requiredBy}</span><b>{order.requiredDate}</b></div>
@@ -71,6 +72,7 @@ export function TrackingPage() {
             {tracked.error && <div className="errorBox" role="alert">{tracked.error}</div>}
             <TrackingTimeline status={order.status} />
             <PackingApprovalCard
+              isIndividual={order.orderType === "individual"}
               status={order.status}
               packingVideoUrl={order.packingVideoUrl}
               approving={tracked.approving}

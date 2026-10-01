@@ -3,7 +3,8 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import type { GiftProduct } from "../../lib/domain/catalog"
+import { isIndividuallySellable, type GiftProduct } from "../../lib/domain/catalog"
+import { AddToCart } from "../cart/AddToCart"
 import { formatMoney } from "../../lib/domain/money"
 
 export function CatalogProductImage({ product, priority = false }: { product: GiftProduct; priority?: boolean }) {
@@ -20,6 +21,7 @@ export function CatalogProductImage({ product, priority = false }: { product: Gi
 }
 
 export function CatalogCard({ product }: { product: GiftProduct }) {
+  const individual = isIndividuallySellable(product)
   return (
     <article className="catalogCard">
       <Link href={`/jewelry/${encodeURIComponent(product.id)}`} className="catalogCardLink" prefetch={false}>
@@ -28,9 +30,10 @@ export function CatalogCard({ product }: { product: GiftProduct }) {
           <span className="catalogCardCategory">{product.category}</span>
           <h3>{product.name}</h3>
           {product.note && <p>{product.note}</p>}
-          <div className="catalogCardPrice"><span>In hampers from</span><strong>{formatMoney(product.minTier)}</strong></div>
+          <div className="catalogCardPrice"><span>{individual ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(individual ? product.salePricePaise! / 100 : product.minTier)}</strong></div>
         </div>
       </Link>
+      {individual && <AddToCart productId={product.id} />}
     </article>
   )
 }
