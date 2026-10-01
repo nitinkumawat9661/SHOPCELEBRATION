@@ -9,12 +9,13 @@
     "lint": "npm run audit",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run audit",
-    "audit": "node scripts/audit-source.mjs && node scripts/audit-imports.mjs && node scripts/audit-import-duplicates.mjs && node scripts/syntax-check.mjs && node scripts/audit-config.mjs && node scripts/test-domain.mjs && node scripts/test-catalog-discovery.mjs && node scripts/test-individual-catalog.mjs && node scripts/test-cart.mjs && node scripts/test-order-presentation.mjs",
+    "audit": "node scripts/audit-source.mjs && node scripts/audit-imports.mjs && node scripts/audit-import-duplicates.mjs && node scripts/syntax-check.mjs && node scripts/audit-config.mjs && node scripts/test-domain.mjs && node scripts/test-catalog-discovery.mjs && node scripts/test-individual-catalog.mjs && node scripts/test-cart.mjs && node scripts/test-order-presentation.mjs && node scripts/test-shipping-assignment.mjs",
     "syntax": "node scripts/syntax-check.mjs",
     "audit:imports": "node scripts/audit-imports.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "config:check": "node scripts/check-config.mjs",
     "test:domain": "node scripts/test-domain.mjs",
+    "test:shipping-assignment": "node scripts/test-shipping-assignment.mjs",
     "test:orders:integration": "node scripts/test-order-integration.mjs"
   },
   "dependencies": {
