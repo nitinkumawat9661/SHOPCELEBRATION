@@ -10,6 +10,7 @@
         "packing_video_ready",
         "customer_approved",
         "shipped",
+        "out_for_delivery",
         "issue_reported"
       ]
     },
@@ -27,7 +28,7 @@
     },
     {
       "id": "shipping",
-      "statuses": ["customer_approved", "shipped"]
+      "statuses": ["customer_approved", "shipped", "out_for_delivery"]
     },
     {
       "id": "issues",

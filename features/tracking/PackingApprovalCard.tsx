@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../../lib/domain/order-status"
 
- type Props = {
+type Props = {
   isIndividual?: boolean
   status: OrderStatus
   packingVideoUrl: string | null
@@ -15,7 +15,7 @@ import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../
 export function PackingApprovalCard({ isIndividual = false, status, packingVideoUrl, approving, approvedAt, onApprove }: Props) {
   const [confirmed, setConfirmed] = useState(false)
   const canApprove = Boolean(packingVideoUrl) && statusHasCapability(status, "packingVideoApproval")
-  const alreadyApproved = status === workflowActionTarget("customerApproved") || approvedAt !== null || ["shipped", "delivered", "issue_reported", "refund_or_replacement_resolved"].includes(status)
+  const alreadyApproved = status === workflowActionTarget("customerApproved") || approvedAt !== null || ["shipped", "out_for_delivery", "delivered", "issue_reported", "refund_or_replacement_resolved"].includes(status)
 
   if (!packingVideoUrl) {
     return (

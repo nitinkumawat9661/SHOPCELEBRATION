@@ -7,7 +7,8 @@ function progressIndex(status: OrderStatus) {
   if (status === "payment_verification_pending") return 0
   if (status === "payment_verified" || status === "preparing") return 0
   if (status === "packing_video_ready" || status === "customer_approved") return 1
-  if (status === "shipped") return 3
+  if (status === "shipped") return 2
+  if (status === "out_for_delivery") return 3
   if (status === "delivered" || status === "issue_reported" || status === "refund_or_replacement_resolved") return 4
   return -1
 }
