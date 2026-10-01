@@ -6,6 +6,7 @@
     "packing_video_ready",
     "customer_approved",
     "shipped",
+    "out_for_delivery",
     "delivered",
     "issue_reported",
     "refund_or_replacement_resolved",
@@ -32,8 +33,10 @@
       "shipped"
     ],
     "shipped": [
-      "delivered",
-      "issue_reported"
+      "out_for_delivery"
+    ],
+    "out_for_delivery": [
+      "delivered"
     ],
     "delivered": [
       "issue_reported"
@@ -51,6 +54,7 @@
     "packing_video_ready",
     "customer_approved",
     "shipped",
+    "out_for_delivery",
     "delivered"
   ],
   "paymentStatusByOrderStatus": {
@@ -70,7 +74,8 @@
     ],
     "shippingUpdate": [
       "customer_approved",
-      "shipped"
+      "shipped",
+      "out_for_delivery"
     ]
   },
   "actions": {
@@ -83,6 +88,7 @@
     "payment_verified",
     "preparing",
     "shipped",
+    "out_for_delivery",
     "delivered",
     "refund_or_replacement_resolved",
     "cancelled"
