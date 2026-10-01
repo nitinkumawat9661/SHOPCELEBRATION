@@ -1,0 +1,6 @@
+{
+  "manualRadiusKm": 20,
+  "localPolicy": "manual",
+  "outsidePolicy": "cheapest",
+  "unknownDistancePolicy": "manual"
+}

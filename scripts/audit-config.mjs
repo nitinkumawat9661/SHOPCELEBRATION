@@ -7,6 +7,7 @@ const store = await readJson("../content/store.json")
 const payment = await readJson("../config/payment.json")
 const storage = await readJson("../config/storage.json")
 const adminOrders = await readJson("../config/admin-orders.json")
+const shipping = await readJson("../config/shipping.json")
 const errors = []
 
 const unique = (items, field, label) => {
@@ -68,6 +69,10 @@ if (!Number.isInteger(payment.minorUnitFactor) || payment.minorUnitFactor < 1) e
 if (!storage.packingVideoTypes || Object.keys(storage.packingVideoTypes).length === 0) errors.push("video content types missing")
 if (!Array.isArray(store.issues?.types) || store.issues.types.length === 0) errors.push("issue types are missing")
 if (!store.brand?.name || !store.brand?.tagline) errors.push("brand content incomplete")
+if (!Number.isFinite(shipping.manualRadiusKm) || shipping.manualRadiusKm < 0) errors.push("invalid shipping manualRadiusKm")
+if (shipping.localPolicy !== "manual") errors.push("shipping localPolicy must be manual")
+if (shipping.outsidePolicy !== "cheapest") errors.push("shipping outsidePolicy must be cheapest")
+if (shipping.unknownDistancePolicy !== "manual") errors.push("shipping unknownDistancePolicy must be manual")
 
 if (errors.length) {
   console.error(errors.join("\n"))
