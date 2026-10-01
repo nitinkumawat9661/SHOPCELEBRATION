@@ -1,6 +1,7 @@
 {
   "maxRequestBytes": 24000,
   "catalogRequestMaxBytes": 524288,
+  "paymentWebhookMaxBytes": 131072,
   "name": {
     "min": 2,
     "max": 80
