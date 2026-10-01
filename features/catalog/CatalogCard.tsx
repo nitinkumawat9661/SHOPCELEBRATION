@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { isIndividuallySellable, type GiftProduct } from "../../lib/domain/catalog"
 import { AddToCart } from "../cart/AddToCart"
@@ -9,13 +8,28 @@ import { formatMoney } from "../../lib/domain/money"
 
 export function CatalogProductImage({ product, priority = false }: { product: GiftProduct; priority?: boolean }) {
   const [failed, setFailed] = useState(false)
-  return product.imageUrl && !failed ? (
-    <Image className="catalogPhoto" src={product.imageUrl} alt={product.name} width={800} height={1000} sizes={priority ? "(max-width: 700px) 100vw, 50vw" : "(max-width: 700px) 45vw, (max-width: 1050px) 30vw, 25vw"} unoptimized={!product.imageUrl.startsWith("/api/catalog/image?key=")} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} onError={() => setFailed(true)} />
-  ) : (
-    <div className="catalogPhotoPlaceholder">
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="5" y="7" width="30" height="26" rx="4" stroke="currentColor" strokeWidth="1.3" /><circle cx="15" cy="16" r="3" stroke="currentColor" strokeWidth="1.3" /><path d="m7 29 8-7 6 5 7-10 7 9" stroke="currentColor" strokeWidth="1.3" /></svg>
-      <span>Photo coming soon</span>
-      <small>{product.category}</small>
+
+  useEffect(() => {
+    setFailed(false)
+  }, [product.imageUrl])
+
+  if (product.imageUrl && !failed) {
+    return <img
+      className="catalogPhoto"
+      src={product.imageUrl}
+      alt={product.name}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+    />
+  }
+
+  return (
+    <div className={`catalogPhotoPlaceholder${failed ? " catalogPhotoFailed" : ""}`} role="img" aria-label={`${product.name} image ${failed ? "unavailable" : "not added"}`}>
+      <span className="catalogPhotoPlaceholderIcon" aria-hidden="true">{product.icon || "✦"}</span>
+      {failed && <small>Image unavailable</small>}
+      {!failed && <small>{product.category}</small>}
     </div>
   )
 }
