@@ -1,0 +1,75 @@
+/* Compact, operational catalog controls. Loaded after all admin styles. */
+.adminCatalogHeader{gap:14px}
+.adminCatalogActions{align-items:center}
+.adminPublishLive{min-width:118px}
+
+.adminCatalogSimpleTools{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin:0 0 12px;
+  padding:12px;
+  border:1px solid #ead7c6;
+  border-radius:15px;
+  background:linear-gradient(135deg,#fffaf3,#fffdf9);
+}
+.adminCatalogSimpleTools>div:first-child{display:grid;gap:3px}
+.adminCatalogSimpleTools b{font-size:11px;color:var(--m)}
+.adminCatalogSimpleTools span{font-size:9px;line-height:1.45;color:var(--muted)}
+.adminCatalogToolButtons{display:flex;gap:7px;flex-wrap:wrap}
+.adminCatalogToolButtons .secondary{min-height:38px;font-size:9px}
+.adminBulkFileButton{position:relative;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.adminBulkFileButton input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.adminBulkFileButton:has(input:disabled){opacity:.55;cursor:not-allowed}
+
+.adminProductEditorCard{overflow:hidden}
+.adminProductMediaRow{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:0 0 12px;
+  padding:9px;
+  border:1px solid #f0e1d5;
+  border-radius:14px;
+  background:#fffaf6;
+}
+.adminProductMediaFrame{
+  width:76px;
+  height:76px;
+  flex:0 0 76px;
+  border:1px solid #e6d4c7;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+  display:grid;
+  place-items:center;
+}
+.adminCatalogPreview{display:block;width:100%;height:100%;object-fit:cover;background:#fff}
+.adminProductImageFallback{width:100%;height:100%;display:grid;place-items:center;align-content:center;gap:3px;text-align:center;background:linear-gradient(145deg,#fff,#f8eee7)}
+.adminProductImageFallback span{font-size:25px;line-height:1}
+.adminProductImageFallback small{font-size:7.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.adminProductMediaCopy{display:grid;gap:3px;min-width:0}
+.adminProductMediaCopy b{font-size:10.5px;color:var(--m);overflow-wrap:anywhere}
+.adminProductMediaCopy span{font-size:8.5px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
+
+/* Remove the oversized desktop drawer footprint without reducing usability. */
+@media(min-width:980px){
+  .adminV2Shell{grid-template-columns:205px minmax(0,1fr)!important;gap:14px!important}
+  .adminSidebar{padding:10px!important;border-radius:18px!important}
+  .adminGroupedNav{gap:10px!important}
+  .adminNavGroup{gap:4px!important}
+  .adminNavGroupItems{gap:2px!important}
+  .adminSidebar .adminNavButton{min-height:43px!important;padding:7px 8px!important;border-radius:10px!important}
+  .adminSidebarBrand{padding:6px 7px 10px!important;margin-bottom:9px!important}
+  .adminSidebarBrand span{font-size:19px!important}
+  .adminSidebarBottom{padding-top:9px!important}
+  .adminCatalogSimpleTools{flex-direction:row;align-items:center;justify-content:space-between}
+}
+
+@media(max-width:639px){
+  .adminCatalogActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+  .adminCatalogActions>*{width:100%;min-width:0!important}
+  .adminPublishLive{grid-column:1/-1}
+  .adminCatalogToolButtons{display:grid;grid-template-columns:1fr 1fr}
+  .adminProductMediaFrame{width:68px;height:68px;flex-basis:68px}
+}
