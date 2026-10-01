@@ -4,6 +4,7 @@ import { storeContent } from "../../lib/domain/content"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 import type { StoreSettings } from "../../lib/server/store-settings"
 import { StoreIcon } from "./StoreIcon"
+import { CartLink } from "../cart/AddToCart"
 
 export function StorefrontHeader({ settings, onCreate, showAccount = true }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean }) {
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
@@ -20,7 +21,8 @@ export function StorefrontHeader({ settings, onCreate, showAccount = true }: { s
         </form>
         <div className="celebrationHeaderActions">
           {showAccount && <Link href={routes.account} className="celebrationIconLink" aria-label="My Celebration account" prefetch={false}><StoreIcon name="account" /><span>My account</span></Link>}
-          {onCreate ? <button className="celebrationIconLink" onClick={onCreate} type="button" aria-label="Build your hamper"><StoreIcon name="gift" /><span>My hamper</span></button> : <a className="celebrationIconLink" href="/#budgets" aria-label="Build your hamper"><StoreIcon name="gift" /><span>My hamper</span></a>}
+          {onCreate && <button className="celebrationIconLink" onClick={onCreate} type="button" aria-label="Build your hamper"><StoreIcon name="gift" /><span>My hamper</span></button>}
+          <CartLink />
         </div>
       </div>
       <nav className="celebrationNav wrap" aria-label="Store navigation">

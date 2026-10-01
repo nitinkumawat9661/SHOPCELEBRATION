@@ -8,15 +8,14 @@ import { supportWhatsappUrl } from "../../lib/domain/support"
 import type { CheckoutData } from "../builder/types"
 import { routes } from "../../config/routes"
 import { validateCheckoutDetails, validatePaymentReference } from "../builder/validation"
+import type { CartItem } from "../cart/cart"
 
-type SubmitArgs = {
-  tier: Tier
-  selectedProductIds: string[]
+export type SubmitArgs = {
   selectedNames: string[]
   checkout: CheckoutData
   accepted: boolean
   offerQuoteId?: string | null
-}
+} & ({ orderType?: "hamper"; tier: Tier; selectedProductIds: string[] } | { orderType: "individual"; items: CartItem[]; expectedSubtotalPaise: number })
 
 export type CreatedOrder = {
   orderId: string
@@ -66,6 +65,9 @@ function paymentError(code?: string) {
   if (code === "PAYMENT_SIGNATURE_INVALID") return "We could not verify that payment. Please check the payment status or retry."
   if (code === "PAYMENT_AMOUNT_MISMATCH") return "Payment amount did not match this order. No order processing was started."
   if (code === "PAYMENT_ATTEMPT_INITIALIZING") return "Payment is already opening. Please wait a moment and try again."
+  if (code === "PRODUCT_NOT_FOR_INDIVIDUAL_SALE" || code === "INVALID_PRODUCT") return "An item is no longer available for purchase. Refresh your cart before trying again."
+  if (code === "CART_AMOUNT_TOO_LARGE") return "This cart exceeds the supported order amount. Remove some items to continue."
+  if (code === "CART_PRICE_CHANGED") return "Product prices changed. Refresh your cart and review the new total before payment."
   return "Payment could not be completed right now. You can retry safely."
 }
 
@@ -86,7 +88,10 @@ function loadScript(src: string) {
       script.dataset.loaded = "true"
       resolve()
     }, { once: true })
-    script.addEventListener("error", () => reject(new Error("PAYMENT_SDK_LOAD_FAILED")), { once: true })
+    script.addEventListener("error", () => {
+      script.remove()
+      reject(new Error("PAYMENT_SDK_LOAD_FAILED"))
+    }, { once: true })
     document.head.appendChild(script)
   })
 }
@@ -107,14 +112,19 @@ function createdFromResult(result: PaymentResult): CreatedOrder | null {
 
 export function useOrderSubmit() {
   const idempotencyKey = useRef(crypto.randomUUID())
+  const requestBusy = useRef(false)
+  const payloadSignature = useRef("")
+  const savedOrder = useRef(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [errorCode, setErrorCode] = useState("")
   const [created, setCreated] = useState<CreatedOrder | null>(null)
   const [gatewayLoading, setGatewayLoading] = useState(true)
   const [gatewayEnabled, setGatewayEnabled] = useState(false)
   const [gatewayProvider, setGatewayProvider] = useState<"razorpay" | "cashfree" | null>(null)
   const [paymentState, setPaymentState] = useState<PaymentUiState>("idle")
   const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null)
+  const [orderTotalPaise, setOrderTotalPaise] = useState<number | null>(null)
 
   useEffect(() => {
     let active = true
@@ -137,14 +147,14 @@ export function useOrderSubmit() {
   function validateBase(args: SubmitArgs) {
     const detailsError = validateCheckoutDetails(args.checkout)
     if (detailsError) return detailsError
+    if (args.orderType === "individual" && (args.checkout.city.trim().length < 2 || args.checkout.state.trim().length < 2)) return "Please enter your delivery city and state."
     if (!args.accepted) return errorMessages.MISSING_REQUIRED_FIELDS
     return ""
   }
 
   function orderPayload(args: SubmitArgs, includePaymentReference: boolean) {
-    return {
-      tierId: args.tier.id,
-      selectedProductIds: args.selectedProductIds,
+    const payload = {
+      ...(args.orderType === "individual" ? { orderType: "individual", items: args.items, expectedSubtotalPaise: args.expectedSubtotalPaise } : { tierId: args.tier.id, selectedProductIds: args.selectedProductIds }),
       requiredDate: args.checkout.requiredDate,
       customerName: args.checkout.customerName,
       phone: args.checkout.phone,
@@ -158,13 +168,21 @@ export function useOrderSubmit() {
       ...(includePaymentReference ? { paymentReference: args.checkout.paymentReference } : {}),
       policyVersion: orderConfig.policyVersion,
       policyAccepted: args.accepted,
-      idempotencyKey: idempotencyKey.current,
       offerQuoteId: args.offerQuoteId || undefined
     }
+    const signature = JSON.stringify({ ...payload, paymentReference: undefined })
+    if (payloadSignature.current && payloadSignature.current !== signature) {
+      if (savedOrder.current) throw new Error("This order is already saved. Continue its payment from My Celebration before starting another order.")
+      idempotencyKey.current = crypto.randomUUID()
+    }
+    payloadSignature.current = signature
+    return { ...payload, idempotencyKey: idempotencyKey.current }
   }
 
   async function submit(args: SubmitArgs) {
+    if (requestBusy.current) return null
     setError("")
+    setErrorCode("")
     setCreated(null)
     setPaymentState("idle")
     setPaymentOrderId(null)
@@ -180,6 +198,7 @@ export function useOrderSubmit() {
       return null
     }
 
+    requestBusy.current = true
     setSubmitting(true)
     try {
       const response = await fetch(routes.api.orders, {
@@ -188,15 +207,20 @@ export function useOrderSubmit() {
         body: JSON.stringify(orderPayload(args, true))
       })
       const result = await response.json() as PaymentResult
-      if (!response.ok || !result.ok) throw new Error(errorMessages[result.error || "UNKNOWN"] || errorMessages.UNKNOWN)
+      if (!response.ok || !result.ok) {
+        setErrorCode(result.error || "")
+        throw new Error(paymentError(result.error))
+      }
       const createdOrder = createdFromResult(result)
       if (!createdOrder) throw new Error(errorMessages.UNKNOWN)
+      savedOrder.current = true
       setCreated(createdOrder)
       return createdOrder
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : errorMessages.UNKNOWN)
       return null
     } finally {
+      requestBusy.current = false
       setSubmitting(false)
     }
   }
@@ -247,7 +271,7 @@ export function useOrderSubmit() {
         amount: checkout.amountPaise,
         currency: checkout.currency,
         name: storeContent.brand.name,
-        description: args.tier.name,
+        description: args.orderType === "individual" ? "Individual gifts" : args.tier.name,
         order_id: checkout.providerOrderId,
         prefill: { name: args.checkout.customerName, contact: args.checkout.phone },
         theme: { color: "#661b33" },
@@ -292,29 +316,39 @@ export function useOrderSubmit() {
   }
 
   async function pay(args: SubmitArgs) {
+    if (requestBusy.current) return null
     setError("")
+    setErrorCode("")
     setCreated(null)
-    const detailsError = validateBase(args)
+    const detailsError = paymentOrderId ? "" : validateBase(args)
     if (detailsError) {
       setError(detailsError)
       return null
     }
     if (!gatewayEnabled) {
-      setError("Online payment is not enabled yet. Use the UPI payment option below.")
+      setError(args.orderType === "individual" ? "Online payment is currently unavailable. Your cart stays saved." : "Online payment is not enabled yet. Use the UPI payment option below.")
       return null
     }
 
+    requestBusy.current = true
     setPaymentState("processing")
     setSubmitting(true)
     try {
-      const response = await fetch(routes.api.paymentCreate, {
+      const response = await fetch(paymentOrderId ? routes.api.paymentRetry : routes.api.paymentCreate, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderPayload(args, false))
+        body: JSON.stringify(paymentOrderId ? { publicOrderId: paymentOrderId } : orderPayload(args, false))
       })
       const started = await response.json() as PaymentResult
-      if (!response.ok || !started.ok) throw new Error(paymentError(started.error))
-      if (started.orderId) setPaymentOrderId(started.orderId)
+      if (started.orderId) {
+        savedOrder.current = true
+        setPaymentOrderId(started.orderId)
+        if (typeof started.payablePaise === "number") setOrderTotalPaise(started.payablePaise)
+      }
+      if (!response.ok || !started.ok) {
+        setErrorCode(started.error || "")
+        throw new Error(paymentError(started.error))
+      }
       if (started.paid) {
         const completed = createdFromResult(started)
         if (!completed) throw new Error(paymentError())
@@ -338,18 +372,21 @@ export function useOrderSubmit() {
       setCreated(completed)
       return completed
     } catch (cause) {
-      setPaymentState((current) => current === "processing" ? "idle" : current)
+      setPaymentState((current) => current === "processing" ? savedOrder.current ? "pending" : "idle" : current)
       setError(cause instanceof Error ? cause.message : paymentError())
       return null
     } finally {
+      requestBusy.current = false
       setSubmitting(false)
     }
   }
 
   async function refreshPayment() {
-    if (!paymentOrderId) return null
+    if (!paymentOrderId || requestBusy.current) return null
+    requestBusy.current = true
     setSubmitting(true)
     setError("")
+    setErrorCode("")
     try {
       const result = await fetchPaymentStatus(paymentOrderId)
       if (!result) {
@@ -369,17 +406,23 @@ export function useOrderSubmit() {
       setError(cause instanceof Error ? cause.message : paymentError())
       return null
     } finally {
+      requestBusy.current = false
       setSubmitting(false)
     }
   }
 
   function reset() {
+    if (requestBusy.current) return
     idempotencyKey.current = crypto.randomUUID()
+    payloadSignature.current = ""
+    savedOrder.current = false
     setSubmitting(false)
     setError("")
+    setErrorCode("")
     setCreated(null)
     setPaymentState("idle")
     setPaymentOrderId(null)
+    setOrderTotalPaise(null)
   }
 
   function whatsappUrl(args: SubmitArgs, createdOrder: CreatedOrder, supportNumber?: string) {
@@ -387,7 +430,7 @@ export function useOrderSubmit() {
     const message = [
       `*${storeContent.brand.name} ${labels.titleSuffix}*`,
       `${labels.orderId}: ${createdOrder.orderId}`,
-      `${labels.hamper}: ${formatMoney(createdOrder.payablePaise / 100)}${uiContent.common.separator}${args.tier.name}`,
+      `${args.orderType === "individual" ? "Individual gifts" : labels.hamper}: ${formatMoney(createdOrder.payablePaise / 100)}${args.orderType === "individual" ? "" : `${uiContent.common.separator}${args.tier.name}`}`,
       createdOrder.discountPaise > 0 ? `Offer saved: ${formatMoney(createdOrder.discountPaise / 100)}${createdOrder.campaignTitle ? ` (${createdOrder.campaignTitle})` : ""}` : "",
       `${labels.occasion}: ${args.checkout.occasion}`,
       `${labels.requiredBy}: ${args.checkout.requiredDate}`,
@@ -405,6 +448,7 @@ export function useOrderSubmit() {
   return {
     submitting,
     error,
+    errorCode,
     created,
     submit,
     pay,
@@ -415,6 +459,7 @@ export function useOrderSubmit() {
     gatewayEnabled,
     gatewayProvider,
     paymentState,
-    paymentOrderId
+    paymentOrderId,
+    orderTotalPaise
   }
 }

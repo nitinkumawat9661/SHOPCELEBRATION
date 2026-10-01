@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import type { GiftProduct } from "../../lib/domain/catalog"
+import { isIndividuallySellable, type GiftProduct } from "../../lib/domain/catalog"
 import { discoverProducts, type CatalogDiscovery } from "../../lib/domain/catalog-discovery"
 import { CatalogCard } from "./CatalogCard"
 
@@ -9,6 +9,7 @@ export function CatalogCollection({ products, filters, available = true }: { pro
   const collection = discoverProducts(products, { view: filters.view })
   const categories = Array.from(new Set(collection.map((product) => product.category)))
   const visible = discoverProducts(products, filters)
+  const individual = collection.some(isIndividuallySellable)
   const title = all ? "Little things. Lasting memories." : "Jewelry, with a little meaning."
 
   return (
@@ -36,9 +37,9 @@ export function CatalogCollection({ products, filters, available = true }: { pro
             <label><span>Sort by</span><select name="sort" defaultValue={filters.sort || "featured"}><option value="featured">Collection order</option><option value="budget-low">Hamper budget: low to high</option><option value="budget-high">Hamper budget: high to low</option><option value="name">Name: A–Z</option></select></label>
             <button type="submit" className="collectionApply">Find gifts <span aria-hidden="true">→</span></button>
           </form>
-          {available && <div className="collectionResultMeta"><span>{visible.length} {visible.length === 1 ? "gift" : "gifts"}{filters.q ? ` matching “${filters.q}”` : " to discover"}</span><p>Available within our curated hampers.</p></div>}
+          {available && <div className="collectionResultMeta"><span>{visible.length} {visible.length === 1 ? "gift" : "gifts"}{filters.q ? ` matching “${filters.q}”` : " to discover"}</span><p>{individual ? "Shop individual items where marked, or explore our curated hampers." : "Available within our curated hampers."}</p></div>}
           {!available ? <div className="collectionEmpty" role="status"><h3>We’re refreshing the collection.</h3><p>The latest gifts couldn’t load just now. Please try again shortly.</p><Link href={all ? "/jewelry?view=all" : "/jewelry"}>Reload collection →</Link></div> : visible.length ? <div className="collectionGrid">{visible.map((product) => <CatalogCard key={product.id} product={product} />)}</div> : <div className="collectionEmpty"><span className="collectionEmptyMark" aria-hidden="true">♡</span><h3>{collection.length ? "A different search might find it." : "More lovely things are on their way."}</h3><p>{collection.length ? "Try another name or category to explore the collection." : "Explore our other gifts, or let us curate a hamper for your occasion."}</p><Link href={all ? "/jewelry?view=all" : "/jewelry?view=all"}>Explore all gifts →</Link><Link href="/#budgets">Choose a hamper budget</Link></div>}
-          <aside className="collectionNote"><span aria-hidden="true">✧</span><div><h3>Every detail, part of a bigger surprise.</h3><p>Choose a hamper budget and share your occasion. Celebration curates the products inside; individual gifts are not sold separately.</p></div><Link href="/#budgets">Find your hamper <span aria-hidden="true">→</span></Link></aside>
+          <aside className="collectionNote"><span aria-hidden="true">✧</span><div><h3>Every detail, part of a bigger surprise.</h3><p>{individual ? "Choose a piece for yourself or someone special, or let Celebration curate a hamper around your occasion and budget." : "Choose a hamper budget and share your occasion. Celebration curates the products inside your hamper."}</p></div><Link href="/#budgets">Find your hamper <span aria-hidden="true">→</span></Link></aside>
         </div>
       </section>
     </>

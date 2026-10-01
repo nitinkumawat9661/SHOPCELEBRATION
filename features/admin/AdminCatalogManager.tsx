@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { defaultCatalog, formatMoney, type CatalogConfig, type GiftProduct, type Tier } from "../../lib/domain/catalog"
+import { defaultCatalog, formatMoney, salePriceFromRupees, type CatalogConfig, type GiftProduct, type Tier } from "../../lib/domain/catalog"
+import { validation } from "../../config/validation"
 
 export type CatalogAdminSection = "tiers" | "products" | "occasions"
 
@@ -86,7 +87,7 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
   }
 
   function addProduct() {
-    edit((current) => ({ ...current, products: [...current.products, { id: `item-${Date.now()}`, name: "New Item", category: "Other", minTier: current.tiers[0]?.price || 0, points: 1, note: "", icon: "🎁", active: true }] }))
+    edit((current) => ({ ...current, products: [...current.products, { id: `item-${Date.now()}`, name: "New Item", category: "Other", minTier: current.tiers[0]?.price || 0, points: 1, note: "", icon: "🎁", active: true, sellIndividually: false }] }))
   }
 
   function duplicateProduct(index: number) {
@@ -112,6 +113,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
   }
 
   async function saveDraft() {
+    const invalidPrice = catalog.products.find((product) => product.sellIndividually && !product.salePricePaise)
+    if (invalidPrice) { setError(`${invalidPrice.name}: individual sale ke liye price ₹1 ya usse zyada enter karein.`); return }
     setBusy("save")
     setNotice("")
     setError("")
@@ -122,7 +125,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       applyPayload(data)
       setNotice("Draft saved. Public website unchanged hai.")
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "CATALOG_DRAFT_SAVE_FAILED")
+      const code = caught instanceof Error ? caught.message : "CATALOG_DRAFT_SAVE_FAILED"
+      setError(code === "SALE_PRICE_REQUIRED" ? "Individual sale enabled products ke liye sale price required hai." : code === "INVALID_SALE_PRICE" ? `Sale price ₹1 se ₹${validation.catalog.maxPrice} tak, maximum two decimals hona chahiye.` : code)
     } finally { setBusy("") }
   }
 
@@ -161,7 +165,7 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
   }
 
   const title = section === "tiers" ? "Hampers & budgets" : section === "products" ? "Products / objects" : "Occasions & defaults"
-  const description = section === "tiers" ? "Budget tiers, box size aur selection limits control karein." : section === "products" ? "Items, images, eligibility, category aur ordering manage karein." : "Occasions aur builder defaults manage karein."
+  const description = section === "tiers" ? "Budget tiers, box size aur selection limits control karein." : section === "products" ? "Items, images, hamper eligibility aur individual sale prices manage karein." : "Occasions aur builder defaults manage karein."
 
   return (
     <section className="adminWorkspaceCard">
@@ -193,10 +197,21 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       </>}
 
       {section === "products" && <>
+        <p>Hamper minimum sirf hamper eligibility hai, individual sale price nahi. Individual sale enable karke price enter karein, Save draft aur Publish karein. Inactive products dono shopping flows se hidden rahenge.</p>
         <div className="adminBulkBar"><span>{catalog.products.length} products / objects</span><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: true })) }))}>Activate all</button><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: false })) }))}>Pause all</button><button type="button" className="primary" onClick={addProduct}>+ Add product</button></div>
         <div className="adminEditorList">{catalog.products.map((product, index) => <div className="adminEditorCard adminDraggableCard" draggable key={`${product.id}-${index}`} onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragIndex !== null) edit((current) => ({ ...current, products: moveItem(current.products, dragIndex, index) })); setDragIndex(null) }}>
           <div className="adminCardHandle">⋮⋮ <span>Drag to reorder</span></div>
-          <div className="adminEditorGrid"><label>ID<input value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Available from ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminWide">Description<input value={product.note} onChange={(e) => replaceProduct(index, { note: e.target.value })} /></label><label className="adminWide">Image URL<input value={product.imageUrl || ""} onChange={(e) => replaceProduct(index, { imageUrl: e.target.value })} placeholder="https://… or upload below" /></label><label className="adminWide uploadControl">Upload image<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImage(file, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")) }} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label></div>
+          <div className="adminEditorGrid"><label>ID<input value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Hamper minimum ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminWide">Description<input value={product.note} onChange={(e) => replaceProduct(index, { note: e.target.value })} /></label><label className="adminWide">Image URL<input value={product.imageUrl || ""} onChange={(e) => replaceProduct(index, { imageUrl: e.target.value })} placeholder="https://… or upload below" /></label><label className="adminWide uploadControl">Upload image<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImage(file, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")) }} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label></div>
+          <div className="adminEditorGrid">
+            <label>Individual sale price ₹<input type="number" min="1" max={Math.min(validation.catalog.maxPrice, 21474836.47)} step="0.01" inputMode="decimal" value={product.salePricePaise === undefined ? "" : product.salePricePaise / 100} placeholder="Enter actual sale price" onChange={(event) => {
+              const value = event.target.value
+              const amount = salePriceFromRupees(value)
+              if (value && amount === undefined) { setError(`Sale price ₹1 se ₹${validation.catalog.maxPrice} tak, maximum two decimals hona chahiye.`); return }
+              setError("")
+              replaceProduct(index, { salePricePaise: amount })
+            }} /></label>
+            <label className="adminCheck"><input type="checkbox" checked={product.sellIndividually === true} onChange={(event) => replaceProduct(index, { sellIndividually: event.target.checked })} /> Sell individually without a hamper</label>
+          </div>
           {product.imageUrl && <img className="adminCatalogPreview" src={product.imageUrl} alt="" />}
           <div className="adminEditorActions"><span>{product.category}</span><div><button type="button" className="secondary" disabled={index === 0} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index - 1) }))}>↑</button><button type="button" className="secondary" disabled={index === catalog.products.length - 1} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index + 1) }))}>↓</button><button type="button" className="secondary" onClick={() => duplicateProduct(index)}>Duplicate</button><button type="button" className="secondary danger" onClick={() => edit((current) => ({ ...current, products: current.products.filter((_, i) => i !== index) }))}>Delete</button></div></div>
         </div>)}</div>

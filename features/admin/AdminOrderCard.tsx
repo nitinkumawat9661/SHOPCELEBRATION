@@ -18,6 +18,7 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
 }) {
   const copy = uiContent.admin
   const next = adminAllowedTransitions(order.status)
+  const individual = order.orderType === "individual"
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | "">("")
   const productNames = order.selectedProductNames?.length ? order.selectedProductNames : order.selectedProductIds.map((id) => productById(id)?.name || id)
 
@@ -37,6 +38,7 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
           <div className="adminOrderIdRow">
             <b>{order.publicId}</b>
             <span className="adminStatusChip">{orderStatusLabels[order.status]}</span>
+            <span className="adminStatusChip">{individual ? "Individual purchase" : "Hamper"}</span>
           </div>
           <span>{order.customerName}{uiContent.common.separator}<a href={`tel:${order.phone}`}>{order.phone}</a></span>
         </div>
@@ -45,11 +47,11 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
 
       <div className="adminNextAction">
         <span>{copy.nextActionLabel}</span>
-        <b>{copy.nextAction[order.status]}</b>
+        <b>{individual && order.status === "payment_verified" ? "Order preparation start karein." : copy.nextAction[order.status]}</b>
       </div>
 
       <div className="adminInfoGrid">
-        <div><span>{copy.hamper}</span><b>{order.tierName}</b></div>
+        <div><span>{individual ? "Order" : copy.hamper}</span><b>{order.tierName}</b></div>
         <div><span>{copy.requiredDate}</span><b>{order.requiredDate}</b></div>
         <div><span>{copy.giftFor}</span><b>{order.receiverName}</b></div>
         <div><span>{copy.paymentReference}</span><b>{order.paymentReference}</b></div>
@@ -60,11 +62,13 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
         <b>{order.address}, {order.city}, {order.state} - {order.pincode}</b>
       </div>
 
+      {individual && <ul className="individualOrderLines" aria-label="Purchased items">{(order.lineItems || []).map((item) => <li key={item.productId}><div><b>{item.name}</b><span>{item.quantity} × {formatMoney(item.unitPricePaise / 100)} each</span></div><strong>{formatMoney(item.lineTotalPaise / 100)}</strong></li>)}</ul>}
+
       <details className="adminOrderDetails">
         <summary>{copy.orderDetails}</summary>
         <div className="adminDetailGrid">
           <div><span>{copy.occasion}</span><b>{order.occasion}</b></div>
-          <div><span>{copy.products}</span><b>{productNames.length ? productNames.join(", ") : uiContent.common.none}</b></div>
+          {!individual && <div><span>{copy.products}</span><b>{productNames.length ? productNames.join(", ") : uiContent.common.none}</b></div>}
           {order.discountPaise > 0 && <div><span>Offer</span><b>{order.campaignTitle || order.campaignId || "Campaign"} • saved {formatMoney(fromMinorUnits(order.discountPaise))}</b></div>}
           {order.message && <div className="wide"><span>{copy.giftMessage}</span><b>{order.message}</b></div>}
           <div><span>{copy.createdAt}</span><b>{new Date(order.createdAt).toLocaleString()}</b></div>

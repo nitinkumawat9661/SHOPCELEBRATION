@@ -1,5 +1,6 @@
 import rawCatalog from "../../content/catalog.json"
 import { paymentConfig } from "../../config/payment"
+import { validation } from "../../config/validation"
 
 export type Tier = {
   id: string
@@ -22,6 +23,21 @@ export type GiftProduct = {
   icon?: string
   imageUrl?: string
   active?: boolean
+  sellIndividually?: boolean
+  salePricePaise?: number
+}
+
+export function salePriceFromRupees(value: string): number | undefined {
+  if (!/^\d+(?:\.\d{1,2})?$/.test(value)) return undefined
+  const [rupees, paise = ""] = value.split(".")
+  const amount = Number(rupees) * 100 + Number(paise.padEnd(2, "0"))
+  return Number.isSafeInteger(amount) && amount >= 100 && amount <= Math.min(validation.catalog.maxPrice * 100, 2147483647) ? amount : undefined
+}
+
+export function isIndividuallySellable(product: GiftProduct) {
+  // ponytail: availability uses admin switches; add stock reservations for finite inventory.
+  const price = product.salePricePaise
+  return product.active !== false && product.sellIndividually === true && typeof price === "number" && Number.isSafeInteger(price) && price >= 100 && price <= Math.min(validation.catalog.maxPrice * 100, 2147483647)
 }
 
 export type CategoryOption = { id: string; label: string }
@@ -98,6 +114,7 @@ export function formatMoney(value: number) {
   return new Intl.NumberFormat(paymentConfig.locale, {
     style: "currency",
     currency: paymentConfig.currencyCode,
-    maximumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
   }).format(value)
 }

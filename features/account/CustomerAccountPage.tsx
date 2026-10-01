@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { routes } from "../../config/routes"
 import { formatMoney } from "../../lib/domain/catalog"
+import type { OrderLineItem } from "../../lib/domain/order"
 import { customerTimeline, orderStatusLabels, type OrderStatus } from "../../lib/domain/order-status"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 import { useStoreSettings } from "../shell/useStoreSettings"
@@ -12,6 +13,8 @@ import { CustomerAuthPanel } from "./CustomerAuthPanel"
 import { useCustomerAccount } from "./useCustomerAccount"
 
 type DashboardOrder = {
+  orderType: "hamper" | "individual"
+  lineItems: OrderLineItem[]
   publicId: string
   subtotalPaise: number
   discountPaise: number
@@ -49,11 +52,11 @@ function friendlyOrderError(code: string) {
 function nextUpdateText(status: OrderStatus) {
   const copy: Record<OrderStatus, string> = {
     payment_verification_pending: "We’re confirming your payment.",
-    payment_verified: "Your hamper is ready to move into preparation.",
-    preparing: "We’re preparing your hamper. The packing video comes next.",
+    payment_verified: "Your order is ready to move into preparation.",
+    preparing: "We’re preparing your order. The packing video comes next.",
     packing_video_ready: "Your packing video is ready. Review it and approve dispatch.",
     customer_approved: "Approved. Shipping details will be added next.",
-    shipped: "Your hamper is on the way.",
+    shipped: "Your order is on the way.",
     delivered: "Delivered. Need help? WhatsApp support is available below.",
     issue_reported: "Your issue is under review.",
     refund_or_replacement_resolved: "Your reported issue has been resolved.",
@@ -184,17 +187,20 @@ export function CustomerAccountPage() {
 
       <div className="customerOrderList">
         {orders.map((order) => {
+          const individual = order.orderType === "individual"
           const currentIndex = progressIndex(order.status)
           const supportMessage = `Hi Celebration, I need help with order ${order.publicId}.`
           const approvalReady = order.status === "packing_video_ready" && Boolean(order.packingVideoUrl)
           return (
             <article className="customerOrderCard" key={order.publicId}>
               <header className="customerOrderHead">
-                <div><small>{new Date(order.createdAt).toLocaleDateString("en-IN")}</small><h3>{order.tierName}</h3><span>{order.publicId}</span></div>
+                <div><small>{new Date(order.createdAt).toLocaleDateString("en-IN")} • {individual ? "Individual purchase" : "Hamper"}</small><h3>{order.tierName}</h3><span>{order.publicId}</span></div>
                 <div className="customerOrderPrice"><strong>{formatMoney(order.amountPaise / 100)}</strong>{order.discountPaise > 0 && <small><s>{formatMoney(order.subtotalPaise / 100)}</s> • saved {formatMoney(order.discountPaise / 100)}</small>}<span className={`customerStatus status-${order.status}`}>{orderStatusLabels[order.status]}</span></div>
               </header>
 
               {order.discountPaise > 0 && <div className="customerOfferSaved"><b>Offer applied ✓</b><span>{order.campaignTitle || "Celebration offer"} saved you {formatMoney(order.discountPaise / 100)}.</span></div>}
+
+              {individual && <ul className="individualOrderLines" aria-label="Purchased items">{(order.lineItems || []).map((item) => <li key={item.productId}><div><b>{item.name}</b><span>{item.quantity} × {formatMoney(item.unitPricePaise / 100)} each</span></div><strong>{formatMoney(item.lineTotalPaise / 100)}</strong></li>)}</ul>}
 
               <div className="customerOrderMeta">
                 <div><span>Gift for</span><b>{order.receiverName}</b></div>
@@ -209,17 +215,18 @@ export function CustomerAccountPage() {
                 {customerTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
               </div>
 
-              {order.productNames.length > 0 && <div className="customerOrderProducts"><span>Selected gifts</span><p>{order.productNames.join(" • ")}</p></div>}
+              {!individual && order.productNames.length > 0 && <div className="customerOrderProducts"><span>Selected gifts</span><p>{order.productNames.join(" • ")}</p></div>}
 
               <div className="customerOrderUpdates">
                 <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>
                 <div className="customerUpdateCard"><span>Shipping</span>{order.shippingTrackingNumber ? <><b>{order.shippingProvider || "Courier"} • {order.shippingTrackingNumber}</b><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after dispatch</b>}</div>
               </div>
 
-              {approvalReady && <div className="customerPackingApproval"><div><b>Your hamper is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this hamper for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}
+              {approvalReady && <div className="customerPackingApproval"><div><b>Your {individual ? "order" : "hamper"} is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this {individual ? "order" : "hamper"} for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}
 
               <footer className="customerOrderFooter">
                 <small>Last update: {new Date(order.updatedAt).toLocaleString("en-IN")}</small>
+                {individual && !["paid", "verified"].includes(order.paymentStatus) && order.status === "payment_verification_pending" && <Link className="primary" href={`${routes.paymentReturn}?order_id=${encodeURIComponent(order.publicId)}`}>Check / continue payment</Link>}
                 <a className="secondary" href={supportWhatsappUrl(supportMessage, settings.whatsapp)} target="_blank" rel="noreferrer">WhatsApp support</a>
               </footer>
             </article>

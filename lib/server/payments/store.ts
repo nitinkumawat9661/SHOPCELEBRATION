@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto"
 import type { PoolClient } from "pg"
 import { securityConfig } from "../../../config/security"
+import { assertPaymentCanStart, isPaymentConfirmed } from "../../domain/payment"
 import { createTrackingToken } from "../../security/tokens"
 import { transaction } from "../db"
 import type { ProviderCheckout, ProviderPaymentResult } from "./provider"
@@ -83,7 +84,7 @@ function mapSnapshot(row: NonNullable<Awaited<ReturnType<typeof findOrderForUpda
     tierName: row.tier_name,
     customerName: row.customer_name,
     phone: row.phone,
-    paymentStatus: row.payment_status,
+    paymentStatus: isPaymentConfirmed(row.payment_status, row.status) ? "paid" : row.payment_status,
     status: row.status,
     paymentAttemptCount: row.payment_attempt_count
   }
@@ -113,6 +114,7 @@ export function reservePaymentAttempt(publicId: string, customerAccountId: strin
     const orderRow = await findOrderForUpdate(client, publicId, customerAccountId)
     if (!orderRow) throw new Error("PAYMENT_ORDER_NOT_FOUND")
     const order = mapSnapshot(orderRow)
+    assertPaymentCanStart(order.status)
     if (order.paymentStatus === "paid" || order.status === "payment_verified") {
       return { order, attemptId: "", attemptNo: order.paymentAttemptCount, providerReference: "", reusable: null }
     }
@@ -183,6 +185,11 @@ export function bindPaymentAttempt(attemptId: string, checkout: ProviderCheckout
     )
     const orderId = attempt.rows[0]?.order_id
     if (!orderId) throw new Error("PAYMENT_ATTEMPT_NOT_FOUND")
+    const current = await client.query<{ status: string; payment_status: string }>(`SELECT status, payment_status FROM orders WHERE id = $1 FOR UPDATE`, [orderId])
+    const order = current.rows[0]
+    if (!order) throw new Error("PAYMENT_ORDER_NOT_FOUND")
+    assertPaymentCanStart(order.status)
+    if (isPaymentConfirmed(order.payment_status, order.status)) throw new Error("PAYMENT_ALREADY_CONFIRMED")
     await client.query(
       `UPDATE orders
           SET payment_provider = $1,
@@ -210,8 +217,8 @@ export function failPaymentAttempt(attemptId: string, code: string) {
     if (!row) return
     await client.query(
       `UPDATE orders
-          SET payment_status = CASE WHEN payment_status = 'paid' THEN payment_status ELSE 'failed' END,
-              payment_error_code = CASE WHEN payment_status = 'paid' THEN payment_error_code ELSE $1 END,
+          SET payment_status = CASE WHEN payment_status IN ('paid', 'verified') THEN payment_status ELSE 'failed' END,
+              payment_error_code = CASE WHEN payment_status IN ('paid', 'verified') THEN payment_error_code ELSE $1 END,
               updated_at = now()
         WHERE id = $2 AND provider_order_id = $3`,
       [code.slice(0, 200), row.order_id, row.provider_order_id]
@@ -259,7 +266,9 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
     )
     const orderRow = orderResult.rows[0]
     if (!orderRow) throw new Error("PAYMENT_ORDER_NOT_FOUND")
-    if (result.amountPaise != null && result.amountPaise !== orderRow.amount_paise) throw new Error("PAYMENT_AMOUNT_MISMATCH")
+    if ((result.status === "paid" && result.amountPaise == null) || (result.amountPaise != null && result.amountPaise !== orderRow.amount_paise)) {
+      throw new Error("PAYMENT_AMOUNT_MISMATCH")
+    }
 
     const eventInsert = await client.query<{ id: string }>(
       `INSERT INTO payment_events (id, provider, provider_event_id, order_id, event_type, payload)
@@ -307,7 +316,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
             [randomUUID(), orderRow.id, JSON.stringify({ from: previousStatus, to: nextStatus, source: "payment_gateway", provider: result.provider })]
           )
         }
-      } else if (result.status === "failed" && orderRow.payment_status !== "paid") {
+      } else if (result.status === "failed" && !isPaymentConfirmed(orderRow.payment_status, orderRow.status)) {
         await client.query(
           `UPDATE orders
               SET payment_status = CASE WHEN provider_order_id = $1 THEN 'failed' ELSE payment_status END,

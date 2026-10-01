@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { paymentGatewayConfig, paymentGatewayReady } from "../../../../config/payment-gateway"
 import { routes } from "../../../../config/routes"
 import { validation } from "../../../../config/validation"
+import { assertPaymentCanStart } from "../../../../lib/domain/payment"
 import { getCustomerSession } from "../../../../lib/security/customer-session"
 import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../../lib/security/request"
 import { findCustomerAccountById } from "../../../../lib/server/customer-accounts"
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
 
     const existing = await getPaymentOrder(publicOrderId, account.id)
     if (!existing) return NextResponse.json({ ok: false, error: "PAYMENT_ORDER_NOT_FOUND" }, { status: 404 })
+    assertPaymentCanStart(existing.status)
 
     const clientExisting = paymentOrderClientResult(existing)
     if (existing.paymentStatus === "paid" || existing.status === "payment_verified") {
@@ -110,6 +112,6 @@ export async function POST(request: Request) {
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })
     const code = error instanceof Error ? error.message : "PAYMENT_PROVIDER_UNAVAILABLE"
     console.error("retry-payment", error)
-    return NextResponse.json({ ok: false, error: code }, { status: code === "PAYMENT_ATTEMPT_INITIALIZING" ? 409 : 503 })
+    return NextResponse.json({ ok: false, error: code }, { status: ["PAYMENT_ATTEMPT_INITIALIZING", "PAYMENT_ORDER_CANCELLED", "PAYMENT_ALREADY_CONFIRMED"].includes(code) ? 409 : 503 })
   }
 }

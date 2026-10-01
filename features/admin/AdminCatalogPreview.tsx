@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { categoriesForCatalog, visibleProducts, visibleTiers, type CatalogConfig } from "../../lib/domain/catalog"
+import { categoriesForCatalog, formatMoney, isIndividuallySellable, visibleProducts, visibleTiers, type CatalogConfig } from "../../lib/domain/catalog"
 import { BudgetSection } from "../catalog/BudgetSection"
 import { OccasionRail } from "../catalog/OccasionRail"
 import { ProductSection } from "../catalog/ProductSection"
@@ -11,6 +11,7 @@ export function AdminCatalogPreview({ catalog, liveVersion, isDraft }: { catalog
   const tiers = useMemo(() => visibleTiers(catalog), [catalog])
   const products = useMemo(() => visibleProducts(catalog), [catalog])
   const categories = useMemo(() => categoriesForCatalog(catalog), [catalog])
+  const individualProducts = products.filter(isIndividuallySellable)
   const [tierId, setTierId] = useState(catalog.settings.defaultTierId)
   const [occasion, setOccasion] = useState(catalog.settings.defaultOccasion)
   const [category, setCategory] = useState(catalog.settings.allCategory.id)
@@ -25,6 +26,7 @@ export function AdminCatalogPreview({ catalog, liveVersion, isDraft }: { catalog
       <OccasionRail value={occasion} occasions={catalog.occasions} onChange={setOccasion} />
       <BudgetSection tiers={tiers} selectedTierId={tierId} recommendedTierId={catalog.settings.defaultTierId} socialProof={null} onSelect={setTierId} />
       <ProductSection products={products} categories={categories} allCategoryId={catalog.settings.allCategory.id} category={category} onCategory={setCategory} />
+      <section><div className="wrap"><h2>Individual sale preview</h2><p>Ye products hamper ke bina sell honge. Draft preview se checkout ya payment start nahi hota.</p>{individualProducts.length ? <div className="adminEditorList compact">{individualProducts.map((product) => <div className="adminDraftNotice" key={product.id}><b>{product.name}</b> • {formatMoney(product.salePricePaise! / 100)} • {product.category}</div>)}</div> : <div className="adminDraftNotice">No active products enabled for individual sale in this catalog.</div>}</div></section>
       <section><div className="wrap"><div className="adminDraftNotice"><b>Preview only</b> • Checkout, payment aur customer requests intentionally disabled hain.</div></div></section>
     </main>
   )

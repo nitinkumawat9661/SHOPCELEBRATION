@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { routes } from "../../config/routes"
 import { formatMoney } from "../../lib/domain/catalog"
 
@@ -56,27 +56,32 @@ function loadScript(src: string) {
       script.dataset.loaded = "true"
       resolve()
     }, { once: true })
-    script.addEventListener("error", () => reject(new Error("PAYMENT_SDK_LOAD_FAILED")), { once: true })
+    script.addEventListener("error", () => {
+      script.remove()
+      reject(new Error("PAYMENT_SDK_LOAD_FAILED"))
+    }, { once: true })
     document.head.appendChild(script)
   })
 }
 
-export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: string }) {
-  const [phase, setPhase] = useState<ReturnPhase>(providerOrderId ? "checking" : "error")
+export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { providerOrderId: string; publicOrderId?: string }) {
+  const hasOrder = Boolean(publicOrderId || providerOrderId)
+  const requestBusy = useRef(false)
+  const [phase, setPhase] = useState<ReturnPhase>(hasOrder ? "checking" : "error")
   const [result, setResult] = useState<ReturnResult | null>(null)
-  const [message, setMessage] = useState(providerOrderId ? "Confirming your payment securely…" : "Payment return details are missing.")
+  const [message, setMessage] = useState(hasOrder ? "Confirming your payment securely…" : "Payment return details are missing.")
   const [refreshing, setRefreshing] = useState(false)
   const [retrying, setRetrying] = useState(false)
 
   const checkPayment = useCallback(async (manual = false) => {
-    if (!providerOrderId) return
+    if (!publicOrderId && !providerOrderId) return
     if (manual) setRefreshing(true)
     setPhase("checking")
     setMessage("Confirming your payment securely…")
 
     try {
       for (let attempt = 0; attempt < 6; attempt += 1) {
-        const response = await fetch(`${routes.api.paymentReturnStatus}?providerOrderId=${encodeURIComponent(providerOrderId)}`, { cache: "no-store" })
+        const response = await fetch(publicOrderId ? `${routes.api.paymentStatus}?orderId=${encodeURIComponent(publicOrderId)}` : `${routes.api.paymentReturnStatus}?providerOrderId=${encodeURIComponent(providerOrderId)}`, { cache: "no-store" })
         const data = await response.json() as ReturnResult
 
         if (response.status === 401) {
@@ -95,8 +100,13 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
         }
 
         setResult(data)
+        if (data.status === "cancelled") {
+          setPhase("error")
+          setMessage("This order was cancelled. Payment cannot be reopened. Contact Celebration if money was debited.")
+          return
+        }
         if (data.paid) {
-          clearFinishedDraft()
+          if (!publicOrderId) clearFinishedDraft()
           setPhase("success")
           setMessage("Payment verified. Your Celebration order is confirmed.")
           return
@@ -122,7 +132,7 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
     } finally {
       setRefreshing(false)
     }
-  }, [providerOrderId])
+  }, [providerOrderId, publicOrderId])
 
   useEffect(() => {
     void checkPayment()
@@ -144,7 +154,7 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
     if (!response.ok || !data.ok) throw new Error(data.error || "PAYMENT_CONFIRMATION_FAILED")
     setResult(data)
     if (data.paid) {
-      clearFinishedDraft()
+      if (!publicOrderId) clearFinishedDraft()
       setPhase("success")
       setMessage("Payment verified. Your Celebration order is confirmed.")
       return true
@@ -153,7 +163,8 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
   }
 
   async function retryPayment() {
-    if (!result?.orderId) return
+    if (!result?.orderId || requestBusy.current) return
+    requestBusy.current = true
     setRetrying(true)
     setMessage("Preparing a secure payment attempt…")
     try {
@@ -171,7 +182,7 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
       if (!response.ok || !data.ok) throw new Error(data.error || "PAYMENT_RETRY_FAILED")
       if (data.paid) {
         setResult(data)
-        clearFinishedDraft()
+        if (!publicOrderId) clearFinishedDraft()
         setPhase("success")
         setMessage("Payment verified. Your Celebration order is confirmed.")
         return
@@ -186,6 +197,7 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
         if (!factory) throw new Error("PAYMENT_SDK_LOAD_FAILED")
         const cashfree = factory({ mode: data.checkout.mode === "live" ? "production" : "sandbox" })
         await cashfree.checkout({ paymentSessionId: data.checkout.paymentSessionId, redirectTarget: "_modal" })
+        await fetch(routes.api.paymentVerify, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicOrderId: result.orderId, provider: "cashfree", providerOrderId: data.checkout.providerOrderId }) })
         await checkPayment(true)
         return
       }
@@ -214,10 +226,11 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
       })
       if (confirmation && await verifyRazorpay(result.orderId, confirmation)) return
       await checkPayment(true)
-    } catch {
+    } catch (cause) {
       setPhase("error")
-      setMessage("We couldn’t reopen payment right now. Your order is still saved; try again in a moment.")
+      setMessage(cause instanceof Error && cause.message === "PAYMENT_GATEWAY_NOT_CONFIGURED" ? "Online payment is currently unavailable. Your order stays saved. Contact Celebration for help." : "We couldn’t reopen payment right now. Your order is still saved; try again in a moment.")
     } finally {
+      requestBusy.current = false
       setRetrying(false)
     }
   }
@@ -237,7 +250,7 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
 
         <div className="paymentReturnTimeline" aria-label="Order progress">
           <div className="done"><b>✓</b><span><strong>Payment verified</strong><small>Confirmed securely by the server</small></span></div>
-          <div className="done"><b>✓</b><span><strong>Order received</strong><small>Your hamper and delivery details are saved</small></span></div>
+          <div className="done"><b>✓</b><span><strong>Order received</strong><small>Your items and delivery details are saved</small></span></div>
           <div><b>3</b><span><strong>Packing comes next</strong><small>Follow preparation and delivery from My Celebration</small></span></div>
         </div>
 
@@ -259,9 +272,10 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
         <div className="paymentReturnEyebrow">PAYMENT NOT COMPLETED</div>
         <h1>Your order is safe. Payment needs another try.</h1>
         <p className="paymentReturnLead">{message}</p>
+        {typeof result?.payablePaise === "number" && <p className="paymentReturnLead">Saved order total: <strong>{formatMoney(result.payablePaise / 100)}</strong></p>}
         {result?.orderId && <div className="paymentReturnOrderMeta"><span>Order ID</span><strong>{result.orderId}</strong></div>}
         <div className="paymentReturnStateList">
-          <div><b>1</b><span><strong>Order saved</strong><small>You do not need to rebuild the hamper.</small></span></div>
+          <div><b>1</b><span><strong>Order saved</strong><small>Your items and delivery details stay saved.</small></span></div>
           <div><b>2</b><span><strong>No processing started</strong><small>We start processing only after a verified payment.</small></span></div>
           <div><b>3</b><span><strong>Retry securely</strong><small>A retry stays linked to this same order.</small></span></div>
         </div>
@@ -282,6 +296,7 @@ export function PaymentReturnStatus({ providerOrderId }: { providerOrderId: stri
         <div className="paymentReturnEyebrow">PAYMENT PENDING</div>
         <h1>We’re waiting for final confirmation.</h1>
         <p className="paymentReturnLead">{message}</p>
+        {typeof result?.payablePaise === "number" && <p className="paymentReturnLead">Saved order total: <strong>{formatMoney(result.payablePaise / 100)}</strong></p>}
         {result?.orderId && <div className="paymentReturnOrderMeta"><span>Order ID</span><strong>{result.orderId}</strong></div>}
         <div className="paymentReturnActions">
           <button className="primary" type="button" disabled={refreshing} onClick={() => void checkPayment(true)}>{refreshing ? "Checking…" : "Check payment status"}</button>

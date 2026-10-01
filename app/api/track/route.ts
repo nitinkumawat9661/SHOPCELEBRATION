@@ -29,6 +29,8 @@ export async function GET(request: Request) {
     return NextResponse.json({
       ok: true,
       order: {
+        orderType: order.orderType,
+        lineItems: order.lineItems,
         publicId: order.publicId,
         amountPaise: order.amountPaise,
         tierName: order.tierName,

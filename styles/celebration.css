@@ -1,5 +1,5 @@
 /* Approved visual reference: warm paper, burgundy velvet, champagne satin. */
-.celebrationHome,.celebrationHeader,.celebrationSupport,.collectionPage,.accountPage,.footer{--font-display:var(--font-shopping-display),Didot,serif;--font-sans:var(--font-shopping-sans),Arial,sans-serif;font-family:var(--font-sans)}
+.celebrationHome,.celebrationHeader,.celebrationSupport,.collectionPage,.cartPage,.accountPage,.footer{--font-display:var(--font-shopping-display),Didot,serif;--font-sans:var(--font-shopping-sans),Arial,sans-serif;font-family:var(--font-sans)}
 .celebrationHome{background:#fffaf4;color:#3d241c}
 .celebrationHome .wrap,.celebrationHeader .wrap{max-width:1320px;padding-inline:clamp(18px,4vw,56px)}
 .celebrationHome :is(#trust,#builder,#custom-request,#budgets,#occasions),.collectionPage #collection{scroll-margin-top:148px}
