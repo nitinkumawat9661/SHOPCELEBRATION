@@ -1,0 +1,116 @@
+/* Premium parchment canvas for Celebration storefront surfaces. */
+.celebrationHome {
+  --parchment-canvas: #f3e8da;
+  --parchment-wash: rgba(255, 249, 240, 0.54);
+  --parchment-burgundy-haze: rgba(126, 20, 33, 0.055);
+  --parchment-gold-haze: rgba(181, 132, 74, 0.08);
+  background-color: var(--parchment-canvas);
+  background-image:
+    radial-gradient(circle at 10% 14%, var(--parchment-burgundy-haze), transparent 28%),
+    radial-gradient(circle at 90% 42%, var(--parchment-gold-haze), transparent 30%),
+    linear-gradient(var(--parchment-wash), var(--parchment-wash)),
+    url('/images/celebration-parchment.svg');
+  background-repeat: no-repeat, no-repeat, repeat, repeat;
+  background-size: 760px 760px, 900px 900px, auto, 760px 760px;
+  background-position: -180px 120px, calc(100% + 220px) 44%, 0 0, 0 0;
+  background-attachment: scroll;
+}
+
+/* Keep the campaign hero photographic, then ease into tactile paper below it. */
+.celebrationHero { background-color: #27140c; }
+
+.celebrationBenefits {
+  background:
+    linear-gradient(rgba(249, 236, 218, 0.87), rgba(246, 229, 207, 0.87)),
+    url('/images/celebration-parchment.svg');
+  background-size: auto, 820px 820px;
+  border-top: 1px solid rgba(255, 250, 240, 0.68);
+  border-bottom-color: rgba(132, 83, 51, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.48), 0 10px 28px rgba(70, 35, 21, .035);
+}
+
+/* Let the parchment canvas stay visible through the main shopping journey. */
+.celebrationCategories,
+.celebrationFeatured,
+.celebrationEdits,
+.celebrationHome .celebrationBudgets,
+.celebrationOccasions,
+.builder,
+.promiseSec,
+.customRequestSection,
+.ctaSec {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+
+.celebrationCategories::before,
+.celebrationFeatured::before,
+.celebrationHome .celebrationBudgets::before,
+.celebrationOccasions::before,
+.promiseSec::before,
+.customRequestSection::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-block: 1px solid rgba(117, 72, 45, .06);
+}
+
+.celebrationCategories::before {
+  background: linear-gradient(180deg, rgba(255, 249, 240, .18), rgba(229, 205, 178, .10));
+}
+
+.celebrationFeatured::before {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(128, 17, 35, .045), transparent 25%),
+    linear-gradient(180deg, rgba(242, 224, 210, .23), rgba(255, 249, 241, .10));
+}
+
+.celebrationHome .celebrationBudgets::before {
+  background:
+    radial-gradient(circle at 8% 82%, rgba(181, 132, 74, .065), transparent 26%),
+    linear-gradient(180deg, rgba(233, 213, 190, .26), rgba(250, 241, 230, .12));
+}
+
+.celebrationOccasions::before {
+  background:
+    radial-gradient(circle at 82% 32%, rgba(126, 20, 33, .045), transparent 27%),
+    linear-gradient(180deg, rgba(246, 232, 216, .18), rgba(230, 205, 178, .12));
+}
+
+.promiseSec::before,
+.customRequestSection::before {
+  background: linear-gradient(180deg, rgba(255, 249, 240, .16), rgba(236, 217, 196, .10));
+}
+
+/* Preserve card legibility while making them feel placed on physical paper. */
+.celebrationCategoryArt,
+.celebrationBudgets .tier,
+.promiseGrid article,
+.customRequestCard,
+.builderCard {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.48),
+    0 10px 24px rgba(82, 48, 29, .075);
+}
+
+.celebrationSectionHead h2,
+.celebrationBudgets .sectionHead h2,
+.celebrationOccasions h2,
+.promiseSec h2,
+.customRequestSection h2 {
+  text-shadow: 0 1px 0 rgba(255, 250, 242, .72);
+}
+
+@media (max-width: 760px) {
+  .celebrationHome {
+    background-size: 520px 520px, 620px 620px, auto, 560px 560px;
+    background-position: -220px 100px, calc(100% + 260px) 38%, 0 0, 0 0;
+  }
+
+  .celebrationBenefits {
+    background-size: auto, 620px 620px;
+  }
+}
