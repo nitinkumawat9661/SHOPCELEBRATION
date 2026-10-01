@@ -108,7 +108,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         if (data.paid) {
           if (!publicOrderId) clearFinishedDraft()
           setPhase("success")
-          setMessage("Payment verified. Your Celebration order is confirmed.")
+          setMessage("Payment verified. Opening your order…")
           return
         }
 
@@ -138,6 +138,13 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
     void checkPayment()
   }, [checkPayment])
 
+  useEffect(() => {
+    if (phase !== "success" || !result?.orderId) return
+    const target = result.trackingPath || routes.account
+    const timer = window.setTimeout(() => window.location.replace(target), 350)
+    return () => window.clearTimeout(timer)
+  }, [phase, result?.orderId, result?.trackingPath])
+
   async function verifyRazorpay(publicOrderId: string, confirmation: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
     const response = await fetch(routes.api.paymentVerify, {
       method: "POST",
@@ -156,7 +163,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
     if (data.paid) {
       if (!publicOrderId) clearFinishedDraft()
       setPhase("success")
-      setMessage("Payment verified. Your Celebration order is confirmed.")
+      setMessage("Payment verified. Opening your order…")
       return true
     }
     return false
@@ -184,7 +191,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         setResult(data)
         if (!publicOrderId) clearFinishedDraft()
         setPhase("success")
-        setMessage("Payment verified. Your Celebration order is confirmed.")
+        setMessage("Payment verified. Opening your order…")
         return
       }
       if (!data.checkout) throw new Error("PAYMENT_CHECKOUT_MISSING")
@@ -240,27 +247,18 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
       <div className="paymentReturnCard paymentReturnSuccess" role="status" aria-live="polite">
         <div className="paymentReturnIcon success" aria-hidden="true">✓</div>
         <div className="paymentReturnEyebrow">PAYMENT VERIFIED</div>
-        <h1>Your order is confirmed.</h1>
-        <p className="paymentReturnLead">{typeof result.payablePaise === "number" ? `${formatMoney(result.payablePaise / 100)} received securely. ` : ""}Your order is saved and ready for the next preparation step.</p>
+        <h1>Order confirmed.</h1>
+        <p className="paymentReturnLead">{typeof result.payablePaise === "number" ? `${formatMoney(result.payablePaise / 100)} received securely. ` : ""}Opening your order now…</p>
 
         <div className="paymentReturnOrderMeta">
           <span>Order ID</span>
           <strong>{result.orderId}</strong>
         </div>
 
-        <div className="paymentReturnTimeline" aria-label="Order progress">
-          <div className="done"><b>✓</b><span><strong>Payment verified</strong><small>Confirmed securely by the server</small></span></div>
-          <div className="done"><b>✓</b><span><strong>Order received</strong><small>Your items and delivery details are saved</small></span></div>
-          <div><b>3</b><span><strong>Packing comes next</strong><small>Follow preparation and delivery from My Celebration</small></span></div>
-        </div>
-
         <div className="paymentReturnActions">
-          <Link className="primary" href={routes.account}>View my order</Link>
-          {result.trackingPath && <Link className="secondary" href={result.trackingPath}>Track order</Link>}
-          <Link className="secondary" href={routes.home}>Continue shopping</Link>
+          {result.trackingPath && <Link className="primary" href={result.trackingPath}>Open order</Link>}
+          <Link className="secondary" href={routes.account}>My Celebration</Link>
         </div>
-
-        <div className="paymentReturnSafeNote success">No UTR, screenshot or second payment is needed.</div>
       </div>
     )
   }
