@@ -22,5 +22,13 @@ export const httpSecurity = {
     ["Cross-Origin-Resource-Policy", "same-origin"],
     ["Strict-Transport-Security", "max-age=31536000; includeSubDomains"]
   ],
-  noStoreRoutes: ["/admin/:path*", "/track", "/api/admin/:path*", "/api/track", "/api/payments/:path*", "/api/account/password-reset/:path*"]
+  noStoreRoutes: [
+    "/admin/:path*",
+    "/account/:path*",
+    "/track",
+    "/api/admin/:path*",
+    "/api/account/:path*",
+    "/api/track",
+    "/api/payments/:path*"
+  ]
 }
