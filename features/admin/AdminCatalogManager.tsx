@@ -15,6 +15,8 @@ type AdminCatalogPayload = {
   error?: string
 }
 
+type ImportRecord = Record<string, unknown>
+
 function slug(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)
 }
@@ -27,6 +29,104 @@ function moveItem<T>(items: T[], from: number, to: number) {
   return next
 }
 
+function normalizeImportKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
+function normalizeImportRecord(input: ImportRecord) {
+  return Object.fromEntries(Object.entries(input).map(([key, value]) => [normalizeImportKey(key), value])) as ImportRecord
+}
+
+function importText(value: unknown, fallback = "") {
+  return value === undefined || value === null ? fallback : String(value).trim()
+}
+
+function importBoolean(value: unknown, fallback: boolean) {
+  if (value === undefined || value === null || String(value).trim() === "") return fallback
+  const text = String(value).trim().toLowerCase()
+  if (["1", "true", "yes", "y", "on", "active", "enabled"].includes(text)) return true
+  if (["0", "false", "no", "n", "off", "inactive", "disabled"].includes(text)) return false
+  return fallback
+}
+
+function importInteger(value: unknown, fallback: number, min: number) {
+  if (value === undefined || value === null || String(value).trim() === "") return fallback
+  const number = Number(value)
+  if (!Number.isInteger(number) || number < min) throw new Error(`Invalid number: ${String(value)}`)
+  return number
+}
+
+function parseCsv(text: string): ImportRecord[] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ""
+  let quoted = false
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index]
+    const next = text[index + 1]
+    if (char === '"') {
+      if (quoted && next === '"') { cell += '"'; index += 1 }
+      else quoted = !quoted
+    } else if (char === "," && !quoted) {
+      row.push(cell.trim()); cell = ""
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && next === "\n") index += 1
+      row.push(cell.trim()); cell = ""
+      if (row.some(Boolean)) rows.push(row)
+      row = []
+    } else {
+      cell += char
+    }
+  }
+  row.push(cell.trim())
+  if (row.some(Boolean)) rows.push(row)
+  if (rows.length < 2) throw new Error("CSV_EMPTY")
+  const headers = rows[0].map((item) => item.trim())
+  return rows.slice(1).map((values) => Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""])))
+}
+
+function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undefined, catalog: CatalogConfig, rowNumber: number): GiftProduct {
+  const raw = normalizeImportRecord(rawInput)
+  const pick = (...keys: string[]) => keys.map(normalizeImportKey).map((key) => raw[key]).find((value) => value !== undefined)
+  const id = slug(importText(pick("id", "sku"), existing?.id || ""))
+  const name = importText(pick("name", "productName"), existing?.name || "")
+  const category = importText(pick("category"), existing?.category || "Other")
+  if (!id || !name || !category) throw new Error(`Row ${rowNumber}: id, name aur category required hain.`)
+
+  const minTier = importInteger(pick("minTier", "hamperMinimum", "minimumHamper"), existing?.minTier ?? catalog.tiers[0]?.price ?? 0, 0)
+  const points = importInteger(pick("points"), existing?.points ?? 1, 1)
+  const note = importText(pick("note", "description"), existing?.note || "")
+  const icon = importText(pick("icon", "emoji"), existing?.icon || "🎁") || undefined
+  const imageUrl = importText(pick("imageUrl", "image", "photo", "photoUrl"), existing?.imageUrl || "") || undefined
+  const active = importBoolean(pick("active", "status"), existing?.active !== false)
+  const sellIndividually = importBoolean(pick("sellIndividually", "individualSale", "sellIndividual"), existing?.sellIndividually === true)
+
+  let salePricePaise = existing?.salePricePaise
+  const paiseInput = pick("salePricePaise")
+  const rupeeInput = pick("salePrice", "individualPrice", "price")
+  if (paiseInput !== undefined && String(paiseInput).trim() !== "") {
+    const parsed = Number(paiseInput)
+    if (!Number.isInteger(parsed) || parsed < 100) throw new Error(`Row ${rowNumber}: invalid salePricePaise.`)
+    salePricePaise = parsed
+  } else if (rupeeInput !== undefined && String(rupeeInput).trim() !== "") {
+    salePricePaise = salePriceFromRupees(String(rupeeInput).trim())
+    if (salePricePaise === undefined) throw new Error(`Row ${rowNumber}: invalid sale price.`)
+  }
+  if (sellIndividually && !salePricePaise) throw new Error(`Row ${rowNumber}: individual selling ON hai, sale price required hai.`)
+
+  return { id, name, category, minTier, points, note, icon, imageUrl, active, sellIndividually, salePricePaise }
+}
+
+function importedRows(fileName: string, text: string): ImportRecord[] {
+  if (fileName.toLowerCase().endsWith(".json")) {
+    const parsed = JSON.parse(text) as unknown
+    if (Array.isArray(parsed)) return parsed as ImportRecord[]
+    if (parsed && typeof parsed === "object" && Array.isArray((parsed as { products?: unknown }).products)) return (parsed as { products: ImportRecord[] }).products
+    throw new Error("JSON me products array required hai.")
+  }
+  return parseCsv(text)
+}
+
 export function AdminCatalogManager({ section }: { section: CatalogAdminSection }) {
   const [catalog, setCatalog] = useState<CatalogConfig>(defaultCatalog)
   const [version, setVersion] = useState(0)
@@ -37,6 +137,7 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
   const [notice, setNotice] = useState("")
   const [error, setError] = useState("")
   const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({})
 
   function applyPayload(data: AdminCatalogPayload) {
     if (!data.catalog) return
@@ -101,20 +202,35 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
 
   async function uploadImage(file: File, productIndex: number) {
     if (file.size > 5 * 1024 * 1024) throw new Error("IMAGE_TOO_LARGE")
-    const presignResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contentType: file.type }) })
-    const presign = await presignResponse.json() as { ok?: boolean; key?: string; url?: string; error?: string }
-    if (!presignResponse.ok || !presign.ok || !presign.key || !presign.url) throw new Error(presign.error || "IMAGE_UPLOAD_FAILED")
-    const put = await fetch(presign.url, { method: "PUT", headers: { "Content-Type": file.type }, body: file })
-    if (!put.ok) throw new Error("IMAGE_UPLOAD_FAILED")
-    const verifyResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: presign.key }) })
-    const verified = await verifyResponse.json() as { ok?: boolean; imageUrl?: string; error?: string }
-    if (!verifyResponse.ok || !verified.ok || !verified.imageUrl) throw new Error(verified.error || "IMAGE_VERIFY_FAILED")
-    replaceProduct(productIndex, { imageUrl: verified.imageUrl })
+    setBusy(`image-${productIndex}`)
+    setError("")
+    try {
+      const presignResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contentType: file.type }) })
+      const presign = await presignResponse.json() as { ok?: boolean; key?: string; url?: string; error?: string }
+      if (!presignResponse.ok || !presign.ok || !presign.key || !presign.url) throw new Error(presign.error || "IMAGE_UPLOAD_FAILED")
+      const put = await fetch(presign.url, { method: "PUT", headers: { "Content-Type": file.type }, body: file })
+      if (!put.ok) throw new Error("IMAGE_UPLOAD_FAILED")
+      const verifyResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: presign.key }) })
+      const verified = await verifyResponse.json() as { ok?: boolean; imageUrl?: string; error?: string }
+      if (!verifyResponse.ok || !verified.ok || !verified.imageUrl) throw new Error(verified.error || "IMAGE_VERIFY_FAILED")
+      replaceProduct(productIndex, { imageUrl: verified.imageUrl })
+      setNotice("Image uploaded. Publish live karke storefront par apply karein.")
+    } finally {
+      setBusy("")
+    }
+  }
+
+  function validateIndividualPrices() {
+    const invalidPrice = catalog.products.find((product) => product.sellIndividually && !product.salePricePaise)
+    if (invalidPrice) {
+      setError(`${invalidPrice.name}: individual sale ke liye price ₹1 ya usse zyada enter karein.`)
+      return false
+    }
+    return true
   }
 
   async function saveDraft() {
-    const invalidPrice = catalog.products.find((product) => product.sellIndividually && !product.salePricePaise)
-    if (invalidPrice) { setError(`${invalidPrice.name}: individual sale ke liye price ₹1 ya usse zyada enter karein.`); return }
+    if (!validateIndividualPrices()) return
     setBusy("save")
     setNotice("")
     setError("")
@@ -130,21 +246,27 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     } finally { setBusy("") }
   }
 
-  async function publishDraft() {
-    if (dirty) { setError("SAVE_DRAFT_FIRST"); return }
-    if (!hasDraft) return
-    if (!window.confirm(`Saved draft ko live v${version + 1} publish karna hai?`)) return
-    setBusy("publish")
+  async function saveAndPublish() {
+    if ((!dirty && !hasDraft) || !validateIndividualPrices()) return
+    setBusy("publish-live")
     setNotice("")
     setError("")
     try {
-      const response = await fetch("/api/admin/catalog/publish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ version }) })
-      const data = await response.json() as AdminCatalogPayload
-      if (!response.ok || !data.ok || !data.catalog) throw new Error(data.error || "CATALOG_PUBLISH_FAILED")
-      applyPayload(data)
-      setNotice(`Published successfully. Public website ab v${data.version} use kar rahi hai.`)
+      let publishVersion = version
+      if (dirty) {
+        const saveResponse = await fetch("/api/admin/catalog", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ catalog, version }) })
+        const saved = await saveResponse.json() as AdminCatalogPayload
+        if (!saveResponse.ok || !saved.ok || !saved.catalog) throw new Error(saved.error || "CATALOG_DRAFT_SAVE_FAILED")
+        publishVersion = saved.version || version
+      }
+      const publishResponse = await fetch("/api/admin/catalog/publish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ version: publishVersion }) })
+      const published = await publishResponse.json() as AdminCatalogPayload
+      if (!publishResponse.ok || !published.ok || !published.catalog) throw new Error(published.error || "CATALOG_PUBLISH_FAILED")
+      applyPayload(published)
+      setNotice(`Live published. Storefront ab catalog v${published.version} use kar rahi hai.`)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "CATALOG_PUBLISH_FAILED")
+      const code = caught instanceof Error ? caught.message : "CATALOG_PUBLISH_FAILED"
+      setError(code === "SALE_PRICE_REQUIRED" ? "Individual sale enabled products ke liye sale price required hai." : code)
     } finally { setBusy("") }
   }
 
@@ -164,24 +286,64 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     } finally { setBusy("") }
   }
 
+  async function bulkImport(file: File) {
+    if (file.size > 2 * 1024 * 1024) { setError("Bulk file 2 MB se chhoti rakhein."); return }
+    setBusy("import")
+    setError("")
+    setNotice("")
+    try {
+      const rows = importedRows(file.name, await file.text())
+      if (!rows.length) throw new Error("File me koi product nahi mila.")
+      const existingById = new Map(catalog.products.map((product) => [product.id, product]))
+      const imported = rows.map((raw, index) => {
+        const normalized = normalizeImportRecord(raw)
+        const rawId = slug(importText(normalized.id ?? normalized.sku))
+        return productFromImport(raw, rawId ? existingById.get(rawId) : undefined, catalog, index + 2)
+      })
+      const importedById = new Map(imported.map((product) => [product.id, product]))
+      const updatedIds = new Set(catalog.products.filter((product) => importedById.has(product.id)).map((product) => product.id))
+      const nextProducts = catalog.products.map((product) => importedById.get(product.id) || product)
+      for (const product of imported) if (!updatedIds.has(product.id)) nextProducts.push(product)
+      edit((current) => ({ ...current, products: nextProducts }))
+      setNotice(`${imported.length} products loaded (${updatedIds.size} updated, ${imported.length - updatedIds.size} new). Ab Publish live dabayein.`)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "BULK_IMPORT_FAILED")
+    } finally {
+      setBusy("")
+    }
+  }
+
+  function downloadCsvTemplate() {
+    const csv = [
+      "id,name,category,minTier,points,description,imageUrl,active,sellIndividually,salePrice",
+      "sample-necklace,Sample Necklace,Jewelry,499,2,Stainless steel necklace,https://example.com/product.webp,true,true,799"
+    ].join("\n")
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = "celebration-products-template.csv"
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+
   const title = section === "tiers" ? "Hampers & budgets" : section === "products" ? "Products / objects" : "Occasions & defaults"
   const description = section === "tiers" ? "Budget tiers, box size aur selection limits control karein." : section === "products" ? "Items, images, hamper eligibility aur individual sale prices manage karein." : "Occasions aur builder defaults manage karein."
 
   return (
     <section className="adminWorkspaceCard">
-      <div className="adminWorkspaceHead">
+      <div className="adminWorkspaceHead adminCatalogHeader">
         <div><div className="kicker">CATALOG</div><h2>{title}</h2><p>{description}</p></div>
-        <div className="adminActions">
+        <div className="adminActions adminCatalogActions">
           <button className="secondary" type="button" onClick={() => { if (!dirty || window.confirm("Unsaved edits discard karne hain?")) load().catch((caught) => setError(String(caught))) }}>Reload</button>
           {hasDraft && <a className="secondary" href="/admin/catalog-preview" target="_blank" rel="noreferrer">Preview</a>}
-          {hasDraft && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard draft</button>}
+          {hasDraft && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard</button>}
           <button className="secondary" type="button" onClick={saveDraft} disabled={Boolean(busy) || !dirty}>{busy === "save" ? "Saving…" : "Save draft"}</button>
-          <button className="primary" type="button" onClick={publishDraft} disabled={Boolean(busy) || dirty || !hasDraft}>{busy === "publish" ? "Publishing…" : `Publish v${version + 1}`}</button>
+          <button className="primary adminPublishLive" type="button" onClick={saveAndPublish} disabled={Boolean(busy) || (!dirty && !hasDraft)}>{busy === "publish-live" ? "Publishing…" : "Publish live"}</button>
         </div>
       </div>
-      {dirty && <div className="adminDraftNotice"><b>Unsaved edits</b> • Save draft first. Public website v{version} par unchanged hai.</div>}
-      {!dirty && hasDraft && <div className="adminDraftNotice"><b>Saved draft ready</b> • Public website abhi v{version} live hai.{draftUpdatedAt ? ` Draft saved ${new Date(draftUpdatedAt).toLocaleString("en-IN")}.` : ""}</div>}
-      {!dirty && !hasDraft && <div className="adminDraftNotice"><b>Live catalog v{version}</b> • Edit karke Save draft karein, preview karein, phir publish karein.</div>}
+      {dirty && <div className="adminDraftNotice"><b>Changes ready</b> • Publish live ek click me save + publish karega. Storefront abhi v{version} par hai.</div>}
+      {!dirty && hasDraft && <div className="adminDraftNotice"><b>Saved draft ready</b> • Publish live dabate hi storefront update hoga.{draftUpdatedAt ? ` Draft saved ${new Date(draftUpdatedAt).toLocaleString("en-IN")}.` : ""}</div>}
+      {!dirty && !hasDraft && <div className="adminDraftNotice"><b>Live catalog v{version}</b> • Edit ya bulk upload karein, phir Publish live.</div>}
       {notice && <div className="successBox adminFeedback">{notice}</div>}
       {error && <div className="errorBox adminFeedback">{error}</div>}
 
@@ -197,11 +359,26 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       </>}
 
       {section === "products" && <>
-        <p>Hamper minimum sirf hamper eligibility hai, individual sale price nahi. Individual sale enable karke price enter karein, Save draft aur Publish karein. Inactive products dono shopping flows se hidden rahenge.</p>
-        <div className="adminBulkBar"><span>{catalog.products.length} products / objects</span><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: true })) }))}>Activate all</button><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: false })) }))}>Pause all</button><button type="button" className="primary" onClick={addProduct}>+ Add product</button></div>
-        <div className="adminEditorList">{catalog.products.map((product, index) => <div className="adminEditorCard adminDraggableCard" draggable key={`${product.id}-${index}`} onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragIndex !== null) edit((current) => ({ ...current, products: moveItem(current.products, dragIndex, index) })); setDragIndex(null) }}>
+        <div className="adminCatalogSimpleTools">
+          <div><b>Bulk catalogue</b><span>CSV ya JSON upload karein. Same ID mile to product update hoga, new ID mile to add hoga.</span></div>
+          <div className="adminCatalogToolButtons">
+            <button type="button" className="secondary" onClick={downloadCsvTemplate}>CSV template</button>
+            <label className="secondary adminBulkFileButton">{busy === "import" ? "Importing…" : "Bulk upload"}<input type="file" accept=".csv,.json,text/csv,application/json" disabled={Boolean(busy)} onChange={(event) => { const file = event.target.files?.[0]; if (file) bulkImport(file); event.currentTarget.value = "" }} /></label>
+          </div>
+        </div>
+        <div className="adminBulkBar"><span>{catalog.products.length} products</span><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: true })) }))}>Activate all</button><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: false })) }))}>Pause all</button><button type="button" className="primary" onClick={addProduct}>+ Add product</button></div>
+        <div className="adminEditorList">{catalog.products.map((product, index) => {
+          const imageKey = `${product.id}:${product.imageUrl || ""}`
+          const imageBroken = brokenImages[imageKey] === true
+          return <div className="adminEditorCard adminDraggableCard adminProductEditorCard" draggable key={`${product.id}-${index}`} onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragIndex !== null) edit((current) => ({ ...current, products: moveItem(current.products, dragIndex, index) })); setDragIndex(null) }}>
           <div className="adminCardHandle">⋮⋮ <span>Drag to reorder</span></div>
-          <div className="adminEditorGrid"><label>ID<input value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Hamper minimum ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminWide">Description<input value={product.note} onChange={(e) => replaceProduct(index, { note: e.target.value })} /></label><label className="adminWide">Image URL<input value={product.imageUrl || ""} onChange={(e) => replaceProduct(index, { imageUrl: e.target.value })} placeholder="https://… or upload below" /></label><label className="adminWide uploadControl">Upload image<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImage(file, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")) }} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label></div>
+          <div className="adminProductMediaRow">
+            <div className="adminProductMediaFrame">
+              {product.imageUrl && !imageBroken ? <img key={product.imageUrl} className="adminCatalogPreview" src={product.imageUrl} alt={product.name} loading="lazy" referrerPolicy="no-referrer" onError={() => setBrokenImages((current) => ({ ...current, [imageKey]: true }))} /> : <div className="adminProductImageFallback"><span>{product.icon || "🎁"}</span><small>{product.imageUrl ? "Image unavailable" : "No image"}</small></div>}
+            </div>
+            <div className="adminProductMediaCopy"><b>{product.name}</b><span>{product.imageUrl ? (imageBroken ? "Image URL load nahi ho rahi. URL check ya image re-upload karein." : "Product image ready") : "Image upload karein ya HTTPS image URL paste karein."}</span></div>
+          </div>
+          <div className="adminEditorGrid"><label>ID<input value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Hamper minimum ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminWide">Description<input value={product.note} onChange={(e) => replaceProduct(index, { note: e.target.value })} /></label><label className="adminWide">Image URL<input value={product.imageUrl || ""} onChange={(e) => replaceProduct(index, { imageUrl: e.target.value || undefined })} placeholder="https://… or upload below" /></label><label className="adminWide uploadControl">{busy === `image-${index}` ? "Uploading image…" : "Upload image"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(busy)} onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImage(file, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")); e.currentTarget.value = "" }} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label></div>
           <div className="adminEditorGrid">
             <label>Individual sale price ₹<input type="number" min="1" max={Math.min(validation.catalog.maxPrice, 21474836.47)} step="0.01" inputMode="decimal" value={product.salePricePaise === undefined ? "" : product.salePricePaise / 100} placeholder="Enter actual sale price" onChange={(event) => {
               const value = event.target.value
@@ -212,9 +389,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
             }} /></label>
             <label className="adminCheck"><input type="checkbox" checked={product.sellIndividually === true} onChange={(event) => replaceProduct(index, { sellIndividually: event.target.checked })} /> Sell individually without a hamper</label>
           </div>
-          {product.imageUrl && <img className="adminCatalogPreview" src={product.imageUrl} alt="" />}
           <div className="adminEditorActions"><span>{product.category}</span><div><button type="button" className="secondary" disabled={index === 0} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index - 1) }))}>↑</button><button type="button" className="secondary" disabled={index === catalog.products.length - 1} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index + 1) }))}>↓</button><button type="button" className="secondary" onClick={() => duplicateProduct(index)}>Duplicate</button><button type="button" className="secondary danger" onClick={() => edit((current) => ({ ...current, products: current.products.filter((_, i) => i !== index) }))}>Delete</button></div></div>
-        </div>)}</div>
+        </div>})}</div>
       </>}
 
       {section === "occasions" && <>
