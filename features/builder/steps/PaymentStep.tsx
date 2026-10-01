@@ -171,6 +171,12 @@ export function PaymentStep({
     focusUtr()
   }, [error, gatewayEnabled])
 
+  useEffect(() => {
+    if (paymentState !== "paid" || !created?.trackingPath) return
+    const timer = window.setTimeout(() => window.location.replace(created.trackingPath), 350)
+    return () => window.clearTimeout(timer)
+  }, [created?.trackingPath, paymentState])
+
   const reservedUntil = quote
     ? new Date(quote.expiresAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
     : ""
@@ -189,9 +195,9 @@ export function PaymentStep({
   }
 
   const automatedSteps = [
-    `Pay ${formatMoney(payablePaise / 100)} securely`,
-    "Payment status is verified automatically",
-    "Confirmed order appears in My Celebration"
+    "Pay securely",
+    "Payment is verified automatically",
+    "Your order opens automatically after payment"
   ]
 
   const paymentBusy = submitting || paymentState === "processing"
@@ -216,6 +222,10 @@ export function PaymentStep({
             <div className="checkoutOfferPrice"><s>{formatMoney(quote.subtotalPaise / 100)}</s><strong>{formatMoney(quote.payablePaise / 100)}</strong><span>You save {formatMoney(quote.discountPaise / 100)}</span></div>
           </div>}
           {customerAccount && quoteError && <div className="checkoutPriceNote">{quoteError}</div>}
+
+          <label className="policyCheck"><input type="checkbox" checked={accepted} disabled={submitting || Boolean(created) || Boolean(individual && paymentOrderId)} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order &amp; Protection Policy</Link> and <Link href={routes.privacy} target="_blank">Privacy Policy</Link>.</span></label>
+          <div className="paymentPolicyHint">Check once, then pay. Never share your UPI PIN, card PIN or OTP with Celebration.</div>
+          {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Tick the checkbox above to enable secure payment.</div>}
 
           <div className={`paymentBox ${gatewayEnabled ? "automatedPaymentBox" : ""}`} data-payment-provider={gatewayProvider || undefined}>
             <div className="paymentSticker">{gatewayEnabled ? "✓" : copy.paymentIcon}</div>
@@ -259,11 +269,8 @@ export function PaymentStep({
           {!gatewayEnabled && !individual && showPaymentReturn && !created && <div className="paymentReturnHint" role="status"><span><b>Payment done?</b> Paste your UPI transaction reference below to continue.</span><button className="secondary" type="button" onClick={focusUtr}>Add reference</button></div>}
           {!gatewayEnabled && !individual && <label className="field utrField"><span>{copy.referenceLabel} <b className="requiredMark">*</b></span><input ref={utrRef} className="control" value={checkout.paymentReference} disabled={submitting || Boolean(created)} onChange={(e) => onReference(e.target.value)} placeholder={copy.referencePlaceholder} autoComplete="off" inputMode="text" /></label>}
 
-          <label className="policyCheck"><input type="checkbox" checked={accepted} disabled={submitting || Boolean(created) || Boolean(individual && paymentOrderId)} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order &amp; Protection Policy</Link> and acknowledge the <Link href={routes.privacy} target="_blank">Privacy Policy</Link>. This is a prepaid {individual ? "product" : "customized"} order; eligible wrong, damaged, defective or missing-item claims remain covered by the protection policy.</span></label>
-          <div className="paymentPolicyHint">Payment processing starts only after you accept these terms. We do not ask you to share card PINs, UPI PINs or OTPs with Celebration.</div>
-          {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Accept the order and privacy terms to enable secure payment.</div>}
           {error && !paymentPending && <div className="errorBox" role="alert">{error}</div>}
-          {created && <div className="successBox" data-order-success tabIndex={-1}><strong>{copy.successPrefix} {created.orderId}</strong><span>{created.discountPaise > 0 ? `Payment verified and order saved — you saved ${formatMoney(created.discountPaise / 100)} with ${created.campaignTitle || "your offer"}.` : paymentState === "paid" ? "Payment verified automatically. Your order is confirmed." : "Your order is saved. Manual UPI payment is awaiting verification."} Follow packing and shipping updates from My Celebration.</span><div className="successActions"><Link className="primary" href={routes.account}>View my order</Link><Link className="secondary" href={created.trackingPath}>{copy.trackingButton}</Link><button className="secondary" type="button" onClick={onWhatsapp}>WhatsApp support</button><button className="secondary" type="button" onClick={onNewOrder}>{individual ? "Continue shopping" : "Build another hamper"}</button></div></div>}
+          {created && <div className="successBox" data-order-success tabIndex={-1}><strong>{copy.successPrefix} {created.orderId}</strong><span>{created.discountPaise > 0 ? `Payment verified and order saved — you saved ${formatMoney(created.discountPaise / 100)} with ${created.campaignTitle || "your offer"}.` : paymentState === "paid" ? "Payment verified automatically. Opening your order…" : "Your order is saved. Manual UPI payment is awaiting verification."} Follow packing and shipping updates from My Celebration.</span><div className="successActions"><Link className="primary" href={created.trackingPath}>Open order</Link><Link className="secondary" href={routes.account}>My Celebration</Link><button className="secondary" type="button" onClick={onWhatsapp}>WhatsApp support</button><button className="secondary" type="button" onClick={onNewOrder}>{individual ? "Continue shopping" : "Build another hamper"}</button></div></div>}
 
           <div className="navRow paymentActions">
             <button className="secondary" type="button" disabled={submitting || Boolean(individual && (created || paymentOrderId))} onClick={onBack}>{copy.back}</button>
