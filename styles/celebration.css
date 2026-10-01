@@ -1,4 +1,5 @@
 /* Approved visual reference: warm paper, burgundy velvet, champagne satin. */
+.celebrationHome,.celebrationHeader,.celebrationSupport,.collectionPage,.accountPage,.footer{--font-display:var(--font-shopping-display),Didot,serif;--font-sans:var(--font-shopping-sans),Arial,sans-serif;font-family:var(--font-sans)}
 .celebrationHome{background:#fffaf4;color:#3d241c}
 .celebrationHome .wrap,.celebrationHeader .wrap{max-width:1320px;padding-inline:clamp(18px,4vw,56px)}
 .celebrationHome :is(#trust,#builder,#custom-request,#budgets,#occasions),.collectionPage #collection{scroll-margin-top:148px}
@@ -25,7 +26,7 @@
 .celebrationSupport span{font-size:23px;line-height:1}
 .celebrationHero{position:relative;isolation:isolate;min-height:550px;padding:0;overflow:hidden;background:#27140c;color:#fff8ec}
 .celebrationHeroPhoto{position:absolute;inset:0;z-index:-2}
-.celebrationHeroPhoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 55%}
+.celebrationHeroPhoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top}
 .celebrationHero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#180c0970,transparent 72%)}
 .celebrationHeroInner{position:relative;display:flex;align-items:center;min-height:550px;padding-block:50px}
 .celebrationHeroCopy{max-width:570px;animation:celebrationEnter .7s ease both}
@@ -39,8 +40,8 @@
 .celebrationButton.light{background:linear-gradient(#fffdf8,#f8e5cb);border-color:#fff1d5;color:#5d201c}
 .celebrationButton:hover{transform:translateY(-2px);box-shadow:0 9px 22px #21050525}
 .celebrationHeroFoot{display:block;margin-top:22px;font-size:11px;color:#f4dfc5}
-.celebrationHeroNote{position:absolute;right:55px;top:34px;color:#edcb8f;font:italic 23px/1.4 var(--font-display);text-align:center;transform:rotate(-8deg);text-shadow:0 2px 12px #22120f}
-.celebrationHeroNote em{font-size:32px}
+.celebrationHeroNote{position:absolute;right:1.7vw;top:clamp(68px,7.7vw,150px);width:clamp(170px,16vw,235px);color:#dcb977;font:400 clamp(21px,2.2vw,34px)/1.05 var(--font-shopping-script),cursive;text-align:center;white-space:nowrap;transform:rotate(9deg) skewX(-8deg) scaleX(.86);text-shadow:0 1px 1px #431b14;mix-blend-mode:screen}
+.celebrationHeroNote em{font-size:1.2em;font-style:normal}
 .celebrationImageCaption{position:absolute;right:20px;bottom:12px;color:#fff1d9c7;font-size:9px;letter-spacing:.02em}
 .celebrationBenefits{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;padding-block:22px;background:#fbf0e0;border-bottom:1px solid #ebdac5}
 .celebrationBenefits>div{display:flex;align-items:center;justify-content:center;gap:12px}
@@ -129,10 +130,10 @@
 .celebrationHome .primary{background:linear-gradient(#a6192c,#890c20);border-radius:12px}
 .celebrationHome .secondary{border-radius:12px}
 @keyframes celebrationEnter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@media(min-width:1500px){.celebrationHeroPhoto img{object-position:center 60%}.celebrationHeroInner,.celebrationHero{min-height:610px}}
+@media(min-width:1500px){.celebrationHeroInner,.celebrationHero{min-height:610px}}
 @media(max-width:1000px){
   .celebrationHeaderTop{grid-template-columns:1fr minmax(200px,350px) auto;gap:20px;min-height:80px}.celebrationIconLink span{display:none}.celebrationHeaderActions{gap:5px}.celebrationBrand>span{font-size:30px}.celebrationNav{gap:30px}
-  .celebrationHeroInner,.celebrationHero{min-height:510px}.celebrationHeroNote{right:25px;font-size:18px}.celebrationHeroNote em{font-size:26px}.celebrationHero h1{font-size:65px}.celebrationHero p{font-size:13px}
+  .celebrationHeroInner,.celebrationHero{min-height:510px}.celebrationHero h1{font-size:65px}.celebrationHero p{font-size:13px}
   .celebrationBenefits{gap:12px}.celebrationBenefits>div{gap:8px}.celebrationBenefits b{font-size:10px}.celebrationBenefits small{font-size:9px}.celebrationBenefits svg{width:36px;height:36px;padding:8px}
   .celebrationCategoryRail{grid-auto-columns:calc((100% - 54px)/4)}.celebrationEdits{gap:16px}.celebrationEdit{padding:24px;min-height:245px}.celebrationBudgets .tiers{grid-auto-columns:calc((100% - 36px)/3)}
 }
@@ -151,5 +152,6 @@
   .celebrationHome .promiseSec{padding-block:36px}.celebrationHome .promiseGrid{grid-template-columns:1fr 1fr;gap:12px}.celebrationHome .promiseGrid article{padding:18px 14px}.celebrationHome .promiseGrid h3{font-size:20px}.celebrationHome .promiseGrid p{font-size:11px}
   .celebrationHome .ctaSec{padding-block:26px}.celebrationHome .cta{padding:30px 24px;background-image:linear-gradient(90deg,#26130deb,#33170a66),url('/images/campaign/hero-800.webp')}.celebrationHome .cta h2{font-size:33px}.celebrationHome .cta p{font-size:12px}.footerin{gap:20px}.footer .logo{font-size:28px}
 }
-@media(max-width:360px){.celebrationHero h1{font-size:49px}.celebrationButton{padding:11px 12px;font-size:10px}.celebrationHeroActions{gap:7px}.celebrationHero p{font-size:11px}.celebrationBenefits{gap:16px 7px}.celebrationBenefits b{font-size:9px}.celebrationBenefits small{font-size:8px}.celebrationBenefits svg{width:30px;height:30px;padding:6px}.celebrationHome .promiseGrid{grid-template-columns:1fr}}
+@media(max-width:850px){.celebrationHeroNote{display:none}}
+@media(max-width:360px){.celebrationHero h1{font-size:49px}.celebrationButton{padding:11px 12px;font-size:10px}.celebrationHeroActions{gap:7px}.celebrationBenefits{gap:16px 7px}.celebrationBenefits b{font-size:9px}.celebrationBenefits small{font-size:8px}.celebrationBenefits svg{width:30px;height:30px;padding:6px}.celebrationHome .promiseGrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.celebrationHeroCopy,.celebrationHome .tiers .tier{animation:none!important}.celebrationHome *,.celebrationHeader *{scroll-behavior:auto!important;transition:none!important}.celebrationButton:hover,.celebrationBudgets .tier:hover{transform:none}.celebrationEdit:hover img,.celebrationCategory:hover img{transform:none}}

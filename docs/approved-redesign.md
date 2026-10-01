@@ -27,4 +27,8 @@ The local clone has no production database credentials, so database-backed colle
 
 The existing GitHub production deployment workflow is blocked before execution by GitHub account billing/spending limits. No safeguards were bypassed and no production deployment succeeded. This is a build-verified implementation for review; live database/auth/payment integration and post-deployment health must be verified after deployment access is restored. No measured CLS benchmark is claimed.
 
+The October 1 follow-up moves the gold hero message onto the box lid, aligns it with the lid angle and uses self-hosted Bodoni Moda headings, Inter shopping text and Allura promotional lettering. Font license files are bundled in `app/fonts`. Fonts use Next.js preloading and adjusted fallback metrics. Desktop (935/1440px) and small mobile checks passed with loaded fonts and no overflow.
+
+The repository currently has zero Actions secrets. In addition to resolving GitHub billing/spending limits, the existing deployment workflow needs `VPS_HOST`, `VPS_PORT`, `VPS_USER`, `VPS_SSH_PRIVATE_KEY` and `VPS_KNOWN_HOSTS` configured through GitHub repository settings.
+
 Changed areas: `features/home`, `features/catalog`, `features/shell`, `app/jewelry`, scoped customer CSS, domain UI copy/discovery, audit checks and the Next.js lockfile. Generated Next.js agent guidance files are included to prevent recurring development-only dirty files.
