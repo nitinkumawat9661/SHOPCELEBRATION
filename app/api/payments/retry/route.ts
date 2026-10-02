@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         ok: true,
         paid: true,
         ...clientExisting,
-        trackingPath: `${routes.track}?token=${encodeURIComponent(clientExisting.trackingToken)}`
+        trackingPath: `${routes.track}#token=${encodeURIComponent(clientExisting.trackingToken)}`
       })
     }
 
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       ok: true,
       paid: false,
       ...clientOrder,
-      trackingPath: `${routes.track}?token=${encodeURIComponent(clientOrder.trackingToken)}`,
+      trackingPath: `${routes.track}#token=${encodeURIComponent(clientOrder.trackingToken)}`,
       checkout
     })
   } catch (error) {
