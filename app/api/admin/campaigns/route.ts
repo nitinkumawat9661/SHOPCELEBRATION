@@ -23,10 +23,10 @@ export async function PATCH(request: Request) {
     enforceSameOrigin(request)
     const allowed = await consumeRequestRateLimit("admin-campaigns", request, validation.rateLimits.adminMutation)
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
-    const body = await readJsonBody<{ config?: unknown }>(request)
-    return NextResponse.json({ ok: true, ...(await saveCampaignConfig(body.config)) })
+    const body = await readJsonBody<{ config?: unknown; expectedVersion?: unknown }>(request)
+    return NextResponse.json({ ok: true, ...(await saveCampaignConfig(body.config, body.expectedVersion)) })
   } catch (error) {
-    if (error instanceof CampaignError) return NextResponse.json({ ok: false, error: error.code }, { status: 422 })
+    if (error instanceof CampaignError) return NextResponse.json({ ok: false, error: error.code }, { status: error.code === "CAMPAIGN_VERSION_CONFLICT" ? 409 : 422 })
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })
     console.error("admin-campaigns-save", error)
     return NextResponse.json({ ok: false, error: "CAMPAIGNS_SAVE_FAILED" }, { status: 503 })
