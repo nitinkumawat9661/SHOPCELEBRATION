@@ -148,7 +148,7 @@ expectIndividualCode({ items: [{ productId: "inactive", quantity: 1 }] }, "INVAL
 expectIndividualCode({ items: [{ productId: "does-not-exist", quantity: 1 }] }, "INVALID_PRODUCT")
 expectIndividualCode({ items: [{ productId: "hamper-only", quantity: 1 }] }, "PRODUCT_NOT_FOR_INDIVIDUAL_SALE")
 expectIndividualCode({ items: [{ productId: "no-price", quantity: 1 }] }, "PRODUCT_NOT_FOR_INDIVIDUAL_SALE")
-expectIndividualCode({ offerQuoteId: valid.idempotencyKey }, "INDIVIDUAL_OFFER_NOT_SUPPORTED")
+const individualWithOffer = order.normalizeOrderInput({ ...individual, offerQuoteId: valid.idempotencyKey }, "Asia/Kolkata", individualCatalog)\nassert(individualWithOffer.amountPaise === individualNormalized.amountPaise, "Individual offer quote changed server-derived cart pricing")
 expectIndividualCode({ policyAccepted: false }, "POLICY_VERSION_MISMATCH")
 expectIndividualCode({ idempotencyKey: "bad-key" }, "INVALID_IDEMPOTENCY_KEY")
 expectIndividualCode({ address: "" }, "MISSING_REQUIRED_FIELDS")
