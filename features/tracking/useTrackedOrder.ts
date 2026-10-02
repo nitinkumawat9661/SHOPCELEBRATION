@@ -27,6 +27,8 @@ export function useTrackedOrder(token: string): TrackedOrderState {
     let active = true
     async function load() {
       if (!token) { setError(""); setLoading(false); return }
+      setLoading(true)
+      setError("")
       try {
         const response = await fetch(routes.api.tracking, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }), cache: "no-store" })
         const result = await response.json() as { ok?: boolean; order?: TrackedOrder }
