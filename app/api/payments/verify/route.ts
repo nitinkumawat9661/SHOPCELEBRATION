@@ -6,6 +6,8 @@ import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../
 import { paymentAttemptBelongsToCustomer } from "../../../../lib/server/payments/access"
 import { verifyProviderReturn } from "../../../../lib/server/payments/provider"
 import { applyProviderPaymentResult, paymentOrderClientResult } from "../../../../lib/server/payments/store"
+import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
+import { validation } from "../../../../config/validation"
 
 type VerifyBody = {
   publicOrderId?: unknown
@@ -24,6 +26,8 @@ export async function POST(request: Request) {
     enforceSameOrigin(request)
     const session = await getCustomerSession()
     if (!session) return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 })
+    const allowed = await consumeRequestRateLimit("payment-verify", request, validation.rateLimits.createOrder)
+    if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
     const body = await readJsonBody<VerifyBody>(request)
     const provider = providerName(body.provider)
     const publicOrderId = typeof body.publicOrderId === "string" ? body.publicOrderId.trim() : ""
