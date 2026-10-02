@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server"
 import { routes } from "../../../../config/routes"
+import { validation } from "../../../../config/validation"
 import { getCustomerSession } from "../../../../lib/security/customer-session"
 import { paymentAttemptPublicOrderId } from "../../../../lib/server/payments/access"
 import { verifyProviderReturn } from "../../../../lib/server/payments/provider"
 import { applyProviderPaymentResult, getPaymentOrder, paymentOrderClientResult } from "../../../../lib/server/payments/store"
+import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
 
 export async function GET(request: Request) {
   const session = await getCustomerSession()
   if (!session) return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 })
+  const allowed = await consumeRequestRateLimit("payment-return-status", request, validation.rateLimits.paymentVerify)
+  if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
 
   const providerOrderId = new URL(request.url).searchParams.get("providerOrderId")?.trim() || ""
   if (!providerOrderId) return NextResponse.json({ ok: false, error: "PAYMENT_ORDER_NOT_FOUND" }, { status: 404 })
@@ -36,6 +40,6 @@ export async function GET(request: Request) {
     ok: true,
     paid: order.paymentStatus === "paid" || order.status === "payment_verified",
     ...client,
-    trackingPath: `${routes.track}?token=${encodeURIComponent(client.trackingToken)}`
+    trackingPath: `${routes.track}#token=${encodeURIComponent(client.trackingToken)}`
   })
 }
