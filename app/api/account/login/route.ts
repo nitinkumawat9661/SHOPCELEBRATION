@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
     const body = await readJsonBody<{ phone?: unknown; password?: unknown }>(request)
     const account = await authenticateCustomerAccount(body)
-    const response = NextResponse.json({ ok: true, account: { ...customerAccountView(account), phoneVerified: false } })
+    const response = NextResponse.json({ ok: true, account: customerAccountView(account) })
     response.cookies.set(CUSTOMER_COOKIE_NAME, createCustomerSession(account.id, account.sessionVersion), customerCookieOptions())
     return response
   } catch (error) {
