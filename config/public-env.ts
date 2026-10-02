@@ -3,5 +3,5 @@ export const publicEnv = {
   upiId: process.env.NEXT_PUBLIC_CELEBRATION_UPI_ID?.trim() || "",
   upiName: process.env.NEXT_PUBLIC_CELEBRATION_UPI_NAME?.trim() || "",
   supportEmail: process.env.NEXT_PUBLIC_CELEBRATION_SUPPORT_EMAIL?.trim() || "",
-  siteIndexable: process.env.NODE_ENV === "production"
+  siteIndexable: process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_SITE_INDEXABLE?.trim().toLowerCase() === "true"
 } as const
