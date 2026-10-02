@@ -1,1 +1,2 @@
-ALTER TABLE offer_quotes\n  ALTER COLUMN tier_id DROP NOT NULL;\n
+ALTER TABLE offer_quotes
+  ALTER COLUMN tier_id DROP NOT NULL;
