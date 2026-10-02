@@ -15,6 +15,6 @@ export async function GET(request: Request) {
     ok: true,
     paid: order.paymentStatus === "paid" || order.status === "payment_verified",
     ...client,
-    trackingPath: `${routes.track}?token=${encodeURIComponent(client.trackingToken)}`
+    trackingPath: `${routes.track}#token=${encodeURIComponent(client.trackingToken)}`
   })
 }
