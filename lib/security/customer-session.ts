@@ -52,7 +52,7 @@ export async function getCustomerSession() {
   const parsed = validateCustomerSession((await cookies()).get(CUSTOMER_COOKIE_NAME)?.value)
   if (!parsed) return null
   const result = await query<{ session_version: number }>(
-    `SELECT session_version FROM customer_accounts WHERE id = $1 AND status = 'active' LIMIT 1`,
+    `SELECT session_version FROM customer_accounts WHERE id = $1 AND status = 'active' AND phone_verified_at IS NOT NULL LIMIT 1`,
     [parsed.accountId]
   )
   const row = result.rows[0]

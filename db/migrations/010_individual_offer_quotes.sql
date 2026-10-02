@@ -1,0 +1,2 @@
+ALTER TABLE offer_quotes
+  ALTER COLUMN tier_id DROP NOT NULL;

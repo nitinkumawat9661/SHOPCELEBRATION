@@ -110,7 +110,6 @@ export function normalizeOrderInput(
     }
     if (!Array.isArray(input.items) || !input.items.length) throw new OrderValidationError("EMPTY_CART")
     if (input.items.length > 20) throw new OrderValidationError("TOO_MANY_CART_ITEMS")
-    if (String(input.offerQuoteId ?? "").trim()) throw new OrderValidationError("INDIVIDUAL_OFFER_NOT_SUPPORTED")
     for (const value of input.items) {
       const item = value && typeof value === "object" ? value as Record<string, unknown> : {}
       const product = typeof item.productId === "string" ? productById(catalog, item.productId) : undefined

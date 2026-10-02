@@ -11,9 +11,12 @@ import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
 export const dynamic = "force-dynamic"
 
 type QuoteInput = {
+  orderType?: unknown
   tierId?: unknown
   selectedProductIds?: unknown
+  items?: unknown
   trigger?: unknown
+  couponCode?: unknown
 }
 
 export async function POST(request: Request) {
@@ -27,13 +30,18 @@ export async function POST(request: Request) {
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
 
     const body = await readJsonBody<QuoteInput>(request)
+    const orderType = body.orderType === "individual" ? "individual" : "hamper"
     const tierId = typeof body.tierId === "string" ? body.tierId : ""
     const selectedProductIds = Array.isArray(body.selectedProductIds)
       ? body.selectedProductIds.filter((value): value is string => typeof value === "string")
       : []
+    const items = Array.isArray(body.items)
+      ? body.items.map((value) => value && typeof value === "object" ? value as { productId?: unknown; quantity?: unknown } : {})
+      : []
     const trigger: CampaignTrigger = body.trigger === "hesitation" ? "hesitation" : "checkout"
+    const couponCode = typeof body.couponCode === "string" ? body.couponCode : ""
     const { catalog } = await getCatalogConfig()
-    const quote = await createBestOfferQuote({ customerAccountId: account.id, tierId, selectedProductIds, trigger, catalog })
+    const quote = await createBestOfferQuote({ customerAccountId: account.id, orderType, tierId, selectedProductIds, items, trigger, couponCode, catalog })
     return NextResponse.json({ ok: true, quote }, { headers: { "Cache-Control": "no-store" } })
   } catch (error) {
     if (error instanceof CampaignError) return NextResponse.json({ ok: false, error: error.code }, { status: 422 })

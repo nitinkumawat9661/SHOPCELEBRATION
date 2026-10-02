@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       ok: true,
       orderId: created.publicId,
       trackingToken: created.trackingToken,
-      trackingPath: `${routes.track}?token=${encodeURIComponent(created.trackingToken)}`,
+      trackingPath: `${routes.track}#token=${encodeURIComponent(created.trackingToken)}`,
       accountPath: routes.account,
       whatsappReady: Boolean(publicEnv.whatsapp),
       subtotalPaise: created.pricing.subtotalPaise,

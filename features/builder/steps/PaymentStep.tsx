@@ -44,7 +44,7 @@ export function PaymentStep({
   onNewOrder
 }: {
   tier?: Tier
-  individual?: { subtotalPaise: number; itemKey: string; label: string }
+  individual?: { subtotalPaise: number; itemKey: string; label: string; items: { productId: string; quantity: number }[] }
   orderTotalPaise?: number | null
   paymentBlocked?: boolean
   checkout: CheckoutData
@@ -81,6 +81,8 @@ export function PaymentStep({
   const [quoteChecked, setQuoteChecked] = useState(false)
   const [quoteError, setQuoteError] = useState("")
   const [hesitationChecked, setHesitationChecked] = useState(false)
+  const [couponInput, setCouponInput] = useState("")
+  const [couponMessage, setCouponMessage] = useState("")
   const utrRef = useRef<HTMLInputElement>(null)
   const manualPaymentReady = Boolean(!individual && publicEnv.upiId && publicEnv.upiName)
   const selectedKey = useMemo(() => individual?.itemKey || [...selectedProductIds].sort().join(","), [selectedProductIds, individual?.itemKey])
@@ -101,31 +103,59 @@ export function PaymentStep({
     window.setTimeout(() => target.focus({ preventScroll: true }), 240)
   }
 
-  async function loadOffer(trigger: "checkout" | "hesitation") {
-    if (!customerAccount || individual || !tier) return null
+  async function loadOffer(trigger: "checkout" | "hesitation", enteredCoupon = "") {
+    if (!customerAccount || (!individual && !tier)) return null
+    const code = enteredCoupon.trim().toUpperCase()
     setQuoteLoading(true)
-    setQuoteError("")
+    if (!code) setQuoteError("")
     try {
+      const body = individual
+        ? { orderType: "individual", items: individual.items, trigger, ...(code ? { couponCode: code } : {}) }
+        : { orderType: "hamper", tierId: tier!.id, selectedProductIds, trigger, ...(code ? { couponCode: code } : {}) }
       const response = await fetch(routes.api.offerQuote, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tierId: tier.id, selectedProductIds, trigger })
+        body: JSON.stringify(body)
       })
       const data = await response.json() as { ok?: boolean; quote?: OfferQuote | null; error?: string }
       if (!response.ok || !data.ok) throw new Error(data.error || "OFFER_SERVICE_UNAVAILABLE")
       const next = data.quote || null
       setQuote(next)
       setQuoteChecked(true)
-      if (next) trackConversion("offer_shown", { tierId: tier.id, campaignId: next.campaignId })
+      if (code) setCouponMessage(next ? `Coupon ${code} applied.` : "This coupon is not available for this order.")
+      if (next) trackConversion("offer_shown", { ...(tier ? { tierId: tier.id } : {}), campaignId: next.campaignId })
       return next
     } catch {
-      setQuote(null)
       setQuoteChecked(true)
-      setQuoteError("Couldn’t check offers right now. Regular price is still available.")
+      if (code) {
+        setCouponMessage("Coupon is invalid, expired, or not applicable to this order.")
+      } else {
+        setQuote(null)
+        setQuoteError("Couldn’t check offers right now. Regular price is still available.")
+      }
       return null
     } finally {
       setQuoteLoading(false)
     }
+  }
+
+  async function applyCoupon() {
+    const code = couponInput.trim().toUpperCase()
+    setCouponInput(code)
+    setCouponMessage("")
+    if (!code) {
+      setCouponMessage("Enter a coupon code.")
+      return
+    }
+    await loadOffer("checkout", code)
+  }
+
+  async function clearCoupon() {
+    setCouponInput("")
+    setCouponMessage("")
+    setQuote(null)
+    setQuoteChecked(false)
+    await loadOffer("checkout")
   }
 
   useEffect(() => {
@@ -137,13 +167,15 @@ export function PaymentStep({
     setQuoteChecked(false)
     setQuoteError("")
     setHesitationChecked(false)
+    setCouponInput("")
+    setCouponMessage("")
     setPaymentStarted(false)
     setShowPaymentReturn(false)
-    if (customerAccount && !individual) void loadOffer("checkout")
+    if (customerAccount) void loadOffer("checkout")
   }, [customerAccount?.id, checkoutId, selectedKey])
 
   useEffect(() => {
-    if (individual || !customerAccount || !quoteChecked || quote || quoteLoading || paymentStarted || hesitationChecked) return
+    if (!customerAccount || !quoteChecked || quote || quoteLoading || paymentStarted || hesitationChecked) return
     const timer = window.setTimeout(() => {
       setHesitationChecked(true)
       void loadOffer("hesitation")
@@ -184,13 +216,13 @@ export function PaymentStep({
   function paymentClick() {
     setPaymentStarted(true)
     setShowPaymentReturn(false)
-    if (!individual && tier) trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId })
+    trackConversion("payment_started", { ...(tier ? { tierId: tier.id } : {}), campaignId: quote?.campaignId })
   }
 
   function automatedPaymentClick() {
     setPaymentStarted(true)
     setShowPaymentReturn(false)
-    if (!individual && tier) trackConversion("payment_started", { tierId: tier.id, campaignId: quote?.campaignId })
+    trackConversion("payment_started", { ...(tier ? { tierId: tier.id } : {}), campaignId: quote?.campaignId })
     onPay(quote?.id)
   }
 
@@ -222,6 +254,15 @@ export function PaymentStep({
             <div className="checkoutOfferPrice"><s>{formatMoney(quote.subtotalPaise / 100)}</s><strong>{formatMoney(quote.payablePaise / 100)}</strong><span>You save {formatMoney(quote.discountPaise / 100)}</span></div>
           </div>}
           {customerAccount && quoteError && <div className="checkoutPriceNote">{quoteError}</div>}
+          {customerAccount && <div className="checkoutCoupon">
+            <div><b>Have a coupon?</b><small>Enter the code exactly as shared by Celebration.</small></div>
+            <div className="checkoutCouponForm">
+              <input value={couponInput} disabled={quoteLoading || paymentBusy || Boolean(paymentOrderId) || Boolean(created)} maxLength={32} placeholder="WELCOME10" autoCapitalize="characters" autoComplete="off" onChange={(event) => { setCouponInput(event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, "")); setCouponMessage("") }} />
+              <button className="secondary" type="button" disabled={quoteLoading || paymentBusy || Boolean(paymentOrderId) || Boolean(created)} onClick={() => void applyCoupon()}>Apply</button>
+              {quote?.mode === "coupon" && <button className="secondary" type="button" disabled={quoteLoading || paymentBusy || Boolean(paymentOrderId) || Boolean(created)} onClick={() => void clearCoupon()}>Remove</button>}
+            </div>
+            {couponMessage && <small className={quote?.mode === "coupon" ? "couponSuccess" : "couponError"}>{couponMessage}</small>}
+          </div>}
 
           <label className="policyCheck"><input type="checkbox" checked={accepted} disabled={submitting || Boolean(created) || Boolean(individual && paymentOrderId)} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order &amp; Protection Policy</Link> and <Link href={routes.privacy} target="_blank">Privacy Policy</Link>.</span></label>
           <div className="paymentPolicyHint">Check once, then pay. Never share your UPI PIN, card PIN or OTP with Celebration.</div>

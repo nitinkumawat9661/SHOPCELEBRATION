@@ -7,7 +7,7 @@ import { useStoreSettings } from "../shell/useStoreSettings"
 import type { CustomerAccountView } from "./useCustomerAccount"
 
 type Mode = "login" | "signup"
-type Screen = "auth" | "forgot-phone" | "forgot-otp" | "forgot-password"
+type Screen = "auth" | "signup-otp" | "forgot-phone" | "forgot-otp" | "forgot-password"
 type ResetRequest = { widgetId: string; tokenAuth: string; expiresInSeconds: number; resendAfterSeconds: number }
 type Msg91Callback = (value: unknown) => void
 
@@ -44,7 +44,8 @@ const errorCopy: Record<string, string> = {
   SMS_OTP_UNAVAILABLE: "SMS OTP is temporarily unavailable. Please try again shortly.",
   PASSWORD_RESET_UNAVAILABLE: "Password reset is temporarily unavailable. Please try again shortly.",
   INVALID_OTP: "That OTP is incorrect or expired. Check the SMS and try again.",
-  RESET_SESSION_EXPIRED: "This reset session has expired. Request a fresh OTP."
+  RESET_SESSION_EXPIRED: "This reset session has expired. Request a fresh OTP.",
+  PHONE_VERIFICATION_REQUIRED: "Verify your mobile number with OTP before creating an account."
 }
 
 let msg91ScriptPromise: Promise<void> | null = null
@@ -192,7 +193,7 @@ export function CustomerAuthPanel({
   initialPhone?: string
   initialName?: string
   autoFocusPhone?: boolean
-  onAuthenticate: (mode: Mode, values: { phone: string; password: string; displayName?: string }) => Promise<CustomerAccountView | null>
+  onAuthenticate: (mode: Mode, values: { phone: string; password: string; displayName?: string; accessToken?: string }) => Promise<CustomerAccountView | null>
   onSuccess?: (account: CustomerAccountView) => void
   onClearError?: () => void
 }) {
@@ -224,7 +225,8 @@ export function CustomerAuthPanel({
   }, [resendIn > 0])
 
   useEffect(() => {
-    if (screen !== "forgot-phone" || !widgetReady) {
+    const needsCaptcha = screen === "forgot-phone" || (screen === "auth" && mode === "signup")
+    if (!needsCaptcha || !widgetReady) {
       setCaptchaVerified(false)
       return
     }
@@ -232,7 +234,7 @@ export function CustomerAuthPanel({
     syncCaptchaState()
     const timer = window.setInterval(syncCaptchaState, 250)
     return () => window.clearInterval(timer)
-  }, [screen, widgetReady])
+  }, [screen, mode, widgetReady])
 
   function clearErrors() {
     setLocalError("")
@@ -249,7 +251,29 @@ export function CustomerAuthPanel({
     setResetConfig(null)
     setRequestId("")
     setVerifiedAccessToken("")
-    if (typeof document !== "undefined") document.getElementById("celebration-msg91-captcha")?.replaceChildren()
+    if (typeof document !== "undefined") {
+      document.getElementById("celebration-msg91-captcha")?.replaceChildren()
+      document.getElementById("celebration-signup-msg91-captcha")?.replaceChildren()
+    }
+  }
+
+  async function fetchSignupConfig(targetPhone: string): Promise<ResetRequest | null> {
+    const response = await fetch(routes.api.customerSignupRequest, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: targetPhone })
+    })
+    const data = await response.json() as { ok?: boolean; widgetId?: string; tokenAuth?: string; expiresInSeconds?: number; resendAfterSeconds?: number; error?: string }
+    if (!response.ok || !data.ok || !data.widgetId || !data.tokenAuth) {
+      showApiError(data.error || "SMS_OTP_UNAVAILABLE")
+      return null
+    }
+    return {
+      widgetId: data.widgetId,
+      tokenAuth: data.tokenAuth,
+      expiresInSeconds: Number(data.expiresInSeconds) || 600,
+      resendAfterSeconds: Number(data.resendAfterSeconds) || 45
+    }
   }
 
   async function fetchResetConfig(targetPhone: string): Promise<ResetRequest | null> {
@@ -271,7 +295,7 @@ export function CustomerAuthPanel({
     }
   }
 
-  async function initializeWidget(config: ResetRequest, targetPhone: string) {
+  async function initializeWidget(config: ResetRequest, targetPhone: string, captchaRenderId = "celebration-msg91-captcha") {
     await loadMsg91Sdk()
     if (!window.initSendOTP) throw new Error("SMS_OTP_UNAVAILABLE")
     window.initSendOTP({
@@ -279,7 +303,7 @@ export function CustomerAuthPanel({
       tokenAuth: config.tokenAuth,
       identifier: `91${targetPhone}`,
       exposeMethods: true,
-      captchaRenderId: "celebration-msg91-captcha",
+      captchaRenderId,
       success: () => undefined,
       failure: () => undefined
     })
@@ -349,8 +373,65 @@ export function CustomerAuthPanel({
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
-    const account = await onAuthenticate(mode, { phone, password, displayName: mode === "signup" ? displayName : undefined })
-    if (account) onSuccess?.(account)
+    clearErrors()
+    if (mode === "login") {
+      const account = await onAuthenticate("login", { phone, password })
+      if (account) onSuccess?.(account)
+      return
+    }
+
+    setResetBusy(true)
+    try {
+      const localPhone = normalizeIndianMobile(phone)
+      setPhone(localPhone)
+      if (!widgetReady) {
+        const config = await fetchSignupConfig(localPhone)
+        if (!config) return
+        setResetConfig(config)
+        await initializeWidget(config, localPhone, "celebration-signup-msg91-captcha")
+        return
+      }
+      if (!captchaVerified || window.isCaptchaVerified?.() !== true) {
+        setCaptchaVerified(false)
+        return
+      }
+      if (!window.sendOtp) throw new Error("SMS_OTP_UNAVAILABLE")
+      const result = await providerCall((success, failure) => window.sendOtp?.(`91${localPhone}`, success, failure), "SMS_OTP_PROVIDER_FAILED")
+      setRequestId(extractReqId(result))
+      setVerifiedAccessToken("")
+      setResendIn(resetConfig?.resendAfterSeconds || 45)
+      setOtp("")
+      setScreen("signup-otp")
+    } catch (cause) {
+      const code = cause instanceof Error ? cause.message : "SMS_OTP_UNAVAILABLE"
+      if (code === "INVALID_PHONE") showApiError(code)
+      else setLocalError(providerSendError(code) || errorCopy.SMS_OTP_UNAVAILABLE)
+    } finally {
+      setResetBusy(false)
+    }
+  }
+
+  async function verifySignupOtp(event: React.FormEvent) {
+    event.preventDefault()
+    clearErrors()
+    setResetBusy(true)
+    try {
+      let accessToken = verifiedAccessToken
+      if (!accessToken) {
+        if (!widgetReady || !window.verifyOtp) throw new Error("INVALID_OTP")
+        const result = await providerCall((success, failure) => window.verifyOtp?.(otp, success, failure, requestId || undefined), "INVALID_OTP")
+        accessToken = extractAccessToken(result)
+        if (!accessToken) throw new Error("INVALID_OTP")
+        setVerifiedAccessToken(accessToken)
+      }
+      const account = await onAuthenticate("signup", { phone, password, displayName, accessToken })
+      if (account) onSuccess?.(account)
+    } catch (cause) {
+      const reason = cause instanceof Error ? safeProviderReason({ message: cause.message }) : ""
+      setLocalError(reason && !/^INVALID_OTP$/i.test(reason) ? `OTP verification failed (${reason}).` : errorCopy.INVALID_OTP)
+    } finally {
+      setResetBusy(false)
+    }
   }
 
   async function sendOtp(event?: React.FormEvent) {
@@ -465,6 +546,21 @@ export function CustomerAuthPanel({
   let resetPhoneReady = false
   try { normalizeIndianMobile(phone); resetPhoneReady = true } catch { resetPhoneReady = false }
 
+  if (screen === "signup-otp") {
+    return (
+      <div className="customerAuthCard customerResetCard">
+        <div className="customerAuthIntro"><div className="kicker">VERIFY MOBILE</div><h2>Enter the SMS OTP</h2><p>We sent a 6-digit code to <b>+91 {phone.slice(-10)}</b>. Your account is created only after this number is verified.</p></div>
+        <form className="customerAuthForm" onSubmit={verifySignupOtp}>
+          <label className="field"><span>6-digit OTP <b className="requiredMark">*</b></span><input className="control otpControl" inputMode="numeric" autoComplete="one-time-code" value={otp} required maxLength={6} pattern="[0-9]{6}" onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); clearErrors() }} placeholder="••••••" /></label>
+          {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
+          <button className="primary fullWidth" disabled={actionBusy || otp.length !== 6} type="submit">{actionBusy ? "Verifying…" : "Verify OTP & create account"}</button>
+          <div className="resetResendRow"><span>Didn’t get it?</span><button className="authTextButton" type="button" disabled={actionBusy || resendIn > 0} onClick={() => void resendOtp()}>{resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}</button></div>
+          <button className="authTextButton" type="button" onClick={() => { setScreen("auth"); resetOtpWidget() }}>← Change mobile number</button>
+        </form>
+      </div>
+    )
+  }
+
   if (screen === "forgot-phone") {
     return (
       <div className="customerAuthCard customerResetCard">
@@ -531,11 +627,18 @@ export function CustomerAuthPanel({
 
       <form className="customerAuthForm" onSubmit={submit}>
         {mode === "signup" && <label className="field"><span>Your name <b className="requiredMark">*</b></span><input className="control" value={displayName} required minLength={2} maxLength={80} autoComplete="name" onChange={(event) => { setDisplayName(event.target.value); clearErrors() }} placeholder="Full name" /></label>}
-        <label className="field"><span>Mobile number <b className="requiredMark">*</b></span><input className="control" inputMode="tel" autoComplete="tel" value={phone} required autoFocus={autoFocusPhone} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "").slice(0, 13)); clearErrors() }} placeholder="10-digit mobile" /></label>
+        <label className="field"><span>Mobile number <b className="requiredMark">*</b></span><input className="control" inputMode="tel" autoComplete="tel" value={phone} required autoFocus={autoFocusPhone} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "").slice(0, 13)); if (mode === "signup") resetOtpWidget(); clearErrors() }} placeholder="10-digit mobile" /></label>
         <label className="field"><span>Password <b className="requiredMark">*</b></span><div className="passwordControlWrap"><input className="control" type={showPassword ? "text" : "password"} minLength={8} maxLength={72} required autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => { setPassword(event.target.value); clearErrors() }} placeholder="Minimum 8 characters" /><button className="passwordToggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div></label>
+        {mode === "signup" && <div className={`resetSecurityCard ${captchaVerified ? "verified" : widgetReady ? "pending" : "idle"}`}>
+          <div className="resetSecurityHead">
+            <span className="resetSecurityMark" aria-hidden="true">{captchaVerified ? "✓" : "•"}</span>
+            <div><b>{captchaVerified ? "Security check complete" : widgetReady ? "Confirm you’re human" : "Verify your mobile"}</b><small>{captchaVerified ? "Verified — OTP sending is enabled." : widgetReady ? "Complete the check below, then continue." : "Continue once to load secure SMS verification."}</small></div>
+          </div>
+          <div className={`resetCaptchaViewport ${widgetReady ? "ready" : ""}`}><div id="celebration-signup-msg91-captcha" className="resetCaptcha" aria-live="polite" /></div>
+        </div>}
         {mode === "login" && <div className="forgotPasswordRow"><button className="authTextButton" type="button" onClick={startForgotPassword}>Forgot password?</button></div>}
         {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-        <button className="primary fullWidth" disabled={busy} type="submit">{busy ? (mode === "login" ? "Signing in…" : "Creating account…") : mode === "login" ? "Login & continue" : "Create account & continue"}</button>
+        <button className="primary fullWidth" disabled={actionBusy || (mode === "signup" && ((!widgetReady && !resetPhoneReady) || (widgetReady && !captchaVerified)))} type="submit">{mode === "login" ? (busy ? "Signing in…" : "Login & continue") : actionBusy ? (widgetReady ? "Sending OTP…" : "Preparing verification…") : !widgetReady ? "Continue securely" : "Send OTP & continue"}</button>
       </form>
 
       <div className="customerAuthHelp">

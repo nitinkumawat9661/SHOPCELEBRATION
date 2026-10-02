@@ -26,14 +26,17 @@ export function useTrackedOrder(token: string): TrackedOrderState {
   useEffect(() => {
     let active = true
     async function load() {
-      if (!token) { setError(""); setLoading(false); return }
+      if (!token) { setOrder(null); setError(""); setLoading(false); return }
+      setOrder(null)
+      setLoading(true)
+      setError("")
       try {
-        const response = await fetch(`${routes.api.tracking}?token=${encodeURIComponent(token)}`, { cache: "no-store" })
+        const response = await fetch(routes.api.tracking, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }), cache: "no-store" })
         const result = await response.json() as { ok?: boolean; order?: TrackedOrder }
         if (!response.ok || !result.ok || !result.order) throw new Error(copy.invalid)
         if (active) setOrder(result.order)
       } catch (cause) {
-        if (active) setError(cause instanceof Error ? cause.message : copy.invalid)
+        if (active) { setOrder(null); setError(cause instanceof Error ? cause.message : copy.invalid) }
       } finally {
         if (active) setLoading(false)
       }

@@ -1,8 +1,7 @@
 import { randomUUID } from "node:crypto"
 import type { PoolClient } from "pg"
 import { validation } from "../../config/validation"
-import type { CatalogConfig } from "../domain/catalog"
-import { tierById } from "../domain/catalog"
+import { isIndividuallySellable, productById, selectedPoints, tierById, type CatalogConfig } from "../domain/catalog"
 import { emptyCampaignConfig, type Campaign, type CampaignConfig, type CampaignTrigger, type OfferQuote } from "../domain/campaign"
 import type { NormalizedOrder } from "../domain/order"
 import { toMinorUnits } from "../domain/payment"
@@ -18,7 +17,7 @@ type QuoteRow = {
   campaign_title: string
   customer_account_id: string
   trigger: CampaignTrigger
-  tier_id: string
+  tier_id: string | null
   selected_product_ids: string[]
   subtotal_paise: number
   discount_paise: number
@@ -41,6 +40,7 @@ export class CampaignError extends Error {
 }
 
 const slugPattern = /^[a-z0-9][a-z0-9-]*$/
+const couponPattern = /^[A-Z0-9][A-Z0-9_-]{2,31}$/
 
 function cleanText(value: unknown, max: number, fallback = "") {
   if (hasUnsafeText(value)) throw new CampaignError("UNSAFE_TEXT")
@@ -69,10 +69,22 @@ function isoOrBlank(value: unknown) {
   return date.toISOString()
 }
 
+function couponCode(value: unknown, required = false) {
+  const code = String(value ?? "").trim().toUpperCase().slice(0, validation.campaign.couponCodeMax)
+  if (!code) {
+    if (required) throw new CampaignError("INVALID_COUPON_CODE")
+    return ""
+  }
+  if (!couponPattern.test(code)) throw new CampaignError("INVALID_COUPON_CODE")
+  return code
+}
+
 function normalizeCampaign(input: unknown): Campaign {
   const raw = (input && typeof input === "object" ? input : {}) as Record<string, unknown>
   const id = cleanText(raw.id, validation.campaign.idMax).toLowerCase()
   if (!id || !slugPattern.test(id)) throw new CampaignError("INVALID_CAMPAIGN_ID")
+  const mode = raw.mode === "coupon" ? "coupon" : "automatic"
+  const scope = raw.scope === "all" || raw.scope === "individual" ? raw.scope : "hamper"
   const discountType = raw.discountType === "fixed" ? "fixed" : "percent"
   const trigger: CampaignTrigger = raw.trigger === "hesitation" ? "hesitation" : "checkout"
   const audience = raw.audience === "first_order" ? "first_order" : "all"
@@ -87,8 +99,11 @@ function normalizeCampaign(input: unknown): Campaign {
     id,
     name: cleanText(raw.name, validation.campaign.nameMax, "Offer"),
     badge: cleanText(raw.badge, validation.campaign.badgeMax, "SPECIAL OFFER"),
-    message: cleanText(raw.message, validation.campaign.messageMax, "A better price is available for this hamper."),
+    message: cleanText(raw.message, validation.campaign.messageMax, "A better price is available for this order."),
     active: raw.active === true,
+    mode,
+    couponCode: mode === "coupon" ? couponCode(raw.couponCode, true) : "",
+    scope,
     trigger,
     audience,
     discountType,
@@ -108,9 +123,14 @@ export function normalizeCampaignConfig(input: unknown): CampaignConfig {
   const raw = (input && typeof input === "object" ? input : {}) as Record<string, unknown>
   const campaigns = Array.isArray(raw.campaigns) ? raw.campaigns.slice(0, validation.campaign.maxCampaigns).map(normalizeCampaign) : []
   const ids = new Set<string>()
+  const couponCodes = new Set<string>()
   for (const campaign of campaigns) {
     if (ids.has(campaign.id)) throw new CampaignError("DUPLICATE_CAMPAIGN_ID")
     ids.add(campaign.id)
+    if (campaign.mode === "coupon") {
+      if (couponCodes.has(campaign.couponCode)) throw new CampaignError("DUPLICATE_COUPON_CODE")
+      couponCodes.add(campaign.couponCode)
+    }
   }
   return { campaigns }
 }
@@ -137,17 +157,24 @@ export function getCampaignConfig() {
   return ensureConfig()
 }
 
-export async function saveCampaignConfig(input: unknown) {
+export async function saveCampaignConfig(input: unknown, expectedVersion: unknown) {
   const config = normalizeCampaignConfig(input)
-  const result = await query<ConfigRow>(
-    `INSERT INTO campaign_config (id, payload, version, updated_at)
-     VALUES ('primary', $1::jsonb, 1, now())
-     ON CONFLICT (id) DO UPDATE
-       SET payload = EXCLUDED.payload, version = campaign_config.version + 1, updated_at = now()
-     RETURNING payload, version`,
-    [JSON.stringify(config)]
-  )
-  return { config: normalizeCampaignConfig(result.rows[0].payload), version: result.rows[0].version }
+  const version = Number(expectedVersion)
+  if (!Number.isSafeInteger(version) || version < 1) throw new CampaignError("CAMPAIGN_VERSION_REQUIRED")
+  return transaction(async (client) => {
+    await ensureConfig(client)
+    const current = await client.query<ConfigRow>(`SELECT payload, version FROM campaign_config WHERE id = 'primary' FOR UPDATE`)
+    if (!current.rows[0] || current.rows[0].version !== version) throw new CampaignError("CAMPAIGN_VERSION_CONFLICT")
+    const result = await client.query<ConfigRow>(
+      `UPDATE campaign_config
+          SET payload = $1::jsonb, version = version + 1, updated_at = now()
+        WHERE id = 'primary' AND version = $2
+        RETURNING payload, version`,
+      [JSON.stringify(config), version]
+    )
+    if (!result.rows[0]) throw new CampaignError("CAMPAIGN_VERSION_CONFLICT")
+    return { config: normalizeCampaignConfig(result.rows[0].payload), version: result.rows[0].version }
+  })
 }
 
 function discountFor(campaign: Campaign, subtotalPaise: number) {
@@ -165,10 +192,24 @@ function campaignInWindow(campaign: Campaign, now: number) {
   return true
 }
 
-function campaignMatches(campaign: Campaign, tierId: string, selectedProductIds: string[], subtotalPaise: number, trigger: CampaignTrigger) {
-  if (campaign.trigger !== trigger) return false
+function campaignMatches(
+  campaign: Campaign,
+  orderType: "hamper" | "individual",
+  tierId: string | null,
+  selectedProductIds: string[],
+  subtotalPaise: number,
+  trigger: CampaignTrigger,
+  requestedCoupon: string
+) {
+  if (requestedCoupon) {
+    if (campaign.mode !== "coupon" || campaign.couponCode !== requestedCoupon) return false
+  } else if (campaign.mode !== "automatic") {
+    return false
+  }
+  if (campaign.mode === "automatic" && campaign.trigger !== trigger) return false
+  if (campaign.scope !== "all" && campaign.scope !== orderType) return false
   if (subtotalPaise < toMinorUnits(campaign.minSubtotalRupees)) return false
-  if (campaign.eligibleTierIds.length && !campaign.eligibleTierIds.includes(tierId)) return false
+  if (campaign.eligibleTierIds.length && (!tierId || !campaign.eligibleTierIds.includes(tierId))) return false
   if (campaign.eligibleProductIds.length && !selectedProductIds.some((id) => campaign.eligibleProductIds.includes(id))) return false
   return true
 }
@@ -212,6 +253,8 @@ function toOfferQuote(row: QuoteRow, campaign: Campaign): OfferQuote {
     campaignTitle: row.campaign_title,
     badge: campaign.badge,
     message: campaign.message,
+    mode: campaign.mode,
+    couponCode: campaign.mode === "coupon" ? campaign.couponCode : null,
     trigger: row.trigger,
     subtotalPaise: row.subtotal_paise,
     discountPaise: row.discount_paise,
@@ -220,17 +263,54 @@ function toOfferQuote(row: QuoteRow, campaign: Campaign): OfferQuote {
   }
 }
 
-export async function createBestOfferQuote(input: {
-  customerAccountId: string
-  tierId: string
-  selectedProductIds: string[]
-  trigger: CampaignTrigger
+function quoteCart(input: {
+  orderType: "hamper" | "individual"
+  tierId?: string | null
+  selectedProductIds?: string[]
+  items?: Array<{ productId?: unknown; quantity?: unknown }>
   catalog: CatalogConfig
 }) {
-  const tier = tierById(input.catalog, input.tierId)
+  if (input.orderType === "individual") {
+    if (!Array.isArray(input.items) || !input.items.length || input.items.length > 20) throw new CampaignError("INVALID_CART")
+    const ids = new Set<string>()
+    let subtotalPaise = 0
+    for (const item of input.items) {
+      const productId = typeof item?.productId === "string" ? item.productId : ""
+      const product = productId ? productById(input.catalog, productId) : undefined
+      const quantity = item?.quantity
+      if (!product || !isIndividuallySellable(product) || typeof quantity !== "number" || !Number.isInteger(quantity) || quantity < 1 || quantity > 10 || ids.has(product.id)) {
+        throw new CampaignError("INVALID_CART")
+      }
+      ids.add(product.id)
+      subtotalPaise += product.salePricePaise! * quantity
+      if (!Number.isSafeInteger(subtotalPaise) || subtotalPaise > 2_147_483_647) throw new CampaignError("INVALID_CART")
+    }
+    return { tierId: null, selectedProductIds: Array.from(ids).sort(), subtotalPaise }
+  }
+
+  const tier = tierById(input.catalog, input.tierId || "")
   if (!tier) throw new CampaignError("INVALID_TIER")
-  const selectedProductIds = Array.from(new Set(input.selectedProductIds)).sort()
-  const subtotalPaise = toMinorUnits(tier.price)
+  const selectedProductIds = Array.from(new Set((input.selectedProductIds || []).filter((id): id is string => typeof id === "string"))).sort()
+  const products = selectedProductIds.map((id) => productById(input.catalog, id))
+  if (products.some((product) => !product)) throw new CampaignError("INVALID_PRODUCT")
+  if (selectedProductIds.length > tier.maxChoices) throw new CampaignError("TOO_MANY_PRODUCTS")
+  if (products.some((product) => product!.minTier > tier.price)) throw new CampaignError("PRODUCT_NOT_ELIGIBLE_FOR_TIER")
+  if (selectedPoints(input.catalog, selectedProductIds) > tier.pointBudget) throw new CampaignError("PRODUCT_MIX_EXCEEDS_TIER")
+  return { tierId: tier.id, selectedProductIds, subtotalPaise: toMinorUnits(tier.price) }
+}
+
+export async function createBestOfferQuote(input: {
+  customerAccountId: string
+  orderType: "hamper" | "individual"
+  tierId?: string | null
+  selectedProductIds?: string[]
+  items?: Array<{ productId?: unknown; quantity?: unknown }>
+  trigger: CampaignTrigger
+  couponCode?: string
+  catalog: CatalogConfig
+}) {
+  const cart = quoteCart(input)
+  const requestedCoupon = input.couponCode ? couponCode(input.couponCode, true) : ""
 
   return transaction(async (client) => {
     await ensureConfig(client)
@@ -240,9 +320,9 @@ export async function createBestOfferQuote(input: {
     const hasPriorOrder = await customerHasOrder(client, input.customerAccountId)
     const candidates = config.campaigns
       .filter((campaign) => campaignInWindow(campaign, now))
-      .filter((campaign) => campaignMatches(campaign, tier.id, selectedProductIds, subtotalPaise, input.trigger))
+      .filter((campaign) => campaignMatches(campaign, input.orderType, cart.tierId, cart.selectedProductIds, cart.subtotalPaise, input.trigger, requestedCoupon))
       .filter((campaign) => campaign.audience !== "first_order" || !hasPriorOrder)
-      .map((campaign) => ({ campaign, discountPaise: discountFor(campaign, subtotalPaise) }))
+      .map((campaign) => ({ campaign, discountPaise: discountFor(campaign, cart.subtotalPaise) }))
       .filter((item) => item.discountPaise > 0)
       .sort((a, b) => b.discountPaise - a.discountPaise)
 
@@ -252,17 +332,19 @@ export async function createBestOfferQuote(input: {
         `SELECT id, campaign_id, campaign_title, customer_account_id, trigger, tier_id, selected_product_ids,
                 subtotal_paise, discount_paise, payable_paise, expires_at, redeemed_at
            FROM offer_quotes
-          WHERE campaign_id = $1 AND customer_account_id = $2 AND trigger = $3 AND tier_id = $4
-            AND selected_product_ids = $5::text[] AND redeemed_at IS NULL AND expires_at > now()
+          WHERE campaign_id = $1 AND customer_account_id = $2 AND trigger = $3
+            AND tier_id IS NOT DISTINCT FROM $4
+            AND selected_product_ids = $5::text[] AND subtotal_paise = $6
+            AND redeemed_at IS NULL AND expires_at > now()
           ORDER BY created_at DESC LIMIT 1`,
-        [campaign.id, input.customerAccountId, input.trigger, tier.id, selectedProductIds]
+        [campaign.id, input.customerAccountId, input.trigger, cart.tierId, cart.selectedProductIds, cart.subtotalPaise]
       )
       if (existing.rows[0]) return toOfferQuote(existing.rows[0], campaign)
       if (!(await usageAvailable(client, campaign, input.customerAccountId))) continue
 
       const expiresAt = new Date(Date.now() + validation.campaign.offerQuoteTtlSeconds * 1000)
       const quoteId = randomUUID()
-      const payablePaise = subtotalPaise - candidate.discountPaise
+      const payablePaise = cart.subtotalPaise - candidate.discountPaise
       const inserted = await client.query<QuoteRow>(
         `INSERT INTO offer_quotes (
            id, campaign_id, campaign_title, customer_account_id, trigger, tier_id, selected_product_ids,
@@ -270,11 +352,12 @@ export async function createBestOfferQuote(input: {
          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
          RETURNING id, campaign_id, campaign_title, customer_account_id, trigger, tier_id, selected_product_ids,
                    subtotal_paise, discount_paise, payable_paise, expires_at, redeemed_at`,
-        [quoteId, campaign.id, campaign.name, input.customerAccountId, input.trigger, tier.id, selectedProductIds,
-          subtotalPaise, candidate.discountPaise, payablePaise, expiresAt]
+        [quoteId, campaign.id, campaign.name, input.customerAccountId, input.trigger, cart.tierId, cart.selectedProductIds,
+          cart.subtotalPaise, candidate.discountPaise, payablePaise, expiresAt]
       )
       return toOfferQuote(inserted.rows[0], campaign)
     }
+    if (requestedCoupon) throw new CampaignError("COUPON_NOT_APPLICABLE")
     return null
   })
 }
