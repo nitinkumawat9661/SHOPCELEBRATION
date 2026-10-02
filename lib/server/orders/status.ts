@@ -23,7 +23,7 @@ export function updateOrderStatus(publicId: string, nextStatus: OrderStatus) {
        SET status = $1,
            payment_status = $2,
            delivered_at = CASE WHEN $1 = $3 THEN COALESCE(delivered_at, now()) ELSE delivered_at END,
-           tracking_token_hash = CASE WHEN $1 = $5 THEN NULL ELSE tracking_token_hash END,
+           tracking_token_hash = CASE WHEN $1 = $5 THEN 'revoked:' || id ELSE tracking_token_hash END,
            tracking_expires_at = CASE WHEN $1 = $5 THEN now() ELSE tracking_expires_at END,
            updated_at = now()
        WHERE id = $4`,
