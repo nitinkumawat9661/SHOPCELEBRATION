@@ -21,6 +21,7 @@ export const routes = {
     approvePacking: "/api/orders/approve",
     reportIssue: "/api/orders/issue",
     customerSignup: "/api/account/signup",
+    customerSignupRequest: "/api/account/signup/request",
     customerLogin: "/api/account/login",
     customerLogout: "/api/account/logout",
     customerMe: "/api/account/me",
