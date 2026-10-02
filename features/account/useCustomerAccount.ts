@@ -8,7 +8,7 @@ export type CustomerAccountView = {
   phone: string
   displayName: string
   createdAt: string
-  phoneVerified: false
+  phoneVerified: boolean
 }
 
 type Mode = "login" | "signup"
@@ -43,7 +43,7 @@ export function useCustomerAccount() {
 
   useEffect(() => { refresh() }, [refresh])
 
-  async function authenticate(mode: Mode, values: { phone: string; password: string; displayName?: string }) {
+  async function authenticate(mode: Mode, values: { phone: string; password: string; displayName?: string; accessToken?: string }) {
     setBusy(true)
     setError("")
     try {
