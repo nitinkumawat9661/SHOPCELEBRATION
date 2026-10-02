@@ -257,9 +257,9 @@ export function PaymentStep({
           {customerAccount && <div className="checkoutCoupon">
             <div><b>Have a coupon?</b><small>Enter the code exactly as shared by Celebration.</small></div>
             <div className="checkoutCouponForm">
-              <input value={couponInput} disabled={quoteLoading || paymentBusy || Boolean(created)} maxLength={32} placeholder="WELCOME10" autoCapitalize="characters" autoComplete="off" onChange={(event) => { setCouponInput(event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, "")); setCouponMessage("") }} />
-              <button className="secondary" type="button" disabled={quoteLoading || paymentBusy || Boolean(created)} onClick={() => void applyCoupon()}>Apply</button>
-              {quote?.mode === "coupon" && <button className="secondary" type="button" disabled={quoteLoading || paymentBusy || Boolean(created)} onClick={() => void clearCoupon()}>Remove</button>}
+              <input value={couponInput} disabled={quoteLoading || paymentBusy || Boolean(paymentOrderId) || Boolean(created)} maxLength={32} placeholder="WELCOME10" autoCapitalize="characters" autoComplete="off" onChange={(event) => { setCouponInput(event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, "")); setCouponMessage("") }} />
+              <button className="secondary" type="button" disabled={quoteLoading || paymentBusy || Boolean(paymentOrderId) || Boolean(created)} onClick={() => void applyCoupon()}>Apply</button>
+              {quote?.mode === "coupon" && <button className="secondary" type="button" disabled={quoteLoading || paymentBusy || Boolean(paymentOrderId) || Boolean(created)} onClick={() => void clearCoupon()}>Remove</button>}
             </div>
             {couponMessage && <small className={quote?.mode === "coupon" ? "couponSuccess" : "couponError"}>{couponMessage}</small>}
           </div>}
