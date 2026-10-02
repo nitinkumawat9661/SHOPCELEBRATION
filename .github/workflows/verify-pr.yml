@@ -1,0 +1,30 @@
+name: Verify Celebration PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out proposed revision
+        uses: actions/checkout@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install and verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm audit --omit=dev
+          npm run audit
+          npm run typecheck
