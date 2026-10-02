@@ -1,1 +1,6 @@
-UPDATE orders\n   SET tracking_token_hash = NULL,\n       tracking_expires_at = LEAST(tracking_expires_at, now()),\n       updated_at = now()\n WHERE status = 'cancelled'\n   AND tracking_token_hash IS NOT NULL;\n
+UPDATE orders
+   SET tracking_token_hash = NULL,
+       tracking_expires_at = LEAST(tracking_expires_at, now()),
+       updated_at = now()
+ WHERE status = 'cancelled'
+   AND tracking_token_hash IS NOT NULL;
