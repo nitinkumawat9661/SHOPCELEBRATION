@@ -278,11 +278,11 @@ function quoteCart(input: {
       const productId = typeof item?.productId === "string" ? item.productId : ""
       const product = productId ? productById(input.catalog, productId) : undefined
       const quantity = item?.quantity
-      if (!product || !isIndividuallySellable(product) || !Number.isInteger(quantity) || Number(quantity) < 1 || Number(quantity) > 10 || ids.has(product.id)) {
+      if (!product || !isIndividuallySellable(product) || typeof quantity !== "number" || !Number.isInteger(quantity) || quantity < 1 || quantity > 10 || ids.has(product.id)) {
         throw new CampaignError("INVALID_CART")
       }
       ids.add(product.id)
-      subtotalPaise += product.salePricePaise! * Number(quantity)
+      subtotalPaise += product.salePricePaise! * quantity
       if (!Number.isSafeInteger(subtotalPaise) || subtotalPaise > 2_147_483_647) throw new CampaignError("INVALID_CART")
     }
     return { tierId: null, selectedProductIds: Array.from(ids).sort(), subtotalPaise }
