@@ -3,13 +3,15 @@ import { validation } from "../../../config/validation"
 import { findOrderByTrackingToken } from "../../../lib/server/orders"
 import { createPackingVideoViewUrl } from "../../../lib/server/r2"
 import { consumeRequestRateLimit } from "../../../lib/server/rate-limit"
+import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../lib/security/request"
 
 export const dynamic = "force-dynamic"
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
-    const url = new URL(request.url)
-    const token = url.searchParams.get("token")?.trim() || ""
+    enforceSameOrigin(request)
+    const body = await readJsonBody<{ token?: unknown }>(request)
+    const token = typeof body.token === "string" ? body.token.trim() : ""
     if (token.length < validation.trackingToken.min || token.length > validation.trackingToken.max) return NextResponse.json({ ok: false, error: "INVALID_TRACKING_TOKEN" }, { status: 400 })
 
     const allowed = await consumeRequestRateLimit("track", request, validation.rateLimits.trackOrder)
@@ -48,6 +50,7 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
+    if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })
     console.error("track-order", error)
     return NextResponse.json({ ok: false, error: "TRACKING_SERVICE_UNAVAILABLE" }, { status: 503 })
   }
