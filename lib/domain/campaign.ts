@@ -1,6 +1,8 @@
 export type CampaignTrigger = "checkout" | "hesitation"
 export type CampaignAudience = "all" | "first_order"
 export type CampaignDiscountType = "percent" | "fixed"
+export type CampaignMode = "automatic" | "coupon"
+export type CampaignScope = "all" | "hamper" | "individual"
 
 export type Campaign = {
   id: string
@@ -8,6 +10,9 @@ export type Campaign = {
   badge: string
   message: string
   active: boolean
+  mode: CampaignMode
+  couponCode: string
+  scope: CampaignScope
   trigger: CampaignTrigger
   audience: CampaignAudience
   discountType: CampaignDiscountType
