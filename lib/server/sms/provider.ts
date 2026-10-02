@@ -58,7 +58,7 @@ function providerFailureMeta(payload: unknown) {
   }
 }
 
-export async function verifyPasswordResetAccessToken(accessToken: string) {
+export async function verifySmsAccessToken(accessToken: string) {
   if (!smsReady() || smsConfig.provider !== "msg91-widget") {
     throw new SmsProviderError("SMS_OTP_UNAVAILABLE")
   }
@@ -88,7 +88,7 @@ export async function verifyPasswordResetAccessToken(accessToken: string) {
   const providerRejected = explicitProviderFailure(payload)
 
   if (!response.ok || providerRejected || !identifier) {
-    console.error("msg91-password-reset-token", {
+    console.error("msg91-otp-access-token", {
       status: response.status,
       providerRejected,
       identifierPresent: Boolean(identifier),
@@ -99,3 +99,5 @@ export async function verifyPasswordResetAccessToken(accessToken: string) {
 
   return { identifier }
 }
+
+export const verifyPasswordResetAccessToken = verifySmsAccessToken
