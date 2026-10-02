@@ -78,7 +78,8 @@
     "maxRupees": 1000000,
     "maxUsageLimit": 1000000,
     "offerQuoteTtlSeconds": 3600,
-    "sessionIdMax": 80
+    "sessionIdMax": 80,
+    "couponCodeMax": 32
   },
   "customRequest": {
     "budgetMin": 0,
