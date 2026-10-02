@@ -16,7 +16,7 @@ export type TierPopularity = {
 
 export async function findOrderByTrackingToken(token: string) {
   const result = await query<DbTrackingOrder>(
-    `SELECT ${TRACKING_ORDER_SELECT} FROM orders WHERE tracking_token_hash = $1 AND tracking_expires_at > now()`,
+    `SELECT ${TRACKING_ORDER_SELECT} FROM orders WHERE tracking_token_hash = $1 AND tracking_expires_at > now() AND status <> 'cancelled'`,
     [trackingTokenHash(token)]
   )
   return result.rows[0] ? mapTrackingOrder(result.rows[0]) : null
@@ -32,6 +32,7 @@ export async function issueTrackingTokenForLookup(publicId: string, phoneSuffix:
     `UPDATE orders
        SET tracking_token_hash = $1, tracking_expires_at = $2, updated_at = now()
      WHERE public_id = $3
+       AND status <> 'cancelled'
        AND right(phone, $4::int) = $5
      RETURNING public_id`,
     [trackingTokenHash(token), expiresAt, publicId, validation.trackingLookupPhoneDigits, phoneSuffix]
