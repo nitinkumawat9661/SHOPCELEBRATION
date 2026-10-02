@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto"
 import type { PoolClient } from "pg"
 import { validation } from "../../config/validation"
-import { isIndividuallySellable, productById, tierById, type CatalogConfig } from "../domain/catalog"
+import { isIndividuallySellable, productById, selectedPoints, tierById, type CatalogConfig } from "../domain/catalog"
 import { emptyCampaignConfig, type Campaign, type CampaignConfig, type CampaignTrigger, type OfferQuote } from "../domain/campaign"
 import type { NormalizedOrder } from "../domain/order"
 import { toMinorUnits } from "../domain/payment"
@@ -291,7 +291,11 @@ function quoteCart(input: {
   const tier = tierById(input.catalog, input.tierId || "")
   if (!tier) throw new CampaignError("INVALID_TIER")
   const selectedProductIds = Array.from(new Set((input.selectedProductIds || []).filter((id): id is string => typeof id === "string"))).sort()
-  if (selectedProductIds.some((id) => !productById(input.catalog, id))) throw new CampaignError("INVALID_PRODUCT")
+  const products = selectedProductIds.map((id) => productById(input.catalog, id))
+  if (products.some((product) => !product)) throw new CampaignError("INVALID_PRODUCT")
+  if (selectedProductIds.length > tier.maxChoices) throw new CampaignError("TOO_MANY_PRODUCTS")
+  if (products.some((product) => product!.minTier > tier.price)) throw new CampaignError("PRODUCT_NOT_ELIGIBLE_FOR_TIER")
+  if (selectedPoints(input.catalog, selectedProductIds) > tier.pointBudget) throw new CampaignError("PRODUCT_MIX_EXCEEDS_TIER")
   return { tierId: tier.id, selectedProductIds, subtotalPaise: toMinorUnits(tier.price) }
 }
 
