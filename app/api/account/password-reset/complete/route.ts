@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
     const body = await readJsonBody<{ resetToken?: unknown; password?: unknown }>(request)
     const result = await completePasswordReset(body)
-    const response = NextResponse.json({ ok: true, account: { ...result.accountView, phoneVerified: false } }, { headers: { "Cache-Control": "no-store" } })
+    const response = NextResponse.json({ ok: true, account: result.accountView }, { headers: { "Cache-Control": "no-store" } })
     response.cookies.set(CUSTOMER_COOKIE_NAME, createCustomerSession(result.account.id, result.account.sessionVersion), customerCookieOptions())
     return response
   } catch (error) {
