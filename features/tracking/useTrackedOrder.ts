@@ -26,7 +26,8 @@ export function useTrackedOrder(token: string): TrackedOrderState {
   useEffect(() => {
     let active = true
     async function load() {
-      if (!token) { setError(""); setLoading(false); return }
+      if (!token) { setOrder(null); setError(""); setLoading(false); return }
+      setOrder(null)
       setLoading(true)
       setError("")
       try {
@@ -35,7 +36,7 @@ export function useTrackedOrder(token: string): TrackedOrderState {
         if (!response.ok || !result.ok || !result.order) throw new Error(copy.invalid)
         if (active) setOrder(result.order)
       } catch (cause) {
-        if (active) setError(cause instanceof Error ? cause.message : copy.invalid)
+        if (active) { setOrder(null); setError(cause instanceof Error ? cause.message : copy.invalid) }
       } finally {
         if (active) setLoading(false)
       }
