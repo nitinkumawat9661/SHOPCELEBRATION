@@ -1,0 +1,1 @@
+ALTER TABLE customer_accounts\n  ADD COLUMN IF NOT EXISTS phone_verified_at timestamptz;\n
