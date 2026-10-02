@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import { formatMoney } from "../../lib/domain/catalog"
 import { fromMinorUnits } from "../../lib/domain/payment"
 import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../../lib/domain/order-status"
@@ -28,7 +27,19 @@ function customerStatusLabel(status: OrderStatus) {
 }
 
 export function TrackingPage() {
-  const token = useSearchParams().get("token") || ""
+  const [token, setToken] = useState("")
+  const [tokenReady, setTokenReady] = useState(false)
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const fragmentToken = url.hash.startsWith("#token=") ? decodeURIComponent(url.hash.slice("#token=".length)) : ""
+    const legacyToken = url.searchParams.get("token") || ""
+    const resolved = (fragmentToken || legacyToken).trim()
+    if (resolved) setToken(resolved)
+    if (fragmentToken || legacyToken) window.history.replaceState(window.history.state, "", url.pathname)
+    setTokenReady(true)
+  }, [])
+
   const tracked = useTrackedOrder(token)
   const [approved, setApproved] = useState(false)
   const [issueSubmitted, setIssueSubmitted] = useState(false)
@@ -69,7 +80,7 @@ export function TrackingPage() {
       <section>
         <div className="wrap trackingWrap">
           <div className="kicker">{copy.title}</div>
-          {!token && <TrackingLookup />}
+          {tokenReady && !token && <TrackingLookup />}
           {token && tracked.loading && <div className="trackingState">{copy.loading}</div>}
           {token && tracked.error && !order && <><div className="errorBox" role="alert">{tracked.error}</div><TrackingLookup /></>}
           {order && <>
