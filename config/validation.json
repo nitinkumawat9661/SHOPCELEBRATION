@@ -105,6 +105,10 @@
       "windowSeconds": 60,
       "max": 8
     },
+    "paymentVerify": {
+      "windowSeconds": 60,
+      "max": 20
+    },
     "offerQuote": {
       "windowSeconds": 60,
       "max": 20
