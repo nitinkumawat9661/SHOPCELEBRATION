@@ -20,6 +20,7 @@ export type CustomerAccount = {
   displayName: string
   createdAt: string
   sessionVersion: number
+  phoneVerified: boolean
 }
 
 export type CustomerOrderSummary = {
@@ -50,6 +51,7 @@ type AccountRow = {
   password_hash: string
   status: string
   session_version: number
+  phone_verified_at: Date | null
   created_at: Date
 }
 
@@ -99,7 +101,8 @@ function publicAccount(row: AccountRow): CustomerAccount {
     phone: row.phone,
     displayName: row.display_name,
     createdAt: row.created_at.toISOString(),
-    sessionVersion: row.session_version
+    sessionVersion: row.session_version,
+    phoneVerified: Boolean(row.phone_verified_at)
   }
 }
 
@@ -108,7 +111,8 @@ export function customerAccountView(account: CustomerAccount) {
     id: account.id,
     phone: account.phone,
     displayName: account.displayName,
-    createdAt: account.createdAt
+    createdAt: account.createdAt,
+    phoneVerified: account.phoneVerified
   }
 }
 
@@ -119,9 +123,9 @@ export async function createCustomerAccount(input: { phone?: unknown; password?:
   const passwordHash = hashCustomerPassword(input.password)
   try {
     const result = await query<AccountRow>(
-      `INSERT INTO customer_accounts (id, phone, display_name, password_hash, status)
-       VALUES ($1, $2, $3, $4, 'active')
-       RETURNING id, phone, display_name, password_hash, status, session_version, created_at`,
+      `INSERT INTO customer_accounts (id, phone, display_name, password_hash, status, phone_verified_at)
+       VALUES ($1, $2, $3, $4, 'active', now())
+       RETURNING id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at`,
       [randomUUID(), phone, displayName, passwordHash]
     )
     return publicAccount(result.rows[0])
@@ -137,21 +141,21 @@ export async function authenticateCustomerAccount(input: { phone?: unknown; pass
   const password = typeof input.password === "string" ? input.password : ""
   if (!isValidCustomerPassword(password)) throw new CustomerAccountError("INVALID_CREDENTIALS", 401)
   const result = await query<AccountRow>(
-    `SELECT id, phone, display_name, password_hash, status, session_version, created_at
+    `SELECT id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at
      FROM customer_accounts WHERE phone = $1 LIMIT 1`,
     [phone]
   )
   const row = result.rows[0]
   const passwordMatches = verifyCustomerPassword(password, row?.password_hash || DUMMY_PASSWORD_HASH)
-  if (!row || row.status !== "active" || !passwordMatches) throw new CustomerAccountError("INVALID_CREDENTIALS", 401)
+  if (!row || row.status !== "active" || !row.phone_verified_at || !passwordMatches) throw new CustomerAccountError("INVALID_CREDENTIALS", 401)
   await query(`UPDATE customer_accounts SET last_login_at = now(), updated_at = now() WHERE id = $1`, [row.id])
   return publicAccount(row)
 }
 
 export async function findCustomerAccountById(id: string) {
   const result = await query<AccountRow>(
-    `SELECT id, phone, display_name, password_hash, status, session_version, created_at
-     FROM customer_accounts WHERE id = $1 AND status = 'active' LIMIT 1`,
+    `SELECT id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at
+     FROM customer_accounts WHERE id = $1 AND status = 'active' AND phone_verified_at IS NOT NULL LIMIT 1`,
     [id]
   )
   return result.rows[0] ? publicAccount(result.rows[0]) : null
@@ -159,7 +163,7 @@ export async function findCustomerAccountById(id: string) {
 
 export async function findCustomerAccountByPhone(phone: string) {
   const result = await query<AccountRow>(
-    `SELECT id, phone, display_name, password_hash, status, session_version, created_at
+    `SELECT id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at
      FROM customer_accounts WHERE phone = $1 AND status = 'active' LIMIT 1`,
     [phone]
   )
@@ -173,10 +177,11 @@ export async function resetCustomerPassword(accountId: string, password: unknown
     `UPDATE customer_accounts
         SET password_hash = $2,
             session_version = session_version + 1,
+            phone_verified_at = COALESCE(phone_verified_at, now()),
             updated_at = now(),
             last_login_at = now()
       WHERE id = $1 AND status = 'active'
-      RETURNING id, phone, display_name, password_hash, status, session_version, created_at`,
+      RETURNING id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at`,
     [accountId, passwordHash]
   )
   if (!result.rows[0]) throw new CustomerAccountError("ACCOUNT_NOT_FOUND", 404)
