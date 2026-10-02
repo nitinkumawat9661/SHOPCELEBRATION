@@ -27,8 +27,11 @@ function newCampaign(): Campaign {
     id: `offer-${Date.now().toString(36)}`,
     name: "10% Checkout Offer",
     badge: "SPECIAL OFFER",
-    message: "A little extra saving on this hamper.",
+    message: "A little extra saving on your order.",
     active: false,
+    mode: "automatic",
+    couponCode: "",
+    scope: "all",
     trigger: "hesitation",
     audience: "all",
     discountType: "percent",
@@ -102,10 +105,13 @@ export function AdminCampaigns() {
       const response = await fetch(routes.api.adminCampaigns, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ config })
+        body: JSON.stringify({ config, expectedVersion: version })
       })
       const data = await response.json() as { ok?: boolean; config?: CampaignConfig; version?: number; error?: string }
-      if (!response.ok || !data.ok || !data.config) throw new Error(data.error || "CAMPAIGNS_SAVE_FAILED")
+      if (!response.ok || !data.ok || !data.config) {
+        if (data.error === "CAMPAIGN_VERSION_CONFLICT") throw new Error("Offer rules changed in another tab/device. Reload before publishing again.")
+        throw new Error(data.error || "CAMPAIGNS_SAVE_FAILED")
+      }
       setConfig(data.config)
       setVersion(data.version || version + 1)
       setDirty(false)
@@ -120,13 +126,13 @@ export function AdminCampaigns() {
   return (
     <section className="adminWorkspaceCard adminCampaignWorkspace">
       <div className="adminWorkspaceHead">
-        <div><div className="kicker">CAMPAIGNS</div><h2>Automatic offers</h2><p>Create real discounts with server-validated pricing. Best eligible offer wins; offers never stack.</p></div>
+        <div><div className="kicker">CAMPAIGNS</div><h2>Offers & coupons</h2><p>Create automatic discounts or coupon codes with server-validated pricing. Offers never stack.</p></div>
         <div className="adminActions"><button className="secondary" type="button" onClick={add}>+ Add offer</button><button className="secondary" type="button" onClick={() => load().catch((cause) => setError(String(cause)))}>Reload</button><button className="primary" type="button" disabled={busy || !dirty} onClick={save}>{busy ? "Publishing…" : `Publish v${version + 1}`}</button></div>
       </div>
       {dirty && <div className="adminDraftNotice">Unpublished changes • Live checkout still uses the previous campaign rules.</div>}
       {notice && <div className="successBox adminFeedback">{notice}</div>}
       {error && <div className="errorBox adminFeedback">{error}</div>}
-      <div className="adminCampaignGuide"><b>Checkout</b> checks immediately after login. <b>Hesitation</b> checks after 12 seconds on payment when no checkout offer matched. Usage limits reserve a quote for 60 minutes.</div>
+      <div className="adminCampaignGuide"><b>Automatic</b> offers can trigger at checkout or after hesitation. <b>Coupon</b> offers apply only when the customer enters the exact code. Scope can cover hampers, individual items, or both. Usage limits reserve a quote for 60 minutes.</div>
 
       {config.campaigns.length === 0 && <div className="trackingState">No campaigns yet. Add one when you want to run a genuine offer.</div>}
       <div className="adminCampaignList">
@@ -136,12 +142,15 @@ export function AdminCampaigns() {
             <label>Campaign ID<input value={campaign.id} maxLength={60} onChange={(event) => patch(index, "id", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} /></label>
             <label>Name<input value={campaign.name} maxLength={100} onChange={(event) => patch(index, "name", event.target.value)} /></label>
             <label>Badge<input value={campaign.badge} maxLength={40} onChange={(event) => patch(index, "badge", event.target.value)} /></label>
+            <label>Offer type<select value={campaign.mode} onChange={(event) => patch(index, "mode", event.target.value as Campaign["mode"])}><option value="automatic">Automatic</option><option value="coupon">Coupon code</option></select></label>
+            {campaign.mode === "coupon" && <label>Coupon code<input value={campaign.couponCode} maxLength={32} placeholder="WELCOME10" onChange={(event) => patch(index, "couponCode", event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ""))} /></label>}
+            <label>Applies to<select value={campaign.scope} onChange={(event) => patch(index, "scope", event.target.value as Campaign["scope"])}><option value="all">All orders</option><option value="hamper">Hampers only</option><option value="individual">Individual items only</option></select></label>
             <label>Trigger<select value={campaign.trigger} onChange={(event) => patch(index, "trigger", event.target.value as Campaign["trigger"])}><option value="checkout">Checkout</option><option value="hesitation">Hesitation</option></select></label>
             <label>Audience<select value={campaign.audience} onChange={(event) => patch(index, "audience", event.target.value as Campaign["audience"])}><option value="all">Everyone</option><option value="first_order">First order only</option></select></label>
             <label>Discount type<select value={campaign.discountType} onChange={(event) => patch(index, "discountType", event.target.value as Campaign["discountType"])}><option value="percent">Percent</option><option value="fixed">Fixed ₹</option></select></label>
             <label>Discount value<input type="number" min={1} value={campaign.discountValue} onChange={(event) => patch(index, "discountValue", Number(event.target.value))} /><small>{campaign.discountType === "percent" ? "% off" : "Rupees off"}</small></label>
             <label>Max discount ₹<input type="number" min={0} value={campaign.maxDiscountRupees} onChange={(event) => patch(index, "maxDiscountRupees", Number(event.target.value))} /><small>0 = no extra cap</small></label>
-            <label>Minimum hamper ₹<input type="number" min={0} value={campaign.minSubtotalRupees} onChange={(event) => patch(index, "minSubtotalRupees", Number(event.target.value))} /></label>
+            <label>Minimum order ₹<input type="number" min={0} value={campaign.minSubtotalRupees} onChange={(event) => patch(index, "minSubtotalRupees", Number(event.target.value))} /></label>
             <label>Total uses<input type="number" min={0} value={campaign.totalLimit} onChange={(event) => patch(index, "totalLimit", Number(event.target.value))} /><small>0 = unlimited</small></label>
             <label>Uses per customer<input type="number" min={0} value={campaign.perCustomerLimit} onChange={(event) => patch(index, "perCustomerLimit", Number(event.target.value))} /><small>0 = unlimited</small></label>
             <label>Starts<input type="datetime-local" value={localDateTime(campaign.startAt)} onChange={(event) => patch(index, "startAt", isoDateTime(event.target.value))} /></label>
@@ -150,8 +159,8 @@ export function AdminCampaigns() {
           </div>
 
           <div className="campaignEligibility">
-            <div><b>Eligible hampers</b><small>Nothing selected = all active hampers.</small><div className="campaignChoiceGrid">{catalog.tiers.filter((tier) => tier.active !== false).map((tier) => <label key={tier.id}><input type="checkbox" checked={campaign.eligibleTierIds.includes(tier.id)} onChange={() => toggleList(index, "eligibleTierIds", tier.id)} /><span>₹{tier.price} • {tier.name}</span></label>)}</div></div>
-            <div><b>Eligible products</b><small>Nothing selected = any product mix. If selected, at least one selected gift must match.</small><div className="campaignChoiceGrid campaignProducts">{catalog.products.filter((product) => product.active !== false).map((product) => <label key={product.id}><input type="checkbox" checked={campaign.eligibleProductIds.includes(product.id)} onChange={() => toggleList(index, "eligibleProductIds", product.id)} /><span>{product.name}</span></label>)}</div></div>
+            <div><b>Eligible hampers</b><small>Used for hamper/all scope. Nothing selected = all active hampers.</small><div className="campaignChoiceGrid">{catalog.tiers.filter((tier) => tier.active !== false).map((tier) => <label key={tier.id}><input type="checkbox" checked={campaign.eligibleTierIds.includes(tier.id)} onChange={() => toggleList(index, "eligibleTierIds", tier.id)} /><span>₹{tier.price} • {tier.name}</span></label>)}</div></div>
+            <div><b>Eligible products</b><small>Works for hampers and individual carts. Nothing selected = any product mix; otherwise at least one item must match.</small><div className="campaignChoiceGrid campaignProducts">{catalog.products.filter((product) => product.active !== false).map((product) => <label key={product.id}><input type="checkbox" checked={campaign.eligibleProductIds.includes(product.id)} onChange={() => toggleList(index, "eligibleProductIds", product.id)} /><span>{product.name}</span></label>)}</div></div>
           </div>
           <footer><div className="adminCampaignPreview"><span>{campaign.badge}</span><b>{campaign.name}</b><small>{campaign.message}</small></div><button className="dangerButton" type="button" onClick={() => remove(index)}>Delete offer</button></footer>
         </article>)}
