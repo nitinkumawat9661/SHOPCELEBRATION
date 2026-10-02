@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import { formatMoney } from "../../lib/domain/catalog"
 import { fromMinorUnits } from "../../lib/domain/payment"
 import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../../lib/domain/order-status"
@@ -28,8 +27,21 @@ function customerStatusLabel(status: OrderStatus) {
 }
 
 export function TrackingPage() {
-  const token = useSearchParams().get("token") || ""
-  const tracked = useTrackedOrder(token)
+  const [token, setToken] = useState<string | null>(null)
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""))
+    const legacyToken = url.searchParams.get("token")?.trim() || ""
+    const nextToken = hash.get("token")?.trim() || legacyToken
+    setToken(nextToken)
+    if (legacyToken) {
+      url.searchParams.delete("token")
+      const search = url.searchParams.toString()
+      const safeUrl = `${url.pathname}${search ? `?${search}` : ""}${nextToken ? `#token=${encodeURIComponent(nextToken)}` : ""}`
+      window.history.replaceState(null, "", safeUrl)
+    }
+  }, [])
+  const tracked = useTrackedOrder(token || "")
   const [approved, setApproved] = useState(false)
   const [issueSubmitted, setIssueSubmitted] = useState(false)
   const copy = uiContent.tracking
@@ -69,9 +81,9 @@ export function TrackingPage() {
       <section>
         <div className="wrap trackingWrap">
           <div className="kicker">{copy.title}</div>
-          {!token && <TrackingLookup />}
-          {token && tracked.loading && <div className="trackingState">{copy.loading}</div>}
-          {token && tracked.error && !order && <><div className="errorBox" role="alert">{tracked.error}</div><TrackingLookup /></>}
+          {token === "" && <TrackingLookup />}
+          {Boolean(token) && tracked.loading && <div className="trackingState">{copy.loading}</div>}
+          {Boolean(token) && tracked.error && !order && <><div className="errorBox" role="alert">{tracked.error}</div><TrackingLookup /></>}
           {order && <>
             <div className="trackingHero"><div><small>{order.orderType === "individual" ? "ORDER" : "HAMPER"}</small><h1>{order.orderType === "individual" ? `${individualItemCount} ${individualItemCount === 1 ? "item" : "items"}` : order.tierName}</h1><p>{order.orderType === "individual" ? `Deliver to ${order.receiverName}` : `${order.receiverName}${uiContent.common.separator}${order.occasion}`}</p></div><strong>{formatMoney(fromMinorUnits(order.amountPaise))}</strong></div>
             {order.orderType === "individual" && <ul className="individualOrderLines" aria-label="Purchased items">{(order.lineItems || []).map((item) => <li key={item.productId}><div><b>{item.name}</b><span>{item.quantity} × {formatMoney(item.unitPricePaise / 100)} each</span></div><strong>{formatMoney(item.lineTotalPaise / 100)}</strong></li>)}</ul>}
@@ -95,7 +107,7 @@ export function TrackingPage() {
             <div className="trackingCards" style={{ gridTemplateColumns: "1fr" }}>
               <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingProvider || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></> : <p>Courier details will appear after shipping.</p>}</article>
             </div>
-            {statusHasCapability(order.status, "issueReport") && !issueSubmitted && <IssueForm token={token} onSubmitted={issueDone} onError={tracked.setError} />}
+            {statusHasCapability(order.status, "issueReport") && !issueSubmitted && <IssueForm token={token || ""} onSubmitted={issueDone} onError={tracked.setError} />}
             {(issueSubmitted || order.status === workflowActionTarget("issueReported")) && <div className="successBox" data-issue-success>{storeContent.issues.submitted}</div>}
           </>}
         </div>
