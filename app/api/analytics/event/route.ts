@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { validation } from "../../../../config/validation"
-import { getCustomerSession } from "../../../../lib/security/customer-session"
 import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../../lib/security/request"
 import { recordConversionEvent } from "../../../../lib/server/conversion-analytics"
 import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
@@ -20,13 +19,12 @@ export async function POST(request: Request) {
     const allowed = await consumeRequestRateLimit("conversion-event", request, validation.rateLimits.analyticsEvent)
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
     const body = await readJsonBody<EventInput>(request)
-    const session = await getCustomerSession()
     const recorded = await recordConversionEvent({
       sessionId: body.sessionId,
       eventName: body.eventName,
       tierId: body.tierId,
       campaignId: body.campaignId,
-      customerAccountId: session?.accountId || null
+      customerAccountId: null
     })
     if (!recorded) return NextResponse.json({ ok: false, error: "INVALID_EVENT" }, { status: 422 })
     return NextResponse.json({ ok: true })
