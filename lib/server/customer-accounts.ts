@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto"
+import type { PoolClient } from "pg"
 import { validation } from "../../config/validation"
 import { hasUnsafeText, sanitizeText } from "../validation/text"
 import { hashCustomerPassword, isValidCustomerPassword, verifyCustomerPassword } from "../security/customer-password"
@@ -170,20 +171,21 @@ export async function findCustomerAccountByPhone(phone: string) {
   return result.rows[0] ? publicAccount(result.rows[0]) : null
 }
 
-export async function resetCustomerPassword(accountId: string, password: unknown) {
+export async function resetCustomerPassword(accountId: string, password: unknown, client?: PoolClient) {
   if (!isValidCustomerPassword(password)) throw new CustomerAccountError("INVALID_PASSWORD")
   const passwordHash = hashCustomerPassword(password)
-  const result = await query<AccountRow>(
-    `UPDATE customer_accounts
+  const sql = `UPDATE customer_accounts
         SET password_hash = $2,
             session_version = session_version + 1,
             phone_verified_at = COALESCE(phone_verified_at, now()),
             updated_at = now(),
             last_login_at = now()
       WHERE id = $1 AND status = 'active'
-      RETURNING id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at`,
-    [accountId, passwordHash]
-  )
+      RETURNING id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at`
+  const values = [accountId, passwordHash]
+  const result = client
+    ? await client.query<AccountRow>(sql, values)
+    : await query<AccountRow>(sql, values)
   if (!result.rows[0]) throw new CustomerAccountError("ACCOUNT_NOT_FOUND", 404)
   return publicAccount(result.rows[0])
 }

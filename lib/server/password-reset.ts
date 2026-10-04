@@ -6,7 +6,7 @@ import { validation } from "../../config/validation"
 import { isValidCustomerPassword } from "../security/customer-password"
 import { signValue, verifySignedValue } from "../security/tokens"
 import { customerAccountView, findCustomerAccountByPhone, normalizeCustomerPhone, resetCustomerPassword } from "./customer-accounts"
-import { query } from "./db"
+import { query, transaction } from "./db"
 import { verifyPasswordResetAccessToken as verifyMsg91AccessToken, SmsProviderError } from "./sms/provider"
 
 export class PasswordResetError extends Error {
@@ -116,19 +116,21 @@ export async function completePasswordReset(input: { resetToken?: unknown; passw
   const token = parseResetToken(input.resetToken)
   if (!token) throw new PasswordResetError("RESET_SESSION_EXPIRED", 401)
 
-  const claimed = await query<{ customer_account_id: string }>(
-    `UPDATE customer_password_reset_challenges
-        SET consumed_at = now(), updated_at = now()
-      WHERE id = $1
-        AND customer_account_id = $2
-        AND verified_at IS NOT NULL
-        AND consumed_at IS NULL
-        AND expires_at > now()
-      RETURNING customer_account_id`,
-    [token.challengeId, token.accountId]
-  )
-  if (!claimed.rows[0]) throw new PasswordResetError("RESET_SESSION_EXPIRED", 401)
+  return transaction(async (client) => {
+    const claimed = await client.query<{ customer_account_id: string }>(
+      `UPDATE customer_password_reset_challenges
+          SET consumed_at = now(), updated_at = now()
+        WHERE id = $1
+          AND customer_account_id = $2
+          AND verified_at IS NOT NULL
+          AND consumed_at IS NULL
+          AND expires_at > now()
+        RETURNING customer_account_id`,
+      [token.challengeId, token.accountId]
+    )
+    if (!claimed.rows[0]) throw new PasswordResetError("RESET_SESSION_EXPIRED", 401)
 
-  const account = await resetCustomerPassword(token.accountId, input.password)
-  return { ok: true as const, account, accountView: customerAccountView(account) }
+    const account = await resetCustomerPassword(token.accountId, input.password, client)
+    return { ok: true as const, account, accountView: customerAccountView(account) }
+  })
 }

@@ -6,7 +6,11 @@
     "minimumSaltBytes": 16,
     "minimumHashBytes": 32,
     "generatedSaltBytes": 16,
-    "generatedHashBytes": 64
+    "generatedHashBytes": 64,
+    "cost": 16384,
+    "blockSize": 8,
+    "parallelization": 1,
+    "maxmemBytes": 67108864
   },
   "hashAlgorithm": "sha256",
   "cookieSameSite": "strict"
