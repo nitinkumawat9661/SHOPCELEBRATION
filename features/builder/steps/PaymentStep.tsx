@@ -78,9 +78,7 @@ export function PaymentStep({
   const [showPaymentReturn, setShowPaymentReturn] = useState(false)
   const [quote, setQuote] = useState<OfferQuote | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
-  const [quoteChecked, setQuoteChecked] = useState(false)
   const [quoteError, setQuoteError] = useState("")
-  const [hesitationChecked, setHesitationChecked] = useState(false)
   const [couponInput, setCouponInput] = useState("")
   const [couponMessage, setCouponMessage] = useState("")
   const utrRef = useRef<HTMLInputElement>(null)
@@ -103,7 +101,7 @@ export function PaymentStep({
     window.setTimeout(() => target.focus({ preventScroll: true }), 240)
   }
 
-  async function loadOffer(trigger: "checkout" | "hesitation", enteredCoupon = "") {
+  async function loadOffer(trigger: "checkout", enteredCoupon = "") {
     if (!customerAccount || (!individual && !tier)) return null
     const code = enteredCoupon.trim().toUpperCase()
     setQuoteLoading(true)
@@ -121,12 +119,10 @@ export function PaymentStep({
       if (!response.ok || !data.ok) throw new Error(data.error || "OFFER_SERVICE_UNAVAILABLE")
       const next = data.quote || null
       setQuote(next)
-      setQuoteChecked(true)
       if (code) setCouponMessage(next ? `Coupon ${code} applied.` : "This coupon is not available for this order.")
       if (next) trackConversion("offer_shown", { ...(tier ? { tierId: tier.id } : {}), campaignId: next.campaignId })
       return next
     } catch {
-      setQuoteChecked(true)
       if (code) {
         setCouponMessage("Coupon is invalid, expired, or not applicable to this order.")
       } else {
@@ -154,7 +150,6 @@ export function PaymentStep({
     setCouponInput("")
     setCouponMessage("")
     setQuote(null)
-    setQuoteChecked(false)
     await loadOffer("checkout")
   }
 
@@ -164,24 +159,13 @@ export function PaymentStep({
 
   useEffect(() => {
     setQuote(null)
-    setQuoteChecked(false)
     setQuoteError("")
-    setHesitationChecked(false)
     setCouponInput("")
     setCouponMessage("")
     setPaymentStarted(false)
     setShowPaymentReturn(false)
     if (customerAccount) void loadOffer("checkout")
   }, [customerAccount?.id, checkoutId, selectedKey])
-
-  useEffect(() => {
-    if (!customerAccount || !quoteChecked || quote || quoteLoading || paymentStarted || hesitationChecked) return
-    const timer = window.setTimeout(() => {
-      setHesitationChecked(true)
-      void loadOffer("hesitation")
-    }, 12000)
-    return () => window.clearTimeout(timer)
-  }, [customerAccount?.id, hesitationChecked, paymentStarted, quote, quoteChecked, quoteLoading, checkoutId, selectedKey])
 
   useEffect(() => {
     if (gatewayEnabled || !paymentStarted) return
@@ -250,8 +234,8 @@ export function PaymentStep({
           {customerAccount && quoteLoading && <div className="checkoutPriceCheck" role="status">Checking your best available price…</div>}
           {customerAccount && quote && <div className="checkoutOfferCard" role="status">
             <div className="checkoutOfferBadge">{quote.badge}</div>
-            <div className="checkoutOfferCopy"><b>{quote.campaignTitle}</b><span>{quote.message}</span><small>Price reserved until {reservedUntil}</small></div>
-            <div className="checkoutOfferPrice"><s>{formatMoney(quote.subtotalPaise / 100)}</s><strong>{formatMoney(quote.payablePaise / 100)}</strong><span>You save {formatMoney(quote.discountPaise / 100)}</span></div>
+            <div className="checkoutOfferCopy"><b>{quote.campaignTitle}</b><span>{quote.message}</span><small>Offer quote valid until {reservedUntil}</small></div>
+            <div className="checkoutOfferPrice"><span>Subtotal {formatMoney(quote.subtotalPaise / 100)}</span><strong>{formatMoney(quote.payablePaise / 100)}</strong><span>Applied discount {formatMoney(quote.discountPaise / 100)}</span></div>
           </div>}
           {customerAccount && quoteError && <div className="checkoutPriceNote">{quoteError}</div>}
           {customerAccount && <div className="checkoutCoupon">
