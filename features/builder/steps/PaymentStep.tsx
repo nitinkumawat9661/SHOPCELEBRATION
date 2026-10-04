@@ -264,7 +264,7 @@ export function PaymentStep({
             {couponMessage && <small className={quote?.mode === "coupon" ? "couponSuccess" : "couponError"}>{couponMessage}</small>}
           </div>}
 
-          <label className="policyCheck"><input type="checkbox" checked={accepted} disabled={submitting || Boolean(created) || Boolean(individual && paymentOrderId)} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order &amp; Protection Policy</Link> and <Link href={routes.privacy} target="_blank">Privacy Policy</Link>.</span></label>
+          <label className="policyCheck"><input type="checkbox" checked={accepted} disabled={submitting || Boolean(created) || Boolean(individual && paymentOrderId)} onChange={(e) => onAccepted(e.target.checked)} /><span>I agree to the <Link href={routes.policies} target="_blank">Order, Cancellation, Return &amp; Refund Policy</Link> and <Link href={routes.terms} target="_blank">Terms &amp; Legal</Link>, and acknowledge the <Link href={routes.privacy} target="_blank">Privacy Policy</Link>.</span></label>
           <div className="paymentPolicyHint">Check once, then pay. Never share your UPI PIN, card PIN or OTP with Celebration.</div>
           {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Tick the checkbox above to enable secure payment.</div>}
 
