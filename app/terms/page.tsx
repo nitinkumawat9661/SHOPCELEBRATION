@@ -61,7 +61,7 @@ export default async function TermsPage() {
           <div className="policySupport">
             <h2>Need help or want to raise a grievance?</h2>
             <p>Start with Celebration support and keep your Order ID ready. If a consumer grievance remains unresolved, statutory consumer remedies remain available.</p>
-            <div className="policySupportActions"><Link className="primary" href={routes.account}>My Celebration</Link><Link className="secondary" href={routes.policies}>Order &amp; Refund Policy</Link><Link className="secondary" href={routes.privacy}>Privacy Policy</Link></div>
+            <div className="policySupportActions"><Link className="primary" href={routes.account}>My Celebration</Link><Link className="secondary" href={routes.policies}>Order &amp; Refund Policy</Link><Link className="secondary" href={routes.privacy}>Privacy Policy</Link><a className="secondary" href="https://consumerhelpline.gov.in/" target="_blank" rel="noreferrer">National Consumer Helpline • 1915</a></div>
           </div>
         </div>
       </section>
