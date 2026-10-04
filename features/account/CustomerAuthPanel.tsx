@@ -230,7 +230,11 @@ export function CustomerAuthPanel({
       setCaptchaVerified(false)
       return
     }
-    const syncCaptchaState = () => setCaptchaVerified(window.isCaptchaVerified?.() === true)
+    const syncCaptchaState = () => {
+      if (window.isCaptchaVerified?.() === true) {
+        setCaptchaVerified(true)
+      }
+    }
     syncCaptchaState()
     const timer = window.setInterval(syncCaptchaState, 250)
     return () => window.clearInterval(timer)
@@ -391,10 +395,7 @@ export function CustomerAuthPanel({
         await initializeWidget(config, localPhone, "celebration-signup-msg91-captcha")
         return
       }
-      if (!captchaVerified || window.isCaptchaVerified?.() !== true) {
-        setCaptchaVerified(false)
-        return
-      }
+      if (!captchaVerified) return
       if (!window.sendOtp) throw new Error("SMS_OTP_UNAVAILABLE")
       const result = await providerCall((success, failure) => window.sendOtp?.(`91${localPhone}`, success, failure), "SMS_OTP_PROVIDER_FAILED")
       setRequestId(extractReqId(result))
@@ -450,10 +451,7 @@ export function CustomerAuthPanel({
         return
       }
 
-      if (!captchaVerified || window.isCaptchaVerified?.() !== true) {
-        setCaptchaVerified(false)
-        return
-      }
+      if (!captchaVerified) return
 
       if (!window.sendOtp) throw new Error("SMS_OTP_UNAVAILABLE")
       const result = await providerCall((success, failure) => window.sendOtp?.(`91${localPhone}`, success, failure), "SMS_OTP_PROVIDER_FAILED")
