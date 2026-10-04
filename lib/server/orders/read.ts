@@ -33,6 +33,7 @@ export async function issueTrackingTokenForLookup(publicId: string, phoneSuffix:
        SET tracking_token_hash = $1, tracking_expires_at = $2, updated_at = now()
      WHERE public_id = $3
        AND right(phone, $4::int) = $5
+       AND status <> 'cancelled'
      RETURNING public_id`,
     [trackingTokenHash(token), expiresAt, publicId, validation.trackingLookupPhoneDigits, phoneSuffix]
   )
