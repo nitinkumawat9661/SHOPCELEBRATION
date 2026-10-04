@@ -28,6 +28,23 @@ function verifiedIdentifier(payload: unknown) {
       const value = stringValue(current[key])
       if (value) return value
     }
+
+    // MSG91's widget access-token verification may return the verified
+    // mobile number as a string in `message`, e.g.
+    // { type: "success", message: "919876543210" }. Only accept that
+    // shape when the provider explicitly marks the response successful
+    // and the message itself is strictly phone-like.
+    const type = stringValue(current.type).toLowerCase()
+    const status = stringValue(current.status).toLowerCase()
+    const success = current.success
+    const message = stringValue(current.message)
+    if (
+      (type === "success" || status === "success" || success === true) &&
+      /^\\+?[0-9]{10,15}$/.test(message)
+    ) {
+      return message
+    }
+
     for (const key of ["data", "result", "response", "message"]) {
       const child = asObject(current[key])
       if (child) queue.push(child)
