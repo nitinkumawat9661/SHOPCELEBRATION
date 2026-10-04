@@ -26,7 +26,7 @@ export const paymentGatewayConfig = {
     appId: env.cashfreeAppId,
     secretKey: env.cashfreeSecretKey,
     webhookSecret: env.cashfreeWebhookSecret || env.cashfreeSecretKey,
-    apiVersion: env.cashfreeApiVersion || "2023-08-01"
+    apiVersion: env.cashfreeApiVersion || "2025-01-01"
   }
 } as const
 
