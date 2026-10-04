@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react"
 import type { StoreSettings } from "../../lib/server/store-settings"
-import { legalProfileReady } from "../../lib/server/store-settings"
 import { storeContent } from "../../lib/domain/content"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 
@@ -27,7 +26,14 @@ export function AdminStoreSettings() {
   const [dirty, setDirty] = useState(false)
   const [notice, setNotice] = useState("")
   const [error, setError] = useState("")
-  const complianceReady = useMemo(() => legalProfileReady(settings), [settings])
+  const complianceReady = useMemo(() => Boolean(
+    settings.legalName &&
+    settings.businessAddress &&
+    settings.supportEmail &&
+    settings.grievanceOfficerName &&
+    settings.grievanceEmail &&
+    settings.grievancePhone
+  ), [settings])
 
   async function load() {
     setError("")
