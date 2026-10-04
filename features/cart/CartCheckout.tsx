@@ -183,7 +183,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   const summary = <aside className="summary individualSummary">
     <div className="kicker">YOUR ITEMS</div><div className="sumPrice">{formatMoney((order.orderTotalPaise ?? order.created?.payablePaise ?? subtotalPaise) / 100)}</div>
     {rows.map((row) => <div className="sumRow" key={row.productId}><span>{row.product?.name || "Unavailable item"} × {row.quantity}</span><b>{row.product && isIndividuallySellable(row.product) ? formatMoney((row.product.salePricePaise || 0) * row.quantity / 100) : "Unavailable"}</b></div>)}
-    <p className="note">Individual products only. Prices and eligibility are checked again on the server before payment. No additional shipping fee is added at checkout.</p>
+    <p className="note">Individual products only. Final price is confirmed before payment. No additional shipping fee is added at checkout.</p>
   </aside>
 
   if (!ready) return <section className="wrap cartLoading" role="status">Loading your cart…</section>
