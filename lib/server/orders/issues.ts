@@ -5,11 +5,16 @@ import { trackingTokenHash } from "../../security/tokens"
 import { transaction } from "../db"
 import { appendOrderEvent } from "./events"
 
+export function complaintReference(publicId: string) {
+  return `CMP-${publicId}`
+}
+
 export function reportOrderIssue(token: string, issueType: string, note: string) {
   return transaction(async (client) => {
     const issueWindowHours = requirePositiveIntegerEnv("issueReportWindowHours")
-    const result = await client.query<{ id: string; status: OrderStatus; delivered_at: Date | null; issue_window_open: boolean }>(
+    const result = await client.query<{ id: string; public_id: string; status: OrderStatus; delivered_at: Date | null; issue_window_open: boolean }>(
       `SELECT id,
+              public_id,
               status,
               delivered_at,
               (delivered_at IS NOT NULL AND delivered_at + ($2::int * interval '1 hour') >= now()) AS issue_window_open
@@ -28,7 +33,8 @@ export function reportOrderIssue(token: string, issueType: string, note: string)
       `UPDATE orders SET status = $1, issue_type = $2, issue_note = $3, issue_reported_at = now(), updated_at = now() WHERE id = $4`,
       [nextStatus, issueType, note, order.id]
     )
-    await appendOrderEvent(client, order.id, orderEvents.issueReported, { from: order.status, to: nextStatus, issueType })
-    return { ok: true as const }
+    const reference = complaintReference(order.public_id)
+    await appendOrderEvent(client, order.id, orderEvents.issueReported, { from: order.status, to: nextStatus, issueType, complaintReference: reference })
+    return { ok: true as const, complaintReference: reference }
   })
 }

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { routes } from "../../config/routes"
 import { storeContent, uiContent } from "../../lib/domain/content"
 
-export function IssueForm({ token, onSubmitted, onError }: { token: string; onSubmitted: () => void; onError: (message: string) => void }) {
+export function IssueForm({ token, onSubmitted, onError }: { token: string; onSubmitted: (complaintReference: string) => void; onError: (message: string) => void }) {
   const [issueType, setIssueType] = useState(storeContent.issues.types[0] || "")
   const [note, setNote] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -21,7 +21,7 @@ export function IssueForm({ token, onSubmitted, onError }: { token: string; onSu
       })
       const result = await response.json()
       if (!response.ok || !result.ok) throw new Error(result.error || uiContent.tracking.invalid)
-      onSubmitted()
+      onSubmitted(typeof result.complaintReference === "string" ? result.complaintReference : "")
     } catch (cause) {
       onError(cause instanceof Error ? cause.message : uiContent.tracking.invalid)
     } finally {
