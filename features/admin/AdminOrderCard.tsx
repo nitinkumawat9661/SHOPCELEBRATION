@@ -26,7 +26,8 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
 
   async function applyStatus() {
     if (!selectedStatus) return
-    if (selectedStatus === "cancelled" && !window.confirm(copy.cancelConfirm)) return
+    if (selectedStatus === "cancelled" && !window.confirm(`${copy.cancelConfirm}\n\nImportant: cancelling the order does NOT automatically initiate a Cashfree refund. If payment was collected, initiate/confirm the eligible refund separately before closing the case.`)) return
+    if (selectedStatus === "refund_or_replacement_resolved" && !window.confirm("Mark issue resolved only after the promised replacement/re-delivery is completed OR the approved Cashfree refund has been initiated/confirmed. This status change does not move money. Continue?")) return
     await onStatus(selectedStatus)
     setSelectedStatus("")
   }
@@ -75,7 +76,7 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
         </div>
       </details>
 
-      {order.issueType && <div className="adminIssue"><b>{copy.issueHeading}: {order.issueType}</b><span>{order.issueNote}</span></div>}
+      {order.issueType && <div className="adminIssue"><b>{copy.issueHeading}: {order.issueType}</b><span>{order.issueNote}</span>{order.status === "issue_reported" && <small>Before marking resolved: complete the promised replacement/re-delivery or initiate/confirm the approved refund in Cashfree. Status change alone does not refund money.</small>}</div>}
 
       <AdminOrderVideo order={order} busy={busy} onVideo={onVideo} />
       <AdminShippingPanel order={order} busy={busy} onShipping={onShipping} />
