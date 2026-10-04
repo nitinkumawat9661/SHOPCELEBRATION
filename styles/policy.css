@@ -1,3 +1,20 @@
 /* Policies page is mobile-first too */
 .policyBrand{text-decoration:none}.policyWrap{max-width:920px}.policyTitle{font:700 39px/1.02 'Playfair Display',Georgia,serif;color:#641317;margin:9px 0 14px;letter-spacing:-.035em}.policyLead{font-size:13px;line-height:1.7;color:#80645c;max-width:760px}.policyCards{display:grid;grid-template-columns:1fr;gap:9px;margin-top:24px}.policyCards article{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}.policyCards h2{font:700 20px 'Playfair Display',Georgia,serif;color:#641317;margin:12px 0 7px}.policyCards p{font-size:11px;line-height:1.65;color:#80645c;margin:0}.policyNotice{margin-top:15px;background:#fff1df;border:1px solid #e6c7a8;border-radius:16px;padding:14px;display:flex;gap:7px;flex-direction:column}.policyNotice strong{color:#74191d}.policyNotice span{font-size:11px;color:#80645c}
 
+
+.policyHero{margin-bottom:24px}
+.policySummaryGrid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:22px}
+.policySummaryGrid>div{display:grid;gap:5px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fffaf4}
+.policySummaryGrid b{font-size:12px;color:#641317}.policySummaryGrid span{font-size:10.5px;line-height:1.55;color:#80645c}
+.privacyMeta{margin-top:12px;font-size:10px;color:#8c6c62}
+.privacySections{display:grid;gap:11px;margin-top:24px}
+.privacySection{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}
+.privacySection h2{font:700 20px/1.2 'Playfair Display',Georgia,serif;color:#641317;margin:0 0 9px}
+.privacySection p,.privacySection li{font-size:11px;line-height:1.7;color:#80645c}
+.privacySection p{margin:0}.privacySection ul{margin:8px 0 0;padding-left:20px}.privacySection li+li{margin-top:5px}
+.policyLegalCard{display:grid;grid-template-columns:1fr;gap:10px;margin-top:18px;padding:17px;border:1px solid #ddc7b4;border-radius:16px;background:#fffaf4}
+.policyLegalCard>div{display:grid;gap:3px;min-width:0}.policyLegalCard span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#987566}.policyLegalCard b{font-size:11px;line-height:1.5;color:#553225;overflow-wrap:anywhere}
+.policySupport{margin-top:20px;padding:20px;border:1px solid var(--line);border-radius:18px;background:#fff}
+.policySupport h2{font:700 22px/1.2 'Playfair Display',Georgia,serif;color:#641317;margin:0 0 8px}.policySupport p{font-size:11px;line-height:1.65;color:#80645c;margin:0}
+.policySupportActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.policySupportActions a{min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+@media(min-width:700px){.policySummaryGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.policyLegalCard{grid-template-columns:repeat(2,minmax(0,1fr))}.policyLegalCard .wide{grid-column:1/-1}.privacySection{padding:22px}.privacySection h2{font-size:22px}}

@@ -2,6 +2,7 @@ export const routes = {
   home: "/",
   policies: "/policies",
   privacy: "/privacy",
+  terms: "/terms",
   track: "/track",
   account: "/account",
   paymentReturn: "/payment/return",
