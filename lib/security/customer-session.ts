@@ -25,7 +25,7 @@ type LegacyCustomerSessionPayload =
       accountId: string
       sessionVersion: number
       exp: number
-      v: 3
+      v: 2
     }
 
 const PREFIX = "customer:"
@@ -42,7 +42,7 @@ export function createCustomerSession(accountId: string, sessionVersion: number)
     accountId,
     sessionVersion,
     exp: Math.floor(Date.now() / 1000) + validation.customerSessionTtlSeconds,
-    v: 2
+    v: 3
   }
   const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url")
   return signValue(`${PREFIX}${encoded}`, customerSessionSigningKey())
