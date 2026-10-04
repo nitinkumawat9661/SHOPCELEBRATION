@@ -66,10 +66,42 @@ function normalizeTier(input: unknown): Tier {
   }
 }
 
+function normalizeRetailDeclarations(input: unknown, required: boolean) {
+  const raw = (input && typeof input === "object" && !Array.isArray(input) ? input : {}) as Record<string, unknown>
+  const mrpPaise = raw.mrpPaise === undefined || raw.mrpPaise === null || raw.mrpPaise === ""
+    ? undefined
+    : integer(raw.mrpPaise, 1, Math.min(validation.catalog.maxPrice * 100, 2147483647), "INVALID_MRP")
+  const retail = {
+    genericName: cleanOptional(raw.genericName, validation.catalog.nameMax) || undefined,
+    netQuantity: cleanOptional(raw.netQuantity, validation.catalog.sizeMax) || undefined,
+    mrpPaise,
+    manufacturerOrPackerName: cleanOptional(raw.manufacturerOrPackerName, validation.catalog.nameMax) || undefined,
+    manufacturerOrPackerAddress: cleanOptional(raw.manufacturerOrPackerAddress, validation.address.max) || undefined,
+    importerName: cleanOptional(raw.importerName, validation.catalog.nameMax) || undefined,
+    importerAddress: cleanOptional(raw.importerAddress, validation.address.max) || undefined,
+    countryOfOrigin: cleanOptional(raw.countryOfOrigin, validation.catalog.categoryMax) || undefined,
+    consumerCare: cleanOptional(raw.consumerCare, validation.catalog.noteMax) || undefined,
+    bestBefore: cleanOptional(raw.bestBefore, validation.catalog.labelMax) || undefined,
+    unitSalePrice: cleanOptional(raw.unitSalePrice, validation.catalog.labelMax) || undefined
+  }
+
+  if (!required && !Object.values(retail).some((value) => value !== undefined)) return undefined
+  if (required && (!retail.genericName || !retail.netQuantity || !retail.mrpPaise || !retail.manufacturerOrPackerName || !retail.manufacturerOrPackerAddress || !retail.countryOfOrigin || !retail.consumerCare)) {
+    throw new CatalogValidationError("RETAIL_DECLARATIONS_REQUIRED")
+  }
+  const origin = retail.countryOfOrigin?.trim().toLowerCase()
+  if (required && origin && origin !== "india" && (!retail.importerName || !retail.importerAddress)) {
+    throw new CatalogValidationError("IMPORTER_DECLARATIONS_REQUIRED")
+  }
+  return retail
+}
+
 function normalizeProduct(input: unknown): GiftProduct {
   const item = (input && typeof input === "object" ? input : {}) as Record<string, unknown>
   if (item.sellIndividually !== undefined && typeof item.sellIndividually !== "boolean") throw new CatalogValidationError("INVALID_INDIVIDUAL_SALE_SETTING")
   const sellIndividually = item.sellIndividually === true
+  if (item.prepackagedRetail !== undefined && typeof item.prepackagedRetail !== "boolean") throw new CatalogValidationError("INVALID_RETAIL_DECLARATION_SETTING")
+  const prepackagedRetail = item.prepackagedRetail === true
   if (item.salePricePaise != null && typeof item.salePricePaise !== "number") throw new CatalogValidationError("INVALID_SALE_PRICE")
   const salePricePaise = item.salePricePaise === undefined || item.salePricePaise === null
     ? undefined
@@ -86,7 +118,9 @@ function normalizeProduct(input: unknown): GiftProduct {
     imageUrl: imageUrl(item.imageUrl) || undefined,
     active: item.active !== false,
     sellIndividually,
-    salePricePaise
+    salePricePaise,
+    prepackagedRetail,
+    retail: normalizeRetailDeclarations(item.retail, prepackagedRetail)
   }
 }
 

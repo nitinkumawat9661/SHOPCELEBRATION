@@ -38,6 +38,22 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               {individual ? <><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
               <Link className="collectionDetailBack" href={collectionUrl}>Keep exploring</Link>
             </div>
+            {product.prepackagedRetail && product.retail && <section className="retailDeclarations" aria-label="Product declarations">
+              <h2>Product declarations</h2>
+              <dl>
+                {product.retail.genericName && <div><dt>Generic name</dt><dd>{product.retail.genericName}</dd></div>}
+                {product.retail.netQuantity && <div><dt>Net quantity</dt><dd>{product.retail.netQuantity}</dd></div>}
+                {product.retail.mrpPaise && <div><dt>MRP (incl. taxes)</dt><dd>{formatMoney(product.retail.mrpPaise / 100)}</dd></div>}
+                {product.retail.unitSalePrice && <div><dt>Unit sale price</dt><dd>{product.retail.unitSalePrice}</dd></div>}
+                {product.retail.countryOfOrigin && <div><dt>Country of origin</dt><dd>{product.retail.countryOfOrigin}</dd></div>}
+                {product.retail.manufacturerOrPackerName && <div><dt>Manufacturer / packer</dt><dd>{product.retail.manufacturerOrPackerName}</dd></div>}
+                {product.retail.manufacturerOrPackerAddress && <div className="wide"><dt>Manufacturer / packer address</dt><dd>{product.retail.manufacturerOrPackerAddress}</dd></div>}
+                {product.retail.importerName && <div><dt>Importer</dt><dd>{product.retail.importerName}</dd></div>}
+                {product.retail.importerAddress && <div className="wide"><dt>Importer address</dt><dd>{product.retail.importerAddress}</dd></div>}
+                {product.retail.consumerCare && <div className="wide"><dt>Consumer care</dt><dd>{product.retail.consumerCare}</dd></div>}
+                {product.retail.bestBefore && <div><dt>Best / use before</dt><dd>{product.retail.bestBefore}</dd></div>}
+              </dl>
+            </section>}
             <div className="collectionDetailPromise"><span aria-hidden="true">♡</span><div><b>{individual ? "A little something, just for them" : "A thoughtful part of your hamper"}</b><p>{individual ? "Choose your quantity in the cart, add delivery details and pay securely online." : "Share your occasion and budget. Our team curates the gifts inside your hamper."}</p></div></div>
             <div className="collectionDetailAbout"><h2>Made for a thoughtful surprise</h2><p>{individual ? "This gift is available individually and within eligible hampers. For a curated gift set, share your occasion and budget with our team." : "This gift is currently available within our curated hampers. The final selection is curated for your occasion."}</p><Link href="/policies">Delivery & order policies <span aria-hidden="true">→</span></Link>{individual && <Link href="/#budgets">Explore our curated hampers →</Link>}</div>
           </div>

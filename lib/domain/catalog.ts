@@ -13,6 +13,20 @@ export type Tier = {
   active?: boolean
 }
 
+export type RetailDeclarations = {
+  genericName?: string
+  netQuantity?: string
+  mrpPaise?: number
+  manufacturerOrPackerName?: string
+  manufacturerOrPackerAddress?: string
+  importerName?: string
+  importerAddress?: string
+  countryOfOrigin?: string
+  consumerCare?: string
+  bestBefore?: string
+  unitSalePrice?: string
+}
+
 export type GiftProduct = {
   id: string
   name: string
@@ -25,6 +39,8 @@ export type GiftProduct = {
   active?: boolean
   sellIndividually?: boolean
   salePricePaise?: number
+  prepackagedRetail?: boolean
+  retail?: RetailDeclarations
 }
 
 export function salePriceFromRupees(value: string): number | undefined {

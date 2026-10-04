@@ -44,6 +44,7 @@ export function CatalogCard({ product }: { product: GiftProduct }) {
           <span className="catalogCardCategory">{product.category}</span>
           <h3>{product.name}</h3>
           {product.note && <p>{product.note}</p>}
+          {product.prepackagedRetail && <small className="catalogLegalHint">Product declarations available in details</small>}
           <div className="catalogCardPrice"><span>{individual ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(individual ? product.salePricePaise! / 100 : product.minTier)}</strong></div>
         </div>
       </Link>

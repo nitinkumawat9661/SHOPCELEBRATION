@@ -100,6 +100,29 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
   const imageUrl = importText(pick("imageUrl", "image", "photo", "photoUrl"), existing?.imageUrl || "") || undefined
   const active = importBoolean(pick("active", "status"), existing?.active !== false)
   const sellIndividually = importBoolean(pick("sellIndividually", "individualSale", "sellIndividual"), existing?.sellIndividually === true)
+  const prepackagedRetail = importBoolean(pick("prepackagedRetail", "packagedRetail", "legalMetrology"), existing?.prepackagedRetail === true)
+  const genericName = importText(pick("genericName"), existing?.retail?.genericName || "") || undefined
+  const netQuantity = importText(pick("netQuantity"), existing?.retail?.netQuantity || "") || undefined
+  const manufacturerOrPackerName = importText(pick("manufacturerOrPackerName", "manufacturer", "packer"), existing?.retail?.manufacturerOrPackerName || "") || undefined
+  const manufacturerOrPackerAddress = importText(pick("manufacturerOrPackerAddress", "manufacturerAddress", "packerAddress"), existing?.retail?.manufacturerOrPackerAddress || "") || undefined
+  const importerName = importText(pick("importerName"), existing?.retail?.importerName || "") || undefined
+  const importerAddress = importText(pick("importerAddress"), existing?.retail?.importerAddress || "") || undefined
+  const countryOfOrigin = importText(pick("countryOfOrigin", "origin"), existing?.retail?.countryOfOrigin || "") || undefined
+  const consumerCare = importText(pick("consumerCare", "consumerCareContact"), existing?.retail?.consumerCare || "") || undefined
+  const bestBefore = importText(pick("bestBefore", "useBefore"), existing?.retail?.bestBefore || "") || undefined
+  const unitSalePrice = importText(pick("unitSalePrice"), existing?.retail?.unitSalePrice || "") || undefined
+
+  let mrpPaise = existing?.retail?.mrpPaise
+  const mrpInput = pick("mrp", "mrpRupees")
+  const mrpPaiseInput = pick("mrpPaise")
+  if (mrpPaiseInput !== undefined && String(mrpPaiseInput).trim() !== "") {
+    const parsed = Number(mrpPaiseInput)
+    if (!Number.isInteger(parsed) || parsed < 1) throw new Error(`Row ${rowNumber}: invalid mrpPaise.`)
+    mrpPaise = parsed
+  } else if (mrpInput !== undefined && String(mrpInput).trim() !== "") {
+    mrpPaise = salePriceFromRupees(String(mrpInput).trim())
+    if (mrpPaise === undefined) throw new Error(`Row ${rowNumber}: invalid MRP.`)
+  }
 
   let salePricePaise = existing?.salePricePaise
   const paiseInput = pick("salePricePaise")
@@ -114,7 +137,10 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
   }
   if (sellIndividually && !salePricePaise) throw new Error(`Row ${rowNumber}: individual selling ON hai, sale price required hai.`)
 
-  return { id, name, category, minTier, points, note, icon, imageUrl, active, sellIndividually, salePricePaise }
+  return {
+    id, name, category, minTier, points, note, icon, imageUrl, active, sellIndividually, salePricePaise, prepackagedRetail,
+    retail: { genericName, netQuantity, mrpPaise, manufacturerOrPackerName, manufacturerOrPackerAddress, importerName, importerAddress, countryOfOrigin, consumerCare, bestBefore, unitSalePrice }
+  }
 }
 
 function importedRows(fileName: string, text: string): ImportRecord[] {
@@ -177,6 +203,11 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     edit((current) => ({ ...current, products: current.products.map((item, i) => i === index ? { ...item, ...patch } : item) }))
   }
 
+  function replaceRetail(index: number, patch: Partial<NonNullable<GiftProduct["retail"]>>) {
+    const current = catalog.products[index]
+    replaceProduct(index, { retail: { ...(current.retail || {}), ...patch } })
+  }
+
   function addTier() {
     const price = Math.max(1, (catalog.tiers.at(-1)?.price || 0) + 100)
     edit((current) => ({ ...current, tiers: [...current.tiers, { id: `tier-${Date.now()}`, price, name: "New Hamper", size: "Custom", maxChoices: 3, pointBudget: 6, active: true }] }))
@@ -220,17 +251,29 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     }
   }
 
-  function validateIndividualPrices() {
+  function validateCatalogBeforeSave() {
     const invalidPrice = catalog.products.find((product) => product.sellIndividually && !product.salePricePaise)
     if (invalidPrice) {
       setError(`${invalidPrice.name}: individual sale ke liye price ₹1 ya usse zyada enter karein.`)
       return false
     }
+
+    for (const product of catalog.products.filter((item) => item.prepackagedRetail)) {
+      const r = product.retail
+      if (!r?.genericName || !r.netQuantity || !r.mrpPaise || !r.manufacturerOrPackerName || !r.manufacturerOrPackerAddress || !r.countryOfOrigin || !r.consumerCare) {
+        setError(`${product.name}: packaged retail declarations incomplete hain. Package label se required fields fill karein.`)
+        return false
+      }
+      if (r.countryOfOrigin.trim().toLowerCase() !== "india" && (!r.importerName || !r.importerAddress)) {
+        setError(`${product.name}: imported product ke liye importer name + address required hai.`)
+        return false
+      }
+    }
     return true
   }
 
   async function saveDraft() {
-    if (!validateIndividualPrices()) return
+    if (!validateCatalogBeforeSave()) return
     setBusy("save")
     setNotice("")
     setError("")
@@ -247,7 +290,7 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
   }
 
   async function saveAndPublish() {
-    if ((!dirty && !hasDraft) || !validateIndividualPrices()) return
+    if ((!dirty && !hasDraft) || !validateCatalogBeforeSave()) return
     setBusy("publish-live")
     setNotice("")
     setError("")
@@ -315,8 +358,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
 
   function downloadCsvTemplate() {
     const csv = [
-      "id,name,category,minTier,points,description,imageUrl,active,sellIndividually,salePrice",
-      "sample-necklace,Sample Necklace,Jewelry,499,2,Stainless steel necklace,https://example.com/product.webp,true,true,799"
+      "id,name,category,minTier,points,description,imageUrl,active,sellIndividually,salePrice,prepackagedRetail,genericName,netQuantity,mrp,countryOfOrigin,manufacturerOrPackerName,manufacturerOrPackerAddress,importerName,importerAddress,consumerCare,bestBefore,unitSalePrice",
+      "sample-necklace,Sample Necklace,Jewelry,499,2,Stainless steel necklace,https://example.com/product.webp,true,true,799,true,Necklace,1 N,999,India,Example Manufacturer,Exact package address,,,care@example.com,,"
     ].join("\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const anchor = document.createElement("a")
@@ -389,6 +432,24 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
             }} /></label>
             <label className="adminCheck"><input type="checkbox" checked={product.sellIndividually === true} onChange={(event) => replaceProduct(index, { sellIndividually: event.target.checked })} /> Sell individually without a hamper</label>
           </div>
+          <details className="adminOrderDetails">
+            <summary>Retail declarations / Legal Metrology</summary>
+            <div className="adminEditorGrid">
+              <label className="adminCheck"><input type="checkbox" checked={product.prepackagedRetail === true} onChange={(event) => replaceProduct(index, { prepackagedRetail: event.target.checked })} /> Pre-packaged retail product — online declarations apply</label>
+              <label>Generic name<input value={product.retail?.genericName || ""} onChange={(event) => replaceRetail(index, { genericName: event.target.value || undefined })} placeholder="As printed / applicable" /></label>
+              <label>Net quantity<input value={product.retail?.netQuantity || ""} onChange={(event) => replaceRetail(index, { netQuantity: event.target.value || undefined })} placeholder="e.g. 1 N / 100 g / 50 ml" /></label>
+              <label>MRP ₹ (incl. taxes)<input type="number" min="0.01" step="0.01" value={product.retail?.mrpPaise ? product.retail.mrpPaise / 100 : ""} onChange={(event) => { const v=event.target.value; replaceRetail(index,{mrpPaise:v ? salePriceFromRupees(v) : undefined}) }} /></label>
+              <label>Country of origin<input value={product.retail?.countryOfOrigin || ""} onChange={(event) => replaceRetail(index, { countryOfOrigin: event.target.value || undefined })} placeholder="India / actual origin" /></label>
+              <label>Manufacturer / packer name<input value={product.retail?.manufacturerOrPackerName || ""} onChange={(event) => replaceRetail(index, { manufacturerOrPackerName: event.target.value || undefined })} /></label>
+              <label className="adminWide">Manufacturer / packer address<textarea rows={2} value={product.retail?.manufacturerOrPackerAddress || ""} onChange={(event) => replaceRetail(index, { manufacturerOrPackerAddress: event.target.value || undefined })} /></label>
+              <label>Importer name (if imported)<input value={product.retail?.importerName || ""} onChange={(event) => replaceRetail(index, { importerName: event.target.value || undefined })} /></label>
+              <label className="adminWide">Importer address (if imported)<textarea rows={2} value={product.retail?.importerAddress || ""} onChange={(event) => replaceRetail(index, { importerAddress: event.target.value || undefined })} /></label>
+              <label className="adminWide">Consumer care details<input value={product.retail?.consumerCare || ""} onChange={(event) => replaceRetail(index, { consumerCare: event.target.value || undefined })} placeholder="Phone/email/address as applicable" /></label>
+              <label>Best/use before (where applicable)<input value={product.retail?.bestBefore || ""} onChange={(event) => replaceRetail(index, { bestBefore: event.target.value || undefined })} /></label>
+              <label>Unit sale price (where applicable)<input value={product.retail?.unitSalePrice || ""} onChange={(event) => replaceRetail(index, { unitSalePrice: event.target.value || undefined })} placeholder="As applicable to package" /></label>
+            </div>
+            <small>Values package/label se exactly copy karein. Imported goods me importer + country of origin fill karein. Best/use-before aur unit sale price commodity ke hisaab se applicable ho sakte hain.</small>
+          </details>
           <div className="adminEditorActions"><span>{product.category}</span><div><button type="button" className="secondary" disabled={index === 0} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index - 1) }))}>↑</button><button type="button" className="secondary" disabled={index === catalog.products.length - 1} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index + 1) }))}>↓</button><button type="button" className="secondary" onClick={() => duplicateProduct(index)}>Duplicate</button><button type="button" className="secondary danger" onClick={() => edit((current) => ({ ...current, products: current.products.filter((_, i) => i !== index) }))}>Delete</button></div></div>
         </div>})}</div>
       </>}
