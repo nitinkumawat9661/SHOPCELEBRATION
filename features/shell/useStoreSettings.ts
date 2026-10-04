@@ -8,7 +8,14 @@ const fallback: StoreSettings = {
   whatsapp: storeContent.support.whatsapp,
   assistTitle: storeContent.support.assistTitle,
   assistBody: storeContent.support.assistBody,
-  supportMessage: storeContent.support.supportMessage
+  supportMessage: storeContent.support.supportMessage,
+  legalName: "",
+  businessAddress: "",
+  supportEmail: "",
+  grievanceOfficerName: "",
+  grievanceOfficerDesignation: "Grievance Officer",
+  grievanceEmail: "",
+  grievancePhone: storeContent.support.whatsapp
 }
 
 let cachedSettings: StoreSettings = fallback
