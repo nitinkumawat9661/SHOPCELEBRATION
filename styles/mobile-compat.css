@@ -85,6 +85,7 @@
 }
 
 @media(max-width:379px){
+  .celebrationSupport{display:none}
   .collectionPage .wrap{padding-inline:14px}
   .collectionGrid{grid-template-columns:1fr;gap:14px}
   .collectionGrid .catalogCard{border-radius:11px}
@@ -116,4 +117,20 @@
 @supports not (aspect-ratio:1/1){
   .collectionGrid .catalogCardVisual{height:180px}
   @media(max-width:379px){.collectionGrid .catalogCardVisual{height:260px}}
+}
+
+@media(max-width:640px){
+  .celebrationHeaderTop,
+  .celebrationHeaderActions,
+  .celebrationSearch{min-width:0}
+  .celebrationIconLink{
+    min-width:44px;
+    min-height:44px;
+    touch-action:manipulation;
+  }
+  .celebrationNav a{
+    min-height:44px;
+    display:inline-flex;
+    align-items:center;
+  }
 }
