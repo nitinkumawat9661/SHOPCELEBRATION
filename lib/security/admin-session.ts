@@ -9,6 +9,15 @@ export const ADMIN_COOKIE_NAME = securityConfig.adminCookieName
 
 type SessionPayload = { exp: number; version: string }
 
+function scryptOptions() {
+  return {
+    N: securityConfig.scrypt.cost,
+    r: securityConfig.scrypt.blockSize,
+    p: securityConfig.scrypt.parallelization,
+    maxmem: securityConfig.scrypt.maxmemBytes
+  }
+}
+
 function decodeHex(value: string) {
   if (!/^[0-9a-f]+$/i.test(value) || value.length % 2 !== 0) return null
   return Buffer.from(value, "hex")
@@ -26,7 +35,7 @@ export function verifyAdminPassword(password: string) {
   if (!salt || !expected) return false
   if (salt.length < securityConfig.scrypt.minimumSaltBytes || expected.length < securityConfig.scrypt.minimumHashBytes) return false
 
-  const actual = scryptSync(password, salt, expected.length)
+  const actual = scryptSync(password, salt, expected.length, scryptOptions())
   return actual.length === expected.length && timingSafeEqual(actual, expected)
 }
 

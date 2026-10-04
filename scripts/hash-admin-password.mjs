@@ -12,5 +12,10 @@ if (password.length > 256) {
 }
 
 const salt = randomBytes(securityConfig.scrypt.generatedSaltBytes)
-const hash = scryptSync(password, salt, securityConfig.scrypt.generatedHashBytes)
+const hash = scryptSync(password, salt, securityConfig.scrypt.generatedHashBytes, {
+  N: securityConfig.scrypt.cost,
+  r: securityConfig.scrypt.blockSize,
+  p: securityConfig.scrypt.parallelization,
+  maxmem: securityConfig.scrypt.maxmemBytes
+})
 process.stdout.write(`${salt.toString("hex")}:${hash.toString("hex")}\n`)
