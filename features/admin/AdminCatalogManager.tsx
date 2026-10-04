@@ -268,6 +268,10 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
         setError(`${product.name}: imported product ke liye importer name + address required hai.`)
         return false
       }
+      if (product.sellIndividually && product.salePricePaise && r.mrpPaise && product.salePricePaise > r.mrpPaise) {
+        setError(`${product.name}: sale price MRP se zyada nahi ho sakta.`)
+        return false
+      }
     }
     return true
   }

@@ -107,6 +107,10 @@ function normalizeProduct(input: unknown): GiftProduct {
     ? undefined
     : integer(item.salePricePaise, 100, Math.min(validation.catalog.maxPrice * 100, 2147483647), "INVALID_SALE_PRICE")
   if (sellIndividually && salePricePaise === undefined) throw new CatalogValidationError("SALE_PRICE_REQUIRED")
+  const retail = normalizeRetailDeclarations(item.retail, prepackagedRetail)
+  if (sellIndividually && retail?.mrpPaise && salePricePaise !== undefined && salePricePaise > retail.mrpPaise) {
+    throw new CatalogValidationError("SALE_PRICE_ABOVE_MRP")
+  }
   return {
     id: cleanId(item.id),
     name: cleanRequired(item.name, validation.catalog.nameMax, "INVALID_PRODUCT_NAME"),
@@ -120,7 +124,7 @@ function normalizeProduct(input: unknown): GiftProduct {
     sellIndividually,
     salePricePaise,
     prepackagedRetail,
-    retail: normalizeRetailDeclarations(item.retail, prepackagedRetail)
+    retail
   }
 }
 
