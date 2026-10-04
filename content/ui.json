@@ -216,7 +216,7 @@
     "paymentReference": "UTR / Payment Ref",
     "shippingProvider": "Shipping provider",
     "shippingTracking": "Tracking number",
-    "saveShipping": "Shipping save karein",
+    "saveShipping": "Save courier & mark shipped",
     "loading": "Orders load ho rahe hain…",
     "busy": "Working…",
     "noOrders": "Abhi koi order nahi hai.",
@@ -284,10 +284,10 @@
     "uploadingVideo": "Uploading…",
     "videoUploadedNotice": "Packing video uploaded. Customer approval ab pending hai.",
     "statusUpdated": "Status updated",
-    "shippingSavedNotice": "Shipping details saved.",
+    "shippingSavedNotice": "Courier and tracking saved. Order marked shipped.",
     "shippingHeading": "Shipping",
-    "shippingReadyHint": "Customer approval complete. Courier aur tracking add karein.",
-    "shippingUpdateHint": "Courier/tracking zarurat ho to update karein.",
+    "shippingReadyHint": "Customer approval complete. Add courier + tracking; saving will mark the order shipped.",
+    "shippingUpdateHint": "Update courier/tracking only if the shipment details changed.",
     "shippingSavedHeading": "Shipping details"
   },
   "common": {

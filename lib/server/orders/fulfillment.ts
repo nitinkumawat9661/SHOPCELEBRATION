@@ -12,12 +12,23 @@ export function setShippingDetails(publicId: string, provider: string, trackingN
     if (!order) return { ok: false as const, code: "ORDER_NOT_FOUND" }
     if (!statusHasCapability(order.status, "shippingUpdate")) return { ok: false as const, code: "SHIPPING_UPDATE_NOT_ALLOWED" }
 
+    const shippedStatus = workflowActionTarget("shipped")
+    const nextStatus = order.status === "customer_approved" ? shippedStatus : order.status
+
     await client.query(
-      `UPDATE orders SET shipping_provider = $1, shipping_tracking_number = $2, updated_at = now() WHERE id = $3`,
-      [provider, trackingNumber, order.id]
+      `UPDATE orders
+          SET shipping_provider = $1,
+              shipping_tracking_number = $2,
+              status = $3,
+              updated_at = now()
+        WHERE id = $4`,
+      [provider, trackingNumber, nextStatus, order.id]
     )
     await appendOrderEvent(client, order.id, orderEvents.shippingUpdated, { provider, trackingNumber })
-    return { ok: true as const }
+    if (nextStatus !== order.status) {
+      await appendOrderEvent(client, order.id, orderEvents.statusChanged, { from: order.status, to: nextStatus, source: "shipping_details" })
+    }
+    return { ok: true as const, status: nextStatus }
   })
 }
 
