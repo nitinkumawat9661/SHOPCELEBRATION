@@ -115,7 +115,10 @@ export function TrackingPage() {
             {(issueSubmitted || order.status === workflowActionTarget("issueReported") || order.status === "refund_or_replacement_resolved") && <div className="successBox" data-issue-success>
               <b>Complaint reference: {complaintReference || `CMP-${order.publicId}`}</b>
               <span>{storeContent.issues.submitted} Use this reference with your Order ID for support.</span>
-              {complaintCopy && <div className="complaintCopy"><small>Your submitted complaint</small><strong>{complaintCopy.issueType}</strong><span>{complaintCopy.note}</span></div>}
+              {(complaintCopy || (order.issueType && order.issueNote ? { issueType: order.issueType, note: order.issueNote } : null)) && (() => {
+                const copy = complaintCopy || { issueType: order.issueType!, note: order.issueNote! }
+                return <div className="complaintCopy"><small>Your submitted complaint</small><strong>{copy.issueType}</strong><span>{copy.note}</span></div>
+              })()}
             </div>}
           </>}
         </div>

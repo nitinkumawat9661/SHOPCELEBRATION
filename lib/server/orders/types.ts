@@ -122,6 +122,8 @@ export type TrackingOrderRecord = {
   packingVideoKey: string | null
   shippingProvider: string | null
   shippingTrackingNumber: string | null
+  issueType: string | null
+  issueNote: string | null
   customerApprovedAt: string | null
   createdAt: string
   updatedAt: string
@@ -144,6 +146,8 @@ export type DbTrackingOrder = {
   packing_video_key: string | null
   shipping_provider: string | null
   shipping_tracking_number: string | null
+  issue_type: string | null
+  issue_note: string | null
   customer_approved_at: Date | null
   created_at: Date
   updated_at: Date
@@ -167,6 +171,8 @@ export function mapTrackingOrder(row: DbTrackingOrder): TrackingOrderRecord {
     packingVideoKey: row.packing_video_key,
     shippingProvider: row.shipping_provider,
     shippingTrackingNumber: row.shipping_tracking_number,
+    issueType: row.issue_type,
+    issueNote: row.issue_note,
     customerApprovedAt: row.customer_approved_at ? row.customer_approved_at.toISOString() : null,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString()
@@ -174,7 +180,7 @@ export function mapTrackingOrder(row: DbTrackingOrder): TrackingOrderRecord {
 }
 
 export const TRACKING_ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, amount_paise, campaign_title, tier_name, required_date::text, occasion, status, payment_status,
-  receiver_name, packing_video_key, shipping_provider, shipping_tracking_number, customer_approved_at, created_at, updated_at`
+  receiver_name, packing_video_key, shipping_provider, shipping_tracking_number, issue_type, issue_note, customer_approved_at, created_at, updated_at`
 
 export const ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, amount_paise, campaign_id, campaign_title, tier_name, required_date::text, occasion, status, payment_status, payment_reference,
   customer_name, phone, receiver_name, address, city, state, pincode, gift_message,
