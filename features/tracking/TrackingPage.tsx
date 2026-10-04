@@ -45,6 +45,7 @@ export function TrackingPage() {
   const [approved, setApproved] = useState(false)
   const [issueSubmitted, setIssueSubmitted] = useState(false)
   const [complaintReference, setComplaintReference] = useState("")
+  const [complaintCopy, setComplaintCopy] = useState<{ issueType: string; note: string } | null>(null)
   const copy = uiContent.tracking
   const order = tracked.order
   const individualItemCount = order?.orderType === "individual" ? (order.lineItems || []).reduce((total, item) => total + item.quantity, 0) : 0
@@ -59,11 +60,12 @@ export function TrackingPage() {
     }
   }
 
-  function issueDone(reference: string) {
+  function issueDone(complaint: { reference: string; issueType: string; note: string }) {
     setIssueSubmitted(true)
-    setComplaintReference(reference)
+    setComplaintReference(complaint.reference)
+    setComplaintCopy({ issueType: complaint.issueType, note: complaint.note })
     tracked.markIssueReported()
-    notifyUx({ title: "Issue report ho gaya ✓", body: reference ? `Complaint reference: ${reference}` : "Support team ko details mil gayi hain.", tone: "success", durationMs: 4000 })
+    notifyUx({ title: "Issue report ho gaya ✓", body: complaint.reference ? `Complaint reference: ${complaint.reference}` : "Support team ko details mil gayi hain.", tone: "success", durationMs: 4000 })
     window.setTimeout(() => scrollToUxTarget(document.querySelector("[data-issue-success]"), "center"), 80)
   }
 
@@ -110,7 +112,11 @@ export function TrackingPage() {
               <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingProvider || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></> : <p>Courier details will appear after shipping.</p>}</article>
             </div>
             {statusHasCapability(order.status, "issueReport") && !issueSubmitted && <IssueForm token={token || ""} onSubmitted={issueDone} onError={tracked.setError} />}
-            {(issueSubmitted || order.status === workflowActionTarget("issueReported") || order.status === "refund_or_replacement_resolved") && <div className="successBox" data-issue-success>{storeContent.issues.submitted} <b>Complaint reference: {complaintReference || `CMP-${order.publicId}`}</b> Use this reference with your Order ID for support.</div>}
+            {(issueSubmitted || order.status === workflowActionTarget("issueReported") || order.status === "refund_or_replacement_resolved") && <div className="successBox" data-issue-success>
+              <b>Complaint reference: {complaintReference || `CMP-${order.publicId}`}</b>
+              <span>{storeContent.issues.submitted} Use this reference with your Order ID for support.</span>
+              {complaintCopy && <div className="complaintCopy"><small>Your submitted complaint</small><strong>{complaintCopy.issueType}</strong><span>{complaintCopy.note}</span></div>}
+            </div>}
           </>}
         </div>
       </section>
