@@ -40,7 +40,7 @@ function verifiedIdentifier(payload: unknown) {
     const message = stringValue(current.message)
     if (
       (type === "success" || status === "success" || success === true) &&
-      /^\\+?[0-9]{10,15}$/.test(message)
+      /^\+?[0-9]{10,15}$/.test(message)
     ) {
       return message
     }
