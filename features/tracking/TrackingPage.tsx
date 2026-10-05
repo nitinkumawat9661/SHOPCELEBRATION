@@ -53,7 +53,7 @@ export function TrackingPage() {
   async function approve() {
     if (await tracked.approvePacking()) {
       setApproved(true)
-      notifyUx({ title: "Packing approved ✓", body: "Your order can now move to shipping.", tone: "success", durationMs: 4000 })
+      notifyUx({ title: "Packing approved ✓", body: "Courier booking is automatic. Tracking will appear as soon as Shipway assigns the shipment.", tone: "success", durationMs: 4000 })
       window.setTimeout(() => scrollToUxTarget(document.querySelector("[data-tracking-approved]"), "center"), 80)
     } else {
       notifyUx({ title: "Approval nahi hua", body: "Dobara try karein ya WhatsApp support use karein.", tone: "error" })
