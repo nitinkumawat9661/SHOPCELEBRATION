@@ -28,6 +28,11 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
           referrerPolicy="no-referrer"
         />
         {product.badge && <span className="marketplaceProductBadge">{product.badge}</span>}
+        {images.length > 1 && <>
+          <button className="marketplaceGalleryArrow previous" type="button" aria-label="Previous image" onClick={() => setActive((currentIndex) => (currentIndex - 1 + images.length) % images.length)}>‹</button>
+          <button className="marketplaceGalleryArrow next" type="button" aria-label="Next image" onClick={() => setActive((currentIndex) => (currentIndex + 1) % images.length)}>›</button>
+          <span className="marketplaceGalleryCount" aria-live="polite">{active + 1} / {images.length}</span>
+        </>}
       </div>
 
       {images.length > 1 && (
