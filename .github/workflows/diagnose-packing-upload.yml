@@ -49,8 +49,6 @@ jobs:
           done
           cd "$ACTIVE"
 
-          node -e 'const {S3Client,PutBucketCorsCommand}=require("@aws-sdk/client-s3"); const c=new S3Client({region:"auto",endpoint:"https://"+process.env.R2_ACCOUNT_ID+".r2.cloudflarestorage.com",credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}}); (async()=>{try{await c.send(new PutBucketCorsCommand({Bucket:process.env.R2_BUCKET,CORSConfiguration:{CORSRules:[{AllowedOrigins:["https://shopcelebration.in","https://www.shopcelebration.in"],AllowedMethods:["GET","HEAD","PUT"],AllowedHeaders:["*"],ExposeHeaders:["ETag"],MaxAgeSeconds:3600}]}}));console.log("R2_CORS_APPLY=OK")}catch(e){console.log("R2_CORS_APPLY=FAIL:"+(e.name||"Error")+":"+((e.$metadata&&e.$metadata.httpStatusCode)||""));process.exitCode=4}})()'
-
           node -e 'const {S3Client,HeadBucketCommand,GetBucketCorsCommand,PutObjectCommand}=require("@aws-sdk/client-s3"); const {getSignedUrl}=require("@aws-sdk/s3-request-presigner"); const c=new S3Client({region:"auto",endpoint:"https://"+process.env.R2_ACCOUNT_ID+".r2.cloudflarestorage.com",credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}}); (async()=>{try{await c.send(new HeadBucketCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_BUCKET_ACCESS=OK")}catch(e){console.log("R2_BUCKET_ACCESS=FAIL",e.name,e.$metadata&&e.$metadata.httpStatusCode)} try{const x=await c.send(new GetBucketCorsCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_CORS="+JSON.stringify(x.CORSRules||[]))}catch(e){console.log("R2_CORS_ERROR="+(e.name||"Error")+":"+((e.$metadata&&e.$metadata.httpStatusCode)||""))} const u=await getSignedUrl(c,new PutObjectCommand({Bucket:process.env.R2_BUCKET,Key:"diagnostics/cors-check.mp4",ContentType:"video/mp4"}),{expiresIn:300}); console.log("R2_TEST_URL="+u)})()' > /tmp/r2diag.txt
           grep -v '^R2_TEST_URL=' /tmp/r2diag.txt
           TEST_URL="$(grep '^R2_TEST_URL=' /tmp/r2diag.txt | cut -d= -f2-)"
@@ -63,6 +61,10 @@ jobs:
               -D - -o /dev/null | grep -Ei 'HTTP/|access-control-allow-origin|access-control-allow-methods|access-control-allow-headers' || true
           done
           rm -f /tmp/r2diag.txt
+
+          echo "NGINX_UPLOAD_LIMITS_BEGIN"
+          grep -RniE 'server_name[[:space:]].*shopcelebration|client_max_body_size' /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null | head -n 80 || true
+          echo "NGINX_UPLOAD_LIMITS_END"
 
           echo "RECENT_PACKING_LOGS_BEGIN"
           LOG="/home/$USER/.pm2/logs/celebration-site-error.log"
