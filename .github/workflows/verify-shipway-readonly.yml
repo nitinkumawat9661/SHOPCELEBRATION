@@ -44,29 +44,20 @@ jobs:
           for k in SHIPWAY_EMAIL SHIPWAY_LICENSE_KEY SHIPWAY_WAREHOUSE_ID SHIPWAY_RETURN_WAREHOUSE_ID; do
             [ -n "${!k:-}" ] || { echo "$k=MISSING"; exit 2; }
           done
-          printf 'SHIPWAY_EMAIL=SET\nSHIPWAY_LICENSE_KEY=SET\nSHIPWAY_WAREHOUSE_ID=%s\nSHIPWAY_RETURN_WAREHOUSE_ID=%s\n' "$SHIPWAY_WAREHOUSE_ID" "$SHIPWAY_RETURN_WAREHOUSE_ID"
+          echo "SHIPWAY_EMAIL=SET"
+          echo "SHIPWAY_LICENSE_KEY=SET"
+          echo "SHIPWAY_WAREHOUSE_ID=$SHIPWAY_WAREHOUSE_ID"
+          echo "SHIPWAY_RETURN_WAREHOUSE_ID=$SHIPWAY_RETURN_WAREHOUSE_ID"
           BODY="$(mktemp)"
-          CODE="$(curl --silent --show-error --location --max-time 20             --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY"             --header 'Content-Type: application/json'             --output "$BODY"             --write-out '%{http_code}'             'https://app.shipway.com/api/getorders?page=1')"
+          CODE="$(curl --silent --show-error --location --max-time 20 --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" --header 'Content-Type: application/json' --output "$BODY" --write-out '%{http_code}' 'https://app.shipway.com/api/getorders?page=1')"
           echo "SHIPWAY_HTTP_STATUS=$CODE"
           if [ "$CODE" = "200" ]; then
             echo "SHIPWAY_AUTH=VALID"
-            python3 - "$BODY" <<'PY'
-import json,sys
-p=sys.argv[1]
-try:
-    data=json.load(open(p))
-    if isinstance(data,list):
-        print(f"SHIPWAY_READONLY_RESPONSE=list:{len(data)}")
-    elif isinstance(data,dict):
-        print("SHIPWAY_READONLY_RESPONSE=dict")
-    else:
-        print("SHIPWAY_READONLY_RESPONSE=other")
-except Exception:
-    print("SHIPWAY_READONLY_RESPONSE=non_json")
-PY
+            BYTES="$(wc -c < "$BODY" | tr -d ' ')"
+            echo "SHIPWAY_RESPONSE_BYTES=$BYTES"
           else
             echo "SHIPWAY_AUTH=INVALID_OR_BLOCKED"
-            head -c 300 "$BODY" | tr '\n' ' '; echo
+            head -c 200 "$BODY" | tr '\n' ' '; echo
             exit 3
           fi
           rm -f "$BODY"
