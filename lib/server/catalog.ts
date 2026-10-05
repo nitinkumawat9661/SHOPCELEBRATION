@@ -82,7 +82,8 @@ function normalizeRetailDeclarations(input: unknown, required: boolean) {
     countryOfOrigin: cleanOptional(raw.countryOfOrigin, validation.catalog.categoryMax) || undefined,
     consumerCare: cleanOptional(raw.consumerCare, validation.catalog.noteMax) || undefined,
     bestBefore: cleanOptional(raw.bestBefore, validation.catalog.labelMax) || undefined,
-    unitSalePrice: cleanOptional(raw.unitSalePrice, validation.catalog.labelMax) || undefined
+    unitSalePrice: cleanOptional(raw.unitSalePrice, validation.catalog.labelMax) || undefined,
+    warrantyOrGuarantee: cleanOptional(raw.warrantyOrGuarantee, validation.catalog.noteMax) || undefined
   }
 
   if (!required && !Object.values(retail).some((value) => value !== undefined)) return undefined
