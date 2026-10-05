@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { formatMoney } from "../../lib/domain/catalog"
 import { fromMinorUnits } from "../../lib/domain/payment"
-import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../../lib/domain/order-status"
+import { customerPaymentStatusLabel, statusHasCapability, workflowActionTarget, type OrderStatus } from "../../lib/domain/order-status"
 import { storeContent, uiContent } from "../../lib/domain/content"
 import { SiteHeader } from "../shell/SiteHeader"
 import { TrustStrip } from "../shell/TrustStrip"
