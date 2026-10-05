@@ -1,4 +1,5 @@
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { createReadStream } from "node:fs"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { requireEnv } from "../../config/env"
 import { storageConfig, type CatalogImageMimeType, type PackingVideoMimeType } from "../../config/storage"
@@ -40,6 +41,27 @@ export async function createPackingVideoUploadUrl(orderId: string, contentType: 
     { expiresIn: storageConfig.uploadUrlTtlSeconds }
   )
   return { key, url }
+}
+
+export async function uploadPackingVideoFile(
+  orderId: string,
+  contentType: PackingVideoMimeType,
+  filePath: string,
+  contentLength: number
+) {
+  if (!Number.isSafeInteger(contentLength) || contentLength <= 0 || contentLength > validation.packingVideoMaxBytes) {
+    throw new Error("INVALID_PACKING_VIDEO_SIZE")
+  }
+  const ext = storageConfig.packingVideoTypes[contentType]
+  const key = `${orderVideoPrefix(orderId)}${crypto.randomUUID()}.${ext}`
+  await client().send(new PutObjectCommand({
+    Bucket: requireEnv("r2Bucket"),
+    Key: key,
+    ContentType: contentType,
+    ContentLength: contentLength,
+    Body: createReadStream(filePath)
+  }))
+  return { key }
 }
 
 export async function createPackingVideoViewUrl(key: string) {
