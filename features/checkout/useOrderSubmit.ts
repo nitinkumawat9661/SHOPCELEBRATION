@@ -54,7 +54,7 @@ type PaymentResult = {
 type GatewayWindow = Window & {
   Razorpay?: new (options: Record<string, unknown>) => { open: () => void }
   Cashfree?: (options: { mode: "sandbox" | "production" }) => {
-    checkout: (options: { paymentSessionId: string; redirectTarget: cashfreeRedirectTarget() | "_self" }) => Promise<unknown>
+    checkout: (options: { paymentSessionId: string; redirectTarget: "_modal" | "_self" }) => Promise<unknown>
   }
 }
 
