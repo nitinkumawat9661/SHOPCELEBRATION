@@ -128,7 +128,7 @@ export async function createProviderCheckout(input: CreateCheckoutInput): Promis
         customer_phone: input.customerPhone
       },
       order_meta: {
-        return_url: `${config.appBaseUrl}/payment/return?provider_order_id={order_id}`,
+        return_url: `${config.appBaseUrl}/payment/return?payment={order_id}`,
         notify_url: `${config.appBaseUrl}/api/payments/webhook/cashfree`
       },
       order_note: `Celebration ${input.publicOrderId}`
