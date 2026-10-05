@@ -73,6 +73,17 @@
 .marketplaceHighlights li{position:relative;padding-left:20px}
 .marketplaceHighlights li::before{content:"✓";position:absolute;left:0;top:0;color:#277044;font-weight:900}
 
+.marketplaceTrustGrid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:24px
+}
+.marketplaceTrustGrid>div{
+  min-width:0;padding:12px 9px;border:1px solid #ead8c9;border-radius:11px;background:#fffaf5;
+  display:grid;justify-items:center;text-align:center;gap:3px
+}
+.marketplaceTrustGrid>div>span{font-size:20px;line-height:1.2}
+.marketplaceTrustGrid b{font-size:9.5px;color:#58372f}
+.marketplaceTrustGrid small{font-size:8px;line-height:1.35;color:#8a695b}
+
 .mobileMarketplaceBuyBar{display:none}
 
 .adminProductGalleryEditor{
@@ -109,6 +120,8 @@
   .mobileMarketplaceBuyBar .catalogInlineQuantity{grid-template-columns:34px 30px 34px;min-height:46px}
   .mobileMarketplaceBuyBar .catalogInlineQuantity button,.mobileMarketplaceBuyBar .catalogInlineQuantity output{min-height:46px}
   .collectionDetailActions{padding-bottom:4px}
+  .marketplaceTrustGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:18px}
+  .marketplaceTrustGrid>div{padding:10px 7px}
 }
 
 @media(max-width:430px){
