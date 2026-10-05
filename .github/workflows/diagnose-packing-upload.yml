@@ -47,59 +47,18 @@ jobs:
           for k in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
             if [ -n "${!k:-}" ]; then echo "$k=SET"; else echo "$k=MISSING"; fi
           done
-
           cd "$ACTIVE"
-          node <<'NODE'
-const { S3Client, GetBucketCorsCommand, HeadBucketCommand } = require("@aws-sdk/client-s3");
-const client = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY }
-});
-(async () => {
-  try {
-    await client.send(new HeadBucketCommand({ Bucket: process.env.R2_BUCKET }));
-    console.log("R2_BUCKET_ACCESS=OK");
-  } catch (e) {
-    console.log("R2_BUCKET_ACCESS=FAIL", e?.name || "Error", e?.$metadata?.httpStatusCode || "");
-  }
-  try {
-    const out = await client.send(new GetBucketCorsCommand({ Bucket: process.env.R2_BUCKET }));
-    console.log("R2_CORS="+JSON.stringify(out.CORSRules || []));
-  } catch (e) {
-    console.log("R2_CORS_ERROR="+String(e?.name || e?.Code || "Error")+":"+String(e?.$metadata?.httpStatusCode || ""));
-  }
-})();
-NODE
+
+          node -e 'const {S3Client,HeadBucketCommand,GetBucketCorsCommand}=require("@aws-sdk/client-s3"); const c=new S3Client({region:"auto",endpoint:"https://"+process.env.R2_ACCOUNT_ID+".r2.cloudflarestorage.com",credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}}); (async()=>{try{await c.send(new HeadBucketCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_BUCKET_ACCESS=OK")}catch(e){console.log("R2_BUCKET_ACCESS=FAIL",e.name,e.$metadata&&e.$metadata.httpStatusCode)} try{const x=await c.send(new GetBucketCorsCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_CORS="+JSON.stringify(x.CORSRules||[]))}catch(e){console.log("R2_CORS_ERROR="+(e.name||"Error")+":"+((e.$metadata&&e.$metadata.httpStatusCode)||""))}})()'
 
           echo "RECENT_PACKING_LOGS_BEGIN"
           LOG="/home/$USER/.pm2/logs/celebration-site-error.log"
           if [ -f "$LOG" ]; then
-            tail -n 600 "$LOG" | grep -Ei 'packing-video|packing video|admin-packing|upload-service|r2|invalid_video|cors|signature' | tail -n 80 || true
+            tail -n 600 "$LOG" | grep -Ei 'packing-video|packing video|admin-packing|upload-service|invalid_video|cors|signature|r2' | tail -n 80 || true
           else
             echo "PM2_ERROR_LOG_NOT_FOUND"
           fi
           echo "RECENT_PACKING_LOGS_END"
 
-          node <<'NODE'
-const { Client } = require("pg");
-(async () => {
-  const sslMode = String(process.env.DATABASE_SSL_MODE || "").toLowerCase();
-  const client = new Client({ connectionString: process.env.DATABASE_URL, ssl: sslMode === "require" ? { rejectUnauthorized: false } : undefined });
-  try {
-    await client.connect();
-    const r = await client.query(`
-      SELECT public_id, status, (packing_video_key IS NOT NULL) AS has_video, updated_at
-      FROM orders
-      ORDER BY updated_at DESC
-      LIMIT 10
-    `);
-    for (const row of r.rows) console.log("ORDER_STAGE", row.public_id, row.status, "hasVideo="+row.has_video, row.updated_at.toISOString());
-  } catch (e) {
-    console.log("ORDER_STAGE_QUERY_ERROR", e?.code || e?.message || "unknown");
-  } finally {
-    try { await client.end(); } catch {}
-  }
-})();
-NODE
+          node -e 'const {Client}=require("pg");(async()=>{const ssl=String(process.env.DATABASE_SSL_MODE||"").toLowerCase()==="require"?{rejectUnauthorized:false}:undefined;const c=new Client({connectionString:process.env.DATABASE_URL,ssl});try{await c.connect();const r=await c.query("SELECT public_id,status,(packing_video_key IS NOT NULL) AS has_video,updated_at FROM orders ORDER BY updated_at DESC LIMIT 10");for(const x of r.rows)console.log("ORDER_STAGE",x.public_id,x.status,"hasVideo="+x.has_video,x.updated_at.toISOString())}catch(e){console.log("ORDER_STAGE_QUERY_ERROR",e.code||e.message)}finally{try{await c.end()}catch{}}})()'
           REMOTE
