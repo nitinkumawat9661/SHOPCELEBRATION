@@ -55,6 +55,32 @@ jobs:
           done
           echo "SHIPWAY_LOGS_END"
 
+          for ORDER_ID in CEL-261004-D219ABD352917C24 CEL-261005-F32ED64D032E641A; do
+            echo "SHIPWAY_ORDER_LOOKUP=$ORDER_ID"
+            BODY="$(mktemp)"
+            CODE="$(curl --silent --show-error --location --max-time 20 --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" --header 'Content-Type: application/json' --output "$BODY" --write-out '%{http_code}' "https://app.shipway.com/api/getorders?orderid=$ORDER_ID&page=1")"
+            echo "SHIPWAY_LOOKUP_HTTP=$CODE"
+            python3 - "$BODY" "$ORDER_ID" <<'PY'
+import json,sys
+p,oid=sys.argv[1],sys.argv[2]
+try:
+    data=json.load(open(p))
+except Exception as e:
+    print("SHIPWAY_LOOKUP_JSON=INVALID")
+    sys.exit(0)
+def walk(x):
+    if isinstance(x,dict):
+        for k,v in x.items():
+            if str(k).lower() in {"order_id","orderid","awb","awb_number","carrier_id","carrier","status","shipment_status","message","success","error"}:
+                print(f"SHIPWAY_FIELD {k}={v}")
+            if isinstance(v,(dict,list)): walk(v)
+    elif isinstance(x,list):
+        for v in x[:5]: walk(v)
+walk(data)
+PY
+            rm -f "$BODY"
+          done
+
           cd "$ACTIVE"
           node -e 'const {Client}=require("pg");(async()=>{const ssl=String(process.env.DATABASE_SSL_MODE||"").toLowerCase()==="require"?{rejectUnauthorized:false}:undefined;const c=new Client({connectionString:process.env.DATABASE_URL,ssl});try{await c.connect();const r=await c.query("SELECT public_id,status,shipping_provider,shipping_tracking_number,shipping_carrier_id,shipping_booked_at,customer_approved_at,address,city,state,pincode,phone,updated_at FROM orders ORDER BY updated_at DESC LIMIT 8");for(const x of r.rows){console.log("ORDER",JSON.stringify({publicId:x.public_id,status:x.status,provider:x.shipping_provider,tracking:x.shipping_tracking_number,carrier:x.shipping_carrier_id,bookedAt:x.shipping_booked_at,approvedAt:x.customer_approved_at,city:x.city,state:x.state,pincode:x.pincode,phone:x.phone?String(x.phone).replace(/.(?=.{4})/g,"*"):null,updatedAt:x.updated_at}))}}catch(e){console.log("DB_ERROR",e.code||e.message)}finally{try{await c.end()}catch{}}})()'
           REMOTE
