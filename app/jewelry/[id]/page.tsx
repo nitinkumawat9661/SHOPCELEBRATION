@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { CatalogCard, CatalogProductImage } from "../../../features/catalog/CatalogCard"
+import { CatalogCard } from "../../../features/catalog/CatalogCard"
+import { ProductGallery } from "../../../features/catalog/ProductGallery"
 import { AddToCart } from "../../../features/cart/AddToCart"
 import { SiteFooter } from "../../../features/shell/SiteFooter"
 import { StorefrontHeader } from "../../../features/shell/StorefrontHeader"
@@ -29,10 +30,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       {!product ? <section className="collectionSection"><div className="wrap collectionEmpty" role="status"><h1>This gift couldn’t load just now.</h1><p>Please try again in a moment.</p><Link href={`/jewelry/${encodeURIComponent(id)}`}>Try again →</Link><Link href="/jewelry?view=all">Back to the collection</Link></div></section> : <>
         <div className="wrap collectionBreadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true">›</span><Link href={collectionUrl}>Collection</Link><span aria-hidden="true">›</span><span>{product.name}</span></div>
         <section className="collectionDetail"><div className="wrap collectionDetailGrid">
-          <div className="collectionDetailVisual"><CatalogProductImage product={product} priority /></div>
+          <div className="collectionDetailVisual"><ProductGallery product={product} /></div>
           <div className="collectionDetailInfo">
             <span className="collectionEyebrow">{product.category}</span><h1>{product.name}</h1>
             {product.note && <p className="collectionDetailNote">{product.note}</p>}
+            {product.highlights?.length ? <ul className="marketplaceHighlights">{product.highlights.map((item) => <li key={item}>{item}</li>)}</ul> : null}
             <div className="collectionDetailPrice"><span>{individual ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(individual ? product.salePricePaise! / 100 : product.minTier)}</strong><small>{individual ? "Buy this item on its own. No additional shipping fee at checkout." : "Hamper budget, not an individual item price."}</small></div>
             <div className="collectionDetailActions">
               {individual ? <><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
@@ -56,9 +58,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </dl>
             </section>}
             <div className="collectionDetailPromise"><span aria-hidden="true">♡</span><div><b>{individual ? "A little something, just for them" : "A thoughtful part of your hamper"}</b><p>{individual ? "Choose your quantity in the cart, add delivery details and pay securely online." : "Share your occasion and budget. Our team curates the gifts inside your hamper."}</p></div></div>
-            <div className="collectionDetailAbout"><h2>Made for a thoughtful surprise</h2><p>{individual ? "This gift is available individually and within eligible hampers. For a curated gift set, share your occasion and budget with our team." : "This gift is currently available within our curated hampers. The final selection is curated for your occasion."}</p><Link href="/policies">Delivery & order policies <span aria-hidden="true">→</span></Link>{individual && <Link href="/#budgets">Explore our curated hampers →</Link>}</div>
+            <div className="collectionDetailAbout"><h2>Product details</h2><p>{product.description || (individual ? "This gift is available individually and within eligible hampers. For a curated gift set, share your occasion and budget with our team." : "This gift is currently available within our curated hampers. The final selection is curated for your occasion.")}</p><Link href="/policies">Delivery & order policies <span aria-hidden="true">→</span></Link>{individual && <Link href="/#budgets">Explore our curated hampers →</Link>}</div>
           </div>
         </div></section>
+        {individual && <div className="mobileMarketplaceBuyBar" aria-label="Quick purchase controls"><div><small>{product.name}</small><b>{formatMoney(product.salePricePaise! / 100)}</b></div><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></div>}
         {related.length > 0 && <section className="collectionRelated"><div className="wrap collectionContainer"><div className="collectionHeading"><div><span className="collectionEyebrow">Keep the inspiration going</span><h2>More thoughtful details</h2></div><Link href={collectionUrl}>View collection →</Link></div><div className="collectionGrid">{related.map((item) => <CatalogCard product={item} key={item.id} />)}</div></div></section>}
       </>}
       <SiteFooter />
