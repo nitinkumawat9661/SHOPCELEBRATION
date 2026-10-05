@@ -49,7 +49,18 @@ jobs:
           done
           cd "$ACTIVE"
 
-          node -e 'const {S3Client,HeadBucketCommand,GetBucketCorsCommand}=require("@aws-sdk/client-s3"); const c=new S3Client({region:"auto",endpoint:"https://"+process.env.R2_ACCOUNT_ID+".r2.cloudflarestorage.com",credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}}); (async()=>{try{await c.send(new HeadBucketCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_BUCKET_ACCESS=OK")}catch(e){console.log("R2_BUCKET_ACCESS=FAIL",e.name,e.$metadata&&e.$metadata.httpStatusCode)} try{const x=await c.send(new GetBucketCorsCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_CORS="+JSON.stringify(x.CORSRules||[]))}catch(e){console.log("R2_CORS_ERROR="+(e.name||"Error")+":"+((e.$metadata&&e.$metadata.httpStatusCode)||""))}})()'
+          node -e 'const {S3Client,HeadBucketCommand,GetBucketCorsCommand,PutObjectCommand}=require("@aws-sdk/client-s3"); const {getSignedUrl}=require("@aws-sdk/s3-request-presigner"); const c=new S3Client({region:"auto",endpoint:"https://"+process.env.R2_ACCOUNT_ID+".r2.cloudflarestorage.com",credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}}); (async()=>{try{await c.send(new HeadBucketCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_BUCKET_ACCESS=OK")}catch(e){console.log("R2_BUCKET_ACCESS=FAIL",e.name,e.$metadata&&e.$metadata.httpStatusCode)} try{const x=await c.send(new GetBucketCorsCommand({Bucket:process.env.R2_BUCKET}));console.log("R2_CORS="+JSON.stringify(x.CORSRules||[]))}catch(e){console.log("R2_CORS_ERROR="+(e.name||"Error")+":"+((e.$metadata&&e.$metadata.httpStatusCode)||""))} const u=await getSignedUrl(c,new PutObjectCommand({Bucket:process.env.R2_BUCKET,Key:"diagnostics/cors-check.mp4",ContentType:"video/mp4"}),{expiresIn:300}); console.log("R2_TEST_URL="+u)})()' > /tmp/r2diag.txt
+          grep -v '^R2_TEST_URL=' /tmp/r2diag.txt
+          TEST_URL="$(grep '^R2_TEST_URL=' /tmp/r2diag.txt | cut -d= -f2-)"
+          for ORIGIN in https://shopcelebration.in https://www.shopcelebration.in; do
+            echo "CORS_ORIGIN=$ORIGIN"
+            curl --silent --show-error --max-time 15 -X OPTIONS "$TEST_URL" \
+              -H "Origin: $ORIGIN" \
+              -H "Access-Control-Request-Method: PUT" \
+              -H "Access-Control-Request-Headers: content-type" \
+              -D - -o /dev/null | grep -Ei 'HTTP/|access-control-allow-origin|access-control-allow-methods|access-control-allow-headers' || true
+          done
+          rm -f /tmp/r2diag.txt
 
           echo "RECENT_PACKING_LOGS_BEGIN"
           LOG="/home/$USER/.pm2/logs/celebration-site-error.log"
