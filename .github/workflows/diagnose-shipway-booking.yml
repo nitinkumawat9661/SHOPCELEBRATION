@@ -73,6 +73,14 @@ jobs:
           tail -n 300 /home/$USER/.pm2/logs/celebration-site-error.log | grep -A10 -B2 -Ei 'shipway-booking-response|account-auto-book-shipway|customer-orders-auto-book' | tail -n 80 || true
           echo "REAL_APP_RETRY_END"
 
+          echo "SHIPWAY_SERVICEABILITY_BEGIN"
+          SVC="$(mktemp)"
+          SCODE="$(curl --silent --show-error --location --max-time 20 --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" --output "$SVC" --write-out '%{http_code}' 'https://app.shipway.com/api/pincodeserviceable?pincode=332001&payment_type=P')"
+          echo "SHIPWAY_SERVICEABILITY_HTTP=$SCODE"
+          node -e 'const fs=require("fs");let d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));function w(x){if(Array.isArray(x)){for(const v of x.slice(0,30))w(v);return}if(!x||typeof x!=="object")return;const id=x.carrier_id??x.id;const name=x.carrier_title??x.name;const pay=x.payment_type;if(id!==undefined||name!==undefined)console.log("SHIPWAY_OPTION",JSON.stringify({id:id??null,name:name??null,payment:pay??null}));for(const v of Object.values(x))if(v&&typeof v==="object")w(v)}w(d)' "$SVC"
+          rm -f "$SVC"
+          echo "SHIPWAY_SERVICEABILITY_END"
+
           echo "SHIPWAY_WAREHOUSES_BEGIN"
           WARE="$(mktemp)"
           WCODE="$(curl --silent --show-error --location --max-time 20 --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" --header 'Content-Type: application/json' --output "$WARE" --write-out '%{http_code}' 'https://app.shipway.com/api/getwarehouses')"
