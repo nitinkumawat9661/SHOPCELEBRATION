@@ -1,0 +1,73 @@
+name: Verify Shipway Credentials Readonly
+
+on:
+  push:
+    branches:
+      - ops/verify-shipway-readonly
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration_deploy"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration_deploy" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/celebration_deploy" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+
+      - name: Verify Shipway auth read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          ENV_FILE=/var/www/celebration/shared/.env.production
+          test -f "$ENV_FILE"
+          set -a
+          . "$ENV_FILE"
+          set +a
+          for k in SHIPWAY_EMAIL SHIPWAY_LICENSE_KEY SHIPWAY_WAREHOUSE_ID SHIPWAY_RETURN_WAREHOUSE_ID; do
+            [ -n "${!k:-}" ] || { echo "$k=MISSING"; exit 2; }
+          done
+          printf 'SHIPWAY_EMAIL=SET\nSHIPWAY_LICENSE_KEY=SET\nSHIPWAY_WAREHOUSE_ID=%s\nSHIPWAY_RETURN_WAREHOUSE_ID=%s\n' "$SHIPWAY_WAREHOUSE_ID" "$SHIPWAY_RETURN_WAREHOUSE_ID"
+          BODY="$(mktemp)"
+          CODE="$(curl --silent --show-error --location --max-time 20             --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY"             --header 'Content-Type: application/json'             --output "$BODY"             --write-out '%{http_code}'             'https://app.shipway.com/api/getorders?page=1')"
+          echo "SHIPWAY_HTTP_STATUS=$CODE"
+          if [ "$CODE" = "200" ]; then
+            echo "SHIPWAY_AUTH=VALID"
+            python3 - "$BODY" <<'PY'
+import json,sys
+p=sys.argv[1]
+try:
+    data=json.load(open(p))
+    if isinstance(data,list):
+        print(f"SHIPWAY_READONLY_RESPONSE=list:{len(data)}")
+    elif isinstance(data,dict):
+        print("SHIPWAY_READONLY_RESPONSE=dict")
+    else:
+        print("SHIPWAY_READONLY_RESPONSE=other")
+except Exception:
+    print("SHIPWAY_READONLY_RESPONSE=non_json")
+PY
+          else
+            echo "SHIPWAY_AUTH=INVALID_OR_BLOCKED"
+            head -c 300 "$BODY" | tr '\n' ' '; echo
+            exit 3
+          fi
+          rm -f "$BODY"
+          REMOTE
