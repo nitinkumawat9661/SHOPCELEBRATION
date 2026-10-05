@@ -19,13 +19,13 @@ const checks = [
   ["Forced action", "Mandatory actions are limited to functions reasonably needed for the requested service, security, payment and order fulfilment."],
   ["Subscription trap", "Celebration does not operate a recurring paid subscription flow."],
   ["Interface interference", "Checkout consent is not pre-selected; payment controls and back/remove actions remain visible and understandable."],
-  ["Bait and switch", "The checkout uses the current server-validated catalog and blocks payment if price or availability changes."],
+  ["Bait and switch", "Checkout uses the latest price and availability and stops payment if something changes."],
   ["Drip pricing", "The payable amount is shown before payment; the current individual-product checkout states that no additional shipping fee is added at checkout."],
   ["Disguised advertisement", "Celebration does not currently mix third-party paid advertisements into product or search results."],
   ["Nagging", "The checkout does not repeatedly pressure a user with refusal pop-ups or repeated hesitation offers."],
   ["Trick wording", "Payment, policy consent, coupon and cancellation/refund wording is intended to state the consequence directly."],
-  ["SaaS billing", "Not applicable: Celebration does not run a recurring SaaS/subscription billing model."],
-  ["Rogue malware", "Celebration does not intentionally distribute software, browser extensions or executable downloads."]
+  ["Recurring service billing", "Not applicable: Celebration does not run a recurring paid subscription."],
+  ["Malicious software", "Celebration does not distribute software, browser extensions or executable downloads."]
 ] as const
 
 export default function CompliancePage() {
@@ -37,9 +37,9 @@ export default function CompliancePage() {
         <div className="wrap policyWrap">
           <div className="policyHero">
             <div className="kicker">CONSUMER INTERFACE COMPLIANCE</div>
-            <h1 className="policyTitle">Dark-pattern self-audit declaration.</h1>
+            <h1 className="policyTitle">Dark-pattern customer-experience review.</h1>
             <p className="policyLead">Celebration reviewed its customer-facing storefront, catalog, cart, account, checkout, payment and tracking flows against the 13 dark patterns identified by the Central Consumer Protection Authority.</p>
-            <div className="privacyMeta">Internal code/UI self-audit date: 5 October 2026 • Review scope: shopcelebration.in customer flows</div>
+            <div className="privacyMeta">Customer experience review: 5 October 2026 • Scope: shopcelebration.in shopping journey</div>
             <div className="policySummaryGrid">
               <div><b>Explicit consent</b><span>Checkout policy consent is not pre-ticked and payment remains disabled until the customer actively accepts it.</span></div>
               <div><b>No hidden cart additions</b><span>Items enter the cart only after a customer action; no donation, add-on or unrelated service is silently added.</span></div>
@@ -53,7 +53,7 @@ export default function CompliancePage() {
 
           <div className="policyNotice">
             <strong>Result of this internal review</strong>
-            <span>No intentional use of the 13 listed dark patterns was identified in the audited Celebration customer flows. This is Celebration's own self-audit record, not a government-issued certification. If a customer spots a misleading or coercive interface, it should be reported through the official support/grievance channel for review.</span>
+            <span>No intentional use of the 13 listed dark patterns was identified in the reviewed Celebration shopping journey. This is Celebration’s own review, not a government-issued certification. If a customer spots a misleading or coercive experience, it should be reported through the official support or grievance channel for review.</span>
           </div>
 
           <div className="policySupport">
