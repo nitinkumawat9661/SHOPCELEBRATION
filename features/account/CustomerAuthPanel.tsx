@@ -518,8 +518,7 @@ export function CustomerAuthPanel({
       if (verifiedAccessToken) {
         setLocalError("OTP is already verified. Tap Continue securely to finish the reset.")
       } else {
-        const reason = cause instanceof Error ? safeProviderReason({ message: cause.message }) : ""
-        setLocalError(reason && !/^INVALID_OTP$/i.test(reason) ? `OTP verification failed (${reason}).` : errorCopy.INVALID_OTP)
+        setLocalError(errorCopy.INVALID_OTP)
       }
     } finally {
       setResetBusy(false)
