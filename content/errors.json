@@ -90,5 +90,7 @@
   "PACKING_UPLOAD_SESSION_EXPIRED": "Packing-video upload session expired. Select the video and upload again.",
   "PACKING_UPLOAD_OFFSET_MISMATCH": "Packing-video upload got out of sync. Please retry the upload.",
   "PACKING_UPLOAD_INCOMPLETE": "Packing-video upload is incomplete. Please retry the upload.",
-  "INVALID_CONTENT_LENGTH": "The packing-video upload request is invalid."
+  "INVALID_CONTENT_LENGTH": "The packing-video upload request is invalid.",
+  "SHIPWAY_WAREHOUSE_NOT_FOUND": "Configured Shipway warehouse could not be resolved. Check the warehouse setup.",
+  "SHIPWAY_NO_SERVICEABLE_CARRIER": "No serviceable prepaid Shipway carrier is available for this delivery pincode."
 }

@@ -57,6 +57,82 @@ function httpsUrl(value: unknown) {
   }
 }
 
+function objectList(value: unknown): Record<string, unknown>[] {
+  const found: Record<string, unknown>[] = []
+  const visit = (node: unknown) => {
+    if (Array.isArray(node)) {
+      for (const item of node) visit(item)
+      return
+    }
+    if (!node || typeof node !== "object") return
+    const record = node as Record<string, unknown>
+    found.push(record)
+    for (const child of Object.values(record)) {
+      if (child && typeof child === "object") visit(child)
+    }
+  }
+  visit(value)
+  return found
+}
+
+function positiveNumber(value: unknown) {
+  const number = Number(value)
+  return Number.isFinite(number) && number > 0 ? number : null
+}
+
+async function shipwayWarehousePincode(warehouseId: string) {
+  const raw = await request(`/api/getwarehouses?warehouseid=${encodeURIComponent(warehouseId)}`, { method: "GET" })
+  const warehouse = objectList(raw).find((item) => String(item.warehouse_id ?? item.id ?? "").trim() === warehouseId)
+  const pincode = String(warehouse?.pincode ?? warehouse?.zipcode ?? "").trim()
+  if (!/^\d{6}$/.test(pincode)) throw new ShipwayApiError("SHIPWAY_WAREHOUSE_NOT_FOUND")
+  return pincode
+}
+
+async function rateBasedCarrier(fromPincode: string, toPincode: string) {
+  const params = new URLSearchParams({
+    fromPincode,
+    toPincode,
+    paymentType: "prepaid",
+    shipment_type: "1"
+  })
+  const raw = await request(`/api/getshipwaycarrierrates?${params.toString()}`, { method: "GET" })
+  const root = raw && typeof raw === "object" ? raw as Record<string, unknown> : {}
+  const rateCard = Array.isArray(root.rate_card) ? root.rate_card : []
+  const options = rateCard.flatMap((item) => {
+    if (!item || typeof item !== "object") return []
+    const row = item as Record<string, unknown>
+    const carrierId = positiveNumber(row.carrier_id)
+    const charge = positiveNumber(row.delivery_charge)
+    if (!carrierId || !charge) return []
+    return [{
+      carrierId: String(Math.trunc(carrierId)),
+      charge,
+      name: typeof row.courier_name === "string" ? row.courier_name.trim() : ""
+    }]
+  }).sort((a, b) => a.charge - b.charge || Number(a.carrierId) - Number(b.carrierId))
+
+  if (options.length) return options[0]
+
+  const fallback = await request(
+    `/api/pincodeserviceable?pincode=${encodeURIComponent(toPincode)}&payment_type=P`,
+    { method: "GET" }
+  )
+  const serviceable = objectList(fallback).flatMap((row) => {
+    const carrierId = positiveNumber(row.carrier_id ?? row.id)
+    if (!carrierId) return []
+    return [{
+      carrierId: String(Math.trunc(carrierId)),
+      charge: Number.POSITIVE_INFINITY,
+      name: typeof row.carrier_title === "string"
+        ? row.carrier_title.trim()
+        : typeof row.name === "string" ? row.name.trim() : ""
+    }]
+  }).sort((a, b) => Number(a.carrierId) - Number(b.carrierId))
+
+  if (!serviceable.length) throw new ShipwayApiError("SHIPWAY_NO_SERVICEABLE_CARRIER")
+  return serviceable[0]
+}
+
 async function request(path: string, init: RequestInit) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 12000)
@@ -111,10 +187,19 @@ export async function bookShipwayShipment(order: OrderRecord): Promise<ShipwayBo
   const warehouseId = numericId(requireEnv("shipwayWarehouseId"), "INVALID_SHIPWAY_WAREHOUSE_ID")
   const returnWarehouseId = numericId(requireEnv("shipwayReturnWarehouseId"), "INVALID_SHIPWAY_RETURN_WAREHOUSE_ID")
   const name = splitName(order.receiverName)
+  const pickupPincode = await shipwayWarehousePincode(warehouseId)
+  const selectedCarrier = await rateBasedCarrier(pickupPincode, order.pincode)
+
+  console.info("shipway-carrier-selected", {
+    orderId: order.publicId,
+    carrierId: selectedCarrier.carrierId,
+    carrier: selectedCarrier.name,
+    quotedCharge: Number.isFinite(selectedCarrier.charge) ? selectedCarrier.charge : null
+  })
 
   const payload = {
     order_id: order.publicId,
-    carrier_id: "",
+    carrier_id: Number(selectedCarrier.carrierId),
     warehouse_id: warehouseId,
     return_warehouse_id: returnWarehouseId,
     products: productsFor(order),
