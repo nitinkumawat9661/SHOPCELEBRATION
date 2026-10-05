@@ -125,7 +125,7 @@ const customerUi = {
   },
   footer: {
     ...ui.footer,
-    policy: "Order & Protection Policy"
+    policy: "Order & Refund Policy"
   },
   tracking: {
     ...ui.tracking,
