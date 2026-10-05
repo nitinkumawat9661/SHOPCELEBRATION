@@ -55,7 +55,7 @@ function nextUpdateText(status: OrderStatus) {
     payment_verified: "Your order is ready to move into preparation.",
     preparing: "We’re preparing your order. The packing video comes next.",
     packing_video_ready: "Your packing video is ready. Review it and approve dispatch.",
-    customer_approved: "Approved. Shipping details will be added next.",
+    customer_approved: "Approved. Courier booking is retrying automatically.",
     shipped: "Your order has been shipped.",
     out_for_delivery: "Your order is out for delivery.",
     delivered: "Delivered. Need help? WhatsApp support is available below.",
@@ -105,10 +105,15 @@ export function CustomerAccountPage() {
     setOrdersError("")
     try {
       const response = await fetch(routes.api.customerOrderApprove(order.publicId), { method: "POST" })
-      const data = await response.json() as { ok?: boolean; error?: string }
+      const data = await response.json() as { ok?: boolean; error?: string; shippingBooked?: boolean; status?: OrderStatus }
       if (!response.ok || !data.ok) throw new Error(data.error || "APPROVAL_FAILED")
       setApprovalConsent((current) => ({ ...current, [order.publicId]: false }))
-      notifyUx({ title: "Packing approved ✓", body: `${order.publicId} is ready for dispatch.`, tone: "success", durationMs: 4000 })
+      notifyUx({
+        title: "Packing approved ✓",
+        body: data.shippingBooked ? "Courier booked automatically. Tracking details are being updated." : "Approval saved. Courier booking will retry automatically.",
+        tone: "success",
+        durationMs: 4000
+      })
       await loadOrders()
     } catch (cause) {
       const code = cause instanceof Error ? cause.message : "APPROVAL_FAILED"
