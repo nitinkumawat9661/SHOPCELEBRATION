@@ -97,9 +97,16 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
 
   const minTier = importInteger(pick("minTier", "hamperMinimum", "minimumHamper"), existing?.minTier ?? catalog.tiers[0]?.price ?? 0, 0)
   const points = importInteger(pick("points"), existing?.points ?? 1, 1)
-  const note = importText(pick("note", "description"), existing?.note || "")
+  const note = importText(pick("note", "shortDescription", "summary"), existing?.note || "")
+  const description = importText(pick("description", "longDescription"), existing?.description || "") || undefined
+  const badge = importText(pick("badge", "label"), existing?.badge || "") || undefined
+  const highlightsRaw = importText(pick("highlights", "features"), (existing?.highlights || []).join("|"))
+  const highlights = highlightsRaw ? highlightsRaw.split("|").map((item) => item.trim()).filter(Boolean).slice(0, validation.catalog.maxHighlights) : undefined
   const icon = importText(pick("icon", "emoji"), existing?.icon || "🎁") || undefined
   const imageUrl = importText(pick("imageUrl", "image", "photo", "photoUrl"), existing?.imageUrl || "") || undefined
+  const imageUrlsRaw = importText(pick("imageUrls", "gallery", "images"), (existing?.images || []).map((item) => item.url).join("|"))
+  const imageUrls = imageUrlsRaw ? imageUrlsRaw.split("|").map((item) => item.trim()).filter(Boolean).slice(0, validation.catalog.maxImages) : []
+  const images = imageUrls.length ? imageUrls.map((url) => ({ url, alt: name })) : imageUrl ? [{ url: imageUrl, alt: name }] : undefined
   const active = importBoolean(pick("active", "status"), existing?.active !== false)
   const sellIndividually = importBoolean(pick("sellIndividually", "individualSale", "sellIndividual"), existing?.sellIndividually === true)
   const prepackagedRetail = importBoolean(pick("prepackagedRetail", "packagedRetail", "legalMetrology"), existing?.prepackagedRetail === true)
@@ -141,7 +148,7 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
   if (sellIndividually && !salePricePaise) throw new Error(`Row ${rowNumber}: individual selling ON hai, sale price required hai.`)
 
   return {
-    id, name, category, minTier, points, note, icon, imageUrl, active, sellIndividually, salePricePaise, prepackagedRetail,
+    id, name, category, minTier, points, note, description, highlights, badge, icon, imageUrl: images?.[0]?.url || imageUrl, images, active, sellIndividually, salePricePaise, prepackagedRetail,
     retail: { genericName, netQuantity, mrpPaise, manufacturerOrPackerName, manufacturerOrPackerAddress, importerName, importerAddress, countryOfOrigin, consumerCare, bestBefore, unitSalePrice, warrantyOrGuarantee }
   }
 }
@@ -441,8 +448,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
 
   function downloadCsvTemplate() {
     const csv = [
-      "id,name,category,minTier,points,description,imageUrl,active,sellIndividually,salePrice,prepackagedRetail,genericName,netQuantity,mrp,countryOfOrigin,manufacturerOrPackerName,manufacturerOrPackerAddress,importerName,importerAddress,consumerCare,bestBefore,unitSalePrice,warrantyOrGuarantee",
-      "sample-necklace,Sample Necklace,Jewelry,499,2,Stainless steel necklace,https://example.com/product.webp,true,true,799,true,Necklace,1 N,999,India,Example Manufacturer,Exact package address,,,care@example.com,,,Manufacturer warranty if applicable"
+      "id,name,category,minTier,points,note,description,highlights,badge,imageUrls,active,sellIndividually,salePrice,prepackagedRetail,genericName,netQuantity,mrp,countryOfOrigin,manufacturerOrPackerName,manufacturerOrPackerAddress,importerName,importerAddress,consumerCare,bestBefore,unitSalePrice,warrantyOrGuarantee",
+      "sample-necklace,Sample Necklace,Jewelry,499,2,Premium everyday necklace,Detailed product description,Premium finish|Gift-ready|Daily wear,Bestseller,https://example.com/1.webp|https://example.com/2.webp,true,true,799,true,Necklace,1 N,999,India,Example Manufacturer,Exact package address,,,care@example.com,,,Manufacturer warranty if applicable"
     ].join("\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const anchor = document.createElement("a")
