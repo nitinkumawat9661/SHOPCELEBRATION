@@ -30,14 +30,14 @@ export default async function PoliciesPage() {
             <p className="policyLead">This policy explains when an order can be changed or cancelled, when a return/refund/replacement is available, how delivery works and what evidence may be needed for a genuine issue.</p>
             <div className="privacyMeta">Policy version: 5 October 2026</div>
             <div className="policySummaryGrid">
-              <div><b>Prepaid &amp; verified</b><span>Processing starts only after the payment provider or approved payment flow confirms the payment.</span></div>
+              <div><b>Prepaid &amp; verified</b><span>Processing starts only after the payment is securely confirmed.</span></div>
               <div><b>No hidden cancellation fee</b><span>Celebration does not impose a separate cancellation charge merely because you request a cancellation.</span></div>
               <div><b>Statutory rights preserved</b><span>Wrong, damaged, defective, spurious, materially different or legally remediable late-delivery issues are not excluded by this policy.</span></div>
             </div>
           </div>
 
           <div className="privacySections">
-            <article className="privacySection"><h2>1. Payment and order confirmation</h2><p>Orders are prepaid. An automated gateway payment is treated as confirmed only after provider-side verification. A pending payment is not a failed payment; if money has been debited, check the saved order/payment status before paying again. The final payable amount, products and eligible offer are revalidated before payment.</p></article>
+            <article className="privacySection"><h2>1. Payment and order confirmation</h2><p>Orders are prepaid. A payment is treated as confirmed only after a secure confirmation. A pending payment is not necessarily a failed payment; if money has been debited, check the saved order status before paying again. The final payable amount, products and eligible offer are checked again before payment.</p></article>
 
             <article className="privacySection"><h2>2. Cancellation before dispatch</h2><p>Contact Celebration as early as possible with your Order ID. Standard, non-personalized items may be cancelled while the order has not entered an irreversible fulfilment stage or dispatch. Personalized/custom hampers may become non-cancellable once preparation or personalization has materially begun. Celebration does not impose a separate cancellation fee merely for cancelling; where a cancellation is accepted, the eligible prepaid amount is refunded according to the refund section below. If Celebration cancels an order, the eligible prepaid amount will be refunded.</p></article>
 
@@ -51,7 +51,7 @@ export default async function PoliciesPage() {
 
             <article className="privacySection"><h2>7. Delivery, address and recipient availability</h2><p>The “needed by” date is a requested delivery date unless Celebration expressly confirms otherwise. Courier serviceability, weather, public disruption, recipient availability and other events outside reasonable control can affect timing. Customers should provide a complete address, pincode and reachable phone number. If goods are delivered late from a stated delivery schedule, eligible take-back/refund or other consumer remedies remain available, except where applicable law provides an exception such as force majeure.</p></article>
 
-            <article className="privacySection"><h2>8. Refund method and timeline</h2><p>Accepted refunds are normally initiated to the original payment method without unreasonable delay, generally within 2 business days after approval. After a Cashfree refund is initiated, banks/payment networks commonly take about 5–7 business days to reflect the credit; actual bank timelines can vary. Failed gateway transactions may be automatically reversed by the payment provider. Celebration will not ask for a UPI PIN, card PIN or banking OTP to process a refund.</p></article>
+            <article className="privacySection"><h2>8. Refund method and timeline</h2><p>Accepted refunds are normally initiated to the original payment method without unreasonable delay, generally within 2 business days after approval. Banks or payment apps commonly take about 5–7 business days to reflect the credit after a refund is initiated, although actual timelines can vary. An unsuccessful online payment may also be reversed automatically. Celebration will not ask for a UPI PIN, card PIN or banking OTP to process a refund.</p></article>
 
             <article className="privacySection"><h2>9. Discounts and refund amount</h2><p>A refund is based on the amount actually paid for the affected order/item after applicable discounts, not an undiscounted reference price. If only part of an order is affected, a proportionate remedy may be appropriate. Nothing here permits Celebration to retain an amount that applicable law requires to be refunded.</p></article>
 

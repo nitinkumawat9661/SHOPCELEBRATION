@@ -54,7 +54,7 @@
     {
       "icon": "💳",
       "title": "Clear payment",
-      "body": "Gateway payments are verified automatically. If manual UPI is offered, a transaction reference may be required for confirmation."
+      "body": "Online payments are confirmed automatically. If a manual UPI option is shown, you may be asked for the transaction reference."
     },
     {
       "icon": "🎥",
@@ -76,7 +76,7 @@
     "defaultState": "Rajasthan",
     "paymentSteps": [
       "Pay {amount} using UPI.",
-      "Enter the UTR / transaction reference after payment.",
+      "Enter the transaction reference after payment.",
       "Place your order and track every update from My Celebration."
     ],
     "policyConsent": "I agree to the Order, Cancellation, Return & Refund Policy and Terms & Legal, and acknowledge the Privacy Policy."
@@ -88,7 +88,7 @@
       {
         "icon": "💳",
         "title": "Payment",
-        "body": "Orders are prepaid. Gateway payments are confirmed from the payment provider/server status. Manual UPI, when available, may require a transaction reference for verification. Order processing starts only after payment is verified."
+        "body": "Orders are prepaid. Payment is confirmed securely before order processing begins. If a manual UPI option is shown, you may be asked for the transaction reference."
       },
       {
         "icon": "🎀",

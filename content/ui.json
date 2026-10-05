@@ -130,7 +130,7 @@
       "setupPending": "UPI is temporarily unavailable.",
       "payButton": "Pay via UPI",
       "setupButton": "UPI unavailable",
-      "referenceLabel": "UPI UTR / Transaction Reference *",
+      "referenceLabel": "UPI transaction reference *",
       "referencePlaceholder": "Enter transaction reference",
       "back": "← Back",
       "hint": "Packing video before dispatch",

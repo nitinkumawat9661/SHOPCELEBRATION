@@ -280,7 +280,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         <div className="paymentReturnStateList">
           <div><b>1</b><span><strong>Order saved</strong><small>Your items and delivery details stay saved.</small></span></div>
           <div><b>2</b><span><strong>No processing started</strong><small>We start processing only after a verified payment.</small></span></div>
-          <div><b>3</b><span><strong>Retry securely</strong><small>A retry stays linked to this same order.</small></span></div>
+          <div><b>3</b><span><strong>Try again securely</strong><small>Trying again continues with this same order.</small></span></div>
         </div>
         <div className="paymentReturnActions">
           {result?.orderId && <button className="primary" type="button" disabled={retrying} onClick={() => void retryPayment()}>{retrying ? "Opening payment…" : "Try payment again"}</button>}
@@ -306,7 +306,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
           {result?.orderId && <button className="secondary" type="button" disabled={retrying} onClick={() => void retryPayment()}>{retrying ? "Opening…" : "No debit? Continue payment"}</button>}
           <Link className="secondary" href={routes.account}>My Celebration</Link>
         </div>
-        <div className="paymentReturnSafeNote warning"><strong>Money debited?</strong> Do not retry. Use “Check payment status” while the bank/provider confirmation catches up.</div>
+        <div className="paymentReturnSafeNote warning"><strong>Money debited?</strong> Do not retry. Use “Check payment status” while the payment confirmation catches up.</div>
       </div>
     )
   }
@@ -327,7 +327,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         <Link className="secondary" href={routes.home}>Back to store</Link>
       </div>
 
-      <div className="paymentReturnSafeNote">Your order and payment records are kept server-side. Avoid making a second payment until the current status is clear.</div>
+      <div className="paymentReturnSafeNote">Your order and payment details stay linked securely. Avoid making a second payment until the current status is clear.</div>
     </div>
   )
 }

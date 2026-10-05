@@ -50,6 +50,16 @@ export function paymentStatusForOrderStatus(status: OrderStatus, current: string
   return paymentStatusByOrderStatus[status] || current
 }
 
+export function customerPaymentStatusLabel(value: string) {
+  const status = value.trim().toLowerCase()
+  if (status === "paid" || status === "verified" || status === "success") return "Paid"
+  if (status === "verification_pending" || status === "pending" || status === "processing") return "Payment pending"
+  if (status === "failed" || status === "cancelled") return "Payment not completed"
+  if (status === "refunded") return "Refunded"
+  if (status === "partially_refunded") return "Partially refunded"
+  return status ? "Payment update available" : "Not available"
+}
+
 export function statusHasCapability(status: OrderStatus, capability: Capability) {
   return capabilities[capability]?.includes(status) || false
 }

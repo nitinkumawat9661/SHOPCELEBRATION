@@ -56,7 +56,7 @@ export function useTrackedOrder(token: string): TrackedOrderState {
         body: JSON.stringify({ token })
       })
       const result = await response.json() as { ok?: boolean; error?: string; status?: TrackedOrder["status"]; shippingBooked?: boolean }
-      if (!response.ok || !result.ok) throw new Error(result.error || copy.invalid)
+      if (!response.ok || !result.ok) throw new Error("We couldn’t save your approval right now. Please try again.")
       setOrder({ ...order, status: result.status || workflowActionTarget("customerApproved") })
       return true
     } catch (cause) {

@@ -30,7 +30,6 @@ export function PaymentStep({
   accountLoading,
   gatewayLoading,
   gatewayEnabled,
-  gatewayProvider,
   paymentState,
   paymentOrderId,
   onAccepted,
@@ -58,7 +57,6 @@ export function PaymentStep({
   accountLoading: boolean
   gatewayLoading: boolean
   gatewayEnabled: boolean
-  gatewayProvider: "razorpay" | "cashfree" | null
   paymentState: PaymentUiState
   paymentOrderId: string | null
   onAccepted: (value: boolean) => void
@@ -222,7 +220,7 @@ export function PaymentStep({
 
   return (
     <div className="stepPane active">
-      <div className="builderTitle"><div><h3>{individual ? "3. Payment" : copy.title}</h3><p>{gatewayEnabled ? "Secure checkout with automatic payment verification. No UTR or screenshot needed." : individual ? "Your cart stays saved. Individual purchases use verified online checkout." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
+      <div className="builderTitle"><div><h3>{individual ? "3. Payment" : copy.title}</h3><p>{gatewayEnabled ? "Secure checkout with automatic payment confirmation. No screenshot or manual confirmation needed." : individual ? "Your cart stays saved. Individual purchases use verified online checkout." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
       <div className="paymentGrid">
         <div>
           <div className={`checkoutAccount ${customerAccount ? "ready" : "needed"}`}>
@@ -252,7 +250,7 @@ export function PaymentStep({
           <div className="paymentPolicyHint">Check once, then pay. Never share your UPI PIN, card PIN or OTP with Celebration.</div>
           {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Tick the checkbox above to enable secure payment.</div>}
 
-          <div className={`paymentBox ${gatewayEnabled ? "automatedPaymentBox" : ""}`} data-payment-provider={gatewayProvider || undefined}>
+          <div className={`paymentBox ${gatewayEnabled ? "automatedPaymentBox" : ""}`}>
             <div className="paymentSticker">{gatewayEnabled ? "✓" : copy.paymentIcon}</div>
             <div>
               <span>{gatewayEnabled ? "SECURE ONLINE PAYMENT" : copy.payable}</span>
@@ -281,7 +279,7 @@ export function PaymentStep({
 
           {gatewayEnabled && paymentPending && <div className="paymentStateCard pending" role="status">
             <div className="paymentStateIcon">…</div>
-            <div className="paymentStateCopy"><strong>Payment pending</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is saved. ` : ""}If money was debited, do not pay again. Check the status while the bank/provider confirmation completes.</span></div>
+            <div className="paymentStateCopy"><strong>Payment pending</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is saved. ` : ""}If money was debited, do not pay again. Check the status while the payment confirmation completes.</span></div>
             <div className="paymentStateActions"><button className="primary" type="button" disabled={submitting} onClick={onRefreshPayment}>{submitting ? "Checking…" : "Check payment status"}</button><button className="secondary" type="button" disabled={submitting} onClick={automatedPaymentClick}>No debit? Continue payment</button></div>
           </div>}
 

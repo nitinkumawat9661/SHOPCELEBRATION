@@ -38,7 +38,7 @@ export function CustomRequestSection() {
       window.setTimeout(() => scrollToUxTarget(document.querySelector("#custom-request .successBox"), "center"), 80)
     } catch (caught) {
       const code = caught instanceof Error ? caught.message : "REQUEST_FAILED"
-      const failure = code === "RATE_LIMITED" ? "Too many requests. Please try again shortly." : "We couldn’t send your request. Check the details and try again."
+      const failure = code === "RATE_LIMITED" ? "Too many attempts. Please try again shortly." : "We couldn’t send your request. Check the details and try again."
       setError(failure)
       notifyUx({ title: "Request not sent", body: failure, tone: "error" })
     } finally {

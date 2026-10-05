@@ -37,11 +37,22 @@ export async function GET() {
         }
       }
       return {
-        ...order,
-        productNames: order.selectedProductNames.length ? order.selectedProductNames : order.selectedProductIds.map((id) => productById(catalogResult.catalog, id)?.name || id),
-        selectedProductNames: undefined,
-        packingVideoKey: undefined,
-        packingVideoUrl
+        orderType: order.orderType,
+        lineItems: order.lineItems,
+        publicId: order.publicId,
+        amountPaise: order.amountPaise,
+        tierName: order.tierName,
+        productNames: order.selectedProductNames.length ? order.selectedProductNames : order.selectedProductIds.map((id) => productById(catalogResult.catalog, id)?.name || "Gift item"),
+        requiredDate: order.requiredDate,
+        occasion: order.occasion,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        receiverName: order.receiverName,
+        packingVideoUrl,
+        shippingTrackingNumber: order.shippingTrackingNumber,
+        customerApprovedAt: order.customerApprovedAt,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt
       }
     }))
     return NextResponse.json({ ok: true, orders: hydrated }, { headers: { "Cache-Control": "no-store" } })

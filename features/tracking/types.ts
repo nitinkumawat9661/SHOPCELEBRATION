@@ -13,11 +13,8 @@ export type TrackedOrder = {
   paymentStatus: string
   receiverName: string
   packingVideoUrl: string | null
-  shippingProvider: string | null
   shippingTrackingNumber: string | null
-  shippingLiveStatus?: string | null
   shippingCourierName?: string | null
-  shippingTrackUrl?: string | null
   issueType: string | null
   issueNote: string | null
   customerApprovedAt: string | null
