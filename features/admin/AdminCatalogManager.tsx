@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { defaultCatalog, formatMoney, salePriceFromRupees, type CatalogConfig, type GiftProduct, type Tier } from "../../lib/domain/catalog"
+import { defaultCatalog, formatMoney, primaryProductImage, productImages, salePriceFromRupees, type CatalogConfig, type GiftProduct, type ProductImage, type Tier } from "../../lib/domain/catalog"
+import { routes } from "../../config/routes"
 import { validation } from "../../config/validation"
+import { catalogImageMimeTypeForFile } from "../../lib/domain/storage"
 
 export type CatalogAdminSection = "tiers" | "products" | "occasions"
 
@@ -232,24 +234,100 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     edit((current) => ({ ...current, occasions: [...current.occasions, `Occasion ${current.occasions.length + 1}`] }))
   }
 
-  async function uploadImage(file: File, productIndex: number) {
-    if (file.size > 5 * 1024 * 1024) throw new Error("IMAGE_TOO_LARGE")
+  async function uploadCatalogImage(file: File) {
+    const contentType = catalogImageMimeTypeForFile(file)
+    if (!contentType) throw new Error("INVALID_IMAGE_TYPE")
+    if (file.size <= 0 || file.size > validation.catalogImageMaxBytes) throw new Error("IMAGE_TOO_LARGE")
+
+    const initResponse = await fetch(routes.api.adminCatalogImageUpload, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contentType, totalBytes: file.size })
+    })
+    const init = await initResponse.json() as { ok?: boolean; uploadId?: string; chunkSize?: number; error?: string }
+    if (!initResponse.ok || !init.ok || !init.uploadId || !init.chunkSize) throw new Error(init.error || "IMAGE_UPLOAD_FAILED")
+
+    const uploadId = init.uploadId
+    try {
+      for (let offset = 0; offset < file.size; offset += init.chunkSize) {
+        const end = Math.min(file.size, offset + init.chunkSize)
+        const body = file.slice(offset, end, contentType)
+        let uploaded = false
+        let lastError = "IMAGE_UPLOAD_FAILED"
+
+        for (let attempt = 0; attempt < 3 && !uploaded; attempt += 1) {
+          try {
+            const response = await fetch(`${routes.api.adminCatalogImageUpload}?uploadId=${encodeURIComponent(uploadId)}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/octet-stream", "X-Upload-Offset": String(offset) },
+              body
+            })
+            const result = await response.json().catch(() => ({})) as { ok?: boolean; error?: string }
+            if (response.ok && result.ok) {
+              uploaded = true
+              break
+            }
+            lastError = result.error || "IMAGE_UPLOAD_FAILED"
+            if (response.status < 500 && response.status !== 429) break
+          } catch {
+            lastError = "IMAGE_UPLOAD_FAILED"
+          }
+          if (!uploaded && attempt < 2) await new Promise((resolve) => window.setTimeout(resolve, 300 * (attempt + 1)))
+        }
+        if (!uploaded) throw new Error(lastError)
+      }
+
+      const completeResponse = await fetch(routes.api.adminCatalogImageUpload, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uploadId })
+      })
+      const completed = await completeResponse.json() as { ok?: boolean; imageUrl?: string; error?: string }
+      if (!completeResponse.ok || !completed.ok || !completed.imageUrl) throw new Error(completed.error || "IMAGE_VERIFY_FAILED")
+      return completed.imageUrl
+    } catch (error) {
+      fetch(routes.api.adminCatalogImageUpload, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uploadId })
+      }).catch(() => {})
+      throw error
+    }
+  }
+
+  async function uploadImages(files: FileList | File[], productIndex: number) {
+    const product = catalog.products[productIndex]
+    const existing = productImages(product)
+    const selected = Array.from(files)
+    if (!selected.length) return
+    if (existing.length + selected.length > validation.catalog.maxImages) throw new Error(`Maximum ${validation.catalog.maxImages} images per product.`)
+
     setBusy(`image-${productIndex}`)
     setError("")
     try {
-      const presignResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contentType: file.type }) })
-      const presign = await presignResponse.json() as { ok?: boolean; key?: string; url?: string; error?: string }
-      if (!presignResponse.ok || !presign.ok || !presign.key || !presign.url) throw new Error(presign.error || "IMAGE_UPLOAD_FAILED")
-      const put = await fetch(presign.url, { method: "PUT", headers: { "Content-Type": file.type }, body: file })
-      if (!put.ok) throw new Error("IMAGE_UPLOAD_FAILED")
-      const verifyResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: presign.key }) })
-      const verified = await verifyResponse.json() as { ok?: boolean; imageUrl?: string; error?: string }
-      if (!verifyResponse.ok || !verified.ok || !verified.imageUrl) throw new Error(verified.error || "IMAGE_VERIFY_FAILED")
-      replaceProduct(productIndex, { imageUrl: verified.imageUrl })
-      setNotice("Image uploaded. Publish live karke storefront par apply karein.")
+      const next: ProductImage[] = [...existing]
+      for (const file of selected) {
+        const url = await uploadCatalogImage(file)
+        next.push({ url, alt: product.name })
+      }
+      replaceProduct(productIndex, { images: next, imageUrl: next[0]?.url })
+      setNotice(`${selected.length} image${selected.length === 1 ? "" : "s"} uploaded. Reorder if needed, then Publish live.`)
     } finally {
       setBusy("")
     }
+  }
+
+  function replaceProductImages(productIndex: number, images: ProductImage[]) {
+    const next = images.slice(0, validation.catalog.maxImages)
+    replaceProduct(productIndex, { images: next, imageUrl: next[0]?.url })
+  }
+
+  function removeProductImage(productIndex: number, imageIndex: number) {
+    replaceProductImages(productIndex, productImages(catalog.products[productIndex]).filter((_, index) => index !== imageIndex))
+  }
+
+  function moveProductImage(productIndex: number, from: number, to: number) {
+    replaceProductImages(productIndex, moveItem(productImages(catalog.products[productIndex]), from, to))
   }
 
   function validateCatalogBeforeSave() {
