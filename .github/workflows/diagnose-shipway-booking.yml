@@ -60,24 +60,7 @@ jobs:
             BODY="$(mktemp)"
             CODE="$(curl --silent --show-error --location --max-time 20 --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" --header 'Content-Type: application/json' --output "$BODY" --write-out '%{http_code}' "https://app.shipway.com/api/getorders?orderid=$ORDER_ID&page=1")"
             echo "SHIPWAY_LOOKUP_HTTP=$CODE"
-            python3 - "$BODY" "$ORDER_ID" <<'PY'
-import json,sys
-p,oid=sys.argv[1],sys.argv[2]
-try:
-    data=json.load(open(p))
-except Exception as e:
-    print("SHIPWAY_LOOKUP_JSON=INVALID")
-    sys.exit(0)
-def walk(x):
-    if isinstance(x,dict):
-        for k,v in x.items():
-            if str(k).lower() in {"order_id","orderid","awb","awb_number","carrier_id","carrier","status","shipment_status","message","success","error"}:
-                print(f"SHIPWAY_FIELD {k}={v}")
-            if isinstance(v,(dict,list)): walk(v)
-    elif isinstance(x,list):
-        for v in x[:5]: walk(v)
-walk(data)
-PY
+            node -e 'const fs=require("fs");let d;try{d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"))}catch{console.log("SHIPWAY_LOOKUP_JSON=INVALID");process.exit(0)};const keys=new Set(["order_id","orderid","awb","awb_number","carrier_id","carrier","status","shipment_status","message","success","error"]);function w(x){if(Array.isArray(x)){for(const v of x.slice(0,5))w(v);return}if(!x||typeof x!=="object")return;for(const [k,v] of Object.entries(x)){if(keys.has(k.toLowerCase())&&typeof v!=="object")console.log("SHIPWAY_FIELD "+k+"="+String(v));if(v&&typeof v==="object")w(v)}}w(d)' "$BODY"
             rm -f "$BODY"
           done
 
