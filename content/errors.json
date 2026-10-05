@@ -74,5 +74,16 @@
   "INDIVIDUAL_OFFER_NOT_SUPPORTED": "Hamper offers cannot be applied to individual products.",
   "MANUAL_PAYMENT_NOT_SUPPORTED": "Individual products use secure online checkout. Please choose an available online payment method.",
   "PAYMENT_ORDER_CANCELLED": "This order was cancelled. Payment cannot be reopened. Contact Celebration if money was debited.",
-  "PAYMENT_ALREADY_CONFIRMED": "Payment is already confirmed. Check the order status before paying again."
+  "PAYMENT_ALREADY_CONFIRMED": "Payment is already confirmed. Check the order status before paying again.",
+  "SHIPWAY_HTTP_400": "Shipway rejected the shipment details. Check address, pincode and order details.",
+  "SHIPWAY_HTTP_401": "Shipway credentials were rejected. Check the configured Shipway account.",
+  "SHIPWAY_HTTP_403": "Shipway account is not permitted to book this shipment.",
+  "SHIPWAY_HTTP_404": "Shipway shipping endpoint could not process this request.",
+  "SHIPWAY_HTTP_405": "Shipway rejected the shipping request method.",
+  "SHIPWAY_HTTP_500": "Shipway returned a server error. Check Shipway before retrying.",
+  "SHIPWAY_AWB_NOT_ASSIGNED": "Shipway did not assign an AWB. Check the Shipway panel before retrying to avoid duplicate booking.",
+  "SHIPWAY_TIMEOUT": "Shipway took too long to respond. Check Shipway before retrying to avoid duplicate booking.",
+  "SHIPWAY_UNAVAILABLE": "Shipway shipping is temporarily unavailable. Use manual courier fallback if needed.",
+  "INVALID_SHIPWAY_WAREHOUSE_ID": "Shipway warehouse configuration is invalid.",
+  "INVALID_SHIPWAY_RETURN_WAREHOUSE_ID": "Shipway return warehouse configuration is invalid."
 }
