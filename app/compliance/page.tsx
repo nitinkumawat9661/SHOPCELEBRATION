@@ -7,8 +7,8 @@ import { TrustStrip } from "../../features/shell/TrustStrip"
 import { storeContent } from "../../lib/domain/content"
 
 export const metadata: Metadata = {
-  title: `Dark-Pattern Self-Audit | ${storeContent.brand.name}`,
-  description: `Celebration's internal dark-pattern self-audit and consumer-interface compliance declaration.`,
+  title: `Fair Shopping Review | ${storeContent.brand.name}`,
+  description: `Celebration's fair-shopping review covering clear choices, pricing and consent.`,
   robots: { index: false, follow: false }
 }
 
