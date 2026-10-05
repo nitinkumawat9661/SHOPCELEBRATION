@@ -280,7 +280,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         <div className="paymentReturnStateList">
           <div><b>1</b><span><strong>Order saved</strong><small>Your items and delivery details stay saved.</small></span></div>
           <div><b>2</b><span><strong>No processing started</strong><small>We start processing only after a verified payment.</small></span></div>
-          <div><b>3</b><span><strong>Retry securely</strong><small>A retry stays linked to this same order.</small></span></div>
+          <div><b>3</b><span><strong>Try again securely</strong><small>Trying again continues with this same order.</small></span></div>
         </div>
         <div className="paymentReturnActions">
           {result?.orderId && <button className="primary" type="button" disabled={retrying} onClick={() => void retryPayment()}>{retrying ? "Opening payment…" : "Try payment again"}</button>}
