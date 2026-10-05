@@ -1,0 +1,60 @@
+name: Diagnose Shipway Booking
+
+on:
+  push:
+    branches:
+      - ops/diagnose-shipway-booking
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/key" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/key" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+
+      - name: Inspect Shipway failures
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          APP_ROOT=/var/www/celebration
+          ACTIVE="$(readlink -f "$APP_ROOT/current")"
+          ENV_FILE="$APP_ROOT/shared/.env.production"
+          set -a
+          . "$ENV_FILE"
+          set +a
+          echo "ACTIVE_RELEASE=$ACTIVE"
+          for k in SHIPWAY_EMAIL SHIPWAY_LICENSE_KEY SHIPWAY_WAREHOUSE_ID SHIPWAY_RETURN_WAREHOUSE_ID; do
+            if [ -n "${!k:-}" ]; then echo "$k=SET"; else echo "$k=MISSING"; fi
+          done
+
+          echo "SHIPWAY_LOGS_BEGIN"
+          for LOG in /home/$USER/.pm2/logs/celebration-site-error.log /home/$USER/.pm2/logs/celebration-site-out.log; do
+            if [ -f "$LOG" ]; then
+              tail -n 1200 "$LOG" | grep -Ei 'shipway|auto-book|shipping.*failed|SHIPWAY_' | tail -n 120 || true
+            fi
+          done
+          echo "SHIPWAY_LOGS_END"
+
+          cd "$ACTIVE"
+          node -e 'const {Client}=require("pg");(async()=>{const ssl=String(process.env.DATABASE_SSL_MODE||"").toLowerCase()==="require"?{rejectUnauthorized:false}:undefined;const c=new Client({connectionString:process.env.DATABASE_URL,ssl});try{await c.connect();const r=await c.query("SELECT public_id,status,shipping_provider,shipping_tracking_number,shipping_carrier_id,shipping_booked_at,customer_approved_at,address,city,state,pincode,phone,updated_at FROM orders ORDER BY updated_at DESC LIMIT 8");for(const x of r.rows){console.log("ORDER",JSON.stringify({publicId:x.public_id,status:x.status,provider:x.shipping_provider,tracking:x.shipping_tracking_number,carrier:x.shipping_carrier_id,bookedAt:x.shipping_booked_at,approvedAt:x.customer_approved_at,city:x.city,state:x.state,pincode:x.pincode,phone:x.phone?String(x.phone).replace(/.(?=.{4})/g,"*"):null,updatedAt:x.updated_at}))}}catch(e){console.log("DB_ERROR",e.code||e.message)}finally{try{await c.end()}catch{}}})()'
+          REMOTE
