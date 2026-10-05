@@ -65,8 +65,7 @@ async function request(path: string, init: RequestInit) {
       ...init,
       headers: {
         Authorization: authHeader(),
-        "Content-Type": "application/json",
-        ...(init.headers || {})
+        "Content-Type": "application/json"
       },
       signal: controller.signal,
       cache: "no-store"
