@@ -56,7 +56,7 @@ jobs:
           echo "SHIPWAY_LOGS_END"
 
           echo "REAL_APP_RETRY_BEGIN"
-          ORDER_ID="CEL-261004-D219ABD352917C24"
+          ORDER_ID="CEL-261005-F32ED64D032E641A"
           COOKIE="$(node -e 'const crypto=require("crypto");const exp=Math.floor(Date.now()/1000)+900;const payload=Buffer.from(JSON.stringify({exp,version:process.env.ADMIN_SESSION_VERSION})).toString("base64url");const sig=crypto.createHmac("sha256",process.env.ADMIN_SESSION_SECRET).update(payload).digest("base64url");process.stdout.write(payload+"."+sig)')"
           RETRY_BODY="$(mktemp)"
           RETRY_CODE="$(curl --silent --show-error --max-time 30 --output "$RETRY_BODY" --write-out '%{http_code}' \
