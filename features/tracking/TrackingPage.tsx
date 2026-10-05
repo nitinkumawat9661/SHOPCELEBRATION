@@ -32,12 +32,12 @@ export function TrackingPage() {
     const url = new URL(window.location.href)
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""))
     const legacyToken = url.searchParams.get("token")?.trim() || ""
-    const nextToken = hash.get("token")?.trim() || legacyToken
+    const nextToken = hash.get("order")?.trim() || hash.get("token")?.trim() || legacyToken
     setToken(nextToken)
     if (legacyToken) {
       url.searchParams.delete("token")
       const search = url.searchParams.toString()
-      const safeUrl = `${url.pathname}${search ? `?${search}` : ""}${nextToken ? `#token=${encodeURIComponent(nextToken)}` : ""}`
+      const safeUrl = `${url.pathname}${search ? `?${search}` : ""}${nextToken ? `#order=${encodeURIComponent(nextToken)}` : ""}`
       window.history.replaceState(null, "", safeUrl)
     }
   }, [])
