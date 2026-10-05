@@ -22,7 +22,7 @@ assert.match(addToCartSource, /cart\.remove\(/, "Inline decrement must be able t
 
 const cashfreeClientSource = await readFile(new URL("../features/checkout/useOrderSubmit.ts", import.meta.url), "utf8")
 assert.match(cashfreeClientSource, /cashfreeRedirectTarget/, "Cashfree checkout must choose a device-safe redirect target")
-assert.match(cashfreeClientSource, /return "_self"/, "Mobile Cashfree checkout must support current-tab redirect")
+assert.match(cashfreeClientSource, /\? "_self" : "_modal"/, "Mobile Cashfree checkout must support current-tab redirect")
 const paymentProviderSource = await readFile(new URL("../lib/server/payments/provider.ts", import.meta.url), "utf8")
 assert.match(paymentProviderSource, /\/payment\/return\?provider_order_id=\{order_id\}/, "Cashfree return URL must land directly on the payment status route")
 console.log("Marketplace cart/payment UX checks passed: inline quantity state and direct mobile payment return are wired.")
