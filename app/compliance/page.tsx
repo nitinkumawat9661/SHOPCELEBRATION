@@ -36,9 +36,9 @@ export default function CompliancePage() {
       <section>
         <div className="wrap policyWrap">
           <div className="policyHero">
-            <div className="kicker">CONSUMER INTERFACE COMPLIANCE</div>
-            <h1 className="policyTitle">Dark-pattern customer-experience review.</h1>
-            <p className="policyLead">Celebration reviewed its customer-facing storefront, catalog, cart, account, checkout, payment and tracking flows against the 13 dark patterns identified by the Central Consumer Protection Authority.</p>
+            <div className="kicker">FAIR SHOPPING</div>
+            <h1 className="policyTitle">Fair-shopping review.</h1>
+            <p className="policyLead">Celebration reviewed the shopping journey against the 13 dark patterns identified by the Central Consumer Protection Authority, with a focus on clear choices, pricing and consent.</p>
             <div className="privacyMeta">Customer experience review: 5 October 2026 • Scope: shopcelebration.in shopping journey</div>
             <div className="policySummaryGrid">
               <div><b>Explicit consent</b><span>Checkout policy consent is not pre-ticked and payment remains disabled until the customer actively accepts it.</span></div>
