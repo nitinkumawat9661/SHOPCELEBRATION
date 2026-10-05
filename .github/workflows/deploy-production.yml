@@ -156,6 +156,28 @@ jobs:
           test "$ACTIVE" = "$NEW_RELEASE"
           run_as_runtime pm2 describe "$PM2_APP" >/dev/null
           echo "Celebration release active: $NEW_RELEASE"
+
+          echo "Pruning old Celebration releases"
+          KEEP_FILE="$(mktemp)"
+          {
+            printf '%s\n' "$NEW_RELEASE" "$OLD_RELEASE"
+            find "$APP_ROOT/releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' \
+              | sort -nr \
+              | head -5 \
+              | cut -d' ' -f2-
+          } | awk 'NF && !seen[$0]++' > "$KEEP_FILE"
+
+          for release in "$APP_ROOT"/releases/*; do
+            [ -d "$release" ] || continue
+            case "$release" in "$APP_ROOT"/releases/*) ;; *) echo "Unsafe release path: $release" >&2; exit 1 ;; esac
+            grep -Fxq "$release" "$KEEP_FILE" && continue
+            echo "Removing old release: $release"
+            rm -rf -- "$release"
+          done
+          rm -f -- "$KEEP_FILE"
+
+          find /tmp -maxdepth 1 -user "$RUNTIME_USER" -type f -name 'celebration-*.tar.gz' -delete 2>/dev/null || true
+          df -h "$APP_ROOT"
           REMOTE
 
       - name: Verify public production health
