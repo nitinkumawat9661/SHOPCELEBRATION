@@ -114,6 +114,7 @@ export async function bookShipwayShipment(order: OrderRecord): Promise<ShipwayBo
 
   const payload = {
     order_id: order.publicId,
+    carrier_id: "",
     warehouse_id: warehouseId,
     return_warehouse_id: returnWarehouseId,
     products: productsFor(order),
