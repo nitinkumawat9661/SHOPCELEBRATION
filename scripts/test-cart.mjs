@@ -24,7 +24,7 @@ const cashfreeClientSource = await readFile(new URL("../features/checkout/useOrd
 assert.match(cashfreeClientSource, /cashfreeRedirectTarget/, "Cashfree checkout must choose a device-safe redirect target")
 assert.match(cashfreeClientSource, /\? "_self" : "_modal"/, "Mobile Cashfree checkout must support current-tab redirect")
 const paymentProviderSource = await readFile(new URL("../lib/server/payments/provider.ts", import.meta.url), "utf8")
-assert.match(paymentProviderSource, /\/payment\/return\?provider_order_id=\{order_id\}/, "Cashfree return URL must land directly on the payment status route")
+assert.match(paymentProviderSource, /\/payment\/return\?payment=\{order_id\}/, "Cashfree return URL must use the customer-friendly payment parameter")
 console.log("Marketplace cart/payment UX checks passed: inline quantity state and direct mobile payment return are wired.")
 
 // Exercise the actual submit hook without a browser, database or provider request.
@@ -54,7 +54,7 @@ try {
   globalThis.fetch = async (url, options) => {
     if (url === "/config") return { json: async () => ({ enabled: true, provider: "razorpay" }) }
     requests.push({ url, body: JSON.parse(options.body) })
-    const order = { orderId: "TEST-SAVED", payablePaise: 999, trackingToken: "test-token", trackingPath: "/track?token=test-token" }
+    const order = { orderId: "TEST-SAVED", payablePaise: 999, trackingToken: "test-token", trackingPath: "/track#order=test-token" }
     return url === "/create" ? { ok: false, json: async () => ({ ...order, ok: false, error: "PAYMENT_PROVIDER_UNAVAILABLE" }) } : { ok: true, json: async () => ({ ...order, ok: true, paid: true }) }
   }
   renderHook()
