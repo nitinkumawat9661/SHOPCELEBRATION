@@ -54,7 +54,7 @@ type PaymentResult = {
 type GatewayWindow = Window & {
   Razorpay?: new (options: Record<string, unknown>) => { open: () => void }
   Cashfree?: (options: { mode: "sandbox" | "production" }) => {
-    checkout: (options: { paymentSessionId: string; redirectTarget: "_modal" }) => Promise<unknown>
+    checkout: (options: { paymentSessionId: string; redirectTarget: cashfreeRedirectTarget() | "_self" }) => Promise<unknown>
   }
 }
 
@@ -69,6 +69,11 @@ function paymentError(code?: string) {
   if (code === "CART_AMOUNT_TOO_LARGE") return "This cart exceeds the supported order amount. Remove some items to continue."
   if (code === "CART_PRICE_CHANGED") return "Product prices changed. Refresh your cart and review the new total before payment."
   return "Payment could not be completed right now. You can retry safely."
+}
+
+function cashfreeRedirectTarget(): "_modal" | "_self" {
+  if (typeof window === "undefined") return "_modal"
+  return window.matchMedia("(max-width: 767px), (pointer: coarse)").matches ? "_self" : "_modal"
 }
 
 function loadScript(src: string) {
@@ -296,7 +301,7 @@ export function useOrderSubmit() {
     const factory = (window as GatewayWindow).Cashfree
     if (!factory) throw new Error("PAYMENT_SDK_LOAD_FAILED")
     const cashfree = factory({ mode: checkout.mode === "live" ? "production" : "sandbox" })
-    await cashfree.checkout({ paymentSessionId: checkout.paymentSessionId, redirectTarget: "_modal" })
+    await cashfree.checkout({ paymentSessionId: checkout.paymentSessionId, redirectTarget: cashfreeRedirectTarget() })
     const verified = await verifyPayment({
       publicOrderId,
       provider: "cashfree",
