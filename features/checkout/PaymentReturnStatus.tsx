@@ -100,7 +100,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
             continue
           }
           setPhase("error")
-          setMessage("We couldn’t load this order right now. Your payment record is still safe.")
+          setMessage("We couldn’t open this order right now. Your order is still safe.")
           return
         }
 
@@ -119,7 +119,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
 
         if (data.paymentStatus === "failed") {
           setPhase("failed")
-          setMessage("This payment attempt was not completed. Your order is saved and you can retry safely.")
+          setMessage("The payment was not completed. Your order is saved and you can try again.")
           return
         }
 
@@ -240,7 +240,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
       await checkPayment(true)
     } catch (cause) {
       setPhase("error")
-      setMessage(cause instanceof Error && cause.message === "PAYMENT_GATEWAY_NOT_CONFIGURED" ? "Online payment is currently unavailable. Your order stays saved. Contact Celebration for help." : "We couldn’t reopen payment right now. Your order is still saved; try again in a moment.")
+      setMessage(cause instanceof Error && cause.message === "PAYMENT_GATEWAY_NOT_CONFIGURED" ? "Online payment is currently unavailable. Your order stays saved. Contact Celebration for help." : "We couldn’t open payment right now. Your order is still saved; try again in a moment.")
     } finally {
       requestBusy.current = false
       setRetrying(false)

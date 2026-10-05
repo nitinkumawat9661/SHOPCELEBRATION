@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      trackingPath: `${routes.track}#token=${encodeURIComponent(token)}`
+      trackingPath: `${routes.track}#order=${encodeURIComponent(token)}`
     })
   } catch (error) {
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })

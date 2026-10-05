@@ -54,7 +54,7 @@
     {
       "icon": "💳",
       "title": "Clear payment",
-      "body": "Online payments are confirmed automatically. If a manual UPI option is shown, you may be asked for the transaction reference."
+      "body": "Online payments are confirmed for you. If a manual UPI option is shown, enter the payment number shown in your UPI app."
     },
     {
       "icon": "🎥",
@@ -76,7 +76,7 @@
     "defaultState": "Rajasthan",
     "paymentSteps": [
       "Pay {amount} using UPI.",
-      "Enter the transaction reference after payment.",
+      "Enter the payment number shown in your UPI app.",
       "Place your order and track every update from My Celebration."
     ],
     "policyConsent": "I agree to the Order, Cancellation, Return & Refund Policy and Terms & Legal, and acknowledge the Privacy Policy."
@@ -88,7 +88,7 @@
       {
         "icon": "💳",
         "title": "Payment",
-        "body": "Orders are prepaid. Payment is confirmed securely before order processing begins. If a manual UPI option is shown, you may be asked for the transaction reference."
+        "body": "Orders are prepaid. Payment is confirmed securely before we start preparing the order. If a manual UPI option is shown, enter the payment number shown in your UPI app."
       },
       {
         "icon": "🎀",

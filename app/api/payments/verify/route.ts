@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       ok: true,
       paid: order.paymentStatus === "paid" || order.status === "payment_verified",
       ...client,
-      trackingPath: `${routes.track}#token=${encodeURIComponent(client.trackingToken)}`
+      trackingPath: `${routes.track}#order=${encodeURIComponent(client.trackingToken)}`
     })
   } catch (error) {
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })

@@ -45,7 +45,7 @@ const errorCopy: Record<string, string> = {
   SMS_OTP_UNAVAILABLE: "SMS OTP is temporarily unavailable. Please try again shortly.",
   PASSWORD_RESET_UNAVAILABLE: "Password reset is temporarily unavailable. Please try again shortly.",
   INVALID_OTP: "That OTP is incorrect or expired. Check the SMS and try again.",
-  RESET_SESSION_EXPIRED: "This reset session has expired. Request a fresh OTP.",
+  RESET_SESSION_EXPIRED: "This verification has expired. Request a fresh OTP.",
   PHONE_VERIFICATION_REQUIRED: "Verify your mobile number with OTP before creating an account."
 }
 
@@ -326,7 +326,7 @@ export function CustomerAuthPanel({
     const data = await response.json() as { ok?: boolean; resetToken?: string; error?: string }
     if (!response.ok || !data.ok || !data.resetToken) {
       if (data.error === "INVALID_OTP") {
-        setLocalError("OTP was verified, but the secure reset handoff could not finish. Tap Continue securely to retry.")
+        setLocalError("OTP was verified, but we could not continue. Tap Continue securely to try again.")
       } else {
         showApiError(data.error || "PASSWORD_RESET_UNAVAILABLE")
       }
@@ -573,7 +573,7 @@ export function CustomerAuthPanel({
           <div className={`resetSecurityCard ${captchaVerified ? "verified" : widgetReady ? "pending" : "idle"}`}>
             <div className="resetSecurityHead">
               <span className="resetSecurityMark" aria-hidden="true">{captchaVerified ? "✓" : "•"}</span>
-              <div><b>{captchaVerified ? "Security check complete" : widgetReady ? "Confirm you’re human" : "Secure verification"}</b><small>{captchaVerified ? "Verified — OTP sending is now enabled." : widgetReady ? "Complete the check below to enable OTP." : "Continue once to load the protected check."}</small></div>
+              <div><b>{captchaVerified ? "Security check complete" : widgetReady ? "Confirm you’re human" : "Secure verification"}</b><small>{captchaVerified ? "Verified — OTP sending is now enabled." : widgetReady ? "Complete the check below to enable OTP." : "Continue once to complete the security check."}</small></div>
             </div>
             <div className={`resetCaptchaViewport ${widgetReady ? "ready" : ""}`}><div id="celebration-msg91-captcha" className="resetCaptcha" aria-live="polite" /></div>
           </div>
@@ -588,7 +588,7 @@ export function CustomerAuthPanel({
   if (screen === "forgot-otp") {
     return (
       <div className="customerAuthCard customerResetCard">
-        <div className="customerAuthIntro"><div className="kicker">VERIFY MOBILE</div><h2>{verifiedAccessToken ? "Mobile verified" : "Enter the SMS OTP"}</h2><p>{verifiedAccessToken ? "Your OTP is verified. Finish the secure handoff to choose a new password." : <>We sent a 6-digit code to <b>+91 {phone.slice(-10)}</b>.</>}</p></div>
+        <div className="customerAuthIntro"><div className="kicker">VERIFY MOBILE</div><h2>{verifiedAccessToken ? "Mobile verified" : "Enter the SMS OTP"}</h2><p>{verifiedAccessToken ? "Your OTP is verified. Continue to choose a new password." : <>We sent a 6-digit code to <b>+91 {phone.slice(-10)}</b>.</>}</p></div>
         <form className="customerAuthForm" onSubmit={verifyOtp}>
           {!verifiedAccessToken && <label className="field"><span>6-digit OTP <b className="requiredMark">*</b></span><input className="control otpControl" inputMode="numeric" autoComplete="one-time-code" value={otp} required maxLength={6} pattern="[0-9]{6}" onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); clearErrors() }} placeholder="••••••" /></label>}
           {verifiedAccessToken && <div className="resetVerifiedNotice"><span aria-hidden="true">✓</span><div><b>OTP verified</b><small>No need to enter or resend the OTP again.</small></div></div>}
@@ -604,7 +604,7 @@ export function CustomerAuthPanel({
   if (screen === "forgot-password") {
     return (
       <div className="customerAuthCard customerResetCard">
-        <div className="customerAuthIntro"><div className="kicker">NEW PASSWORD</div><h2>Create a new password</h2><p>Your mobile number is verified. Choose a new password; other logged-in sessions will be signed out.</p></div>
+        <div className="customerAuthIntro"><div className="kicker">NEW PASSWORD</div><h2>Create a new password</h2><p>Your mobile number is verified. Choose a new password; you’ll be signed out on other devices.</p></div>
         <form className="customerAuthForm" onSubmit={saveNewPassword}>
           <label className="field"><span>New password <b className="requiredMark">*</b></span><input className="control" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={newPassword} required onChange={(event) => { setNewPassword(event.target.value); clearErrors() }} placeholder="Minimum 8 characters" /></label>
           <label className="field"><span>Confirm new password <b className="requiredMark">*</b></span><input className="control" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={confirmPassword} required onChange={(event) => { setConfirmPassword(event.target.value); clearErrors() }} placeholder="Enter it again" /></label>
@@ -636,7 +636,7 @@ export function CustomerAuthPanel({
         {mode === "signup" && <div className={`resetSecurityCard ${captchaVerified ? "verified" : widgetReady ? "pending" : "idle"}`}>
           <div className="resetSecurityHead">
             <span className="resetSecurityMark" aria-hidden="true">{captchaVerified ? "✓" : "•"}</span>
-            <div><b>{captchaVerified ? "Security check complete" : widgetReady ? "Confirm you’re human" : "Verify your mobile"}</b><small>{captchaVerified ? "Verified — OTP sending is enabled." : widgetReady ? "Complete the check below, then continue." : "Continue once to load secure SMS verification."}</small></div>
+            <div><b>{captchaVerified ? "Security check complete" : widgetReady ? "Confirm you’re human" : "Verify your mobile"}</b><small>{captchaVerified ? "Verified — OTP sending is enabled." : widgetReady ? "Complete the check below, then continue." : "Continue once to verify your mobile number."}</small></div>
           </div>
           <div className={`resetCaptchaViewport ${widgetReady ? "ready" : ""}`}><div id="celebration-signup-msg91-captcha" className="resetCaptcha" aria-live="polite" /></div>
         </div>}
