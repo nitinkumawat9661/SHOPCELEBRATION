@@ -52,6 +52,32 @@ function imageUrl(value: unknown) {
   }
 }
 
+function normalizeProductImages(input: unknown, fallbackImageUrl: string, productName: string) {
+  const raw = Array.isArray(input) ? input : []
+  if (raw.length > validation.catalog.maxImages) throw new CatalogValidationError("TOO_MANY_PRODUCT_IMAGES")
+  const seen = new Set<string>()
+  const images = raw.map((entry) => {
+    const item = (entry && typeof entry === "object" ? entry : {}) as Record<string, unknown>
+    const url = imageUrl(item.url)
+    if (!url) throw new CatalogValidationError("INVALID_IMAGE_URL")
+    if (seen.has(url)) throw new CatalogValidationError("DUPLICATE_PRODUCT_IMAGE")
+    seen.add(url)
+    return {
+      url,
+      alt: cleanOptional(item.alt, validation.catalog.nameMax) || productName
+    }
+  })
+  if (!images.length && fallbackImageUrl) images.push({ url: fallbackImageUrl, alt: productName })
+  return images.length ? images : undefined
+}
+
+function normalizeHighlights(input: unknown) {
+  if (input === undefined || input === null) return undefined
+  if (!Array.isArray(input) || input.length > validation.catalog.maxHighlights) throw new CatalogValidationError("INVALID_PRODUCT_HIGHLIGHTS")
+  const values = input.map((value) => cleanRequired(value, validation.catalog.highlightMax, "INVALID_PRODUCT_HIGHLIGHT"))
+  return values.length ? values : undefined
+}
+
 function normalizeTier(input: unknown): Tier {
   const item = (input && typeof input === "object" ? input : {}) as Record<string, unknown>
   return {
@@ -112,15 +138,21 @@ function normalizeProduct(input: unknown): GiftProduct {
   if (sellIndividually && retail?.mrpPaise && salePricePaise !== undefined && salePricePaise > retail.mrpPaise) {
     throw new CatalogValidationError("SALE_PRICE_ABOVE_MRP")
   }
+  const name = cleanRequired(item.name, validation.catalog.nameMax, "INVALID_PRODUCT_NAME")
+  const legacyImageUrl = imageUrl(item.imageUrl)
   return {
     id: cleanId(item.id),
-    name: cleanRequired(item.name, validation.catalog.nameMax, "INVALID_PRODUCT_NAME"),
+    name,
     category: cleanRequired(item.category, validation.catalog.categoryMax, "INVALID_CATEGORY"),
     minTier: integer(item.minTier, 0, validation.catalog.maxPrice, "INVALID_MIN_TIER"),
     points: integer(item.points, 1, validation.catalog.maxPoints, "INVALID_PRODUCT_POINTS"),
     note: cleanOptional(item.note, validation.catalog.noteMax),
+    description: cleanOptional(item.description, validation.catalog.descriptionMax) || undefined,
+    highlights: normalizeHighlights(item.highlights),
+    badge: cleanOptional(item.badge, validation.catalog.badgeMax) || undefined,
     icon: cleanOptional(item.icon, 16) || undefined,
-    imageUrl: imageUrl(item.imageUrl) || undefined,
+    imageUrl: legacyImageUrl || undefined,
+    images: normalizeProductImages(item.images, legacyImageUrl, name),
     active: item.active !== false,
     sellIndividually,
     salePricePaise,
