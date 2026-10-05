@@ -86,7 +86,7 @@ function normalizeCampaign(input: unknown): Campaign {
   const mode = raw.mode === "coupon" ? "coupon" : "automatic"
   const scope = raw.scope === "all" || raw.scope === "individual" ? raw.scope : "hamper"
   const discountType = raw.discountType === "fixed" ? "fixed" : "percent"
-  const trigger: CampaignTrigger = raw.trigger === "hesitation" ? "hesitation" : "checkout"
+  const trigger: CampaignTrigger = "checkout"
   const audience = raw.audience === "first_order" ? "first_order" : "all"
   const discountValue = discountType === "percent"
     ? integer(raw.discountValue, 1, validation.campaign.maxPercent, 10)
