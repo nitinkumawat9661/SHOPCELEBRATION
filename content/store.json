@@ -24,12 +24,30 @@
     "🛡️ Protection for verified wrong, damaged or defective items"
   ],
   "showcaseItems": [
-    { "icon": "🧸", "label": "Teddy" },
-    { "icon": "🍫", "label": "Chocolate" },
-    { "icon": "✨", "label": "Perfume" },
-    { "icon": "☕", "label": "Mug" },
-    { "icon": "🕯️", "label": "Candle" },
-    { "icon": "💌", "label": "Card" }
+    {
+      "icon": "🧸",
+      "label": "Teddy"
+    },
+    {
+      "icon": "🍫",
+      "label": "Chocolate"
+    },
+    {
+      "icon": "✨",
+      "label": "Perfume"
+    },
+    {
+      "icon": "☕",
+      "label": "Mug"
+    },
+    {
+      "icon": "🕯️",
+      "label": "Candle"
+    },
+    {
+      "icon": "💌",
+      "label": "Card"
+    }
   ],
   "promiseCards": [
     {
@@ -60,7 +78,7 @@
       "Enter the UTR / transaction reference after payment.",
       "Place your order and track every update from My Celebration."
     ],
-    "policyConsent": "I agree to the order and protection policy and acknowledge the privacy policy. This is a prepaid customized order. Eligible wrong, damaged, defective or missing-item claims remain subject to the protection policy and applicable rights."
+    "policyConsent": "I agree to the Order, Cancellation, Return & Refund Policy and Terms & Legal, and acknowledge the Privacy Policy."
   },
   "policy": {
     "title": "Know the important details before you order.",
