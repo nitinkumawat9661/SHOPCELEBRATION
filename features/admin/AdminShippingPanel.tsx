@@ -40,6 +40,8 @@ export function AdminShippingPanel({ order, busy, onShipping }: {
       <div className="adminShippingSaved">
         <b>{copy.shippingSavedHeading}</b>
         <span>{order.shippingProvider}{uiContent.common.separator}{order.shippingTrackingNumber}</span>
+        {order.shippingCarrierId && <small>Carrier ID: {order.shippingCarrierId}</small>}
+        {order.shippingLabelUrl && <a className="secondary" href={order.shippingLabelUrl} target="_blank" rel="noreferrer">Open / print shipping label ↗</a>}
       </div>
     )
   }
