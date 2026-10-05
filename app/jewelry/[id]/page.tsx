@@ -40,6 +40,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               {individual ? <><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
               <Link className="collectionDetailBack" href={collectionUrl}>Keep exploring</Link>
             </div>
+            <div className="marketplaceTrustGrid" aria-label="Shopping assurances">
+              <div><span aria-hidden="true">🔒</span><b>Secure payment</b><small>Verified online checkout</small></div>
+              <div><span aria-hidden="true">🎥</span><b>Packing review</b><small>Video before dispatch where available</small></div>
+              <div><span aria-hidden="true">📦</span><b>Order tracking</b><small>Follow progress online</small></div>
+              <div><span aria-hidden="true">💬</span><b>Support</b><small>Help when you need it</small></div>
+            </div>
             {product.prepackagedRetail && product.retail && <section className="retailDeclarations" aria-label="Product declarations">
               <h2>Product declarations</h2>
               <dl>
