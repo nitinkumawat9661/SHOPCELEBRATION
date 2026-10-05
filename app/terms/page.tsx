@@ -56,7 +56,7 @@ export default async function TermsPage() {
             {settings.grievancePhone && <div><span>Grievance phone</span><b>+{settings.grievancePhone}</b></div>}
           </div>
 
-          {!ready && <div className="policyNotice"><strong>Business identity details are being finalized before public launch.</strong><span>Customer support remains available through the official Celebration support channel shown above. This notice should be removed by completing the Legal &amp; Grievance profile in Admin before opening the store to the general public.</span></div>}
+          {!ready && <div className="policyNotice"><strong>Business identity details are being finalized before public launch.</strong><span>Customer support remains available through the official Celebration support channel shown above. Updated business identity details will appear here when finalized.</span></div>}
 
           <div className="policySupport">
             <h2>Need help or want to raise a grievance?</h2>
