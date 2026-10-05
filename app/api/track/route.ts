@@ -75,11 +75,8 @@ export async function POST(request: Request) {
         paymentStatus: order.paymentStatus,
         receiverName: order.receiverName,
         packingVideoUrl,
-        shippingProvider: order.shippingProvider,
         shippingTrackingNumber: order.shippingTrackingNumber,
-        shippingLiveStatus,
         shippingCourierName,
-        shippingTrackUrl,
         customerApprovedAt: order.customerApprovedAt,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt
