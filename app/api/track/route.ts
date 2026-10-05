@@ -31,15 +31,11 @@ export async function POST(request: Request) {
       }
     }
 
-    let shippingLiveStatus: string | null = null
     let shippingCourierName: string | null = null
-    let shippingTrackUrl: string | null = null
     if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && (order.status === "shipped" || order.status === "out_for_delivery")) {
       try {
         const live = await getShipwayTracking(order.shippingTrackingNumber)
-        shippingLiveStatus = live?.currentStatus || live?.shipmentStatus || null
         shippingCourierName = live?.courierName || null
-        shippingTrackUrl = live?.trackUrl || null
         if ((live?.shipmentStatus === "OOD" || live?.shipmentStatus === "OFD") && order.status === "shipped") {
           await updateOrderStatus(order.publicId, "out_for_delivery")
           order = await findOrderByTrackingToken(token) || order
