@@ -92,5 +92,13 @@
   "PACKING_UPLOAD_INCOMPLETE": "Packing-video upload is incomplete. Please retry the upload.",
   "INVALID_CONTENT_LENGTH": "The packing-video upload request is invalid.",
   "SHIPWAY_WAREHOUSE_NOT_FOUND": "Configured Shipway warehouse could not be resolved. Check the warehouse setup.",
-  "SHIPWAY_NO_SERVICEABLE_CARRIER": "No serviceable prepaid Shipway carrier is available for this delivery pincode."
+  "SHIPWAY_NO_SERVICEABLE_CARRIER": "No serviceable prepaid Shipway carrier is available for this delivery pincode.",
+  "TOO_MANY_PRODUCT_IMAGES": "Maximum product image limit reached.",
+  "DUPLICATE_PRODUCT_IMAGE": "The same product image cannot be added twice.",
+  "INVALID_PRODUCT_HIGHLIGHTS": "Product highlights are invalid.",
+  "INVALID_PRODUCT_HIGHLIGHT": "A product highlight is invalid.",
+  "CATALOG_IMAGE_UPLOAD_INVALID": "Image upload session is invalid. Select the image and try again.",
+  "CATALOG_IMAGE_UPLOAD_EXPIRED": "Image upload session expired. Select the image and try again.",
+  "CATALOG_IMAGE_UPLOAD_OFFSET": "Image upload got out of sync. Retry the upload.",
+  "CATALOG_IMAGE_UPLOAD_INCOMPLETE": "Image upload is incomplete. Retry the upload."
 }
