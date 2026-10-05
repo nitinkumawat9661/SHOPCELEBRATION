@@ -43,8 +43,8 @@ function progressIndex(status: OrderStatus) {
 }
 
 function friendlyOrderError(code: string) {
-  if (code === "UNAUTHORIZED") return "Your session has ended. Please login again."
-  if (code === "RATE_LIMITED") return "Too many requests. Please try again shortly."
+  if (code === "UNAUTHORIZED") return "You’ve been signed out. Please sign in again."
+  if (code === "RATE_LIMITED") return "Too many attempts. Please try again shortly."
   if (code === "APPROVAL_SERVICE_UNAVAILABLE") return "We couldn’t save the packing approval right now. Please try again."
   return "We couldn’t load the latest order updates. Check your connection and try again."
 }
