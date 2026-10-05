@@ -125,6 +125,7 @@ export type TrackingOrderRecord = {
   issueType: string | null
   issueNote: string | null
   customerApprovedAt: string | null
+  issueReportDeadline: string | null
   createdAt: string
   updatedAt: string
 }
@@ -149,6 +150,7 @@ export type DbTrackingOrder = {
   issue_type: string | null
   issue_note: string | null
   customer_approved_at: Date | null
+  delivered_at: Date | null
   created_at: Date
   updated_at: Date
 }
@@ -174,13 +176,14 @@ export function mapTrackingOrder(row: DbTrackingOrder): TrackingOrderRecord {
     issueType: row.issue_type,
     issueNote: row.issue_note,
     customerApprovedAt: row.customer_approved_at ? row.customer_approved_at.toISOString() : null,
+    issueReportDeadline: null,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString()
   }
 }
 
 export const TRACKING_ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, amount_paise, campaign_title, tier_name, required_date::text, occasion, status, payment_status,
-  receiver_name, packing_video_key, shipping_provider, shipping_tracking_number, issue_type, issue_note, customer_approved_at, created_at, updated_at`
+  receiver_name, packing_video_key, shipping_provider, shipping_tracking_number, issue_type, issue_note, customer_approved_at, delivered_at, created_at, updated_at`
 
 export const ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, amount_paise, campaign_id, campaign_title, tier_name, required_date::text, occasion, status, payment_status, payment_reference,
   customer_name, phone, receiver_name, address, city, state, pincode, gift_message,
