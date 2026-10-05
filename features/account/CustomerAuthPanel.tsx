@@ -175,8 +175,7 @@ function providerCall(register: (success: Msg91Callback, failure: Msg91Callback)
 
 function providerSendError(code: string) {
   if (!code.startsWith("SMS_OTP_PROVIDER_FAILED")) return ""
-  const reason = code.slice("SMS_OTP_PROVIDER_FAILED".length + 1).trim()
-  return reason ? `MSG91 couldn’t send the OTP (${reason}).` : errorCopy.SMS_OTP_UNAVAILABLE
+  return errorCopy.SMS_OTP_UNAVAILABLE
 }
 
 export function CustomerAuthPanel({
@@ -436,8 +435,7 @@ export function CustomerAuthPanel({
       const account = await onAuthenticate("signup", { phone, password, displayName, accessToken })
       if (account) onSuccess?.(account)
     } catch (cause) {
-      const reason = cause instanceof Error ? safeProviderReason({ message: cause.message }) : ""
-      setLocalError(reason && !/^INVALID_OTP$/i.test(reason) ? `OTP verification failed (${reason}).` : errorCopy.INVALID_OTP)
+      setLocalError(errorCopy.INVALID_OTP)
     } finally {
       setResetBusy(false)
     }
