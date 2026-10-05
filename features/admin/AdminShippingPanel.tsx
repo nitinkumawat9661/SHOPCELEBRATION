@@ -25,6 +25,12 @@ export function AdminShippingPanel({ order, busy, onShipping }: {
           <span>{order.status === "customer_approved" ? "Customer approval complete. Shipway recommended courier auto-assign karke AWB + label generate karega." : copy.shippingUpdateHint}</span>
         </div>
         {!hasShipping && order.status === "customer_approved" && <button className="primary" type="button" disabled={busy} onClick={() => onShipping("__SHIPWAY_AUTO__", "")}>{busy ? copy.working : "Book with Shipway & generate AWB"}</button>}
+        {hasShipping && <div className="adminShippingSaved">
+          <b>{copy.shippingSavedHeading}</b>
+          <span>{order.shippingProvider}{uiContent.common.separator}{order.shippingTrackingNumber}</span>
+          {order.shippingCarrierId && <small>Carrier ID: {order.shippingCarrierId}</small>}
+          {order.shippingLabelUrl && <a className="secondary" href={order.shippingLabelUrl} target="_blank" rel="noreferrer">Open / print shipping label ↗</a>}
+        </div>}
         <details className="adminOrderDetails">
           <summary>{hasShipping ? "Correct courier / tracking manually" : "Manual courier fallback"}</summary>
           <input className="control" name="provider" defaultValue={order.shippingProvider || ""} placeholder={copy.shippingProvider} />
