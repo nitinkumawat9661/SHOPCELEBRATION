@@ -45,7 +45,7 @@ export function ProofAndReviews({ socialProof }: ProofAndReviewsProps) {
       kicker: "PAYMENT",
       value: "UPI",
       title: "Reference-backed confirmation",
-      body: "The submitted UPI transaction reference is used for payment confirmation."
+      body: "The payment number shown in your UPI app helps us confirm a manual UPI payment."
     }
   ]
 
