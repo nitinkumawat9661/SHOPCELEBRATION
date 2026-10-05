@@ -19,8 +19,19 @@ export function IssueForm({ token, onSubmitted, onError }: { token: string; onSu
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, issueType, note })
       })
-      const result = await response.json()
-      if (!response.ok || !result.ok) throw new Error(result.error || uiContent.tracking.invalid)
+      const result = await response.json() as { ok?: boolean; error?: string; complaintReference?: string }
+      if (!response.ok || !result.ok) {
+        const message = result.error === "ISSUE_WINDOW_EXPIRED"
+          ? "The issue-reporting window for this order has ended."
+          : result.error === "ISSUE_NOT_ALLOWED_FOR_STATUS"
+            ? "Issue reporting isn’t available at this stage."
+            : result.error === "INVALID_ISSUE_REPORT"
+              ? "Please complete the issue details and try again."
+              : result.error === "RATE_LIMITED"
+                ? "Too many attempts. Please try again shortly."
+                : "We couldn’t submit this issue right now. Please try again."
+        throw new Error(message)
+      }
       onSubmitted({
         reference: typeof result.complaintReference === "string" ? result.complaintReference : "",
         issueType,
