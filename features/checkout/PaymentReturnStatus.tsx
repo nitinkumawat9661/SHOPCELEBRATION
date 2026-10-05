@@ -26,7 +26,7 @@ type ReturnPhase = "checking" | "success" | "pending" | "failed" | "auth" | "err
 type GatewayWindow = Window & {
   Razorpay?: new (options: Record<string, unknown>) => { open: () => void }
   Cashfree?: (options: { mode: "sandbox" | "production" }) => {
-    checkout: (options: { paymentSessionId: string; redirectTarget: "_modal" }) => Promise<unknown>
+    checkout: (options: { paymentSessionId: string; redirectTarget: cashfreeRedirectTarget() | "_self" }) => Promise<unknown>
   }
 }
 
@@ -34,6 +34,11 @@ const BUILDER_DRAFT_KEY = "celebration:hamper-draft:v1"
 
 function clearFinishedDraft() {
   try { window.localStorage.removeItem(BUILDER_DRAFT_KEY) } catch { /* localStorage is non-critical */ }
+}
+
+function cashfreeRedirectTarget(): "_modal" | "_self" {
+  if (typeof window === "undefined") return "_modal"
+  return window.matchMedia("(max-width: 767px), (pointer: coarse)").matches ? "_self" : "_modal"
 }
 
 function wait(ms: number) {
@@ -203,7 +208,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         const factory = (window as GatewayWindow).Cashfree
         if (!factory) throw new Error("PAYMENT_SDK_LOAD_FAILED")
         const cashfree = factory({ mode: data.checkout.mode === "live" ? "production" : "sandbox" })
-        await cashfree.checkout({ paymentSessionId: data.checkout.paymentSessionId, redirectTarget: "_modal" })
+        await cashfree.checkout({ paymentSessionId: data.checkout.paymentSessionId, redirectTarget: cashfreeRedirectTarget() })
         await fetch(routes.api.paymentVerify, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicOrderId: result.orderId, provider: "cashfree", providerOrderId: data.checkout.providerOrderId }) })
         await checkPayment(true)
         return
