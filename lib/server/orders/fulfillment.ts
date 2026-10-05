@@ -2,7 +2,9 @@ import type { PoolClient } from "pg"
 import { orderEvents } from "../../../config/order-events"
 import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../../domain/order-status"
 import { trackingTokenHash } from "../../security/tokens"
-import { transaction } from "../db"
+import { query, transaction } from "../db"
+import { bookShipwayShipment, ShipwayApiError } from "../shipway"
+import { mapOrder, ORDER_SELECT, type DbOrder } from "./types"
 import { appendOrderEvent } from "./events"
 
 export function setShippingDetails(publicId: string, provider: string, trackingNumber: string) {
@@ -30,6 +32,28 @@ export function setShippingDetails(publicId: string, provider: string, trackingN
     }
     return { ok: true as const, status: nextStatus }
   })
+}
+
+export async function bookOrderWithShipway(publicId: string) {
+  const current = await query<DbOrder>(`SELECT ${ORDER_SELECT} FROM orders WHERE public_id = $1 LIMIT 1`, [publicId])
+  const row = current.rows[0]
+  if (!row) return { ok: false as const, code: "ORDER_NOT_FOUND" }
+
+  const order = mapOrder(row)
+  if (!statusHasCapability(order.status, "shippingUpdate")) return { ok: false as const, code: "SHIPPING_UPDATE_NOT_ALLOWED" }
+  if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber) {
+    return { ok: true as const, status: order.status, awb: order.shippingTrackingNumber, labelUrl: null as string | null }
+  }
+
+  try {
+    const shipment = await bookShipwayShipment(order)
+    const saved = await setShippingDetails(publicId, "Shipway", shipment.awb)
+    if (!saved.ok) return saved
+    return { ok: true as const, status: saved.status, awb: shipment.awb, labelUrl: shipment.labelUrl }
+  } catch (error) {
+    if (error instanceof ShipwayApiError) return { ok: false as const, code: error.code }
+    throw error
+  }
 }
 
 export function setPackingVideo(publicId: string, key: string) {
