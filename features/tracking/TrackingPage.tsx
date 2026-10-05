@@ -56,7 +56,7 @@ export function TrackingPage() {
       notifyUx({ title: "Packing approved ✓", body: "We’ll arrange the courier next. Tracking will appear as soon as it’s ready.", tone: "success", durationMs: 4000 })
       window.setTimeout(() => scrollToUxTarget(document.querySelector("[data-tracking-approved]"), "center"), 80)
     } else {
-      notifyUx({ title: "Approval nahi hua", body: "Dobara try karein ya WhatsApp support use karein.", tone: "error" })
+      notifyUx({ title: "Approval not saved", body: "Please try again or contact WhatsApp support.", tone: "error" })
     }
   }
 
@@ -65,7 +65,7 @@ export function TrackingPage() {
     setComplaintReference(complaint.reference)
     setComplaintCopy({ issueType: complaint.issueType, note: complaint.note })
     tracked.markIssueReported()
-    notifyUx({ title: "Issue report ho gaya ✓", body: complaint.reference ? `Complaint reference: ${complaint.reference}` : "Support team ko details mil gayi hain.", tone: "success", durationMs: 4000 })
+    notifyUx({ title: "Issue reported ✓", body: complaint.reference ? `Complaint reference: ${complaint.reference}` : "Our support team received the details.", tone: "success", durationMs: 4000 })
     window.setTimeout(() => scrollToUxTarget(document.querySelector("[data-issue-success]"), "center"), 80)
   }
 
@@ -74,7 +74,7 @@ export function TrackingPage() {
       await navigator.clipboard.writeText(number)
       notifyUx({ title: "Tracking number copied ✓", body: number, tone: "success" })
     } catch {
-      notifyUx({ title: "Copy nahi hua", body: `Tracking number: ${number}`, tone: "error" })
+      notifyUx({ title: "Couldn’t copy", body: `Tracking number: ${number}`, tone: "error" })
     }
   }
 
@@ -109,7 +109,7 @@ export function TrackingPage() {
             />
             {approved && <div className="successBox" data-tracking-approved>{copy.approved}</div>}
             <div className="trackingCards" style={{ gridTemplateColumns: "1fr" }}>
-              <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingCourierName || order.shippingProvider || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p>{order.shippingLiveStatus && <p><b>Live courier status:</b> {order.shippingLiveStatus}</p>}<div className="adminActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button>{order.shippingTrackUrl && <a className="secondary" href={order.shippingTrackUrl} target="_blank" rel="noreferrer">Track with courier ↗</a>}</div></> : <p>Courier details will appear after shipping.</p>}</article>
+              <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingCourierName || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><div className="adminActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></div></> : <p>Courier details will appear after shipping.</p>}</article>
             </div>
             {statusHasCapability(order.status, "issueReport") && order.issueReportDeadline && <div className="policyNotice issueDeadline"><strong>Issue-report window</strong><span>Report a wrong, damaged, defective or missing-item issue by {new Date(order.issueReportDeadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}. Statutory rights that cannot legally be excluded are not waived by this operational reporting window.</span></div>}
             {statusHasCapability(order.status, "issueReport") && !issueSubmitted && <IssueForm token={token || ""} onSubmitted={issueDone} onError={tracked.setError} />}
