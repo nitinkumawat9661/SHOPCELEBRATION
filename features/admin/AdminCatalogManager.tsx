@@ -111,6 +111,7 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
   const consumerCare = importText(pick("consumerCare", "consumerCareContact"), existing?.retail?.consumerCare || "") || undefined
   const bestBefore = importText(pick("bestBefore", "useBefore"), existing?.retail?.bestBefore || "") || undefined
   const unitSalePrice = importText(pick("unitSalePrice"), existing?.retail?.unitSalePrice || "") || undefined
+  const warrantyOrGuarantee = importText(pick("warrantyOrGuarantee", "warranty", "guarantee"), existing?.retail?.warrantyOrGuarantee || "") || undefined
 
   let mrpPaise = existing?.retail?.mrpPaise
   const mrpInput = pick("mrp", "mrpRupees")
@@ -139,7 +140,7 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
 
   return {
     id, name, category, minTier, points, note, icon, imageUrl, active, sellIndividually, salePricePaise, prepackagedRetail,
-    retail: { genericName, netQuantity, mrpPaise, manufacturerOrPackerName, manufacturerOrPackerAddress, importerName, importerAddress, countryOfOrigin, consumerCare, bestBefore, unitSalePrice }
+    retail: { genericName, netQuantity, mrpPaise, manufacturerOrPackerName, manufacturerOrPackerAddress, importerName, importerAddress, countryOfOrigin, consumerCare, bestBefore, unitSalePrice, warrantyOrGuarantee }
   }
 }
 
@@ -362,8 +363,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
 
   function downloadCsvTemplate() {
     const csv = [
-      "id,name,category,minTier,points,description,imageUrl,active,sellIndividually,salePrice,prepackagedRetail,genericName,netQuantity,mrp,countryOfOrigin,manufacturerOrPackerName,manufacturerOrPackerAddress,importerName,importerAddress,consumerCare,bestBefore,unitSalePrice",
-      "sample-necklace,Sample Necklace,Jewelry,499,2,Stainless steel necklace,https://example.com/product.webp,true,true,799,true,Necklace,1 N,999,India,Example Manufacturer,Exact package address,,,care@example.com,,"
+      "id,name,category,minTier,points,description,imageUrl,active,sellIndividually,salePrice,prepackagedRetail,genericName,netQuantity,mrp,countryOfOrigin,manufacturerOrPackerName,manufacturerOrPackerAddress,importerName,importerAddress,consumerCare,bestBefore,unitSalePrice,warrantyOrGuarantee",
+      "sample-necklace,Sample Necklace,Jewelry,499,2,Stainless steel necklace,https://example.com/product.webp,true,true,799,true,Necklace,1 N,999,India,Example Manufacturer,Exact package address,,,care@example.com,,,Manufacturer warranty if applicable"
     ].join("\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const anchor = document.createElement("a")
@@ -451,8 +452,9 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
               <label className="adminWide">Consumer care details<input value={product.retail?.consumerCare || ""} onChange={(event) => replaceRetail(index, { consumerCare: event.target.value || undefined })} placeholder="Phone/email/address as applicable" /></label>
               <label>Best/use before (where applicable)<input value={product.retail?.bestBefore || ""} onChange={(event) => replaceRetail(index, { bestBefore: event.target.value || undefined })} /></label>
               <label>Unit sale price (where applicable)<input value={product.retail?.unitSalePrice || ""} onChange={(event) => replaceRetail(index, { unitSalePrice: event.target.value || undefined })} placeholder="As applicable to package" /></label>
+              <label className="adminWide">Warranty / guarantee (where applicable)<input value={product.retail?.warrantyOrGuarantee || ""} onChange={(event) => replaceRetail(index, { warrantyOrGuarantee: event.target.value || undefined })} placeholder="e.g. 6-month manufacturer warranty / No manufacturer warranty" /></label>
             </div>
-            <small>Values package/label se exactly copy karein. Imported goods me importer + country of origin fill karein. Best/use-before aur unit sale price commodity ke hisaab se applicable ho sakte hain.</small>
+            <small>Values package/label se exactly copy karein. Imported goods me importer + country of origin fill karein. Best/use-before, unit sale price aur warranty/guarantee commodity ke hisaab se applicable ho sakte hain.</small>
           </details>
           <div className="adminEditorActions"><span>{product.category}</span><div><button type="button" className="secondary" disabled={index === 0} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index - 1) }))}>↑</button><button type="button" className="secondary" disabled={index === catalog.products.length - 1} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index + 1) }))}>↓</button><button type="button" className="secondary" onClick={() => duplicateProduct(index)}>Duplicate</button><button type="button" className="secondary danger" onClick={() => edit((current) => ({ ...current, products: current.products.filter((_, i) => i !== index) }))}>Delete</button></div></div>
         </div>})}</div>
