@@ -86,7 +86,7 @@ jobs:
           RURL="https://app.shipway.com/api/getshipwaycarrierrates"
           RCODE="$(curl --silent --show-error --max-time 20 --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" --get "$RURL" --data-urlencode 'fromPincode=332001' --data-urlencode 'toPincode=332001' --data-urlencode 'paymentType=prepaid' --output "$RFILE" --write-out '%{http_code}')"
           echo "SHIPWAY_RATE_HTTP=$RCODE"
-          node -e 'const fs=require("fs");let d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));for(const x of (Array.isArray(d)?d:(d.message||d.data||[]))){if(x&&typeof x==="object")console.log("RATE_OPTION",JSON.stringify({id:x.courier_id||x.carrier_id||null,name:x.courier||x.name||null,rate:x.shipment_charges||x.rate||null,weight:x.charge_weight||null}))}' "$RFILE"
+          node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));console.log("RATE_TOP_TYPE="+(Array.isArray(d)?"array":typeof d));if(d&&typeof d==="object"&&!Array.isArray(d))console.log("RATE_TOP_KEYS="+Object.keys(d).join(","));for(const k of ["message","data","result","rates"]){const v=d&&d[k];if(v!==undefined){console.log("RATE_KEY_"+k+"_TYPE="+(Array.isArray(v)?"array":typeof v));if(Array.isArray(v))console.log("RATE_KEY_"+k+"_COUNT="+v.length);if(v&&typeof v==="object"&&!Array.isArray(v))console.log("RATE_KEY_"+k+"_KEYS="+Object.keys(v).join(","))}}' "$RFILE"
           rm -f "$RFILE"
           echo "SHIPWAY_RATE_CHECK_END"
 
