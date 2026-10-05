@@ -111,6 +111,7 @@ export function TrackingPage() {
             <div className="trackingCards" style={{ gridTemplateColumns: "1fr" }}>
               <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingProvider || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></> : <p>Courier details will appear after shipping.</p>}</article>
             </div>
+            {statusHasCapability(order.status, "issueReport") && order.issueReportDeadline && <div className="policyNotice issueDeadline"><strong>Issue-report window</strong><span>Report a wrong, damaged, defective or missing-item issue by {new Date(order.issueReportDeadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}. Statutory rights that cannot legally be excluded are not waived by this operational reporting window.</span></div>}
             {statusHasCapability(order.status, "issueReport") && !issueSubmitted && <IssueForm token={token || ""} onSubmitted={issueDone} onError={tracked.setError} />}
             {(issueSubmitted || order.status === workflowActionTarget("issueReported") || order.status === "refund_or_replacement_resolved") && <div className="successBox" data-issue-success>
               <b>Complaint reference: {complaintReference || `CMP-${order.publicId}`}</b>
