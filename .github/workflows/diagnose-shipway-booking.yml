@@ -55,6 +55,14 @@ jobs:
           done
           echo "SHIPWAY_LOGS_END"
 
+          echo "SHIPWAY_WAREHOUSES_BEGIN"
+          WARE="$(mktemp)"
+          WCODE="$(curl --silent --show-error --location --max-time 20 --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" --header 'Content-Type: application/json' --output "$WARE" --write-out '%{http_code}' 'https://app.shipway.com/api/getwarehouses')"
+          echo "SHIPWAY_WAREHOUSES_HTTP=$WCODE"
+          node -e 'const fs=require("fs");let d;try{d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"))}catch{console.log("WAREHOUSE_JSON=INVALID");process.exit(0)};function w(x){if(Array.isArray(x)){for(const v of x)w(v);return}if(!x||typeof x!=="object")return;const id=x.warehouse_id??x.warehouseid??x.id;const title=x.title??x.name??x.warehouse_name;const city=x.city;const pin=x.pincode??x.zipcode;if(id!==undefined)console.log("WAREHOUSE",JSON.stringify({id:String(id),title:title??null,city:city??null,pincode:pin??null}));for(const v of Object.values(x))if(v&&typeof v==="object")w(v)}w(d)' "$WARE"
+          rm -f "$WARE"
+          echo "SHIPWAY_WAREHOUSES_END"
+
           for ORDER_ID in CEL-261004-D219ABD352917C24 CEL-261005-F32ED64D032E641A; do
             echo "SHIPWAY_ORDER_LOOKUP=$ORDER_ID"
             BODY="$(mktemp)"
