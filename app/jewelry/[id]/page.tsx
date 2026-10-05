@@ -52,6 +52,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 {product.retail.importerAddress && <div className="wide"><dt>Importer address</dt><dd>{product.retail.importerAddress}</dd></div>}
                 {product.retail.consumerCare && <div className="wide"><dt>Consumer care</dt><dd>{product.retail.consumerCare}</dd></div>}
                 {product.retail.bestBefore && <div><dt>Best / use before</dt><dd>{product.retail.bestBefore}</dd></div>}
+                {product.retail.warrantyOrGuarantee && <div className="wide"><dt>Warranty / guarantee</dt><dd>{product.retail.warrantyOrGuarantee}</dd></div>}
               </dl>
             </section>}
             <div className="collectionDetailPromise"><span aria-hidden="true">♡</span><div><b>{individual ? "A little something, just for them" : "A thoughtful part of your hamper"}</b><p>{individual ? "Choose your quantity in the cart, add delivery details and pay securely online." : "Share your occasion and budget. Our team curates the gifts inside your hamper."}</p></div></div>
