@@ -36,6 +36,7 @@ export const routes = {
     adminLogout: "/api/admin/logout",
     adminOrders: "/api/admin/orders",
     adminCampaigns: "/api/admin/campaigns",
+    adminCatalogImageUpload: "/api/admin/catalog/image-upload",
     adminAnalytics: "/api/admin/analytics",
     packingVideoPresign: "/api/packing-video/presign",
     packingVideoUpload: "/api/packing-video/upload",

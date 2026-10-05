@@ -28,6 +28,11 @@ export type RetailDeclarations = {
   warrantyOrGuarantee?: string
 }
 
+export type ProductImage = {
+  url: string
+  alt?: string
+}
+
 export type GiftProduct = {
   id: string
   name: string
@@ -35,8 +40,12 @@ export type GiftProduct = {
   minTier: number
   points: number
   note: string
+  description?: string
+  highlights?: string[]
+  badge?: string
   icon?: string
   imageUrl?: string
+  images?: ProductImage[]
   active?: boolean
   sellIndividually?: boolean
   salePricePaise?: number
@@ -49,6 +58,24 @@ export function salePriceFromRupees(value: string): number | undefined {
   const [rupees, paise = ""] = value.split(".")
   const amount = Number(rupees) * 100 + Number(paise.padEnd(2, "0"))
   return Number.isSafeInteger(amount) && amount >= 100 && amount <= Math.min(validation.catalog.maxPrice * 100, 2147483647) ? amount : undefined
+}
+
+export function productImages(product: GiftProduct): ProductImage[] {
+  const seen = new Set<string>()
+  const images = (product.images || [])
+    .filter((item) => item && typeof item.url === "string" && item.url.trim())
+    .map((item) => ({ url: item.url.trim(), alt: item.alt?.trim() || undefined }))
+    .filter((item) => {
+      if (seen.has(item.url)) return false
+      seen.add(item.url)
+      return true
+    })
+  if (product.imageUrl && !seen.has(product.imageUrl)) images.unshift({ url: product.imageUrl, alt: product.name })
+  return images
+}
+
+export function primaryProductImage(product: GiftProduct) {
+  return productImages(product)[0]
 }
 
 export function isIndividuallySellable(product: GiftProduct) {

@@ -66,7 +66,12 @@
     "imageUrlMax": 1000,
     "maxPrice": 1000000,
     "maxPoints": 10000,
-    "maxChoices": 100
+    "maxChoices": 100,
+    "descriptionMax": 4000,
+    "highlightMax": 160,
+    "maxHighlights": 8,
+    "maxImages": 8,
+    "badgeMax": 40
   },
   "campaign": {
     "maxCampaigns": 50,

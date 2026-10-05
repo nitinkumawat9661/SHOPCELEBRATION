@@ -2,22 +2,24 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { isIndividuallySellable, type GiftProduct } from "../../lib/domain/catalog"
+import { isIndividuallySellable, primaryProductImage, type GiftProduct } from "../../lib/domain/catalog"
 import { AddToCart } from "../cart/AddToCart"
 import { formatMoney } from "../../lib/domain/money"
 
 export function CatalogProductImage({ product, priority = false }: { product: GiftProduct; priority?: boolean }) {
   const [failed, setFailed] = useState(false)
 
+  const primary = primaryProductImage(product)
+
   useEffect(() => {
     setFailed(false)
-  }, [product.imageUrl])
+  }, [primary?.url])
 
-  if (product.imageUrl && !failed) {
+  if (primary && !failed) {
     return <img
       className="catalogPhoto"
-      src={product.imageUrl}
-      alt={product.name}
+      src={primary.url}
+      alt={primary.alt || product.name}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
       referrerPolicy="no-referrer"
@@ -39,7 +41,7 @@ export function CatalogCard({ product }: { product: GiftProduct }) {
   return (
     <article className="catalogCard">
       <Link href={`/jewelry/${encodeURIComponent(product.id)}`} className="catalogCardLink" prefetch={false}>
-        <div className="catalogCardVisual"><CatalogProductImage product={product} /><span className="catalogCardArrow" aria-hidden="true">→</span></div>
+        <div className="catalogCardVisual"><CatalogProductImage product={product} />{product.badge && <span className="catalogCardBadge">{product.badge}</span>}<span className="catalogCardArrow" aria-hidden="true">→</span></div>
         <div className="catalogCardInfo">
           <span className="catalogCardCategory">{product.category}</span>
           <h3>{product.name}</h3>

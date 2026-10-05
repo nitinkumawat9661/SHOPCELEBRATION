@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { defaultCatalog, formatMoney, salePriceFromRupees, type CatalogConfig, type GiftProduct, type Tier } from "../../lib/domain/catalog"
+import { defaultCatalog, formatMoney, primaryProductImage, productImages, salePriceFromRupees, type CatalogConfig, type GiftProduct, type ProductImage, type Tier } from "../../lib/domain/catalog"
+import { routes } from "../../config/routes"
 import { validation } from "../../config/validation"
+import { catalogImageMimeTypeForFile } from "../../lib/domain/storage"
 
 export type CatalogAdminSection = "tiers" | "products" | "occasions"
 
@@ -95,9 +97,16 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
 
   const minTier = importInteger(pick("minTier", "hamperMinimum", "minimumHamper"), existing?.minTier ?? catalog.tiers[0]?.price ?? 0, 0)
   const points = importInteger(pick("points"), existing?.points ?? 1, 1)
-  const note = importText(pick("note", "description"), existing?.note || "")
+  const note = importText(pick("note", "shortDescription", "summary"), existing?.note || "")
+  const description = importText(pick("description", "longDescription"), existing?.description || "") || undefined
+  const badge = importText(pick("badge", "label"), existing?.badge || "") || undefined
+  const highlightsRaw = importText(pick("highlights", "features"), (existing?.highlights || []).join("|"))
+  const highlights = highlightsRaw ? highlightsRaw.split("|").map((item) => item.trim()).filter(Boolean).slice(0, validation.catalog.maxHighlights) : undefined
   const icon = importText(pick("icon", "emoji"), existing?.icon || "🎁") || undefined
   const imageUrl = importText(pick("imageUrl", "image", "photo", "photoUrl"), existing?.imageUrl || "") || undefined
+  const imageUrlsRaw = importText(pick("imageUrls", "gallery", "images"), (existing?.images || []).map((item) => item.url).join("|"))
+  const imageUrls = imageUrlsRaw ? imageUrlsRaw.split("|").map((item) => item.trim()).filter(Boolean).slice(0, validation.catalog.maxImages) : []
+  const images = imageUrls.length ? imageUrls.map((url) => ({ url, alt: name })) : imageUrl ? [{ url: imageUrl, alt: name }] : undefined
   const active = importBoolean(pick("active", "status"), existing?.active !== false)
   const sellIndividually = importBoolean(pick("sellIndividually", "individualSale", "sellIndividual"), existing?.sellIndividually === true)
   const prepackagedRetail = importBoolean(pick("prepackagedRetail", "packagedRetail", "legalMetrology"), existing?.prepackagedRetail === true)
@@ -139,7 +148,7 @@ function productFromImport(rawInput: ImportRecord, existing: GiftProduct | undef
   if (sellIndividually && !salePricePaise) throw new Error(`Row ${rowNumber}: individual selling ON hai, sale price required hai.`)
 
   return {
-    id, name, category, minTier, points, note, icon, imageUrl, active, sellIndividually, salePricePaise, prepackagedRetail,
+    id, name, category, minTier, points, note, description, highlights, badge, icon, imageUrl: images?.[0]?.url || imageUrl, images, active, sellIndividually, salePricePaise, prepackagedRetail,
     retail: { genericName, netQuantity, mrpPaise, manufacturerOrPackerName, manufacturerOrPackerAddress, importerName, importerAddress, countryOfOrigin, consumerCare, bestBefore, unitSalePrice, warrantyOrGuarantee }
   }
 }
@@ -232,24 +241,100 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     edit((current) => ({ ...current, occasions: [...current.occasions, `Occasion ${current.occasions.length + 1}`] }))
   }
 
-  async function uploadImage(file: File, productIndex: number) {
-    if (file.size > 5 * 1024 * 1024) throw new Error("IMAGE_TOO_LARGE")
+  async function uploadCatalogImage(file: File) {
+    const contentType = catalogImageMimeTypeForFile(file)
+    if (!contentType) throw new Error("INVALID_IMAGE_TYPE")
+    if (file.size <= 0 || file.size > validation.catalogImageMaxBytes) throw new Error("IMAGE_TOO_LARGE")
+
+    const initResponse = await fetch(routes.api.adminCatalogImageUpload, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contentType, totalBytes: file.size })
+    })
+    const init = await initResponse.json() as { ok?: boolean; uploadId?: string; chunkSize?: number; error?: string }
+    if (!initResponse.ok || !init.ok || !init.uploadId || !init.chunkSize) throw new Error(init.error || "IMAGE_UPLOAD_FAILED")
+
+    const uploadId = init.uploadId
+    try {
+      for (let offset = 0; offset < file.size; offset += init.chunkSize) {
+        const end = Math.min(file.size, offset + init.chunkSize)
+        const body = file.slice(offset, end, contentType)
+        let uploaded = false
+        let lastError = "IMAGE_UPLOAD_FAILED"
+
+        for (let attempt = 0; attempt < 3 && !uploaded; attempt += 1) {
+          try {
+            const response = await fetch(`${routes.api.adminCatalogImageUpload}?uploadId=${encodeURIComponent(uploadId)}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/octet-stream", "X-Upload-Offset": String(offset) },
+              body
+            })
+            const result = await response.json().catch(() => ({})) as { ok?: boolean; error?: string }
+            if (response.ok && result.ok) {
+              uploaded = true
+              break
+            }
+            lastError = result.error || "IMAGE_UPLOAD_FAILED"
+            if (response.status < 500 && response.status !== 429) break
+          } catch {
+            lastError = "IMAGE_UPLOAD_FAILED"
+          }
+          if (!uploaded && attempt < 2) await new Promise((resolve) => window.setTimeout(resolve, 300 * (attempt + 1)))
+        }
+        if (!uploaded) throw new Error(lastError)
+      }
+
+      const completeResponse = await fetch(routes.api.adminCatalogImageUpload, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uploadId })
+      })
+      const completed = await completeResponse.json() as { ok?: boolean; imageUrl?: string; error?: string }
+      if (!completeResponse.ok || !completed.ok || !completed.imageUrl) throw new Error(completed.error || "IMAGE_VERIFY_FAILED")
+      return completed.imageUrl
+    } catch (error) {
+      fetch(routes.api.adminCatalogImageUpload, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uploadId })
+      }).catch(() => {})
+      throw error
+    }
+  }
+
+  async function uploadImages(files: FileList | File[], productIndex: number) {
+    const product = catalog.products[productIndex]
+    const existing = productImages(product)
+    const selected = Array.from(files)
+    if (!selected.length) return
+    if (existing.length + selected.length > validation.catalog.maxImages) throw new Error(`Maximum ${validation.catalog.maxImages} images per product.`)
+
     setBusy(`image-${productIndex}`)
     setError("")
     try {
-      const presignResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contentType: file.type }) })
-      const presign = await presignResponse.json() as { ok?: boolean; key?: string; url?: string; error?: string }
-      if (!presignResponse.ok || !presign.ok || !presign.key || !presign.url) throw new Error(presign.error || "IMAGE_UPLOAD_FAILED")
-      const put = await fetch(presign.url, { method: "PUT", headers: { "Content-Type": file.type }, body: file })
-      if (!put.ok) throw new Error("IMAGE_UPLOAD_FAILED")
-      const verifyResponse = await fetch("/api/admin/catalog/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: presign.key }) })
-      const verified = await verifyResponse.json() as { ok?: boolean; imageUrl?: string; error?: string }
-      if (!verifyResponse.ok || !verified.ok || !verified.imageUrl) throw new Error(verified.error || "IMAGE_VERIFY_FAILED")
-      replaceProduct(productIndex, { imageUrl: verified.imageUrl })
-      setNotice("Image uploaded. Publish live karke storefront par apply karein.")
+      const next: ProductImage[] = [...existing]
+      for (const file of selected) {
+        const url = await uploadCatalogImage(file)
+        next.push({ url, alt: product.name })
+      }
+      replaceProduct(productIndex, { images: next, imageUrl: next[0]?.url })
+      setNotice(`${selected.length} image${selected.length === 1 ? "" : "s"} uploaded. Reorder if needed, then Publish live.`)
     } finally {
       setBusy("")
     }
+  }
+
+  function replaceProductImages(productIndex: number, images: ProductImage[]) {
+    const next = images.slice(0, validation.catalog.maxImages)
+    replaceProduct(productIndex, { images: next, imageUrl: next[0]?.url })
+  }
+
+  function removeProductImage(productIndex: number, imageIndex: number) {
+    replaceProductImages(productIndex, productImages(catalog.products[productIndex]).filter((_, index) => index !== imageIndex))
+  }
+
+  function moveProductImage(productIndex: number, from: number, to: number) {
+    replaceProductImages(productIndex, moveItem(productImages(catalog.products[productIndex]), from, to))
   }
 
   function validateCatalogBeforeSave() {
@@ -363,8 +448,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
 
   function downloadCsvTemplate() {
     const csv = [
-      "id,name,category,minTier,points,description,imageUrl,active,sellIndividually,salePrice,prepackagedRetail,genericName,netQuantity,mrp,countryOfOrigin,manufacturerOrPackerName,manufacturerOrPackerAddress,importerName,importerAddress,consumerCare,bestBefore,unitSalePrice,warrantyOrGuarantee",
-      "sample-necklace,Sample Necklace,Jewelry,499,2,Stainless steel necklace,https://example.com/product.webp,true,true,799,true,Necklace,1 N,999,India,Example Manufacturer,Exact package address,,,care@example.com,,,Manufacturer warranty if applicable"
+      "id,name,category,minTier,points,note,description,highlights,badge,imageUrls,active,sellIndividually,salePrice,prepackagedRetail,genericName,netQuantity,mrp,countryOfOrigin,manufacturerOrPackerName,manufacturerOrPackerAddress,importerName,importerAddress,consumerCare,bestBefore,unitSalePrice,warrantyOrGuarantee",
+      "sample-necklace,Sample Necklace,Jewelry,499,2,Premium everyday necklace,Detailed product description,Premium finish|Gift-ready|Daily wear,Bestseller,https://example.com/1.webp|https://example.com/2.webp,true,true,799,true,Necklace,1 N,999,India,Example Manufacturer,Exact package address,,,care@example.com,,,Manufacturer warranty if applicable"
     ].join("\n")
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
     const anchor = document.createElement("a")
@@ -416,17 +501,24 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
         </div>
         <div className="adminBulkBar"><span>{catalog.products.length} products</span><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: true })) }))}>Activate all</button><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: false })) }))}>Pause all</button><button type="button" className="primary" onClick={addProduct}>+ Add product</button></div>
         <div className="adminEditorList">{catalog.products.map((product, index) => {
-          const imageKey = `${product.id}:${product.imageUrl || ""}`
+          const gallery = productImages(product)
+          const primaryImage = primaryProductImage(product)
+          const imageKey = `${product.id}:${primaryImage?.url || ""}`
           const imageBroken = brokenImages[imageKey] === true
           return <div className="adminEditorCard adminDraggableCard adminProductEditorCard" draggable key={`${product.id}-${index}`} onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragIndex !== null) edit((current) => ({ ...current, products: moveItem(current.products, dragIndex, index) })); setDragIndex(null) }}>
           <div className="adminCardHandle">⋮⋮ <span>Drag to reorder</span></div>
           <div className="adminProductMediaRow">
             <div className="adminProductMediaFrame">
-              {product.imageUrl && !imageBroken ? <img key={product.imageUrl} className="adminCatalogPreview" src={product.imageUrl} alt={product.name} loading="lazy" referrerPolicy="no-referrer" onError={() => setBrokenImages((current) => ({ ...current, [imageKey]: true }))} /> : <div className="adminProductImageFallback"><span>{product.icon || "🎁"}</span><small>{product.imageUrl ? "Image unavailable" : "No image"}</small></div>}
+              {primaryImage && !imageBroken ? <img key={primaryImage.url} className="adminCatalogPreview" src={primaryImage.url} alt={primaryImage.alt || product.name} loading="lazy" referrerPolicy="no-referrer" onError={() => setBrokenImages((current) => ({ ...current, [imageKey]: true }))} /> : <div className="adminProductImageFallback"><span>{product.icon || "🎁"}</span><small>{primaryImage ? "Image unavailable" : "No image"}</small></div>}
             </div>
-            <div className="adminProductMediaCopy"><b>{product.name}</b><span>{product.imageUrl ? (imageBroken ? "Image URL load nahi ho rahi. URL check ya image re-upload karein." : "Product image ready") : "Image upload karein ya HTTPS image URL paste karein."}</span></div>
+            <div className="adminProductMediaCopy"><b>{product.name}</b><span>{gallery.length ? (imageBroken ? "Primary image load nahi ho rahi. Re-upload ya URL check karein." : `${gallery.length} product image${gallery.length === 1 ? "" : "s"} ready • first image = primary card image`) : "Multiple product images upload karein. First image collection/cart me dikhegi."}</span></div>
           </div>
-          <div className="adminEditorGrid"><label>ID<input value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Hamper minimum ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminWide">Description<input value={product.note} onChange={(e) => replaceProduct(index, { note: e.target.value })} /></label><label className="adminWide">Image URL<input value={product.imageUrl || ""} onChange={(e) => replaceProduct(index, { imageUrl: e.target.value || undefined })} placeholder="https://… or upload below" /></label><label className="adminWide uploadControl">{busy === `image-${index}` ? "Uploading image…" : "Upload image"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(busy)} onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImage(file, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")); e.currentTarget.value = "" }} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label></div>
+          {gallery.length > 0 && <div className="adminProductGalleryEditor">{gallery.map((image, imageIndex) => <div className="adminProductGalleryItem" key={image.url}>
+            <img src={image.url} alt="" loading="lazy" referrerPolicy="no-referrer" />
+            <span>{imageIndex === 0 ? "Primary" : `Image ${imageIndex + 1}`}</span>
+            <div><button type="button" className="secondary" disabled={imageIndex === 0} onClick={() => moveProductImage(index, imageIndex, imageIndex - 1)}>←</button><button type="button" className="secondary" disabled={imageIndex === gallery.length - 1} onClick={() => moveProductImage(index, imageIndex, imageIndex + 1)}>→</button><button type="button" className="secondary danger" onClick={() => removeProductImage(index, imageIndex)}>Remove</button></div>
+          </div>)}</div>}
+          <div className="adminEditorGrid"><label>ID<input value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Hamper minimum ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Badge / label<input value={product.badge || ""} maxLength={validation.catalog.badgeMax} onChange={(e) => replaceProduct(index, { badge: e.target.value || undefined })} placeholder="Bestseller / New / Limited" /></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label><label className="adminWide">Short card summary<input value={product.note} maxLength={validation.catalog.noteMax} onChange={(e) => replaceProduct(index, { note: e.target.value })} placeholder="Short line shown on collection cards" /></label><label className="adminWide">Full product description<textarea rows={5} value={product.description || ""} maxLength={validation.catalog.descriptionMax} onChange={(e) => replaceProduct(index, { description: e.target.value || undefined })} placeholder="Detailed product information shown after opening the product." /></label><label className="adminWide">Highlights — one per line<textarea rows={4} value={(product.highlights || []).join("\n")} onChange={(e) => replaceProduct(index, { highlights: e.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean).slice(0, validation.catalog.maxHighlights) })} placeholder={"Premium finish\nGift-ready presentation\nComfortable for daily wear"} /></label><label className="adminWide">Gallery image URLs — one per line<textarea rows={4} value={gallery.map((image) => image.url).join("\n")} onChange={(e) => { const urls=e.target.value.split(/\r?\n/).map((item)=>item.trim()).filter(Boolean).slice(0,validation.catalog.maxImages); replaceProductImages(index, urls.map((url) => ({ url, alt: product.name }))) }} placeholder="https://… or use upload below" /></label><label className="adminWide uploadControl">{busy === `image-${index}` ? "Uploading images…" : `Upload product images (max ${validation.catalog.maxImages})`}<input type="file" multiple accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" disabled={Boolean(busy)} onChange={(e) => { const files = e.target.files; if (files?.length) uploadImages(files, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")); e.currentTarget.value = "" }} /></label></div>
           <div className="adminEditorGrid">
             <label>Individual sale price ₹<input type="number" min="1" max={Math.min(validation.catalog.maxPrice, 21474836.47)} step="0.01" inputMode="decimal" value={product.salePricePaise === undefined ? "" : product.salePricePaise / 100} placeholder="Enter actual sale price" onChange={(event) => {
               const value = event.target.value

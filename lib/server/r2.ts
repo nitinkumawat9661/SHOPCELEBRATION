@@ -92,6 +92,26 @@ export function isCatalogImageKey(key: string) {
   return key.startsWith(`${storageConfig.catalogImagePrefix}/`) && /^[A-Za-z0-9._/-]+$/.test(key) && key.length <= storageConfig.keyMaxLength
 }
 
+export async function uploadCatalogImageFile(
+  contentType: CatalogImageMimeType,
+  filePath: string,
+  contentLength: number
+) {
+  if (!Number.isSafeInteger(contentLength) || contentLength <= 0 || contentLength > validation.catalogImageMaxBytes) {
+    throw new Error("INVALID_CATALOG_IMAGE_SIZE")
+  }
+  const ext = storageConfig.catalogImageTypes[contentType]
+  const key = `${storageConfig.catalogImagePrefix}/${crypto.randomUUID()}.${ext}`
+  await client().send(new PutObjectCommand({
+    Bucket: requireEnv("r2Bucket"),
+    Key: key,
+    ContentType: contentType,
+    ContentLength: contentLength,
+    Body: createReadStream(filePath)
+  }))
+  return { key }
+}
+
 export async function createCatalogImageUploadUrl(contentType: CatalogImageMimeType) {
   const ext = storageConfig.catalogImageTypes[contentType]
   const key = `${storageConfig.catalogImagePrefix}/${crypto.randomUUID()}.${ext}`

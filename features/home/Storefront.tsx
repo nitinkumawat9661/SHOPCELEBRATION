@@ -1,6 +1,7 @@
 import type { CatalogConfig } from "../../lib/domain/catalog"
 import type { StoreSettings } from "../../lib/server/store-settings"
 import { StorefrontHeader } from "../shell/StorefrontHeader"
+import { TrustStrip } from "../shell/TrustStrip"
 import { StoreIcon } from "../shell/StoreIcon"
 import { HomeCatalog } from "./HomeCatalog"
 import { Hero } from "./Hero"
@@ -24,7 +25,7 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
 
   return (
     <div className="celebrationHome">
-        <div className="celebrationAnnouncement">Thoughtfully chosen. Beautifully wrapped. <span>Made for their moment.</span></div>
+        <TrustStrip />
         <StorefrontHeader settings={initialSettings} />
       <main id="main-content">
         <Hero tiers={tiers} />

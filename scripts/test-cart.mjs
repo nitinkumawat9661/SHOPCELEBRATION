@@ -15,6 +15,18 @@ assert.deepEqual(removePurchasedItems(items, [{ productId: "a", quantity: 1 }]),
 assert.deepEqual(removePurchasedItems(items, [{ productId: "b", quantity: 1 }, { productId: "a", quantity: 3 }]), [])
 console.log("Cart passed: strict ID/quantity bounds, duplicate rejection, no persisted prices and stable checkout key.")
 
+const addToCartSource = await readFile(new URL("../features/cart/AddToCart.tsx", import.meta.url), "utf8")
+assert.match(addToCartSource, /catalogInlineQuantity/, "Product card must render an inline cart quantity control after add")
+assert.match(addToCartSource, /cart\.quantity\(/, "Inline cart state must update the shared cart quantity")
+assert.match(addToCartSource, /cart\.remove\(/, "Inline decrement must be able to remove the final item")
+
+const cashfreeClientSource = await readFile(new URL("../features/checkout/useOrderSubmit.ts", import.meta.url), "utf8")
+assert.match(cashfreeClientSource, /cashfreeRedirectTarget/, "Cashfree checkout must choose a device-safe redirect target")
+assert.match(cashfreeClientSource, /\? "_self" : "_modal"/, "Mobile Cashfree checkout must support current-tab redirect")
+const paymentProviderSource = await readFile(new URL("../lib/server/payments/provider.ts", import.meta.url), "utf8")
+assert.match(paymentProviderSource, /\/payment\/return\?provider_order_id=\{order_id\}/, "Cashfree return URL must land directly on the payment status route")
+console.log("Marketplace cart/payment UX checks passed: inline quantity state and direct mobile payment return are wired.")
+
 // Exercise the actual submit hook without a browser, database or provider request.
 const hookSource = await readFile(new URL("../features/checkout/useOrderSubmit.ts", import.meta.url), "utf8")
 const hookJs = ts.transpileModule(hookSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
