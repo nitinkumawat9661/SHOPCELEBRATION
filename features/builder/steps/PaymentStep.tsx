@@ -259,7 +259,7 @@ export function PaymentStep({
               <strong>{formatMoney(payablePaise / 100)}</strong>
               {discountPaise > 0 && <small className="paymentSaving">Saved {formatMoney(discountPaise / 100)} automatically</small>}
               {gatewayEnabled
-                ? <small>UPI, cards and supported payment apps • server-side verification</small>
+                ? <small>UPI, cards and supported payment apps • secure payment verification</small>
                 : manualPaymentReady
                   ? <small>{copy.upiPrefix} {publicEnv.upiId}</small>
                   : <small className="setupPending">{individual ? "Online payment is currently unavailable. Your items remain saved in your cart. Contact Celebration for help or return when online payments are enabled." : copy.setupPending}</small>}
@@ -299,7 +299,7 @@ export function PaymentStep({
 
           <div className="navRow paymentActions">
             <button className="secondary" type="button" disabled={submitting || Boolean(individual && (created || paymentOrderId))} onClick={onBack}>{copy.back}</button>
-            <span className="tiny">{gatewayEnabled || individual ? "Order processing starts only after server-verified payment." : customerAccount ? copy.hint : "Login before payment so your order and any eligible offer stay linked"}</span>
+            <span className="tiny">{gatewayEnabled || individual ? "Order processing starts only after verified payment." : customerAccount ? copy.hint : "Login before payment so your order and any eligible offer stay linked"}</span>
             {!gatewayEnabled && !individual && <button className="primary" type="button" disabled={submitting || Boolean(created) || !accepted || !manualPaymentReady || accountLoading || !customerAccount || quoteLoading} onClick={() => onSubmit(quote?.id)}>{submitting ? copy.submitting : customerAccount ? "Place order" : "Login to continue"}</button>}
           </div>
         </div>
