@@ -3,20 +3,63 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { MAX_CART_QUANTITY } from "./cart"
 import { useCart } from "./useCart"
 
 export function AddToCart({ productId, buyNow = false }: { productId: string; buyNow?: boolean }) {
   const cart = useCart()
   const router = useRouter()
   const [message, setMessage] = useState("")
-  return <div className="cartAddControl">
-    <button className={buyNow ? "primary" : "secondary"} type="button" onClick={() => {
-      const error = cart.add(productId)
-      setMessage(error || "Added to your cart.")
-      if (!error && buyNow) router.push("/cart")
-    }}>{buyNow ? "Buy now" : "Add to cart"}</button>
-    <span className="cartAddFeedback" role="status">{message}{message === "Added to your cart." && <> <Link href="/cart">View cart</Link></>}</span>
-  </div>
+  const quantity = cart.items.find((item) => item.productId === productId)?.quantity || 0
+
+  if (buyNow) {
+    return (
+      <div className="cartAddControl">
+        <button className="primary" type="button" onClick={() => {
+          const error = quantity > 0 ? "" : cart.add(productId)
+          setMessage(error)
+          if (!error) router.push("/cart")
+        }}>Buy now</button>
+        {message && <span className="cartAddFeedback" role="status">{message}</span>}
+      </div>
+    )
+  }
+
+  if (quantity > 0) {
+    return (
+      <div className="cartAddControl cartAddedState" aria-label="Cart quantity">
+        <div className="catalogInlineQuantity">
+          <button
+            type="button"
+            aria-label="Reduce quantity"
+            onClick={() => quantity <= 1 ? cart.remove(productId) : cart.quantity(productId, quantity - 1)}
+          >−</button>
+          <output aria-live="polite" aria-label="Quantity in cart">{quantity}</output>
+          <button
+            type="button"
+            aria-label="Increase quantity"
+            disabled={quantity >= MAX_CART_QUANTITY}
+            onClick={() => {
+              const error = cart.add(productId)
+              setMessage(error)
+            }}
+          >+</button>
+        </div>
+        <span className="cartAddedLabel">✓ Added to cart <Link href="/cart">View cart</Link></span>
+        {message && <span className="cartAddFeedback" role="status">{message}</span>}
+      </div>
+    )
+  }
+
+  return (
+    <div className="cartAddControl">
+      <button className="secondary" type="button" onClick={() => {
+        const error = cart.add(productId)
+        setMessage(error || "")
+      }}>Add to cart</button>
+      {message && <span className="cartAddFeedback" role="status">{message}</span>}
+    </div>
+  )
 }
 
 export function CartLink() {
