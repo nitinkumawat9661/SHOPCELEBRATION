@@ -140,6 +140,7 @@ function normalizeProduct(input: unknown): GiftProduct {
   }
   const name = cleanRequired(item.name, validation.catalog.nameMax, "INVALID_PRODUCT_NAME")
   const legacyImageUrl = imageUrl(item.imageUrl)
+  const images = normalizeProductImages(item.images, legacyImageUrl, name)
   return {
     id: cleanId(item.id),
     name,
@@ -151,8 +152,8 @@ function normalizeProduct(input: unknown): GiftProduct {
     highlights: normalizeHighlights(item.highlights),
     badge: cleanOptional(item.badge, validation.catalog.badgeMax) || undefined,
     icon: cleanOptional(item.icon, 16) || undefined,
-    imageUrl: legacyImageUrl || undefined,
-    images: normalizeProductImages(item.images, legacyImageUrl, name),
+    imageUrl: images?.[0]?.url || legacyImageUrl || undefined,
+    images,
     active: item.active !== false,
     sellIndividually,
     salePricePaise,
