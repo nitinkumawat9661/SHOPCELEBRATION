@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import { routes } from "../../config/routes"
 import { supportWhatsappUrl } from "../../lib/domain/support"
@@ -215,6 +216,7 @@ export function CustomerAuthPanel({
   const [resetBusy, setResetBusy] = useState(false)
   const [widgetReady, setWidgetReady] = useState(false)
   const [captchaVerified, setCaptchaVerified] = useState(false)
+  const [signupPolicyAccepted, setSignupPolicyAccepted] = useState(false)
   const [resetConfig, setResetConfig] = useState<ResetRequest | null>(null)
   const actionBusy = busy || resetBusy
 
@@ -353,6 +355,7 @@ export function CustomerAuthPanel({
     setScreen("auth")
     setPassword("")
     setShowPassword(false)
+    setSignupPolicyAccepted(false)
     resetOtpWidget()
     clearErrors()
   }
@@ -381,6 +384,11 @@ export function CustomerAuthPanel({
     if (mode === "login") {
       const account = await onAuthenticate("login", { phone, password })
       if (account) onSuccess?.(account)
+      return
+    }
+
+    if (!signupPolicyAccepted) {
+      setLocalError("Please review and accept the Terms & Legal and Privacy Policy before creating an account.")
       return
     }
 
@@ -627,6 +635,7 @@ export function CustomerAuthPanel({
         {mode === "signup" && <label className="field"><span>Your name <b className="requiredMark">*</b></span><input className="control" value={displayName} required minLength={2} maxLength={80} autoComplete="name" onChange={(event) => { setDisplayName(event.target.value); clearErrors() }} placeholder="Full name" /></label>}
         <label className="field"><span>Mobile number <b className="requiredMark">*</b></span><input className="control" inputMode="tel" autoComplete="tel" value={phone} required autoFocus={autoFocusPhone} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "").slice(0, 13)); if (mode === "signup") resetOtpWidget(); clearErrors() }} placeholder="10-digit mobile" /></label>
         <label className="field"><span>Password <b className="requiredMark">*</b></span><div className="passwordControlWrap"><input className="control" type={showPassword ? "text" : "password"} minLength={8} maxLength={72} required autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => { setPassword(event.target.value); clearErrors() }} placeholder="Minimum 8 characters" /><button className="passwordToggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div></label>
+        {mode === "signup" && <label className="policyCheck signupPolicyCheck"><input type="checkbox" checked={signupPolicyAccepted} disabled={actionBusy} onChange={(event) => { setSignupPolicyAccepted(event.target.checked); clearErrors() }} /><span>I agree to the <Link href={routes.terms} target="_blank">Terms &amp; Legal</Link> and acknowledge the <Link href={routes.privacy} target="_blank">Privacy Policy</Link>. My mobile number will be used for account security, OTP verification and order-related service.</span></label>}
         {mode === "signup" && <div className={`resetSecurityCard ${captchaVerified ? "verified" : widgetReady ? "pending" : "idle"}`}>
           <div className="resetSecurityHead">
             <span className="resetSecurityMark" aria-hidden="true">{captchaVerified ? "✓" : "•"}</span>
@@ -636,7 +645,7 @@ export function CustomerAuthPanel({
         </div>}
         {mode === "login" && <div className="forgotPasswordRow"><button className="authTextButton" type="button" onClick={startForgotPassword}>Forgot password?</button></div>}
         {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-        <button className="primary fullWidth" disabled={actionBusy || (mode === "signup" && ((!widgetReady && !resetPhoneReady) || (widgetReady && !captchaVerified)))} type="submit">{mode === "login" ? (busy ? "Signing in…" : "Login & continue") : actionBusy ? (widgetReady ? "Sending OTP…" : "Preparing verification…") : !widgetReady ? "Continue securely" : "Send OTP & continue"}</button>
+        <button className="primary fullWidth" disabled={actionBusy || (mode === "signup" && (!signupPolicyAccepted || (!widgetReady && !resetPhoneReady) || (widgetReady && !captchaVerified)))} type="submit">{mode === "login" ? (busy ? "Signing in…" : "Login & continue") : actionBusy ? (widgetReady ? "Sending OTP…" : "Preparing verification…") : !widgetReady ? "Continue securely" : "Send OTP & continue"}</button>
       </form>
 
       <div className="customerAuthHelp">
