@@ -35,10 +35,16 @@ assert(individual.includes("2 × ₹12.34 each") && individual.includes("₹24.6
 assert(!individual.includes("Hamper preparation"), "Individual fulfillment must use order wording")
 const hamper = render({ ...order, orderType: "hamper", lineItems: [], tierName: "Test Hamper" })
 assert(hamper.includes("Test Hamper") && !hamper.includes('aria-label="Purchased items"'), "Hamper presentation must remain separate")
+const { customerPaymentStatusLabel } = require(join(out, "lib/domain/order-status.js"))
+assert.equal(customerPaymentStatusLabel("verification_pending"), "Payment pending")
+assert.equal(customerPaymentStatusLabel("verified"), "Paid")
+assert.equal(customerPaymentStatusLabel("partially_refunded"), "Partially refunded")
+assert.equal(customerPaymentStatusLabel("INTERNAL_UNKNOWN_CODE"), "Payment update available")
+
 const { PackingApprovalCard } = require(join(out, "features/tracking/PackingApprovalCard.js"))
 const approval = renderToStaticMarkup(createElement(PackingApprovalCard, { isIndividual: true, status: "packing_video_ready", packingVideoUrl: "/test-video", approving: false, approvedAt: null, async onApprove() {} }))
 assert(approval.includes("approve this order for shipping") && approval.includes('disabled=""'), "Individual packing approval must retain explicit consent before shipping")
-console.log("Order presentation checks passed: snapshots, exact prices, hamper compatibility and packing consent.")
+console.log("Order presentation checks passed: snapshots, customer-safe payment labels, exact prices, hamper compatibility and packing consent.")
 } finally {
   await rm(out, { recursive: true, force: true })
 }
