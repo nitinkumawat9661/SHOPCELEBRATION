@@ -22,7 +22,7 @@ try {
     await writeFile(target, await readFile(join(root, source)))
   }
   const require = createRequire(import.meta.url)
-  const { defaultCatalog, salePriceFromRupees, isIndividuallySellable } = require(join(out, "lib/domain/catalog.js"))
+  const { defaultCatalog, salePriceFromRupees, isIndividuallySellable, productImages, primaryProductImage } = require(join(out, "lib/domain/catalog.js"))
   const { normalizeCatalogConfig, CatalogValidationError } = require(join(out, "lib/server/catalog.js"))
   const { validation } = require(join(out, "config/validation.js"))
   const normalized = normalizeCatalogConfig(defaultCatalog)
@@ -34,6 +34,44 @@ try {
   assert.equal(isIndividuallySellable({ ...enabled, active: false }), false)
   assert.equal(isIndividuallySellable({ ...enabled, sellIndividually: false }), false)
   assert.equal(normalizeCatalogConfig(withProduct({ sellIndividually: false, salePricePaise: 1929 })).products[0].salePricePaise, 1929, "Paused individual sale can retain a configured price")
+
+  const legacyImage = normalizeCatalogConfig(withProduct({ imageUrl: "https://example.com/legacy.webp" })).products[0]
+  assert.equal(legacyImage.imageUrl, "https://example.com/legacy.webp")
+  assert.deepEqual(legacyImage.images, [{ url: "https://example.com/legacy.webp", alt: legacyImage.name }])
+  assert.equal(primaryProductImage(legacyImage)?.url, legacyImage.imageUrl)
+
+  const galleryOnly = normalizeCatalogConfig(withProduct({
+    imageUrl: undefined,
+    images: [
+      { url: "https://example.com/front.webp", alt: "Front view" },
+      { url: "https://example.com/detail.webp", alt: "Detail view" }
+    ],
+    description: "Long-form product detail copy.",
+    highlights: ["Premium finish", "Gift-ready"],
+    badge: "Bestseller"
+  })).products[0]
+  assert.equal(galleryOnly.imageUrl, "https://example.com/front.webp", "Primary gallery image must mirror into legacy imageUrl")
+  assert.deepEqual(productImages(galleryOnly).map((image) => image.url), ["https://example.com/front.webp", "https://example.com/detail.webp"])
+  assert.equal(galleryOnly.description, "Long-form product detail copy.")
+  assert.deepEqual(galleryOnly.highlights, ["Premium finish", "Gift-ready"])
+  assert.equal(galleryOnly.badge, "Bestseller")
+
+  assert.throws(
+    () => normalizeCatalogConfig(withProduct({ images: [{ url: "https://example.com/a.webp" }, { url: "https://example.com/a.webp" }] })),
+    (error) => error instanceof CatalogValidationError && error.code === "DUPLICATE_PRODUCT_IMAGE"
+  )
+  assert.throws(
+    () => normalizeCatalogConfig(withProduct({ images: Array.from({ length: validation.catalog.maxImages + 1 }, (_, index) => ({ url: `https://example.com/${index}.webp` })) })),
+    (error) => error instanceof CatalogValidationError && error.code === "TOO_MANY_PRODUCT_IMAGES"
+  )
+  assert.throws(
+    () => normalizeCatalogConfig(withProduct({ images: [{ url: "http://example.com/insecure.webp" }] })),
+    (error) => error instanceof CatalogValidationError && error.code === "INVALID_IMAGE_URL"
+  )
+  assert.throws(
+    () => normalizeCatalogConfig(withProduct({ highlights: Array.from({ length: validation.catalog.maxHighlights + 1 }, (_, index) => `Feature ${index}`) })),
+    (error) => error instanceof CatalogValidationError && error.code === "INVALID_PRODUCT_HIGHLIGHTS"
+  )
   for (const [patch, code] of [[{ sellIndividually: true }, "SALE_PRICE_REQUIRED"], [{ sellIndividually: "true" }, "INVALID_INDIVIDUAL_SALE_SETTING"], ...[0, 99, -100, 100.5, "100", Number.NaN, Math.min(validation.catalog.maxPrice * 100, 2147483647) + 1].map((salePricePaise) => [{ sellIndividually: true, salePricePaise }, "INVALID_SALE_PRICE"])]) {
     assert.throws(() => normalizeCatalogConfig(withProduct(patch)), (error) => error instanceof CatalogValidationError && error.code === code)
   }
@@ -41,7 +79,7 @@ try {
   assert.equal(salePriceFromRupees("1.05"), 105)
   assert.equal(salePriceFromRupees("19.29"), 1929)
   for (const input of ["", "0.99", "19.299", "1e3", "-1", "NaN", String(validation.catalog.maxPrice + 1)]) assert.equal(salePriceFromRupees(input), undefined)
-  console.log("Individual catalog checks passed: default-off, strict prices, availability and exact rupees-to-paise conversion.")
+  console.log("Individual catalog checks passed: prices, availability, gallery compatibility, validation and exact rupees-to-paise conversion.")
 } finally {
   await rm(out, { recursive: true, force: true })
 }
