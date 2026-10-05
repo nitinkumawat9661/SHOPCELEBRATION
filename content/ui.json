@@ -124,20 +124,20 @@
     },
     "payment": {
       "title": "3. Review & pay",
-      "body": "Pay the shown amount via UPI. Your order starts after payment verification.",
+      "body": "Pay the shown amount via UPI. Your order starts once payment is confirmed.",
       "payable": "PAY NOW",
       "upiPrefix": "UPI:",
       "setupPending": "UPI is temporarily unavailable.",
       "payButton": "Pay via UPI",
       "setupButton": "UPI unavailable",
-      "referenceLabel": "UPI transaction reference *",
-      "referencePlaceholder": "Enter transaction reference",
+      "referenceLabel": "UPI payment number *",
+      "referencePlaceholder": "Enter payment number",
       "back": "← Back",
       "hint": "Packing video before dispatch",
       "submit": "Place order",
       "submitting": "Placing your order…",
       "successPrefix": "Order placed:",
-      "successBody": "We’ll start processing after payment verification.",
+      "successBody": "We’ll start preparing your order once payment is confirmed.",
       "trackingButton": "View order progress",
       "whatsappButton": "WhatsApp support",
       "paymentIcon": "💳",
@@ -149,7 +149,7 @@
   "promise": {
     "kicker": "WHY CELEBRATION",
     "title": "Clear from payment to delivery.",
-    "body": "You’ll know what happens next at every stage — from payment verification to packing and shipping."
+    "body": "You’ll know what happens next at every stage — from payment confirmation to packing and shipping."
   },
   "cta": {
     "icon": "🎁",
