@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         shippingLiveStatus = live?.currentStatus || live?.shipmentStatus || null
         shippingCourierName = live?.courierName || null
         shippingTrackUrl = live?.trackUrl || null
-        if (live?.shipmentStatus === "OOD" && order.status === "shipped") {
+        if ((live?.shipmentStatus === "OOD" || live?.shipmentStatus === "OFD") && order.status === "shipped") {
           await updateOrderStatus(order.publicId, "out_for_delivery")
           order = await findOrderByTrackingToken(token) || order
         } else if (live?.shipmentStatus === "DEL") {
