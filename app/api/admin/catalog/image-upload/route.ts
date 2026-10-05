@@ -2,19 +2,8 @@ import { NextResponse } from "next/server"
 import { validation } from "../../../../../config/validation"
 import { isAdminRequest } from "../../../../../lib/security/admin-session"
 import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../../../lib/security/request"
-import {
-  appendCatalogImageChunk,
-  assertCatalogImageUploadComplete,
-  CATALOG_IMAGE_CHUNK_BYTES,
-  CatalogImageUploadError,
-  createCatalogImageUploadSession,
-  deleteCatalogImageUploadSession
-} from "../../../../../lib/server/catalog-image-upload"
-import {
-  isCatalogImageMimeType,
-  uploadCatalogImageFile,
-  verifyCatalogImageObject
-} from "../../../../../lib/server/r2"
+import { appendCatalogImageChunk, assertCatalogImageUploadComplete, CATALOG_IMAGE_CHUNK_BYTES, CatalogImageUploadError, createCatalogImageUploadSession, deleteCatalogImageUploadSession } from "../../../../../lib/server/catalog-image-upload"
+import { isCatalogImageMimeType, uploadCatalogImageFile, verifyCatalogImageObject } from "../../../../../lib/server/r2"
 import { consumeRequestRateLimit } from "../../../../../lib/server/rate-limit"
 
 export const runtime = "nodejs"
