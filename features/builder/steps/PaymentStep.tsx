@@ -30,7 +30,6 @@ export function PaymentStep({
   accountLoading,
   gatewayLoading,
   gatewayEnabled,
-  gatewayProvider,
   paymentState,
   paymentOrderId,
   onAccepted,
@@ -58,7 +57,6 @@ export function PaymentStep({
   accountLoading: boolean
   gatewayLoading: boolean
   gatewayEnabled: boolean
-  gatewayProvider: "razorpay" | "cashfree" | null
   paymentState: PaymentUiState
   paymentOrderId: string | null
   onAccepted: (value: boolean) => void
@@ -252,7 +250,7 @@ export function PaymentStep({
           <div className="paymentPolicyHint">Check once, then pay. Never share your UPI PIN, card PIN or OTP with Celebration.</div>
           {gatewayEnabled && !accepted && customerAccount && <div className="checkoutPriceNote">Tick the checkbox above to enable secure payment.</div>}
 
-          <div className={`paymentBox ${gatewayEnabled ? "automatedPaymentBox" : ""}`} data-payment-provider={gatewayProvider || undefined}>
+          <div className={`paymentBox ${gatewayEnabled ? "automatedPaymentBox" : ""}`}>
             <div className="paymentSticker">{gatewayEnabled ? "✓" : copy.paymentIcon}</div>
             <div>
               <span>{gatewayEnabled ? "SECURE ONLINE PAYMENT" : copy.payable}</span>
