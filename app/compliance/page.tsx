@@ -1,0 +1,74 @@
+import type { Metadata } from "next"
+import Link from "next/link"
+import { routes } from "../../config/routes"
+import { SiteFooter } from "../../features/shell/SiteFooter"
+import { SiteHeader } from "../../features/shell/SiteHeader"
+import { TrustStrip } from "../../features/shell/TrustStrip"
+import { storeContent } from "../../lib/domain/content"
+
+export const metadata: Metadata = {
+  title: `Dark-Pattern Self-Audit | ${storeContent.brand.name}`,
+  description: `Celebration's internal dark-pattern self-audit and consumer-interface compliance declaration.`,
+  robots: { index: false, follow: false }
+}
+
+const checks = [
+  ["False urgency", "No countdown, fake scarcity or unverified stock-pressure message is used to force checkout."],
+  ["Basket sneaking", "Products, donations, protection plans or paid add-ons are not auto-added to the cart."],
+  ["Confirm shaming", "Declining an offer, coupon or optional action is not framed with guilt or insulting language."],
+  ["Forced action", "Mandatory actions are limited to functions reasonably needed for the requested service, security, payment and order fulfilment."],
+  ["Subscription trap", "Celebration does not operate a recurring paid subscription flow."],
+  ["Interface interference", "Checkout consent is not pre-selected; payment controls and back/remove actions remain visible and understandable."],
+  ["Bait and switch", "The checkout uses the current server-validated catalog and blocks payment if price or availability changes."],
+  ["Drip pricing", "The payable amount is shown before payment; the current individual-product checkout states that no additional shipping fee is added at checkout."],
+  ["Disguised advertisement", "Celebration does not currently mix third-party paid advertisements into product or search results."],
+  ["Nagging", "The checkout does not repeatedly pressure a user with refusal pop-ups or repeated hesitation offers."],
+  ["Trick wording", "Payment, policy consent, coupon and cancellation/refund wording is intended to state the consequence directly."],
+  ["SaaS billing", "Not applicable: Celebration does not run a recurring SaaS/subscription billing model."],
+  ["Rogue malware", "Celebration does not intentionally distribute software, browser extensions or executable downloads."]
+] as const
+
+export default function CompliancePage() {
+  return (
+    <main>
+      <TrustStrip />
+      <SiteHeader />
+      <section>
+        <div className="wrap policyWrap">
+          <div className="policyHero">
+            <div className="kicker">CONSUMER INTERFACE COMPLIANCE</div>
+            <h1 className="policyTitle">Dark-pattern self-audit declaration.</h1>
+            <p className="policyLead">Celebration reviewed its customer-facing storefront, catalog, cart, account, checkout, payment and tracking flows against the 13 dark patterns identified by the Central Consumer Protection Authority.</p>
+            <div className="privacyMeta">Internal code/UI self-audit date: 5 October 2026 • Review scope: shopcelebration.in customer flows</div>
+            <div className="policySummaryGrid">
+              <div><b>Explicit consent</b><span>Checkout policy consent is not pre-ticked and payment remains disabled until the customer actively accepts it.</span></div>
+              <div><b>No hidden cart additions</b><span>Items enter the cart only after a customer action; no donation, add-on or unrelated service is silently added.</span></div>
+              <div><b>Ongoing review</b><span>This self-audit should be repeated after material checkout changes and at least annually.</span></div>
+            </div>
+          </div>
+
+          <div className="privacySections">
+            {checks.map(([title, body]) => <article className="privacySection" key={title}><h2>{title}</h2><p>{body}</p></article>)}
+          </div>
+
+          <div className="policyNotice">
+            <strong>Result of this internal review</strong>
+            <span>No intentional use of the 13 listed dark patterns was identified in the audited Celebration customer flows. This is Celebration's own self-audit record, not a government-issued certification. If a customer spots a misleading or coercive interface, it should be reported through the official support/grievance channel for review.</span>
+          </div>
+
+          <div className="policySupport">
+            <h2>Consumer protection links</h2>
+            <p>Read the rules that govern payment, cancellation/refund, privacy and grievances before ordering.</p>
+            <div className="policySupportActions">
+              <Link className="primary" href={routes.policies}>Order &amp; Refund Policy</Link>
+              <Link className="secondary" href={routes.terms}>Terms &amp; Legal</Link>
+              <Link className="secondary" href={routes.privacy}>Privacy Policy</Link>
+              <a className="secondary" href="https://consumerhelpline.gov.in/" target="_blank" rel="noreferrer">National Consumer Helpline • 1915</a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <SiteFooter />
+    </main>
+  )
+}
