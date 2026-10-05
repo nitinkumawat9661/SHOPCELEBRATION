@@ -48,7 +48,7 @@ export function PackingApprovalCard({ isIndividual = false, status, packingVideo
         <div className="approvalEyebrow">PACKING VIDEO</div>
         <h2>Packing video ready</h2>
         <video className="packingVideo" src={packingVideoUrl} controls playsInline preload="metadata" />
-        <p>Shipping will unlock when this order reaches the packing approval step.</p>
+        <p>You’ll be able to approve shipping when this order reaches the packing review step.</p>
       </article>
     )
   }
