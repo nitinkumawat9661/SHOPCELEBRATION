@@ -146,7 +146,18 @@ export async function bookShipwayShipment(order: OrderRecord): Promise<ShipwayBo
   const awbResponse = awbRaw && typeof awbRaw === "object" ? awbRaw as Record<string, unknown> : {}
   const awb = String(awbResponse.AWB ?? "").trim()
   const carrierId = String(awbResponse.carrier_id ?? "").trim()
-  if (!awb) throw new ShipwayApiError("SHIPWAY_AWB_NOT_ASSIGNED")
+  if (!awb) {
+    console.error("shipway-booking-response", {
+      orderId: order.publicId,
+      success: root.success ?? null,
+      message: typeof root.message === "string" ? root.message.slice(0, 300) : null,
+      error: typeof root.error === "string" || typeof root.error === "number" || typeof root.error === "boolean" ? root.error : null,
+      awbSuccess: awbResponse.success ?? null,
+      awbMessage: typeof awbResponse.message === "string" ? awbResponse.message.slice(0, 300) : null,
+      awbError: typeof awbResponse.error === "string" || typeof awbResponse.error === "number" || typeof awbResponse.error === "boolean" ? awbResponse.error : null
+    })
+    throw new ShipwayApiError("SHIPWAY_AWB_NOT_ASSIGNED")
+  }
   return { awb, carrierId, labelUrl: httpsUrl(awbResponse.shipping_url) }
 }
 
