@@ -28,7 +28,6 @@ type DashboardOrder = {
   paymentStatus: string
   receiverName: string
   packingVideoUrl: string | null
-  shippingProvider: string | null
   shippingTrackingNumber: string | null
   customerApprovedAt: string | null
   createdAt: string
@@ -55,7 +54,7 @@ function nextUpdateText(status: OrderStatus) {
     payment_verified: "Your order is ready to move into preparation.",
     preparing: "We’re preparing your order. The packing video comes next.",
     packing_video_ready: "Your packing video is ready. Review it and approve dispatch.",
-    customer_approved: "Approved. Courier booking is retrying automatically.",
+    customer_approved: "Approved. We’re arranging the courier next.",
     shipped: "Your order has been shipped.",
     out_for_delivery: "Your order is out for delivery.",
     delivered: "Delivered. Need help? WhatsApp support is available below.",
@@ -110,7 +109,7 @@ export function CustomerAccountPage() {
       setApprovalConsent((current) => ({ ...current, [order.publicId]: false }))
       notifyUx({
         title: "Packing approved ✓",
-        body: data.shippingBooked ? "Courier booked automatically. Tracking details are being updated." : "Approval saved. Courier booking will retry automatically.",
+        body: data.shippingBooked ? "Courier arranged. Tracking details are being updated." : "Approval saved. We’ll arrange the courier next.",
         tone: "success",
         durationMs: 4000
       })
@@ -225,7 +224,7 @@ export function CustomerAccountPage() {
 
               <div className="customerOrderUpdates">
                 <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>
-                <div className="customerUpdateCard"><span>Shipping</span>{order.shippingTrackingNumber ? <><b>{order.shippingProvider || "Courier"} • {order.shippingTrackingNumber}</b><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after dispatch</b>}</div>
+                <div className="customerUpdateCard"><span>Shipping</span>{order.shippingTrackingNumber ? <><b>Tracking • {order.shippingTrackingNumber}</b><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after dispatch</b>}</div>
               </div>
 
               {approvalReady && <div className="customerPackingApproval"><div><b>Your {individual ? "order" : "hamper"} is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this {individual ? "order" : "hamper"} for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}
