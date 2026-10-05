@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { validation } from "../../../config/validation"
-import { findOrderByTrackingToken } from "../../../lib/server/orders"
+import { findOrderByTrackingToken, updateOrderStatus } from "../../../lib/server/orders"
+import { getShipwayTracking } from "../../../lib/server/shipway"
 import { createPackingVideoViewUrl } from "../../../lib/server/r2"
 import { consumeRequestRateLimit } from "../../../lib/server/rate-limit"
 import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../lib/security/request"
@@ -17,8 +18,30 @@ export async function POST(request: Request) {
     const allowed = await consumeRequestRateLimit("track", request, validation.rateLimits.trackOrder)
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
 
-    const order = await findOrderByTrackingToken(token)
+    let order = await findOrderByTrackingToken(token)
     if (!order) return NextResponse.json({ ok: false, error: "ORDER_NOT_FOUND" }, { status: 404 })
+
+    let shippingLiveStatus: string | null = null
+    let shippingCourierName: string | null = null
+    let shippingTrackUrl: string | null = null
+    if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && (order.status === "shipped" || order.status === "out_for_delivery")) {
+      try {
+        const live = await getShipwayTracking(order.shippingTrackingNumber)
+        shippingLiveStatus = live?.currentStatus || live?.shipmentStatus || null
+        shippingCourierName = live?.courierName || null
+        shippingTrackUrl = live?.trackUrl || null
+        if ((live?.shipmentStatus === "OOD" || live?.shipmentStatus === "OFD") && order.status === "shipped") {
+          await updateOrderStatus(order.publicId, "out_for_delivery")
+          order = await findOrderByTrackingToken(token) || order
+        } else if (live?.shipmentStatus === "DEL") {
+          if (order.status === "shipped") await updateOrderStatus(order.publicId, "out_for_delivery")
+          await updateOrderStatus(order.publicId, "delivered")
+          order = await findOrderByTrackingToken(token) || order
+        }
+      } catch (error) {
+        console.error("shipway-tracking-sync", error)
+      }
+    }
 
     let packingVideoUrl: string | null = null
     if (order.packingVideoKey) {
@@ -44,6 +67,9 @@ export async function POST(request: Request) {
         packingVideoUrl,
         shippingProvider: order.shippingProvider,
         shippingTrackingNumber: order.shippingTrackingNumber,
+        shippingLiveStatus,
+        shippingCourierName,
+        shippingTrackUrl,
         customerApprovedAt: order.customerApprovedAt,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt

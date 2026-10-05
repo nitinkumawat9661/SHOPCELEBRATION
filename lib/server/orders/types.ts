@@ -29,6 +29,9 @@ export type OrderRecord = {
   packingVideoKey: string | null
   shippingProvider: string | null
   shippingTrackingNumber: string | null
+  shippingCarrierId: string | null
+  shippingLabelUrl: string | null
+  shippingBookedAt: string | null
   issueType: string | null
   issueNote: string | null
   createdAt: string
@@ -63,6 +66,9 @@ export type DbOrder = {
   packing_video_key: string | null
   shipping_provider: string | null
   shipping_tracking_number: string | null
+  shipping_carrier_id: string | null
+  shipping_label_url: string | null
+  shipping_booked_at: Date | null
   issue_type: string | null
   issue_note: string | null
   created_at: Date
@@ -98,6 +104,9 @@ export function mapOrder(row: DbOrder): OrderRecord {
     packingVideoKey: row.packing_video_key,
     shippingProvider: row.shipping_provider,
     shippingTrackingNumber: row.shipping_tracking_number,
+    shippingCarrierId: row.shipping_carrier_id,
+    shippingLabelUrl: row.shipping_label_url,
+    shippingBookedAt: row.shipping_booked_at ? row.shipping_booked_at.toISOString() : null,
     issueType: row.issue_type,
     issueNote: row.issue_note,
     createdAt: row.created_at.toISOString(),
@@ -187,4 +196,4 @@ export const TRACKING_ORDER_SELECT = `order_type, line_items, public_id, subtota
 
 export const ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, amount_paise, campaign_id, campaign_title, tier_name, required_date::text, occasion, status, payment_status, payment_reference,
   customer_name, phone, receiver_name, address, city, state, pincode, gift_message,
-  selected_product_ids, selected_product_names, packing_video_key, shipping_provider, shipping_tracking_number, issue_type, issue_note, created_at, updated_at`
+  selected_product_ids, selected_product_names, packing_video_key, shipping_provider, shipping_tracking_number, shipping_carrier_id, shipping_label_url, shipping_booked_at, issue_type, issue_note, created_at, updated_at`

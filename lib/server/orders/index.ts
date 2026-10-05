@@ -1,7 +1,7 @@
 export { createOrder } from "./create"
 export { canPreparePackingVideo, findAdminPackingVideoKey, findOrderByTrackingToken, getTierPopularity, issueTrackingTokenForLookup, listOrders } from "./read"
 export { updateOrderStatus } from "./status"
-export { approvePackingVideo, approvePackingVideoForAccount, setPackingVideo, setShippingDetails } from "./fulfillment"
+export { approvePackingVideo, approvePackingVideoForAccount, bookOrderWithShipway, setPackingVideo, setShippingDetails } from "./fulfillment"
 export { reportOrderIssue } from "./issues"
 export type { OrderRecord } from "./types"
 export type { TierPopularity } from "./read"

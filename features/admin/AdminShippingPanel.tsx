@@ -22,11 +22,21 @@ export function AdminShippingPanel({ order, busy, onShipping }: {
       }}>
         <div className="adminPanelHeading">
           <b>{copy.shippingHeading}</b>
-          <span>{order.status === "customer_approved" ? copy.shippingReadyHint : copy.shippingUpdateHint}</span>
+          <span>{order.status === "customer_approved" ? "Customer approval complete. Shipway recommended courier auto-assign karke AWB + label generate karega." : copy.shippingUpdateHint}</span>
         </div>
-        <input className="control" name="provider" defaultValue={order.shippingProvider || ""} placeholder={copy.shippingProvider} />
-        <input className="control" name="trackingNumber" defaultValue={order.shippingTrackingNumber || ""} placeholder={copy.shippingTracking} />
-        <button className="secondary" type="submit" disabled={busy}>{busy ? copy.working : copy.saveShipping}</button>
+        {!hasShipping && order.status === "customer_approved" && <button className="primary" type="button" disabled={busy} onClick={() => onShipping("__SHIPWAY_AUTO__", "")}>{busy ? copy.working : "Book with Shipway & generate AWB"}</button>}
+        {hasShipping && <div className="adminShippingSaved">
+          <b>{copy.shippingSavedHeading}</b>
+          <span>{order.shippingProvider}{uiContent.common.separator}{order.shippingTrackingNumber}</span>
+          {order.shippingCarrierId && <small>Carrier ID: {order.shippingCarrierId}</small>}
+          {order.shippingLabelUrl && <a className="secondary" href={order.shippingLabelUrl} target="_blank" rel="noreferrer">Open / print shipping label ↗</a>}
+        </div>}
+        <details className="adminOrderDetails">
+          <summary>{hasShipping ? "Correct courier / tracking manually" : "Manual courier fallback"}</summary>
+          <input className="control" name="provider" defaultValue={order.shippingProvider || ""} placeholder={copy.shippingProvider} />
+          <input className="control" name="trackingNumber" defaultValue={order.shippingTrackingNumber || ""} placeholder={copy.shippingTracking} />
+          <button className="secondary" type="submit" disabled={busy}>{busy ? copy.working : copy.saveShipping}</button>
+        </details>
       </form>
     )
   }
@@ -36,6 +46,8 @@ export function AdminShippingPanel({ order, busy, onShipping }: {
       <div className="adminShippingSaved">
         <b>{copy.shippingSavedHeading}</b>
         <span>{order.shippingProvider}{uiContent.common.separator}{order.shippingTrackingNumber}</span>
+        {order.shippingCarrierId && <small>Carrier ID: {order.shippingCarrierId}</small>}
+        {order.shippingLabelUrl && <a className="secondary" href={order.shippingLabelUrl} target="_blank" rel="noreferrer">Open / print shipping label ↗</a>}
       </div>
     )
   }

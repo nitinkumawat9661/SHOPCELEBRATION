@@ -77,15 +77,17 @@ export function useAdminOrders(): AdminOrdersState {
   }
 
   async function saveShipping(order: AdminOrder, provider: string, trackingNumber: string) {
+    const shipwayAuto = provider === "__SHIPWAY_AUTO__"
     return mutate(order.publicId, async () => {
       const response = await fetch(routes.api.adminOrderShipping(order.publicId), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider, trackingNumber })
+        body: JSON.stringify(shipwayAuto ? { mode: "shipway" } : { provider, trackingNumber })
       })
       const result = await response.json()
-      if (!response.ok || !result.ok) throw new Error(messageFor(result.error, errorMessages.UNKNOWN))
-    }, uiContent.admin.shippingSavedNotice)
+      if (!response.ok || !result.ok) throw new Error(messageFor(result.error, result.error || errorMessages.UNKNOWN))
+      if (shipwayAuto && result.labelUrl) window.open(result.labelUrl, "_blank", "noopener,noreferrer")
+    }, shipwayAuto ? "Shipway shipment booked. AWB saved and order marked shipped." : uiContent.admin.shippingSavedNotice)
   }
 
   async function uploadVideo(order: AdminOrder, file: File) {

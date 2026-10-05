@@ -29,6 +29,9 @@ export type AdminOrder = {
   packingVideoKey: string | null
   shippingProvider: string | null
   shippingTrackingNumber: string | null
+  shippingCarrierId: string | null
+  shippingLabelUrl: string | null
+  shippingBookedAt: string | null
   issueType: string | null
   issueNote: string | null
   createdAt: string

@@ -31,7 +31,11 @@ export const env = {
   msg91WidgetId: read("MSG91_WIDGET_ID"),
   msg91WidgetToken: read("MSG91_WIDGET_TOKEN"),
   msg91AuthKey: read("MSG91_AUTH_KEY"),
-  passwordResetSecret: read("PASSWORD_RESET_SECRET")
+  passwordResetSecret: read("PASSWORD_RESET_SECRET"),
+  shipwayEmail: read("SHIPWAY_EMAIL"),
+  shipwayLicenseKey: read("SHIPWAY_LICENSE_KEY"),
+  shipwayWarehouseId: read("SHIPWAY_WAREHOUSE_ID"),
+  shipwayReturnWarehouseId: read("SHIPWAY_RETURN_WAREHOUSE_ID")
 } as const
 
 export function requireEnv<K extends keyof typeof env>(key: K) {

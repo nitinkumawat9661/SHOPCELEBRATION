@@ -2,10 +2,18 @@ import type { PoolClient } from "pg"
 import { orderEvents } from "../../../config/order-events"
 import { statusHasCapability, workflowActionTarget, type OrderStatus } from "../../domain/order-status"
 import { trackingTokenHash } from "../../security/tokens"
-import { transaction } from "../db"
+import { query, transaction } from "../db"
+import { bookShipwayShipment, ShipwayApiError } from "../shipway"
+import { mapOrder, ORDER_SELECT, type DbOrder } from "./types"
 import { appendOrderEvent } from "./events"
 
-export function setShippingDetails(publicId: string, provider: string, trackingNumber: string) {
+type ShippingMetadata = {
+  carrierId?: string | null
+  labelUrl?: string | null
+  bookedAt?: Date | null
+}
+
+export function setShippingDetails(publicId: string, provider: string, trackingNumber: string, metadata: ShippingMetadata = {}) {
   return transaction(async (client) => {
     const current = await client.query<{ id: string; status: OrderStatus }>(`SELECT id, status FROM orders WHERE public_id = $1 FOR UPDATE`, [publicId])
     const order = current.rows[0]
@@ -19,10 +27,13 @@ export function setShippingDetails(publicId: string, provider: string, trackingN
       `UPDATE orders
           SET shipping_provider = $1,
               shipping_tracking_number = $2,
-              status = $3,
+              shipping_carrier_id = $3,
+              shipping_label_url = $4,
+              shipping_booked_at = $5,
+              status = $6,
               updated_at = now()
-        WHERE id = $4`,
-      [provider, trackingNumber, nextStatus, order.id]
+        WHERE id = $7`,
+      [provider, trackingNumber, metadata.carrierId ?? null, metadata.labelUrl ?? null, metadata.bookedAt ?? null, nextStatus, order.id]
     )
     await appendOrderEvent(client, order.id, orderEvents.shippingUpdated, { provider, trackingNumber })
     if (nextStatus !== order.status) {
@@ -30,6 +41,32 @@ export function setShippingDetails(publicId: string, provider: string, trackingN
     }
     return { ok: true as const, status: nextStatus }
   })
+}
+
+export async function bookOrderWithShipway(publicId: string) {
+  const current = await query<DbOrder>(`SELECT ${ORDER_SELECT} FROM orders WHERE public_id = $1 LIMIT 1`, [publicId])
+  const row = current.rows[0]
+  if (!row) return { ok: false as const, code: "ORDER_NOT_FOUND" }
+
+  const order = mapOrder(row)
+  if (!statusHasCapability(order.status, "shippingUpdate")) return { ok: false as const, code: "SHIPPING_UPDATE_NOT_ALLOWED" }
+  if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber) {
+    return { ok: true as const, status: order.status, awb: order.shippingTrackingNumber, carrierId: order.shippingCarrierId, labelUrl: order.shippingLabelUrl }
+  }
+
+  try {
+    const shipment = await bookShipwayShipment(order)
+    const saved = await setShippingDetails(publicId, "Shipway", shipment.awb, {
+      carrierId: shipment.carrierId || null,
+      labelUrl: shipment.labelUrl,
+      bookedAt: new Date()
+    })
+    if (!saved.ok) return saved
+    return { ok: true as const, status: saved.status, awb: shipment.awb, carrierId: shipment.carrierId || null, labelUrl: shipment.labelUrl }
+  } catch (error) {
+    if (error instanceof ShipwayApiError) return { ok: false as const, code: error.code }
+    throw error
+  }
 }
 
 export function setPackingVideo(publicId: string, key: string) {
