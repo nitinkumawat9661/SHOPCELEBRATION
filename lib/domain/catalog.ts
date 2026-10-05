@@ -25,6 +25,7 @@ export type RetailDeclarations = {
   consumerCare?: string
   bestBefore?: string
   unitSalePrice?: string
+  warrantyOrGuarantee?: string
 }
 
 export type GiftProduct = {
