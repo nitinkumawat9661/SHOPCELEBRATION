@@ -222,7 +222,7 @@ export function PaymentStep({
 
   return (
     <div className="stepPane active">
-      <div className="builderTitle"><div><h3>{individual ? "3. Payment" : copy.title}</h3><p>{gatewayEnabled ? "Secure checkout with automatic payment verification. No UTR or screenshot needed." : individual ? "Your cart stays saved. Individual purchases use verified online checkout." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
+      <div className="builderTitle"><div><h3>{individual ? "3. Payment" : copy.title}</h3><p>{gatewayEnabled ? "Secure checkout with automatic payment confirmation. No screenshot or manual confirmation needed." : individual ? "Your cart stays saved. Individual purchases use verified online checkout." : copy.body}</p></div><div className="paymentAmount">{formatMoney(payablePaise / 100)}</div></div>
       <div className="paymentGrid">
         <div>
           <div className={`checkoutAccount ${customerAccount ? "ready" : "needed"}`}>
@@ -281,7 +281,7 @@ export function PaymentStep({
 
           {gatewayEnabled && paymentPending && <div className="paymentStateCard pending" role="status">
             <div className="paymentStateIcon">…</div>
-            <div className="paymentStateCopy"><strong>Payment pending</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is saved. ` : ""}If money was debited, do not pay again. Check the status while the bank/provider confirmation completes.</span></div>
+            <div className="paymentStateCopy"><strong>Payment pending</strong><span>{paymentOrderId ? `Order ${paymentOrderId} is saved. ` : ""}If money was debited, do not pay again. Check the status while the payment confirmation completes.</span></div>
             <div className="paymentStateActions"><button className="primary" type="button" disabled={submitting} onClick={onRefreshPayment}>{submitting ? "Checking…" : "Check payment status"}</button><button className="secondary" type="button" disabled={submitting} onClick={automatedPaymentClick}>No debit? Continue payment</button></div>
           </div>}
 
