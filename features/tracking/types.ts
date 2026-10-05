@@ -18,6 +18,7 @@ export type TrackedOrder = {
   issueType: string | null
   issueNote: string | null
   customerApprovedAt: string | null
+  issueReportDeadline: string | null
   createdAt: string
   updatedAt: string
 }
