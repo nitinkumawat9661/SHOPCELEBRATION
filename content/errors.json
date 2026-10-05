@@ -85,5 +85,10 @@
   "SHIPWAY_TIMEOUT": "Shipway took too long to respond. Check Shipway before retrying to avoid duplicate booking.",
   "SHIPWAY_UNAVAILABLE": "Shipway shipping is temporarily unavailable. Use manual courier fallback if needed.",
   "INVALID_SHIPWAY_WAREHOUSE_ID": "Shipway warehouse configuration is invalid.",
-  "INVALID_SHIPWAY_RETURN_WAREHOUSE_ID": "Shipway return warehouse configuration is invalid."
+  "INVALID_SHIPWAY_RETURN_WAREHOUSE_ID": "Shipway return warehouse configuration is invalid.",
+  "PACKING_UPLOAD_SESSION_INVALID": "Packing-video upload session is invalid. Select the video and try again.",
+  "PACKING_UPLOAD_SESSION_EXPIRED": "Packing-video upload session expired. Select the video and upload again.",
+  "PACKING_UPLOAD_OFFSET_MISMATCH": "Packing-video upload got out of sync. Please retry the upload.",
+  "PACKING_UPLOAD_INCOMPLETE": "Packing-video upload is incomplete. Please retry the upload.",
+  "INVALID_CONTENT_LENGTH": "The packing-video upload request is invalid."
 }
