@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { routes } from "../../config/routes"
 import { formatMoney } from "../../lib/domain/catalog"
 import type { OrderLineItem } from "../../lib/domain/order"
-import { customerTimeline, orderStatusLabels, type OrderStatus } from "../../lib/domain/order-status"
+import { customerPaymentStatusLabel, customerTimeline, orderStatusLabels, type OrderStatus } from "../../lib/domain/order-status"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import { notifyUx } from "../ux/UxMessenger"
@@ -211,7 +211,7 @@ export function CustomerAccountPage() {
                 <div><span>Gift for</span><b>{order.receiverName}</b></div>
                 <div><span>Occasion</span><b>{order.occasion}</b></div>
                 <div><span>Needed by</span><b>{order.requiredDate}</b></div>
-                <div><span>Payment</span><b>{order.paymentStatus}</b></div>
+                <div><span>Payment</span><b>{customerPaymentStatusLabel(order.paymentStatus)}</b></div>
               </div>
 
               <div className="checkoutProgressNote"><span>→</span><span><b>What’s next:</b> {nextUpdateText(order.status)}</span></div>
