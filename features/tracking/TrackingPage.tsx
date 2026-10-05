@@ -94,7 +94,7 @@ export function TrackingPage() {
             <div className="trackingMeta">
               <div><span>{copy.orderId}</span><b>{order.publicId}</b></div>
               <div><span>{copy.requiredBy}</span><b>{order.requiredDate}</b></div>
-              <div><span>{copy.payment}</span><b>{order.paymentStatus}</b></div>
+              <div><span>{copy.payment}</span><b>{customerPaymentStatusLabel(order.paymentStatus)}</b></div>
               <div><span>{copy.status}</span><b>{customerStatusLabel(order.status)}</b></div>
             </div>
             {tracked.error && <div className="errorBox" role="alert">{tracked.error}</div>}
