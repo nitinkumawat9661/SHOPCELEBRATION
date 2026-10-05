@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { databaseConfig } from "../../../config/database"
+import { requirePositiveIntegerEnv } from "../../../config/env"
 import { validation } from "../../../config/validation"
 import { statusHasCapability, type OrderStatus } from "../../domain/order-status"
 import { createTrackingToken, trackingTokenHash } from "../../security/tokens"
@@ -19,7 +20,16 @@ export async function findOrderByTrackingToken(token: string) {
     `SELECT ${TRACKING_ORDER_SELECT} FROM orders WHERE tracking_token_hash = $1 AND tracking_expires_at > now()`,
     [trackingTokenHash(token)]
   )
-  return result.rows[0] ? mapTrackingOrder(result.rows[0]) : null
+  if (!result.rows[0]) return null
+  const mapped = mapTrackingOrder(result.rows[0])
+  const deliveredAt = result.rows[0].delivered_at
+  const issueWindowHours = requirePositiveIntegerEnv("issueReportWindowHours")
+  return {
+    ...mapped,
+    issueReportDeadline: deliveredAt
+      ? new Date(deliveredAt.getTime() + issueWindowHours * 60 * 60 * 1000).toISOString()
+      : null
+  }
 }
 
 export async function issueTrackingTokenForLookup(publicId: string, phoneSuffix: string) {
