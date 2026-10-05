@@ -38,6 +38,7 @@ export const routes = {
     adminCampaigns: "/api/admin/campaigns",
     adminAnalytics: "/api/admin/analytics",
     packingVideoPresign: "/api/packing-video/presign",
+    packingVideoUpload: "/api/packing-video/upload",
     adminOrderStatus: (publicId: string) => `/api/admin/orders/${encodeURIComponent(publicId)}/status`,
     adminOrderShipping: (publicId: string) => `/api/admin/orders/${encodeURIComponent(publicId)}/shipping`,
     adminOrderPackingVideo: (publicId: string) => `/api/admin/orders/${encodeURIComponent(publicId)}/packing-video`
