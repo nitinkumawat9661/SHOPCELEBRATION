@@ -1,0 +1,106 @@
+name: Recover Stale Shipway Order
+
+on:
+  push:
+    branches:
+      - ops/diagnose-shipway-booking
+    paths:
+      - .github/workflows/recover-shipway-stale-order.yml
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/key" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/key" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+
+      - name: Cancel stale unassigned order and retry app booking
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          ORDER_ID="CEL-261004-D219ABD352917C24"
+          ENV_FILE=/var/www/celebration/shared/.env.production
+          set -a
+          . "$ENV_FILE"
+          set +a
+
+          BEFORE="$(mktemp)"
+          curl --silent --show-error --fail --max-time 20 \
+            --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" \
+            --output "$BEFORE" \
+            "https://app.shipway.com/api/getorders?orderid=$ORDER_ID&page=1"
+
+          STATE="$(node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));let hit=null;function w(x){if(Array.isArray(x)){for(const v of x)w(v);return}if(!x||typeof x!=="object")return;if(String(x.order_id||x.orderid||"")===process.argv[2])hit=x;for(const v of Object.values(x))if(v&&typeof v==="object")w(v)}w(d);if(!hit){process.stdout.write("NOT_FOUND");process.exit()}const awb=String(hit.awb||hit.awb_number||"").trim();const status=String(hit.status||"").trim();process.stdout.write(awb?"HAS_AWB:"+awb:"NO_AWB:"+status)' "$BEFORE" "$ORDER_ID")"
+          rm -f "$BEFORE"
+          echo "SHIPWAY_BEFORE=$STATE"
+
+          case "$STATE" in
+            NO_AWB:O|NO_AWB:ONHOLD|NO_AWB:N)
+              CANCEL="$(mktemp)"
+              curl --silent --show-error --fail --max-time 20 \
+                --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" \
+                -H 'Content-Type: application/json' \
+                -X POST 'https://app.shipway.com/api/Cancelorders/' \
+                --data-binary "{\"order_ids\":[\"$ORDER_ID\"]}" \
+                --output "$CANCEL"
+              node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));const a=Array.isArray(d)?d:[d];for(const x of a)console.log("SHIPWAY_CANCEL",JSON.stringify({order_id:x.order_id||null,success:x.success??null,error:x.error??null,message:x.message||null}))' "$CANCEL"
+              rm -f "$CANCEL"
+              sleep 2
+              ;;
+            NOT_FOUND)
+              echo "No stale Shipway record to cancel."
+              ;;
+            HAS_AWB:*)
+              echo "Refusing recovery: Shipway order already has an AWB." >&2
+              exit 4
+              ;;
+            *)
+              echo "Refusing recovery for unexpected Shipway state: $STATE" >&2
+              exit 5
+              ;;
+          esac
+
+          COOKIE="$(node -e 'const crypto=require("crypto");const exp=Math.floor(Date.now()/1000)+900;const payload=Buffer.from(JSON.stringify({exp,version:process.env.ADMIN_SESSION_VERSION})).toString("base64url");const sig=crypto.createHmac("sha256",process.env.ADMIN_SESSION_SECRET).update(payload).digest("base64url");process.stdout.write(payload+"."+sig)')"
+          RESULT="$(mktemp)"
+          CODE="$(curl --silent --show-error --max-time 40 \
+            --output "$RESULT" --write-out '%{http_code}' \
+            -X POST "https://shopcelebration.in/api/admin/orders/$ORDER_ID/shipping" \
+            -H 'Origin: https://shopcelebration.in' \
+            -H 'Content-Type: application/json' \
+            -H "Cookie: celebration_admin=$COOKIE" \
+            --data '{"mode":"shipway"}')"
+          echo "CELEBRATION_RETRY_HTTP=$CODE"
+          node -e 'const fs=require("fs");let d;try{d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"))}catch{console.log("CELEBRATION_RETRY_JSON=INVALID");process.exit(3)};for(const k of ["ok","code","error","status","awb","carrierId","labelUrl"])if(d[k]!==undefined)console.log("CELEBRATION_RETRY "+k+"="+String(d[k]));if(!d.ok)process.exit(4)' "$RESULT"
+          rm -f "$RESULT"
+
+          cd /var/www/celebration/current
+          node -e 'const {Client}=require("pg");(async()=>{const ssl=String(process.env.DATABASE_SSL_MODE||"").toLowerCase()==="require"?{rejectUnauthorized:false}:undefined;const c=new Client({connectionString:process.env.DATABASE_URL,ssl});await c.connect();const r=await c.query("SELECT public_id,status,shipping_provider,shipping_tracking_number,shipping_carrier_id,shipping_booked_at FROM orders WHERE public_id=$1",[process.argv[1]]);for(const x of r.rows)console.log("DB_AFTER",JSON.stringify(x));await c.end()})().catch(e=>{console.error(e);process.exit(1)})' "$ORDER_ID"
+
+          AFTER="$(mktemp)"
+          curl --silent --show-error --fail --max-time 20 \
+            --user "$SHIPWAY_EMAIL:$SHIPWAY_LICENSE_KEY" \
+            --output "$AFTER" \
+            "https://app.shipway.com/api/getorders?orderid=$ORDER_ID&page=1"
+          node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));const keys=new Set(["order_id","awb","awb_number","carrier_id","status","shipment_status"]);function w(x){if(Array.isArray(x)){for(const v of x.slice(0,8))w(v);return}if(!x||typeof x!=="object")return;for(const [k,v] of Object.entries(x)){if(keys.has(k.toLowerCase())&&typeof v!=="object")console.log("SHIPWAY_AFTER "+k+"="+String(v));if(v&&typeof v==="object")w(v)}}w(d)' "$AFTER"
+          rm -f "$AFTER"
+          REMOTE
