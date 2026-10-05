@@ -306,7 +306,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
           {result?.orderId && <button className="secondary" type="button" disabled={retrying} onClick={() => void retryPayment()}>{retrying ? "Opening…" : "No debit? Continue payment"}</button>}
           <Link className="secondary" href={routes.account}>My Celebration</Link>
         </div>
-        <div className="paymentReturnSafeNote warning"><strong>Money debited?</strong> Do not retry. Use “Check payment status” while the bank/provider confirmation catches up.</div>
+        <div className="paymentReturnSafeNote warning"><strong>Money debited?</strong> Do not retry. Use “Check payment status” while the payment confirmation catches up.</div>
       </div>
     )
   }
@@ -327,7 +327,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         <Link className="secondary" href={routes.home}>Back to store</Link>
       </div>
 
-      <div className="paymentReturnSafeNote">Your order and payment records are kept server-side. Avoid making a second payment until the current status is clear.</div>
+      <div className="paymentReturnSafeNote">Your order and payment details stay linked securely. Avoid making a second payment until the current status is clear.</div>
     </div>
   )
 }
