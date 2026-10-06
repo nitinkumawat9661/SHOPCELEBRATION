@@ -8,7 +8,6 @@ import { SiteFooter } from "../shell/SiteFooter"
 import { UxMessenger } from "../ux/UxMessenger"
 import { CustomRequestSection } from "./CustomRequestSection"
 import { FinalCta } from "./FinalCta"
-import { PromiseSection } from "./PromiseSection"
 
 type TierSocialProof = {
   tierName: string
@@ -61,7 +60,6 @@ export function StorefrontTail({
     <>
       <UxMessenger />
       <LazyHamperBuilder state={state} active={builderActive} />
-      <PromiseSection />
       <CustomRequestSection />
       <FinalCta onBuild={() => onBuild(1)} />
       <SiteFooter />
