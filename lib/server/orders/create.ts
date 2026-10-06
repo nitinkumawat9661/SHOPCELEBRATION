@@ -23,6 +23,7 @@ type ExistingOrder = {
   customer_account_id: string | null
   subtotal_paise: number
   discount_paise: number
+  shipping_paise: number
   amount_paise: number
   campaign_id: string | null
   campaign_title: string | null
@@ -31,12 +32,14 @@ type ExistingOrder = {
 
 type CreateOrderOptions = {
   paymentProvider?: PaymentProviderName | null
+  shippingPaise?: number
 }
 
-function existingPricing(row: ExistingOrder): OrderPricing {
+function existingPricing(row: ExistingOrder): OrderPricing & { shippingPaise: number } {
   return {
     subtotalPaise: row.subtotal_paise,
     discountPaise: row.discount_paise,
+    shippingPaise: row.shipping_paise,
     payablePaise: row.amount_paise,
     campaignId: row.campaign_id,
     campaignTitle: row.campaign_title,
@@ -46,7 +49,7 @@ function existingPricing(row: ExistingOrder): OrderPricing {
 
 async function findExisting(client: PoolClient, idempotencyKey: string) {
   const existing = await client.query<ExistingOrder>(
-    `SELECT order_type, tier_id, selected_product_ids, line_items, public_id, customer_account_id, subtotal_paise, discount_paise, amount_paise,
+    `SELECT order_type, tier_id, selected_product_ids, line_items, public_id, customer_account_id, subtotal_paise, discount_paise, shipping_paise, amount_paise,
             campaign_id, campaign_title, offer_quote_id
        FROM orders WHERE idempotency_key = $1`,
     [idempotencyKey]
@@ -83,7 +86,14 @@ async function insertOrder(
   input = normalizeOrderInput({ ...input, offerQuoteId, policyAccepted: true, items: input.lineItems.map(({ productId, quantity }) => ({ productId, quantity })) },
     requireEnv("businessTimezone"), normalizeCatalogConfig(currentCatalog.rows[0].payload), { requirePaymentReference: !options.paymentProvider })
 
-  const pricing = await resolveOrderPricing(client, offerQuoteId, customerAccountId, input)
+  const productPricing = await resolveOrderPricing(client, offerQuoteId, customerAccountId, input)
+  const shippingPaise = input.orderType === "individual" ? options.shippingPaise : 0
+  if (input.orderType === "individual" && (!Number.isSafeInteger(shippingPaise) || shippingPaise! <= 0)) {
+    throw new OrderValidationError("SHIPPING_QUOTE_REQUIRED")
+  }
+  const payablePaise = productPricing.payablePaise + (shippingPaise || 0)
+  if (!Number.isSafeInteger(payablePaise) || payablePaise > 2_147_483_647) throw new OrderValidationError("CART_AMOUNT_TOO_LARGE")
+  const pricing = { ...productPricing, shippingPaise: shippingPaise || 0, payablePaise }
   const internalId = randomUUID()
   const publicId = createPublicOrderId()
   const trackingHash = trackingTokenHash(trackingToken)
@@ -153,6 +163,7 @@ async function insertOrder(
     return { publicId: existing.public_id, trackingToken, pricing: existingPricing(existing) }
   }
 
+  await client.query(`UPDATE orders SET shipping_paise = $1 WHERE id = $2`, [pricing.shippingPaise, internalId])
   await markOfferQuoteRedeemed(client, pricing.offerQuoteId)
   await appendOrderEvent(client, internalId, orderEvents.created, {
     status: orderConfig.initialStatus,
@@ -162,6 +173,7 @@ async function insertOrder(
     orderType: input.orderType,
     subtotalPaise: pricing.subtotalPaise,
     discountPaise: pricing.discountPaise,
+    shippingPaise: pricing.shippingPaise,
     payablePaise: pricing.payablePaise,
     campaignId: pricing.campaignId
   })
