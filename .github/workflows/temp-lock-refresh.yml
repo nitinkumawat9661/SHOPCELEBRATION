@@ -1,0 +1,37 @@
+name: Temporary lock refresh
+
+on:
+  push:
+    branches:
+      - feat/live-shipway-checkout-pricing
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feat/live-shipway-checkout-pricing
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Refresh vulnerable transitive lock entries
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm update --package-lock-only sharp source-map-js
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- package-lock.json; then
+            echo "No lockfile changes needed."
+            exit 0
+          fi
+          git add package-lock.json
+          git commit -m "Refresh patched transitive dependencies"
+          git push origin HEAD:feat/live-shipway-checkout-pricing
