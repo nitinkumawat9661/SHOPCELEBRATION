@@ -14,6 +14,7 @@ import { validateCheckoutFields, type CheckoutFieldErrors } from "../builder/val
 import { CatalogProductImage } from "../catalog/CatalogCard"
 import { useOrderSubmit, type SubmitArgs } from "../checkout/useOrderSubmit"
 import { useStoreSettings } from "../shell/useStoreSettings"
+import { routes } from "../../config/routes"
 import { cartKey, MAX_CART_QUANTITY, type CartItem } from "./cart"
 import { useCart } from "./useCart"
 
@@ -38,6 +39,10 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   const [detailsError, setDetailsError] = useState("")
   const [showAuth, setShowAuth] = useState(false)
   const [checkoutError, setCheckoutError] = useState("")
+  const [shippingPaise, setShippingPaise] = useState<number | null>(null)
+  const [shippingCarrier, setShippingCarrier] = useState("")
+  const [shippingLoading, setShippingLoading] = useState(false)
+  const [shippingError, setShippingError] = useState("")
   const [frozenItems, setFrozenItems] = useState<CartItem[] | null>(null)
   const frozenArgs = useRef<SubmitArgs | null>(null)
   const previousCart = useRef("")
@@ -69,6 +74,9 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
       setStep(1)
       setAccepted(false)
       setCheckoutError("")
+      setShippingPaise(null)
+      setShippingCarrier("")
+      setShippingError("")
       frozenArgs.current = null
       setFrozenItems(null)
       order.reset()
@@ -134,11 +142,16 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   function updateField<K extends keyof CheckoutData>(key: K, value: CheckoutData[K]) {
     if (locked) return
     setCheckout((current) => ({ ...current, [key]: value }))
+    if (key === "pincode") {
+      setShippingPaise(null)
+      setShippingCarrier("")
+      setShippingError("")
+    }
     setFieldErrors((current) => ({ ...current, [key]: undefined }))
     setDetailsError("")
   }
 
-  function continueToPayment() {
+  async function continueToPayment() {
     const errors = validateCheckoutFields(checkout)
     if (checkout.city.trim().length < 2) errors.city = "Enter your delivery city."
     if (checkout.state.trim().length < 2) errors.state = "Enter your delivery state."
@@ -149,9 +162,35 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
       document.querySelector<HTMLInputElement>(`[data-checkout-field="${first}"]`)?.focus()
       return
     }
-    setAccepted(false)
-    order.reset()
-    setStep(3)
+
+    setShippingLoading(true)
+    setShippingError("")
+    try {
+      const response = await fetch(routes.api.shippingQuote, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pincode: checkout.pincode,
+          quantity: items.reduce((total, item) => total + item.quantity, 0)
+        })
+      })
+      const result = await response.json() as { ok?: boolean; shippingPaise?: number; carrierName?: string | null; error?: string }
+      if (!response.ok || !result.ok || typeof result.shippingPaise !== "number" || result.shippingPaise <= 0) {
+        throw new Error(result.error || "SHIPWAY_RATE_UNAVAILABLE")
+      }
+      setShippingPaise(result.shippingPaise)
+      setShippingCarrier(result.carrierName || "")
+      setAccepted(false)
+      order.reset()
+      setStep(3)
+    } catch {
+      setShippingPaise(null)
+      setShippingCarrier("")
+      setShippingError("Live delivery charge could not be confirmed for this pincode. Please try again.")
+      setDetailsError("Live delivery charge could not be confirmed for this pincode. Please try again.")
+    } finally {
+      setShippingLoading(false)
+    }
   }
 
   async function submit(offerQuoteId?: string | null) {
@@ -180,10 +219,14 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
     } finally { preparingPayment.current = false }
   }
 
+  const shownShippingPaise = order.created?.shippingPaise ?? shippingPaise
+  const shownTotalPaise = order.orderTotalPaise ?? order.created?.payablePaise ?? (subtotalPaise + (shownShippingPaise || 0))
   const summary = <aside className="summary individualSummary">
-    <div className="kicker">YOUR ITEMS</div><div className="sumPrice">{formatMoney((order.orderTotalPaise ?? order.created?.payablePaise ?? subtotalPaise) / 100)}</div>
+    <div className="kicker">YOUR ITEMS</div><div className="sumPrice">{formatMoney(shownTotalPaise / 100)}</div>
     {rows.map((row) => <div className="sumRow" key={row.productId}><span>{row.product?.name || "Unavailable item"} × {row.quantity}</span><b>{row.product && isIndividuallySellable(row.product) ? formatMoney((row.product.salePricePaise || 0) * row.quantity / 100) : "Unavailable"}</b></div>)}
-    <p className="note">Individual products only. Final price is confirmed before payment. No additional shipping fee is added at checkout.</p>
+    <div className="sumRow"><span>Delivery{shippingCarrier ? ` · ${shippingCarrier}` : ""}</span><b>{shippingLoading ? "Checking…" : shownShippingPaise ? formatMoney(shownShippingPaise / 100) : step === 1 ? "At checkout" : "Enter pincode"}</b></div>
+    {shippingError && <p className="errorBox" role="alert">{shippingError}</p>}
+    <p className="note">Delivery is calculated live from Shipway for the delivery pincode and confirmed again before payment.</p>
   </aside>
 
   if (!ready) return <section className="wrap cartLoading" role="status">Loading your cart…</section>
@@ -207,7 +250,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
         {step === 2 && <DetailsStep individual summary={summary} checkout={checkout} occasions={[]} error={detailsError} fieldErrors={fieldErrors} updateField={updateField} onBack={() => setStep(1)} onNext={continueToPayment} />}
         {step === 3 && <div ref={paymentRef} tabIndex={-1}>
           {showAuth && !customer.account && <div className="cartAuthPanel"><CustomerAuthPanel busy={customer.busy} error={customer.error} initialPhone={checkout.phone} initialName={checkout.customerName} onAuthenticate={customer.authenticate} onClearError={() => customer.setError("")} onSuccess={() => { setShowAuth(false); paymentRef.current?.focus() }} /><button type="button" className="secondary" onClick={() => setShowAuth(false)}>Back to payment</button></div>}
-          <PaymentStep individual={{ subtotalPaise, itemKey: cartKey(items), label: "Individual gifts", items }} orderTotalPaise={order.orderTotalPaise} paymentBlocked={unavailable || amountTooLarge || !catalog || Boolean(catalogError)} checkout={checkout} selectedProductIds={[]} selectedNames={names} accepted={accepted} submitting={order.submitting || loading} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} paymentState={order.paymentState} paymentOrderId={order.paymentOrderId} onAccepted={(value) => { if (!locked) setAccepted(value) }} onReference={(value) => updateField("paymentReference", value)} onBack={() => { if (!locked) { order.reset(); setStep(2) } }} onSubmit={() => undefined} onPay={(offerQuoteId) => void submit(offerQuoteId)} onRefreshPayment={() => void order.refreshPayment()} onWhatsapp={() => { if (order.created) window.open(order.whatsappUrl(frozenArgs.current || args, order.created, settings.whatsapp), "_blank", "noopener,noreferrer") }} onLogin={() => setShowAuth(true)} onNewOrder={() => { if (order.created) router.push("/jewelry?view=all") }} />
+          <PaymentStep individual={{ subtotalPaise, itemKey: cartKey(items), label: "Individual gifts", items }} orderTotalPaise={order.orderTotalPaise} shippingPaise={shippingPaise} paymentBlocked={unavailable || amountTooLarge || !catalog || Boolean(catalogError) || shippingPaise == null} checkout={checkout} selectedProductIds={[]} selectedNames={names} accepted={accepted} submitting={order.submitting || loading} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} paymentState={order.paymentState} paymentOrderId={order.paymentOrderId} onAccepted={(value) => { if (!locked) setAccepted(value) }} onReference={(value) => updateField("paymentReference", value)} onBack={() => { if (!locked) { order.reset(); setStep(2) } }} onSubmit={() => undefined} onPay={(offerQuoteId) => void submit(offerQuoteId)} onRefreshPayment={() => void order.refreshPayment()} onWhatsapp={() => { if (order.created) window.open(order.whatsappUrl(frozenArgs.current || args, order.created, settings.whatsapp), "_blank", "noopener,noreferrer") }} onLogin={() => setShowAuth(true)} onNewOrder={() => { if (order.created) router.push("/jewelry?view=all") }} />
           {summary}
         </div>}
       </div></section>}
