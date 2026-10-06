@@ -122,7 +122,7 @@ const individualCatalog = {
     { ...fixtureCatalog.products[0], id: "test-ring", name: "Test Ring", sellIndividually: true, salePricePaise: 25000 },
     { ...fixtureCatalog.products[0], id: "hamper-only", sellIndividually: false, salePricePaise: 10000 },
     { ...fixtureCatalog.products[0], id: "inactive", active: false, sellIndividually: true, salePricePaise: 10000 },
-    { ...fixtureCatalog.products[0], id: "no-price", sellIndividually: true }
+    { ...fixtureCatalog.products[0], id: "no-price", sellIndividually: true, salePricePaise: undefined }
   ]
 }
 const individual = { ...valid, orderType: "individual", expectedSubtotalPaise: 94900, tierId: undefined, selectedProductIds: undefined, occasion: undefined, items: [{ productId: "test-bracelet", quantity: 2 }, { productId: "test-ring", quantity: 1 }] }
