@@ -104,247 +104,840 @@
   ],
   "products": [
     {
-      "id": "custom-card",
-      "name": "Custom Message Card",
-      "category": "Personal",
+      "id": "celebration-necklace-001",
+      "name": "Sculpted Fan Halo JD Stone Necklace",
+      "category": "Necklaces & Chains",
       "minTier": 299,
       "points": 1,
-      "note": "Printed message for the receiver",
-      "icon": "💌"
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Fan-inspired silver necklace with bright JD stone detailing, anti-tarnish finish and a polished imported look for party styling.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-001.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-001.png",
+          "alt": "Sculpted Fan Halo JD Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "photo-print",
-      "name": "Photo / Mini Print",
-      "category": "Personal",
+      "id": "celebration-necklace-002",
+      "name": "Ribbon Bow Sparkle JD Stone Necklace",
+      "category": "Necklaces & Chains",
       "minTier": 299,
       "points": 1,
-      "note": "A small personal memory",
-      "icon": "🖼️"
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Ribbon bow necklace crafted with sparkling JD stones, a smooth silver-plated surface and anti-tarnish finish for a refined modern look.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-002.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-002.png",
+          "alt": "Ribbon Bow Sparkle JD Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "acrylic-keychain",
-      "name": "Acrylic Keychain",
-      "category": "Personal",
+      "id": "celebration-necklace-003",
+      "name": "Convertible Four Heart Charm Necklace",
+      "category": "Necklaces & Chains",
       "minTier": 299,
       "points": 1,
-      "note": "Simple personalized keepsake",
-      "icon": "🔑"
+      "note": "Multicolor • Silver Plated • Anti-tarnish",
+      "description": "Four-heart convertible necklace designed to open into linked heart motifs, finished with JD stone accents and anti-tarnish plating.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-003.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-003.png",
+          "alt": "Convertible Four Heart Charm Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "chocolates",
-      "name": "Customized Chocolates",
-      "category": "Treats",
+      "id": "celebration-necklace-004",
+      "name": "Twin Heart Halo JD Stone Necklace",
+      "category": "Necklaces & Chains",
       "minTier": 299,
       "points": 1,
-      "note": "Theme-ready sweet add-on",
-      "icon": "🍫"
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Layered twin-heart necklace with luminous JD stone work, silver-toned anti-tarnish finish and a lightweight chain for dressy occasions.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-004.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-004.png",
+          "alt": "Twin Heart Halo JD Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "small-snack",
-      "name": "Small Snack",
-      "category": "Treats",
+      "id": "celebration-necklace-005",
+      "name": "Love Key Halo Stone Necklace",
+      "category": "Necklaces & Chains",
       "minTier": 299,
       "points": 1,
-      "note": "Budget-friendly savory add-on",
-      "icon": "🥨"
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Heart-and-key inspired necklace featuring neat JD stone accents, smooth silver plating and an anti-tarnish imported finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-005.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-005.png",
+          "alt": "Love Key Halo Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "fridge-magnet",
-      "name": "Photo / Fridge Magnet",
-      "category": "Personal",
-      "minTier": 399,
+      "id": "celebration-necklace-006",
+      "name": "Square Orbit Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
       "points": 1,
-      "note": "Compact personalized keepsake",
-      "icon": "📸"
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Geometric square-orbit necklace with a moving center stone, detailed JD stone border and durable anti-tarnish silver finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-006.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-006.png",
+          "alt": "Square Orbit Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "basic-bracelet",
-      "name": "Basic Bracelet",
-      "category": "Accessories",
-      "minTier": 399,
-      "points": 2,
-      "note": "Minimal wearable gift",
-      "icon": "📿"
+      "id": "celebration-necklace-007",
+      "name": "Crown Sweep Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Crown-sweep necklace with a free-moving central stone, bright JD embellishment and anti-tarnish silver plating for festive wear.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-007.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-007.png",
+          "alt": "Crown Sweep Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "mini-candle",
-      "name": "Mini Scented Candle",
-      "category": "Lifestyle",
-      "minTier": 399,
-      "points": 2,
-      "note": "Adds a warm premium touch",
-      "icon": "🕯️"
+      "id": "celebration-necklace-008",
+      "name": "Teardrop Orbit Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Teardrop-orbit necklace featuring a mobile center stone, sparkling JD accents and a polished anti-tarnish silver-toned surface.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-008.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-008.png",
+          "alt": "Teardrop Orbit Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "custom-mug",
-      "name": "Customized Mug",
-      "category": "Personal",
-      "minTier": 499,
-      "points": 3,
-      "note": "Name, photo or message",
-      "icon": "☕"
+      "id": "celebration-necklace-009",
+      "name": "Starlight Heart Orbit Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Star-and-heart themed necklace with a moving focal stone, fine JD detailing and anti-tarnish finish suited to evening looks.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-009.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-009.png",
+          "alt": "Starlight Heart Orbit Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "mini-teddy",
-      "name": "Mini Teddy",
-      "category": "Cute",
-      "minTier": 499,
-      "points": 2,
-      "note": "Soft gifting favourite",
-      "icon": "🧸"
+      "id": "celebration-necklace-010",
+      "name": "Wave Fan Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Curved wave-fan necklace with moving center stone, dense JD stone work and a clean anti-tarnish silver plated finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-010.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-010.png",
+          "alt": "Wave Fan Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "chocolate-jar",
-      "name": "Chocolate Jar",
-      "category": "Treats",
-      "minTier": 499,
-      "points": 2,
-      "note": "Compact sweet jar",
-      "icon": "🍬"
+      "id": "celebration-necklace-011",
+      "name": "Golden Floral Orbit JD Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Gold • Gold Plated • Anti-tarnish",
+      "description": "Gold-toned floral orbit necklace with JD stone highlights, anti-tarnish plating and a festive imported-style finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Gold Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-011.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-011.png",
+          "alt": "Golden Floral Orbit JD Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "mini-perfume",
-      "name": "Mini Perfume",
-      "category": "Fragrance",
-      "minTier": 699,
-      "points": 3,
-      "note": "Compact fragrance gifting",
-      "icon": "✨"
+      "id": "celebration-necklace-012",
+      "name": "Teddy Halo Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Teddy-inspired halo necklace with a moving center stone, bright JD detailing and a smooth anti-tarnish silver finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-012.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-012.png",
+          "alt": "Teddy Halo Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "attar",
-      "name": "Attar",
-      "category": "Fragrance",
-      "minTier": 699,
-      "points": 3,
-      "note": "Traditional fragrance option",
-      "icon": "🌿"
+      "id": "celebration-necklace-013",
+      "name": "Radiant Bloom Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Radiant flower-burst necklace with a moving central stone, detailed JD work and long-lasting anti-tarnish silver plating.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-013.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-013.png",
+          "alt": "Radiant Bloom Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "notebook",
-      "name": "Premium Notebook",
-      "category": "Lifestyle",
-      "minTier": 699,
-      "points": 2,
-      "note": "Useful and elegant",
-      "icon": "📓"
+      "id": "celebration-necklace-014",
+      "name": "Moonheart Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Crescent-heart necklace with a free-moving center stone, JD stone accents and polished anti-tarnish silver-toned finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-014.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-014.png",
+          "alt": "Moonheart Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "mini-cosmetics",
-      "name": "Mini Cosmetics",
-      "category": "Beauty",
-      "minTier": 699,
-      "points": 3,
-      "note": "Beauty-focused add-on",
-      "icon": "💄"
+      "id": "celebration-necklace-015",
+      "name": "Pearl Bloom Petal Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Pearl-centered petal necklace accented with JD stones, anti-tarnish silver plating and a soft statement look for casual wear.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Pearl-style detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-015.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-015.png",
+          "alt": "Pearl Bloom Petal Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "dry-fruit",
-      "name": "Dry-Fruit Jar",
-      "category": "Treats",
-      "minTier": 799,
-      "points": 4,
-      "note": "Premium and festive-friendly",
-      "icon": "🥜"
+      "id": "celebration-necklace-016",
+      "name": "Rose Teddy Charm JD Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Gold • Rose Gold Plated • Anti-tarnish",
+      "description": "Rose-toned teddy charm necklace with JD stone detailing, anti-tarnish plating and a playful imported fashion finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Rose Gold Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-016.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-016.png",
+          "alt": "Rose Teddy Charm JD Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "medium-teddy",
-      "name": "Medium Teddy",
-      "category": "Cute",
-      "minTier": 799,
-      "points": 4,
-      "note": "Larger soft-toy option",
-      "icon": "🧸"
+      "id": "celebration-necklace-017",
+      "name": "Golden Petal Medallion Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Gold • Gold Plated • Anti-tarnish",
+      "description": "Gold-toned round petal necklace with sparkling JD stone work, anti-tarnish finish and a clean floral medallion profile.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Gold Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-017.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-017.png",
+          "alt": "Golden Petal Medallion Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "premium-candle",
-      "name": "Premium Scented Candle",
-      "category": "Lifestyle",
-      "minTier": 799,
-      "points": 3,
-      "note": "Premium presentation",
-      "icon": "🕯️"
+      "id": "celebration-necklace-018",
+      "name": "Open Bloom JD Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Open-flower necklace with detailed JD stone petals, anti-tarnish silver plating and a polished finish for party styling.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "JD stone detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-018.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-018.png",
+          "alt": "Open Bloom JD Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "premium-perfume",
-      "name": "Premium Perfume",
-      "category": "Fragrance",
-      "minTier": 999,
-      "points": 5,
-      "note": "Higher-value fragrance option",
-      "icon": "💎"
+      "id": "celebration-necklace-019",
+      "name": "Pearl Blossom Halo Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Pearl blossom necklace combining pearl-style detailing with JD stone accents and a smooth anti-tarnish silver-toned finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Pearl-style detailing"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-019.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-019.png",
+          "alt": "Pearl Blossom Halo Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "premium-mug",
-      "name": "Premium Customized Mug",
-      "category": "Personal",
-      "minTier": 999,
-      "points": 4,
-      "note": "Premium print / finish",
-      "icon": "☕"
+      "id": "celebration-necklace-020",
+      "name": "Twist Orbit Moving Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Twisted orbit necklace with a moving center element, JD stone sparkle and anti-tarnish silver plating for modern styling.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-020.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-020.png",
+          "alt": "Twist Orbit Moving Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "beauty-set",
-      "name": "Beauty Mini Set",
-      "category": "Beauty",
-      "minTier": 999,
-      "points": 4,
-      "note": "Curated beauty picks",
-      "icon": "💄"
+      "id": "celebration-necklace-021",
+      "name": "Spin Bloom JD Stone Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Rotating flower necklace with a movable upper floral section, full JD stone detailing and anti-tarnish silver finish.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-021.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-021.png",
+          "alt": "Spin Bloom JD Stone Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     },
     {
-      "id": "fragrance-set",
-      "name": "Fragrance Discovery Set",
-      "category": "Fragrance",
-      "minTier": 1299,
-      "points": 6,
-      "note": "Multiple scents in one gift",
-      "icon": "💫"
-    },
-    {
-      "id": "large-teddy",
-      "name": "Large Teddy",
-      "category": "Cute",
-      "minTier": 1299,
-      "points": 6,
-      "note": "Statement soft-toy choice",
-      "icon": "🧸"
-    },
-    {
-      "id": "premium-dryfruit",
-      "name": "Premium Dry-Fruit Pack",
-      "category": "Treats",
-      "minTier": 1299,
-      "points": 5,
-      "note": "Premium festive option",
-      "icon": "🥜"
-    },
-    {
-      "id": "premium-personalized",
-      "name": "Premium Personalized Keepsake",
-      "category": "Personal",
-      "minTier": 1499,
-      "points": 6,
-      "note": "Higher-value customization",
-      "icon": "🎀"
-    },
-    {
-      "id": "luxury-accessory",
-      "name": "Luxury Accessory",
-      "category": "Accessories",
-      "minTier": 1999,
-      "points": 8,
-      "note": "Premium accessory option",
-      "icon": "⌚"
-    },
-    {
-      "id": "signature-gift",
-      "name": "Signature Premium Gift",
-      "category": "Signature",
-      "minTier": 3499,
-      "points": 12,
-      "note": "Luxury-tier statement piece",
-      "icon": "🎁"
+      "id": "celebration-necklace-022",
+      "name": "Heart Orbit Sparkle Necklace",
+      "category": "Necklaces & Chains",
+      "minTier": 299,
+      "points": 1,
+      "note": "Silver • Silver Plated • Anti-tarnish",
+      "description": "Heart-orbit necklace with a moving focal stone, bright JD stone border and anti-tarnish silver plating for special occasions.",
+      "highlights": [
+        "Anti-tarnish stainless steel",
+        "Silver Plated finish",
+        "Moving stone detail"
+      ],
+      "badge": "20% OFF",
+      "imageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-022.png",
+      "images": [
+        {
+          "url": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-022.png",
+          "alt": "Heart Orbit Sparkle Necklace"
+        }
+      ],
+      "active": true,
+      "sellIndividually": true,
+      "salePricePaise": 9000,
+      "prepackagedRetail": true,
+      "retail": {
+        "genericName": "Necklace",
+        "netQuantity": "1 N",
+        "mrpPaise": 11250,
+        "manufacturerOrPackerName": "Celebration",
+        "manufacturerOrPackerAddress": "Sikar, Rajasthan, India - 332001",
+        "importerName": "Celebration",
+        "importerAddress": "Sikar, Rajasthan, India - 332001",
+        "countryOfOrigin": "South Korea",
+        "consumerCare": "Celebration, Sikar, Rajasthan 332001",
+        "unitSalePrice": "₹90 per piece"
+      }
     }
   ],
   "occasions": [
