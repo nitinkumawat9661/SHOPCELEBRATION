@@ -142,3 +142,17 @@
 @media(prefers-reduced-motion:reduce){
   .marketplaceGalleryThumbs{scroll-behavior:auto}
 }
+
+
+.antiTarnishGuarantee{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  margin:0 0 18px;padding:12px 14px;border:1px solid #d7e6d9;border-radius:11px;background:#f7fbf7
+}
+.antiTarnishGuarantee>div{display:grid;gap:3px}
+.antiTarnishGuarantee b{font-size:11px;color:#295b38}
+.antiTarnishGuarantee span{font-size:9px;line-height:1.45;color:#607365}
+.antiTarnishGuarantee>a{font-size:9px;font-weight:800;color:#7f1223;white-space:nowrap;text-decoration:none}
+@media(max-width:700px){
+  .antiTarnishGuarantee{align-items:flex-start;padding:10px 11px;gap:8px}
+  .antiTarnishGuarantee>a{font-size:8px}
+}
