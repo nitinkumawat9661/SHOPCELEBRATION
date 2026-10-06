@@ -257,7 +257,7 @@ export async function bookShipwayShipment(order: OrderRecord): Promise<ShipwayBo
   console.info("shipway-carrier-selected", {
     orderId: order.publicId,
     carrierId: selectedCarrier.carrierId,
-    carrier: selectedCarrier.name,
+    carrier: selectedCarrier.carrierName,
     quotedCharge: selectedCarrier.chargeRupees
   })
 
