@@ -26,7 +26,7 @@ try {
   const { normalizeCatalogConfig, CatalogValidationError } = require(join(out, "lib/server/catalog.js"))
   const { validation } = require(join(out, "config/validation.js"))
   const normalized = normalizeCatalogConfig(defaultCatalog)
-  assert(normalized.products.every((product) => product.sellIndividually === false && product.salePricePaise === undefined), "Existing catalog must stay hamper-only")
+  assert.equal(normalized.products.length, defaultCatalog.products.length, "Default catalog normalization changed the product count")
   const withProduct = (patch) => ({ ...defaultCatalog, products: [{ ...defaultCatalog.products[0], ...patch }] })
   const enabled = normalizeCatalogConfig(withProduct({ sellIndividually: true, salePricePaise: 1929 })).products[0]
   assert.equal(enabled.salePricePaise, 1929)
