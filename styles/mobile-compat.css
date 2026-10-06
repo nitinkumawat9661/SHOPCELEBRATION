@@ -86,18 +86,23 @@
 
 @media(max-width:379px){
   .celebrationSupport{display:none}
-  .collectionPage .wrap{padding-inline:14px}
-  .collectionGrid{grid-template-columns:1fr;gap:14px}
-  .collectionGrid .catalogCard{border-radius:11px}
-  .collectionGrid .catalogCardVisual{aspect-ratio:1/1}
-  .collectionGrid .catalogCardInfo{padding:13px 13px 10px}
-  .collectionGrid .catalogCardCategory{font-size:9px}
-  .collectionGrid .catalogCard h3{font-size:14px;min-height:0}
-  .collectionGrid .catalogCard p{font-size:10.5px}
-  .collectionGrid .catalogCardPrice span{font-size:9.5px}
-  .collectionGrid .catalogCardPrice strong{font-size:17px}
-  .collectionGrid .catalogCard>.cartAddControl{padding:0 13px 13px}
-  .collectionGrid .catalogCard .cartAddControl button{min-height:46px;font-size:11px}
+  .collectionPage .wrap{padding-inline:10px}
+  .collectionGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 6px}
+  .collectionGrid .catalogCard{min-width:0;border-radius:7px}
+  .collectionGrid .catalogCardVisual{aspect-ratio:1.12/1}
+  .collectionGrid .catalogCardInfo{padding:6px 6px 5px}
+  .collectionGrid .catalogCardCategory{display:none}
+  .collectionGrid .catalogCard h3{font-size:10px;line-height:1.22;min-height:25px}
+  .collectionGrid .catalogCard p,.collectionGrid .catalogLegalHint{display:none}
+  .collectionGrid .catalogGuarantee{font-size:7px;margin-top:3px}
+  .collectionGrid .catalogCardPrice{gap:3px;margin-top:5px;padding-top:5px}
+  .collectionGrid .catalogCardPrice span{font-size:7.5px}
+  .collectionGrid .catalogCardPrice strong{font-size:13px}
+  .collectionGrid .catalogCardPrice small{font-size:7px}
+  .collectionGrid .catalogCard>.cartAddControl{padding:0 6px 6px}
+  .collectionGrid .catalogCard .cartAddControl button{min-height:28px;font-size:8px;padding:4px 5px}
+  .collectionGrid .catalogInlineQuantity{grid-template-columns:28px 1fr 28px;min-height:28px}
+  .collectionGrid .catalogInlineQuantity button,.collectionGrid .catalogInlineQuantity output{min-height:28px;font-size:11px}
 
   .collectionDetailActions{grid-template-columns:1fr}
   .collectionDetailActions .collectionDetailBack{grid-column:1}
@@ -116,7 +121,7 @@
 
 @supports not (aspect-ratio:1/1){
   .collectionGrid .catalogCardVisual{height:180px}
-  @media(max-width:379px){.collectionGrid .catalogCardVisual{height:260px}}
+  @media(max-width:379px){.collectionGrid .catalogCardVisual{height:138px}}
 }
 
 @media(max-width:640px){
