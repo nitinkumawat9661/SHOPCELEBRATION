@@ -17,6 +17,7 @@ export const routes = {
     paymentStatus: "/api/payments/status",
     paymentReturnStatus: "/api/payments/return-status",
     offerQuote: "/api/offers/quote",
+    shippingQuote: "/api/shipping/quote",
     analyticsEvent: "/api/analytics/event",
     tracking: "/api/track",
     trackingLookup: "/api/track/lookup",
