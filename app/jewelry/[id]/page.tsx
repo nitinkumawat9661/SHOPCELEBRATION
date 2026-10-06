@@ -37,6 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <span className="collectionEyebrow">{product.category}</span><h1>{product.name}</h1>
             {product.note && <p className="collectionDetailNote">{product.note}</p>}
             {product.highlights?.length ? <ul className="marketplaceHighlights">{product.highlights.map((item) => <li key={item}>{item}</li>)}</ul> : null}
+            {product.retail?.warrantyOrGuarantee && <div className="antiTarnishGuarantee"><div><b>6-month anti-tarnish guarantee</b><span>Covered for verified tarnish issues under normal use, subject to care and eligibility terms.</span></div><Link href="/policies">View coverage terms →</Link></div>}
             <div className="collectionDetailPrice"><span>{individual ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(individual ? product.salePricePaise! / 100 : product.minTier)}</strong>{individual && mrpPaise && discount ? <span><s>{formatMoney(mrpPaise / 100)}</s> · {discount}% OFF</span> : null}<small>{individual ? "Celebration charges only for the product. Delivery is calculated automatically for your pincode at checkout." : "Hamper budget, not an individual item price."}</small></div>
             <div className="collectionDetailActions">
               {individual ? <><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
