@@ -40,7 +40,6 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   const [showAuth, setShowAuth] = useState(false)
   const [checkoutError, setCheckoutError] = useState("")
   const [shippingPaise, setShippingPaise] = useState<number | null>(null)
-  const [shippingCarrier, setShippingCarrier] = useState("")
   const [shippingLoading, setShippingLoading] = useState(false)
   const [shippingError, setShippingError] = useState("")
   const [frozenItems, setFrozenItems] = useState<CartItem[] | null>(null)
@@ -75,7 +74,6 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
       setAccepted(false)
       setCheckoutError("")
       setShippingPaise(null)
-      setShippingCarrier("")
       setShippingError("")
       frozenArgs.current = null
       setFrozenItems(null)
@@ -144,7 +142,6 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
     setCheckout((current) => ({ ...current, [key]: value }))
     if (key === "pincode") {
       setShippingPaise(null)
-      setShippingCarrier("")
       setShippingError("")
     }
     setFieldErrors((current) => ({ ...current, [key]: undefined }))
@@ -174,18 +171,16 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
           quantity: items.reduce((total, item) => total + item.quantity, 0)
         })
       })
-      const result = await response.json() as { ok?: boolean; shippingPaise?: number; carrierName?: string | null; error?: string }
+      const result = await response.json() as { ok?: boolean; shippingPaise?: number; error?: string }
       if (!response.ok || !result.ok || typeof result.shippingPaise !== "number" || result.shippingPaise <= 0) {
         throw new Error(result.error || "SHIPWAY_RATE_UNAVAILABLE")
       }
       setShippingPaise(result.shippingPaise)
-      setShippingCarrier(result.carrierName || "")
       setAccepted(false)
       order.reset()
       setStep(3)
     } catch {
       setShippingPaise(null)
-      setShippingCarrier("")
       setShippingError("Live delivery charge could not be confirmed for this pincode. Please try again.")
       setDetailsError("Live delivery charge could not be confirmed for this pincode. Please try again.")
     } finally {
@@ -224,9 +219,9 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   const summary = <aside className="summary individualSummary">
     <div className="kicker">YOUR ITEMS</div><div className="sumPrice">{formatMoney(shownTotalPaise / 100)}</div>
     {rows.map((row) => <div className="sumRow" key={row.productId}><span>{row.product?.name || "Unavailable item"} × {row.quantity}</span><b>{row.product && isIndividuallySellable(row.product) ? formatMoney((row.product.salePricePaise || 0) * row.quantity / 100) : "Unavailable"}</b></div>)}
-    <div className="sumRow"><span>Delivery{shippingCarrier ? ` · ${shippingCarrier}` : ""}</span><b>{shippingLoading ? "Checking…" : shownShippingPaise ? formatMoney(shownShippingPaise / 100) : step === 1 ? "At checkout" : "Enter pincode"}</b></div>
+    <div className="sumRow"><span>Delivery charge</span><b>{shippingLoading ? "Checking…" : shownShippingPaise ? formatMoney(shownShippingPaise / 100) : step === 1 ? "At checkout" : "Enter pincode"}</b></div>
     {shippingError && <p className="errorBox" role="alert">{shippingError}</p>}
-    <p className="note">Delivery is calculated live from Shipway for the delivery pincode and confirmed again before payment.</p>
+    <p className="note">Celebration charges only for the products. Delivery charges are automatically calculated for your delivery pincode and shown separately before payment.</p>
   </aside>
 
   if (!ready) return <section className="wrap cartLoading" role="status">Loading your cart…</section>

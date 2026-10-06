@@ -64,16 +64,19 @@ assert(ui.builder.stepLabels.length === 3, "Builder copy must match the three-st
 assert(ui.builder.details.title.startsWith("2.") && ui.builder.payment.title.startsWith("3."), "Checkout section numbering does not match its steps")
 
 const lowTier = catalog.tierById(fixtureCatalog, "t299")
-const premium = catalog.productById(fixtureCatalog, "premium-perfume")
-assert(lowTier && premium, "Fixture data missing")
-assert(catalog.canSelectProduct(fixtureCatalog, lowTier, [], premium).ok === false, "Low tier allowed premium product")
-assert(catalog.normalizeSelection(fixtureCatalog, lowTier, ["custom-card", "chocolates", "premium-perfume"]).length <= lowTier.maxChoices, "Selection normalization failed")
+const firstProduct = fixtureCatalog.products[0]
+const secondProduct = fixtureCatalog.products[1]
+assert(lowTier && firstProduct && secondProduct, "Fixture data missing")
+const premium = { ...firstProduct, id: "test-premium", minTier: 999 }
+const fixtureWithPremium = { ...fixtureCatalog, products: [...fixtureCatalog.products, premium] }
+assert(catalog.canSelectProduct(fixtureWithPremium, lowTier, [], premium).ok === false, "Low tier allowed premium product")
+assert(catalog.normalizeSelection(fixtureCatalog, lowTier, [firstProduct.id, secondProduct.id]).length <= lowTier.maxChoices, "Selection normalization failed")
 
 const future = new Date(Date.now() + 7 * 86400000)
 const requiredDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(future)
 const valid = {
   tierId: "t499",
-  selectedProductIds: ["custom-card", "chocolates"],
+  selectedProductIds: [firstProduct.id, secondProduct.id],
   requiredDate,
   customerName: "Test Customer",
   phone: "9876543210",
@@ -99,13 +102,13 @@ try { payment.assertPaymentCanStart("cancelled"); throw new Error("Cancelled ord
 catch (error) { assert(error.message === "PAYMENT_ORDER_CANCELLED", "Wrong cancelled-order rejection") }
 payment.assertPaymentCanStart("payment_verification_pending")
 
-const expectCode = (changes, code) => {
-  try { order.normalizeOrderInput({ ...valid, ...changes }, "Asia/Kolkata", fixtureCatalog) }
+const expectCode = (changes, code, targetCatalog = fixtureCatalog) => {
+  try { order.normalizeOrderInput({ ...valid, ...changes }, "Asia/Kolkata", targetCatalog) }
   catch (error) { if (error?.code === code) return }
   throw new Error(`Expected ${code}`)
 }
 expectCode({ requiredDate: "2026-02-31" }, "INVALID_REQUIRED_DATE")
-expectCode({ tierId: "t299", selectedProductIds: ["premium-perfume"] }, "PRODUCT_NOT_ELIGIBLE_FOR_TIER")
+expectCode({ tierId: "t299", selectedProductIds: [premium.id] }, "PRODUCT_NOT_ELIGIBLE_FOR_TIER", fixtureWithPremium)
 expectCode({ policyAccepted: false }, "POLICY_VERSION_MISMATCH")
 expectCode({ idempotencyKey: "not-a-uuid" }, "INVALID_IDEMPOTENCY_KEY")
 expectCode({ paymentReference: "@@" }, "INVALID_PAYMENT_REFERENCE")
@@ -119,7 +122,7 @@ const individualCatalog = {
     { ...fixtureCatalog.products[0], id: "test-ring", name: "Test Ring", sellIndividually: true, salePricePaise: 25000 },
     { ...fixtureCatalog.products[0], id: "hamper-only", sellIndividually: false, salePricePaise: 10000 },
     { ...fixtureCatalog.products[0], id: "inactive", active: false, sellIndividually: true, salePricePaise: 10000 },
-    { ...fixtureCatalog.products[0], id: "no-price", sellIndividually: true }
+    { ...fixtureCatalog.products[0], id: "no-price", sellIndividually: true, salePricePaise: undefined }
   ]
 }
 const individual = { ...valid, orderType: "individual", expectedSubtotalPaise: 94900, tierId: undefined, selectedProductIds: undefined, occasion: undefined, items: [{ productId: "test-bracelet", quantity: 2 }, { productId: "test-ring", quantity: 1 }] }
