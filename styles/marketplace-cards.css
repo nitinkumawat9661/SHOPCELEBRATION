@@ -34,3 +34,24 @@
   .collectionGrid .catalogCard .cartAddControl button{min-height:32px;font-size:9px}
   .catalogPhotoPlaceholderIcon{font-size:34px}
 }
+
+
+.catalogGuarantee{display:block;margin-top:5px;font-size:8px;line-height:1.25;color:#2d6a43;font-weight:750}
+@media(max-width:620px){
+  .collectionGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 7px}
+  .collectionGrid .catalogCard{border-radius:7px}
+  .collectionGrid .catalogCardVisual{aspect-ratio:1.12/1}
+  .collectionGrid .catalogCardInfo{padding:7px 7px 6px}
+  .collectionGrid .catalogCardCategory{display:none}
+  .collectionGrid .catalogCard h3{font-size:10.5px;line-height:1.25;min-height:26px;-webkit-line-clamp:2}
+  .collectionGrid .catalogCard p,.collectionGrid .catalogLegalHint{display:none}
+  .collectionGrid .catalogGuarantee{font-size:7.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .collectionGrid .catalogCardPrice{display:flex;align-items:baseline;gap:4px;margin-top:6px;padding-top:6px}
+  .collectionGrid .catalogCardPrice>span:first-child{display:none}
+  .collectionGrid .catalogCardPrice strong{font-size:14px}
+  .collectionGrid .catalogCardPrice small{font-size:7.5px}
+  .collectionGrid .catalogCard>.cartAddControl{padding:0 7px 7px}
+  .collectionGrid .catalogCard .cartAddControl button{min-height:29px;font-size:8.5px;border-radius:6px;padding:5px 6px}
+  .collectionGrid .catalogInlineQuantity{min-height:29px;grid-template-columns:30px 1fr 30px}
+  .collectionGrid .catalogInlineQuantity button,.collectionGrid .catalogInlineQuantity output{min-height:29px;font-size:12px}
+}
