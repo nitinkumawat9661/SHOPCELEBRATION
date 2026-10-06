@@ -9,7 +9,7 @@ import { StorefrontHeader } from "../../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../../features/shell/TrustStrip"
 import { isJewelryProduct } from "../../../lib/domain/catalog-discovery"
 import { formatMoney } from "../../../lib/domain/money"
-import { isIndividuallySellable } from "../../../lib/domain/catalog"
+import { isIndividuallySellable, productDiscountPercent } from "../../../lib/domain/catalog"
 import { getCatalogConfig } from "../../../lib/server/catalog"
 import { defaultStoreSettings, getStoreSettings } from "../../../lib/server/store-settings"
 
@@ -20,6 +20,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const [{ id }, catalog, settings] = await Promise.all([params, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
   const product = catalog?.catalog.products.find((item) => item.id === id && item.active !== false)
   const individual = product ? isIndividuallySellable(product) : false
+  const discount = product && individual ? productDiscountPercent(product) : null
+  const mrpPaise = product && individual ? product.retail?.mrpPaise : undefined
   if (catalog && !product) notFound()
   const collectionUrl = product && isJewelryProduct(product) ? "/jewelry" : "/jewelry?view=all"
   const related = catalog?.catalog.products.filter((item) => item.active !== false && item.id !== id && item.category === product?.category).slice(0, 4) || []
@@ -35,7 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <span className="collectionEyebrow">{product.category}</span><h1>{product.name}</h1>
             {product.note && <p className="collectionDetailNote">{product.note}</p>}
             {product.highlights?.length ? <ul className="marketplaceHighlights">{product.highlights.map((item) => <li key={item}>{item}</li>)}</ul> : null}
-            <div className="collectionDetailPrice"><span>{individual ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(individual ? product.salePricePaise! / 100 : product.minTier)}</strong><small>{individual ? "Buy this item on its own. No additional shipping fee at checkout." : "Hamper budget, not an individual item price."}</small></div>
+            <div className="collectionDetailPrice"><span>{individual ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(individual ? product.salePricePaise! / 100 : product.minTier)}</strong>{individual && mrpPaise && discount ? <span><s>{formatMoney(mrpPaise / 100)}</s> · {discount}% OFF</span> : null}<small>{individual ? "Delivery charge is calculated live from Shipway at checkout." : "Hamper budget, not an individual item price."}</small></div>
             <div className="collectionDetailActions">
               {individual ? <><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
               <Link className="collectionDetailBack" href={collectionUrl}>Keep exploring</Link>

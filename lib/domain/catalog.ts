@@ -78,6 +78,13 @@ export function primaryProductImage(product: GiftProduct) {
   return productImages(product)[0]
 }
 
+export function productDiscountPercent(product: GiftProduct) {
+  const sale = product.salePricePaise
+  const mrp = product.retail?.mrpPaise
+  if (typeof sale !== "number" || typeof mrp !== "number" || mrp <= sale || mrp <= 0) return null
+  return Math.round((mrp - sale) * 100 / mrp)
+}
+
 export function isIndividuallySellable(product: GiftProduct) {
   // ponytail: availability uses admin switches; add stock reservations for finite inventory.
   const price = product.salePricePaise

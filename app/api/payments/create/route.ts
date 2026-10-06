@@ -13,6 +13,7 @@ import { createOrder } from "../../../../lib/server/orders"
 import { createProviderCheckout, type ProviderCheckout } from "../../../../lib/server/payments/provider"
 import { bindPaymentAttempt, failPaymentAttempt, getPaymentOrder, paymentOrderClientResult, reservePaymentAttempt } from "../../../../lib/server/payments/store"
 import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
+import { quoteShipwayShipping, ShipwayApiError } from "../../../../lib/server/shipway"
 
 function reusableCheckout(input: {
   provider: "razorpay" | "cashfree"
@@ -67,7 +68,17 @@ export async function POST(request: Request) {
       { requirePaymentReference: false, checkExpectedSubtotal: false }
     )
 
-    const created = await createOrder(order, account.id, body.offerQuoteId, { paymentProvider: paymentGatewayConfig.provider })
+    const shippingQuote = order.orderType === "individual"
+      ? await quoteShipwayShipping({
+          toPincode: order.pincode,
+          weightGrams: order.lineItems.reduce((total, item) => total + item.quantity * 80, 0)
+        })
+      : null
+
+    const created = await createOrder(order, account.id, body.offerQuoteId, {
+      paymentProvider: paymentGatewayConfig.provider,
+      shippingPaise: shippingQuote?.shippingPaise
+    })
     savedOrder = { publicId: created.publicId, customerAccountId: account.id }
     const reserved = await reservePaymentAttempt(created.publicId, account.id, paymentGatewayConfig.provider)
     attemptId = reserved.attemptId
@@ -115,6 +126,10 @@ export async function POST(request: Request) {
       await failPaymentAttempt(attemptId, code).catch(() => undefined)
     }
     if (error instanceof OrderValidationError) return NextResponse.json({ ok: false, error: error.code }, { status: 422 })
+    if (error instanceof ShipwayApiError) {
+      const status = ["SHIPWAY_NO_SERVICEABLE_CARRIER", "INVALID_SHIPPING_PINCODE"].includes(error.code) ? 422 : 503
+      return NextResponse.json({ ok: false, error: error.code }, { status })
+    }
     if (error instanceof CampaignError) {
       const status = ["OFFER_QUOTE_EXPIRED", "OFFER_QUOTE_USED"].includes(error.code) ? 409 : 422
       return NextResponse.json({ ok: false, error: error.code }, { status })

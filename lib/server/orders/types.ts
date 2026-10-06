@@ -7,6 +7,7 @@ export type OrderRecord = {
   publicId: string
   subtotalPaise: number
   discountPaise: number
+  shippingPaise: number
   amountPaise: number
   campaignId: string | null
   campaignTitle: string | null
@@ -44,6 +45,7 @@ export type DbOrder = {
   public_id: string
   subtotal_paise: number
   discount_paise: number
+  shipping_paise: number
   amount_paise: number
   campaign_id: string | null
   campaign_title: string | null
@@ -82,6 +84,7 @@ export function mapOrder(row: DbOrder): OrderRecord {
     publicId: row.public_id,
     subtotalPaise: row.subtotal_paise,
     discountPaise: row.discount_paise,
+    shippingPaise: row.shipping_paise,
     amountPaise: row.amount_paise,
     campaignId: row.campaign_id,
     campaignTitle: row.campaign_title,
@@ -120,6 +123,7 @@ export type TrackingOrderRecord = {
   publicId: string
   subtotalPaise: number
   discountPaise: number
+  shippingPaise: number
   amountPaise: number
   campaignTitle: string | null
   tierName: string
@@ -145,6 +149,7 @@ export type DbTrackingOrder = {
   public_id: string
   subtotal_paise: number
   discount_paise: number
+  shipping_paise: number
   amount_paise: number
   campaign_title: string | null
   tier_name: string
@@ -171,6 +176,7 @@ export function mapTrackingOrder(row: DbTrackingOrder): TrackingOrderRecord {
     publicId: row.public_id,
     subtotalPaise: row.subtotal_paise,
     discountPaise: row.discount_paise,
+    shippingPaise: row.shipping_paise,
     amountPaise: row.amount_paise,
     campaignTitle: row.campaign_title,
     tierName: row.tier_name,
@@ -191,9 +197,9 @@ export function mapTrackingOrder(row: DbTrackingOrder): TrackingOrderRecord {
   }
 }
 
-export const TRACKING_ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, amount_paise, campaign_title, tier_name, required_date::text, occasion, status, payment_status,
+export const TRACKING_ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, shipping_paise, amount_paise, campaign_title, tier_name, required_date::text, occasion, status, payment_status,
   receiver_name, packing_video_key, shipping_provider, shipping_tracking_number, issue_type, issue_note, customer_approved_at, delivered_at, created_at, updated_at`
 
-export const ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, amount_paise, campaign_id, campaign_title, tier_name, required_date::text, occasion, status, payment_status, payment_reference,
+export const ORDER_SELECT = `order_type, line_items, public_id, subtotal_paise, discount_paise, shipping_paise, amount_paise, campaign_id, campaign_title, tier_name, required_date::text, occasion, status, payment_status, payment_reference,
   customer_name, phone, receiver_name, address, city, state, pincode, gift_message,
   selected_product_ids, selected_product_names, packing_video_key, shipping_provider, shipping_tracking_number, shipping_carrier_id, shipping_label_url, shipping_booked_at, issue_type, issue_note, created_at, updated_at`
