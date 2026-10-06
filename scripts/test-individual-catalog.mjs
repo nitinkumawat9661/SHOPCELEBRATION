@@ -27,7 +27,18 @@ try {
   const { validation } = require(join(out, "config/validation.js"))
   const normalized = normalizeCatalogConfig(defaultCatalog)
   assert.equal(normalized.products.length, defaultCatalog.products.length, "Default catalog normalization changed the product count")
-  const withProduct = (patch) => ({ ...defaultCatalog, products: [{ ...defaultCatalog.products[0], ...patch }] })
+  const baseFixtureProduct = {
+    ...defaultCatalog.products[0],
+    sellIndividually: false,
+    salePricePaise: undefined,
+    prepackagedRetail: false,
+    retail: undefined,
+    imageUrl: undefined,
+    images: undefined,
+    highlights: undefined,
+    badge: undefined
+  }
+  const withProduct = (patch) => ({ ...defaultCatalog, products: [{ ...baseFixtureProduct, ...patch }] })
   const enabled = normalizeCatalogConfig(withProduct({ sellIndividually: true, salePricePaise: 1929 })).products[0]
   assert.equal(enabled.salePricePaise, 1929)
   assert.equal(isIndividuallySellable(enabled), true)
