@@ -19,6 +19,7 @@ export function PaymentStep({
   tier,
   individual,
   orderTotalPaise,
+  shippingPaise,
   paymentBlocked = false,
   checkout,
   selectedProductIds,
@@ -45,6 +46,7 @@ export function PaymentStep({
   tier?: Tier
   individual?: { subtotalPaise: number; itemKey: string; label: string; items: { productId: string; quantity: number }[] }
   orderTotalPaise?: number | null
+  shippingPaise?: number | null
   paymentBlocked?: boolean
   checkout: CheckoutData
   selectedProductIds: string[]
@@ -83,7 +85,8 @@ export function PaymentStep({
   const manualPaymentReady = Boolean(!individual && publicEnv.upiId && publicEnv.upiName)
   const selectedKey = useMemo(() => individual?.itemKey || [...selectedProductIds].sort().join(","), [selectedProductIds, individual?.itemKey])
   const subtotalPaise = individual?.subtotalPaise ?? Math.round((tier?.price || 0) * 100)
-  const payablePaise = created?.payablePaise ?? orderTotalPaise ?? quote?.payablePaise ?? subtotalPaise
+  const productPayablePaise = quote?.payablePaise ?? subtotalPaise
+  const payablePaise = created?.payablePaise ?? orderTotalPaise ?? (productPayablePaise + (individual ? shippingPaise || 0 : 0))
   const discountPaise = quote?.discountPaise ?? 0
   const upiUrl = manualPaymentReady ? buildUpiUrl({
     upiId: publicEnv.upiId,
@@ -233,7 +236,7 @@ export function PaymentStep({
           {customerAccount && quote && <div className="checkoutOfferCard" role="status">
             <div className="checkoutOfferBadge">{quote.badge}</div>
             <div className="checkoutOfferCopy"><b>{quote.campaignTitle}</b><span>{quote.message}</span><small>Offer quote valid until {reservedUntil}</small></div>
-            <div className="checkoutOfferPrice"><span>Subtotal {formatMoney(quote.subtotalPaise / 100)}</span><strong>{formatMoney(quote.payablePaise / 100)}</strong><span>Applied discount {formatMoney(quote.discountPaise / 100)}</span></div>
+            <div className="checkoutOfferPrice"><span>Subtotal {formatMoney(quote.subtotalPaise / 100)}</span><strong>{formatMoney((quote.payablePaise + (individual ? shippingPaise || 0 : 0)) / 100)}</strong><span>Applied discount {formatMoney(quote.discountPaise / 100)}</span>{individual && shippingPaise ? <span>Delivery {formatMoney(shippingPaise / 100)}</span> : null}</div>
           </div>}
           {customerAccount && quoteError && <div className="checkoutPriceNote">{quoteError}</div>}
           {customerAccount && <div className="checkoutCoupon">
