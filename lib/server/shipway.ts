@@ -22,6 +22,14 @@ export type ShipwayTracking = {
   trackUrl: string | null
 }
 
+export type ShipwayRateQuote = {
+  carrierId: string
+  carrierName: string
+  shippingPaise: number
+  chargeRupees: number
+  billedWeightKg: number | null
+}
+
 function authHeader() {
   const email = requireEnv("shipwayEmail")
   const key = requireEnv("shipwayLicenseKey")
@@ -88,29 +96,60 @@ async function shipwayWarehousePincode(warehouseId: string) {
   return pincode
 }
 
-async function rateBasedCarrier(fromPincode: string, toPincode: string) {
+function halfKgSlab(weightGrams: number) {
+  if (!Number.isFinite(weightGrams) || weightGrams <= 0) return null
+  const kg = weightGrams / 1000
+  return Math.max(0.5, Math.ceil(kg * 2) / 2)
+}
+
+function rateOptions(raw: unknown) {
+  const root = raw && typeof raw === "object" ? raw as Record<string, unknown> : {}
+  const direct = [
+    ...(Array.isArray(root.rate_card) ? root.rate_card : []),
+    ...(Array.isArray(root.data) ? root.data : []),
+    ...(Array.isArray(root.rates) ? root.rates : [])
+  ]
+  const candidates = direct.length ? direct : objectList(raw)
+
+  return candidates.flatMap((item) => {
+    if (!item || typeof item !== "object") return []
+    const row = item as Record<string, unknown>
+    const carrierId = positiveNumber(row.carrier_id ?? row.courier_id ?? row.id)
+    const charge = positiveNumber(row.delivery_charge ?? row.shipment_charges ?? row.shipping_charge ?? row.rate)
+    if (!carrierId || !charge) return []
+    const billedWeight = positiveNumber(row.charge_weight ?? row.billed_weight ?? row.weight)
+    return [{
+      carrierId: String(Math.trunc(carrierId)),
+      charge,
+      billedWeightKg: billedWeight,
+      name: typeof row.courier_name === "string"
+        ? row.courier_name.trim()
+        : typeof row.courier === "string"
+          ? row.courier.trim()
+          : typeof row.name === "string" ? row.name.trim() : ""
+    }]
+  }).sort((a, b) => a.charge - b.charge || Number(a.carrierId) - Number(b.carrierId))
+}
+
+async function rateBasedCarrier(
+  fromPincode: string,
+  toPincode: string,
+  input: { weightGrams?: number; lengthCm?: number; breadthCm?: number; heightCm?: number } = {}
+) {
   const params = new URLSearchParams({
     fromPincode,
     toPincode,
     paymentType: "prepaid",
     shipment_type: "1"
   })
-  const raw = await request(`/api/getshipwaycarrierrates?${params.toString()}`, { method: "GET" })
-  const root = raw && typeof raw === "object" ? raw as Record<string, unknown> : {}
-  const rateCard = Array.isArray(root.rate_card) ? root.rate_card : []
-  const options = rateCard.flatMap((item) => {
-    if (!item || typeof item !== "object") return []
-    const row = item as Record<string, unknown>
-    const carrierId = positiveNumber(row.carrier_id)
-    const charge = positiveNumber(row.delivery_charge)
-    if (!carrierId || !charge) return []
-    return [{
-      carrierId: String(Math.trunc(carrierId)),
-      charge,
-      name: typeof row.courier_name === "string" ? row.courier_name.trim() : ""
-    }]
-  }).sort((a, b) => a.charge - b.charge || Number(a.carrierId) - Number(b.carrierId))
+  const weightKg = typeof input.weightGrams === "number" ? halfKgSlab(input.weightGrams) : null
+  if (weightKg) params.set("weight", String(weightKg))
+  if (input.lengthCm && input.lengthCm > 0) params.set("length", String(Math.round(input.lengthCm)))
+  if (input.breadthCm && input.breadthCm > 0) params.set("breadth", String(Math.round(input.breadthCm)))
+  if (input.heightCm && input.heightCm > 0) params.set("height", String(Math.round(input.heightCm)))
 
+  const raw = await request(`/api/getshipwaycarrierrates?${params.toString()}`, { method: "GET" })
+  const options = rateOptions(raw)
   if (options.length) return options[0]
 
   const fallback = await request(
@@ -123,6 +162,7 @@ async function rateBasedCarrier(fromPincode: string, toPincode: string) {
     return [{
       carrierId: String(Math.trunc(carrierId)),
       charge: Number.POSITIVE_INFINITY,
+      billedWeightKg: weightKg,
       name: typeof row.carrier_title === "string"
         ? row.carrier_title.trim()
         : typeof row.name === "string" ? row.name.trim() : ""
@@ -130,7 +170,29 @@ async function rateBasedCarrier(fromPincode: string, toPincode: string) {
   }).sort((a, b) => Number(a.carrierId) - Number(b.carrierId))
 
   if (!serviceable.length) throw new ShipwayApiError("SHIPWAY_NO_SERVICEABLE_CARRIER")
-  return serviceable[0]
+  throw new ShipwayApiError("SHIPWAY_RATE_UNAVAILABLE")
+}
+
+export async function quoteShipwayShipping(input: {
+  toPincode: string
+  weightGrams?: number
+  lengthCm?: number
+  breadthCm?: number
+  heightCm?: number
+}): Promise<ShipwayRateQuote> {
+  const toPincode = String(input.toPincode || "").trim()
+  if (!/^\d{6}$/.test(toPincode)) throw new ShipwayApiError("INVALID_SHIPPING_PINCODE")
+  const warehouseId = numericId(requireEnv("shipwayWarehouseId"), "INVALID_SHIPWAY_WAREHOUSE_ID")
+  const pickupPincode = await shipwayWarehousePincode(warehouseId)
+  const selected = await rateBasedCarrier(pickupPincode, toPincode, input)
+  if (!Number.isFinite(selected.charge) || selected.charge <= 0) throw new ShipwayApiError("SHIPWAY_RATE_UNAVAILABLE")
+  return {
+    carrierId: selected.carrierId,
+    carrierName: selected.name,
+    shippingPaise: Math.round(selected.charge * 100),
+    chargeRupees: selected.charge,
+    billedWeightKg: selected.billedWeightKg
+  }
 }
 
 async function request(path: string, init: RequestInit) {
@@ -187,14 +249,16 @@ export async function bookShipwayShipment(order: OrderRecord): Promise<ShipwayBo
   const warehouseId = numericId(requireEnv("shipwayWarehouseId"), "INVALID_SHIPWAY_WAREHOUSE_ID")
   const returnWarehouseId = numericId(requireEnv("shipwayReturnWarehouseId"), "INVALID_SHIPWAY_RETURN_WAREHOUSE_ID")
   const name = splitName(order.receiverName)
-  const pickupPincode = await shipwayWarehousePincode(warehouseId)
-  const selectedCarrier = await rateBasedCarrier(pickupPincode, order.pincode)
+  const estimatedWeightGrams = order.orderType === "individual"
+    ? order.lineItems.reduce((total, item) => total + item.quantity * 80, 0)
+    : undefined
+  const selectedCarrier = await quoteShipwayShipping({ toPincode: order.pincode, weightGrams: estimatedWeightGrams })
 
   console.info("shipway-carrier-selected", {
     orderId: order.publicId,
     carrierId: selectedCarrier.carrierId,
     carrier: selectedCarrier.name,
-    quotedCharge: Number.isFinite(selectedCarrier.charge) ? selectedCarrier.charge : null
+    quotedCharge: selectedCarrier.chargeRupees
   })
 
   const payload = {
@@ -205,7 +269,7 @@ export async function bookShipwayShipment(order: OrderRecord): Promise<ShipwayBo
     products: productsFor(order),
     payment_type: "P",
     discount: rupees(order.discountPaise),
-    shipping: "0",
+    shipping: rupees(order.shippingPaise),
     order_total: rupees(order.amountPaise),
     billing_address: order.address,
     billing_city: order.city,
