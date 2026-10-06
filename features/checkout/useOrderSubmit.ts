@@ -23,6 +23,7 @@ export type CreatedOrder = {
   trackingPath: string
   subtotalPaise: number
   discountPaise: number
+  shippingPaise: number
   payablePaise: number
   campaignId: string | null
   campaignTitle: string | null
@@ -43,6 +44,7 @@ type PaymentResult = {
   trackingPath?: string
   subtotalPaise?: number
   discountPaise?: number
+  shippingPaise?: number
   payablePaise?: number
   campaignId?: string | null
   campaignTitle?: string | null
@@ -68,6 +70,9 @@ function paymentError(code?: string) {
   if (code === "PRODUCT_NOT_FOR_INDIVIDUAL_SALE" || code === "INVALID_PRODUCT") return "An item is no longer available for purchase. Refresh your cart before trying again."
   if (code === "CART_AMOUNT_TOO_LARGE") return "This cart total is too high for one order. Remove some items to continue."
   if (code === "CART_PRICE_CHANGED") return "Product prices changed. Refresh your cart and review the new total before payment."
+  if (code === "SHIPWAY_NO_SERVICEABLE_CARRIER") return "Delivery is not available to this pincode right now."
+  if (code === "SHIPWAY_RATE_UNAVAILABLE" || code === "SHIPWAY_UNAVAILABLE" || code === "SHIPWAY_TIMEOUT") return "Live delivery charges could not be confirmed. Please try again."
+  if (code === "SHIPPING_QUOTE_REQUIRED") return "Live delivery charges must be confirmed before payment."
   return "Payment could not be completed right now. You can retry safely."
 }
 
@@ -109,6 +114,7 @@ function createdFromResult(result: PaymentResult): CreatedOrder | null {
     trackingPath: result.trackingPath,
     subtotalPaise: result.subtotalPaise ?? result.payablePaise,
     discountPaise: result.discountPaise ?? 0,
+    shippingPaise: result.shippingPaise ?? 0,
     payablePaise: result.payablePaise,
     campaignId: result.campaignId || null,
     campaignTitle: result.campaignTitle || null
