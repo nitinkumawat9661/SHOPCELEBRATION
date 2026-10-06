@@ -14,6 +14,7 @@ export type PaymentOrderSnapshot = {
   amountPaise: number
   subtotalPaise: number
   discountPaise: number
+  shippingPaise: number
   campaignId: string | null
   campaignTitle: string | null
   tierName: string
@@ -51,6 +52,7 @@ async function findOrderForUpdate(client: PoolClient, publicId: string, customer
     amount_paise: number
     subtotal_paise: number
     discount_paise: number
+    shipping_paise: number
     campaign_id: string | null
     campaign_title: string | null
     tier_name: string
@@ -60,7 +62,7 @@ async function findOrderForUpdate(client: PoolClient, publicId: string, customer
     status: string
     payment_attempt_count: number
   }>(
-    `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise,
+    `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
             campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
        FROM orders
       WHERE public_id = $1${ownerClause}
@@ -79,6 +81,7 @@ function mapSnapshot(row: NonNullable<Awaited<ReturnType<typeof findOrderForUpda
     amountPaise: row.amount_paise,
     subtotalPaise: row.subtotal_paise,
     discountPaise: row.discount_paise,
+    shippingPaise: row.shipping_paise,
     campaignId: row.campaign_id,
     campaignTitle: row.campaign_title,
     tierName: row.tier_name,
@@ -250,6 +253,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
       amount_paise: number
       subtotal_paise: number
       discount_paise: number
+    shipping_paise: number
       campaign_id: string | null
       campaign_title: string | null
       tier_name: string
@@ -259,7 +263,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
       status: string
       payment_attempt_count: number
     }>(
-      `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise,
+      `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
               campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
          FROM orders WHERE id = $1 FOR UPDATE`,
       [attempt.order_id]
@@ -336,6 +340,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
       amount_paise: number
       subtotal_paise: number
       discount_paise: number
+    shipping_paise: number
       campaign_id: string | null
       campaign_title: string | null
       tier_name: string
@@ -345,7 +350,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
       status: string
       payment_attempt_count: number
     }>(
-      `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise,
+      `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
               campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
          FROM orders WHERE id = $1`,
       [orderRow.id]
@@ -360,6 +365,7 @@ export function paymentOrderClientResult(order: PaymentOrderSnapshot) {
     trackingToken: createTrackingToken(order.idempotencyKey),
     subtotalPaise: order.subtotalPaise,
     discountPaise: order.discountPaise,
+    shippingPaise: order.shippingPaise,
     payablePaise: order.amountPaise,
     campaignId: order.campaignId,
     campaignTitle: order.campaignTitle,
