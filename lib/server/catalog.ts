@@ -319,6 +319,31 @@ export async function publishCatalogDraft(expected: unknown) {
   })
 }
 
+
+export async function replaceLiveCatalog(input: unknown, expected: unknown) {
+  const catalog = normalizeCatalogConfig(input)
+  const expectedLiveVersion = expectedVersion(expected)
+  await getCatalogConfig()
+  return transaction(async (client) => {
+    const live = await client.query<CatalogRow>("SELECT payload, version FROM catalog_config WHERE id = 'primary' FOR UPDATE")
+    const current = live.rows[0]
+    if (!current) throw new Error("CATALOG_NOT_INITIALIZED")
+    if (current.version !== expectedLiveVersion) throw new CatalogValidationError("CATALOG_VERSION_CONFLICT")
+
+    const saved = await client.query<CatalogRow>(
+      `UPDATE catalog_config
+         SET payload = $1::jsonb, version = version + 1, updated_at = now()
+       WHERE id = 'primary'
+       RETURNING payload, version`,
+      [JSON.stringify(catalog)]
+    )
+    if (!saved.rows[0]) throw new Error("CATALOG_NOT_INITIALIZED")
+    await client.query(`INSERT INTO catalog_revisions (version, payload) VALUES ($1, $2::jsonb)`, [saved.rows[0].version, JSON.stringify(catalog)])
+    await client.query("DELETE FROM catalog_drafts WHERE id = 'primary'")
+    return { catalog, version: saved.rows[0].version, draftExists: false }
+  })
+}
+
 export async function listCatalogRevisions(limit = 25) {
   const safeLimit = Math.min(Math.max(limit, 1), 100)
   const result = await query<RevisionRow>(
