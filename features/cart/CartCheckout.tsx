@@ -171,8 +171,8 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
           quantity: items.reduce((total, item) => total + item.quantity, 0)
         })
       })
-      const result = await response.json() as { ok?: boolean; shippingPaise?: number; error?: string }
-      if (!response.ok || !result.ok || typeof result.shippingPaise !== "number" || result.shippingPaise <= 0) {
+      const result = await response.json() as { ok?: boolean; error?: string }
+      if (!response.ok || !result.ok) {
         throw new Error(result.error || "SHIPWAY_RATE_UNAVAILABLE")
       }
       setShippingPaise(0)
@@ -214,7 +214,6 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
     } finally { preparingPayment.current = false }
   }
 
-  const shownShippingPaise = order.created?.shippingPaise ?? shippingPaise
   const shownTotalPaise = order.orderTotalPaise ?? order.created?.payablePaise ?? subtotalPaise
   const summary = <aside className="summary individualSummary">
     <div className="kicker">YOUR ITEMS</div><div className="sumPrice">{formatMoney(shownTotalPaise / 100)}</div>
