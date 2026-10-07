@@ -27,8 +27,10 @@ export function discoverProducts(products: GiftProduct[], filters: CatalogDiscov
   })
 
   const salePrice = (product: GiftProduct) => typeof product.salePricePaise === "number" ? product.salePricePaise : Number.MAX_SAFE_INTEGER
-  if (filters.sort === "price-low" || filters.sort === "budget-low") result.sort((a, b) => salePrice(a) - salePrice(b))
-  if (filters.sort === "price-high" || filters.sort === "budget-high") result.sort((a, b) => salePrice(b) - salePrice(a))
+  if (filters.sort === "price-low") result.sort((a, b) => salePrice(a) - salePrice(b))
+  if (filters.sort === "price-high") result.sort((a, b) => salePrice(b) - salePrice(a))
+  if (filters.sort === "budget-low") result.sort((a, b) => a.minTier - b.minTier)
+  if (filters.sort === "budget-high") result.sort((a, b) => b.minTier - a.minTier)
   if (filters.sort === "name") result.sort((a, b) => a.name.localeCompare(b.name))
   return result
 }
