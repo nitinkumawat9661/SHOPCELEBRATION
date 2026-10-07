@@ -78,6 +78,17 @@ export function primaryProductImage(product: GiftProduct) {
   return productImages(product)[0]
 }
 
+export function catalogSpriteImage(url: string) {
+  const match = url.match(/^(.*)\?tile=([0-4])$/)
+  if (!match) return null
+  const tile = Number(match[2])
+  return {
+    url: match[1],
+    tile,
+    backgroundPosition: `${tile * 25}% center`
+  }
+}
+
 export function productDiscountPercent(product: GiftProduct) {
   const sale = product.salePricePaise
   const mrp = product.retail?.mrpPaise

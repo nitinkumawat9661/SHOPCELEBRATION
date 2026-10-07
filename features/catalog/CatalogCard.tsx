@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { isIndividuallySellable, primaryProductImage, productDiscountPercent, type GiftProduct } from "../../lib/domain/catalog"
+import { catalogSpriteImage, isIndividuallySellable, primaryProductImage, productDiscountPercent, type GiftProduct } from "../../lib/domain/catalog"
 import { AddToCart } from "../cart/AddToCart"
 import { formatMoney } from "../../lib/domain/money"
 
@@ -16,6 +16,15 @@ export function CatalogProductImage({ product, priority = false }: { product: Gi
   }, [primary?.url])
 
   if (primary && !failed) {
+    const sprite = catalogSpriteImage(primary.url)
+    if (sprite) {
+      return <div
+        className="catalogPhoto catalogSpritePhoto"
+        role="img"
+        aria-label={primary.alt || product.name}
+        style={{ backgroundImage: `url("${sprite.url}")`, backgroundPosition: sprite.backgroundPosition }}
+      />
+    }
     return <img
       className="catalogPhoto"
       src={primary.url}
