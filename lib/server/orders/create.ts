@@ -88,7 +88,7 @@ async function insertOrder(
 
   const productPricing = await resolveOrderPricing(client, offerQuoteId, customerAccountId, input)
   const shippingPaise = input.orderType === "individual" ? options.shippingPaise : 0
-  if (input.orderType === "individual" && (typeof shippingPaise !== "number" || !Number.isSafeInteger(shippingPaise) || shippingPaise <= 0)) {
+  if (input.orderType === "individual" && (typeof shippingPaise !== "number" || !Number.isSafeInteger(shippingPaise) || shippingPaise < 0)) {
     throw new OrderValidationError("SHIPPING_QUOTE_REQUIRED")
   }
   const payablePaise = productPricing.payablePaise + (shippingPaise || 0)

@@ -171,18 +171,18 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
           quantity: items.reduce((total, item) => total + item.quantity, 0)
         })
       })
-      const result = await response.json() as { ok?: boolean; shippingPaise?: number; error?: string }
-      if (!response.ok || !result.ok || typeof result.shippingPaise !== "number" || result.shippingPaise <= 0) {
+      const result = await response.json() as { ok?: boolean; error?: string }
+      if (!response.ok || !result.ok) {
         throw new Error(result.error || "SHIPWAY_RATE_UNAVAILABLE")
       }
-      setShippingPaise(result.shippingPaise)
+      setShippingPaise(0)
       setAccepted(false)
       order.reset()
       setStep(3)
     } catch {
       setShippingPaise(null)
-      setShippingError("Live delivery charge could not be confirmed for this pincode. Please try again.")
-      setDetailsError("Live delivery charge could not be confirmed for this pincode. Please try again.")
+      setShippingError("Delivery availability could not be confirmed for this pincode. Please try again.")
+      setDetailsError("Delivery availability could not be confirmed for this pincode. Please try again.")
     } finally {
       setShippingLoading(false)
     }
@@ -214,14 +214,13 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
     } finally { preparingPayment.current = false }
   }
 
-  const shownShippingPaise = order.created?.shippingPaise ?? shippingPaise
-  const shownTotalPaise = order.orderTotalPaise ?? order.created?.payablePaise ?? (subtotalPaise + (shownShippingPaise || 0))
+  const shownTotalPaise = order.orderTotalPaise ?? order.created?.payablePaise ?? subtotalPaise
   const summary = <aside className="summary individualSummary">
     <div className="kicker">YOUR ITEMS</div><div className="sumPrice">{formatMoney(shownTotalPaise / 100)}</div>
     {rows.map((row) => <div className="sumRow" key={row.productId}><span>{row.product?.name || "Unavailable item"} × {row.quantity}</span><b>{row.product && isIndividuallySellable(row.product) ? formatMoney((row.product.salePricePaise || 0) * row.quantity / 100) : "Unavailable"}</b></div>)}
-    <div className="sumRow"><span>Delivery charge</span><b>{shippingLoading ? "Checking…" : shownShippingPaise ? formatMoney(shownShippingPaise / 100) : step === 1 ? "At checkout" : "Enter pincode"}</b></div>
+    <div className="sumRow"><span>Delivery</span><b>{shippingLoading ? "Checking availability…" : "Included"}</b></div>
     {shippingError && <p className="errorBox" role="alert">{shippingError}</p>}
-    <p className="note">Celebration charges only for the products. Delivery charges are automatically calculated for your delivery pincode and shown separately before payment.</p>
+    <p className="note">Delivery is included in the listed product price. No extra delivery charge is added at checkout; your pincode is checked only for delivery availability.</p>
   </aside>
 
   if (!ready) return <section className="wrap cartLoading" role="status">Loading your cart…</section>

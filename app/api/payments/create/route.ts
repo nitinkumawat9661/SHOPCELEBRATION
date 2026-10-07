@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
     const created = await createOrder(order, account.id, body.offerQuoteId, {
       paymentProvider: paymentGatewayConfig.provider,
-      shippingPaise: shippingQuote?.shippingPaise
+      shippingPaise: shippingQuote ? 0 : undefined
     })
     savedOrder = { publicId: created.publicId, customerAccountId: account.id }
     const reserved = await reservePaymentAttempt(created.publicId, account.id, paymentGatewayConfig.provider)

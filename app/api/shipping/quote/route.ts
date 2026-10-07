@@ -23,16 +23,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "INVALID_SHIPPING_QUANTITY" }, { status: 422 })
     }
 
-    const quote = await quoteShipwayShipping({
+    await quoteShipwayShipping({
       toPincode: pincode,
       weightGrams: quantity * 80
     })
-    return NextResponse.json({
-      ok: true,
-      shippingPaise: quote.shippingPaise,
-      carrierName: quote.carrierName || null,
-      billedWeightKg: quote.billedWeightKg
-    })
+    return NextResponse.json({ ok: true })
   } catch (error) {
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })
     if (error instanceof ShipwayApiError) {
