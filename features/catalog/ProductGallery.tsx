@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { productImages, type GiftProduct } from "../../lib/domain/catalog"
+import { catalogSpriteImage, productImages, type GiftProduct } from "../../lib/domain/catalog"
 
 export function ProductGallery({ product }: { product: GiftProduct }) {
   const images = useMemo(() => productImages(product), [product])
@@ -17,16 +17,23 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
     )
   }
 
+  const currentSprite = catalogSpriteImage(current.url)
+
   return (
     <div className="marketplaceGallery">
       <div className="marketplaceGalleryStage">
-        <img
+        {currentSprite ? <div
+          className="marketplaceGallerySprite"
+          role="img"
+          aria-label={current.alt || product.name}
+          style={{ backgroundImage: `url("${currentSprite.url}")`, backgroundPosition: currentSprite.backgroundPosition }}
+        /> : <img
           src={current.url}
           alt={current.alt || product.name}
           decoding="async"
           fetchPriority="high"
           referrerPolicy="no-referrer"
-        />
+        />}
         {product.badge && <span className="marketplaceProductBadge">{product.badge}</span>}
         {images.length > 1 && <>
           <button className="marketplaceGalleryArrow previous" type="button" aria-label="Previous image" onClick={() => setActive((currentIndex) => (currentIndex - 1 + images.length) % images.length)}>‹</button>
@@ -46,7 +53,14 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
               aria-pressed={index === active}
               onClick={() => setActive(index)}
             >
-              <img src={image.url} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" referrerPolicy="no-referrer" />
+              {catalogSpriteImage(image.url) ? <span
+                className="marketplaceGalleryThumbSprite"
+                aria-hidden="true"
+                style={{
+                  backgroundImage: `url("${catalogSpriteImage(image.url)!.url}")`,
+                  backgroundPosition: catalogSpriteImage(image.url)!.backgroundPosition
+                }}
+              /> : <img src={image.url} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" referrerPolicy="no-referrer" />}
             </button>
           ))}
         </div>
