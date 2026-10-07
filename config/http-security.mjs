@@ -6,7 +6,7 @@ export const httpSecurity = {
     "frame-ancestors 'none'",
     "frame-src 'self' https://*.razorpay.com https://*.cashfree.com https://www.google.com https://recaptcha.google.com https://hcaptcha.com https://*.hcaptcha.com",
     "object-src 'none'",
-    "img-src 'self' data: blob: https://*.razorpay.com https://*.cashfree.com https://www.gstatic.com https://www.google.com",
+    "img-src 'self' data: blob: https://*.razorpay.com https://*.cashfree.com https://www.gstatic.com https://www.google.com https://upload.meeshosupplyassets.com",
     "media-src 'self' blob: https:",
     "font-src 'self' https://fonts.gstatic.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://hcaptcha.com https://*.hcaptcha.com",
