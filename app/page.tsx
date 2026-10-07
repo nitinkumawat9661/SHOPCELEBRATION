@@ -9,12 +9,6 @@ import { defaultStoreSettings, getStoreSettings } from "../lib/server/store-sett
 
 export const dynamic = "force-dynamic"
 
-const getCachedCatalog = unstable_cache(
-  () => getCatalogConfig(),
-  ["celebration-home-catalog"],
-  { revalidate: 30 }
-)
-
 const getCachedTierPopularity = unstable_cache(
   () => getTierPopularity(),
   ["celebration-home-tier-popularity"],
@@ -40,7 +34,7 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
   }
 
   const [catalogResult, proofResult, settingsResult] = await Promise.all([
-    getCachedCatalog().catch(() => null),
+    getCatalogConfig().catch(() => null),
     getCachedTierPopularity().catch(() => null),
     getCachedStoreSettings().catch(() => null)
   ])

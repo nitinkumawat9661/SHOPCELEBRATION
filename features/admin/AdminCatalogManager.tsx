@@ -385,20 +385,22 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     setNotice("")
     setError("")
     try {
-      let publishVersion = version
       if (dirty) {
-        const saveResponse = await fetch("/api/admin/catalog", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ catalog, version }) })
-        const saved = await saveResponse.json() as AdminCatalogPayload
-        if (!saveResponse.ok || !saved.ok || !saved.catalog) throw new Error(saved.error || "CATALOG_DRAFT_SAVE_FAILED")
-        publishVersion = saved.version || version
+        const response = await fetch("/api/admin/catalog", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ catalog, version }) })
+        const saved = await response.json() as AdminCatalogPayload
+        if (!response.ok || !saved.ok || !saved.catalog) throw new Error(saved.error || "CATALOG_LIVE_SAVE_FAILED")
+        applyPayload(saved)
+        setNotice(`Saved live to database. Storefront is now using catalog v${saved.version}; no deployment is required.`)
+        return
       }
-      const publishResponse = await fetch("/api/admin/catalog/publish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ version: publishVersion }) })
+
+      const publishResponse = await fetch("/api/admin/catalog/publish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ version }) })
       const published = await publishResponse.json() as AdminCatalogPayload
       if (!publishResponse.ok || !published.ok || !published.catalog) throw new Error(published.error || "CATALOG_PUBLISH_FAILED")
       applyPayload(published)
-      setNotice(`Live published. Storefront ab catalog v${published.version} use kar rahi hai.`)
+      setNotice(`Saved draft published to database as catalog v${published.version}; no deployment is required.`)
     } catch (caught) {
-      const code = caught instanceof Error ? caught.message : "CATALOG_PUBLISH_FAILED"
+      const code = caught instanceof Error ? caught.message : "CATALOG_LIVE_SAVE_FAILED"
       setError(code === "SALE_PRICE_REQUIRED" ? "Individual sale enabled products ke liye sale price required hai." : code)
     } finally { setBusy("") }
   }
@@ -438,7 +440,7 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       const nextProducts = catalog.products.map((product) => importedById.get(product.id) || product)
       for (const product of imported) if (!updatedIds.has(product.id)) nextProducts.push(product)
       edit((current) => ({ ...current, products: nextProducts }))
-      setNotice(`${imported.length} products loaded (${updatedIds.size} updated, ${imported.length - updatedIds.size} new). Ab Publish live dabayein.`)
+      setNotice(`${imported.length} products loaded (${updatedIds.size} updated, ${imported.length - updatedIds.size} new). Save live dabate hi database update hoga; deployment nahi chahiye.`)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "BULK_IMPORT_FAILED")
     } finally {
@@ -471,12 +473,12 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
           {hasDraft && <a className="secondary" href="/admin/catalog-preview" target="_blank" rel="noreferrer">Preview</a>}
           {hasDraft && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard</button>}
           <button className="secondary" type="button" onClick={saveDraft} disabled={Boolean(busy) || !dirty}>{busy === "save" ? "Saving…" : "Save draft"}</button>
-          <button className="primary adminPublishLive" type="button" onClick={saveAndPublish} disabled={Boolean(busy) || (!dirty && !hasDraft)}>{busy === "publish-live" ? "Publishing…" : "Publish live"}</button>
+          <button className="primary adminPublishLive" type="button" onClick={saveAndPublish} disabled={Boolean(busy) || (!dirty && !hasDraft)}>{busy === "publish-live" ? "Saving live…" : "Save live"}</button>
         </div>
       </div>
-      {dirty && <div className="adminDraftNotice"><b>Changes ready</b> • Publish live ek click me save + publish karega. Storefront abhi v{version} par hai.</div>}
-      {!dirty && hasDraft && <div className="adminDraftNotice"><b>Saved draft ready</b> • Publish live dabate hi storefront update hoga.{draftUpdatedAt ? ` Draft saved ${new Date(draftUpdatedAt).toLocaleString("en-IN")}.` : ""}</div>}
-      {!dirty && !hasDraft && <div className="adminDraftNotice"><b>Live catalog v{version}</b> • Edit ya bulk upload karein, phir Publish live.</div>}
+      {dirty && <div className="adminDraftNotice"><b>Changes ready</b> • Save live directly database update karega; code deployment required nahi hai. Storefront abhi v{version} par hai.</div>}
+      {!dirty && hasDraft && <div className="adminDraftNotice"><b>Saved draft ready</b> • Save live dabate hi database publish hoga; deployment nahi lagega.{draftUpdatedAt ? ` Draft saved ${new Date(draftUpdatedAt).toLocaleString("en-IN")}.` : ""}</div>}
+      {!dirty && !hasDraft && <div className="adminDraftNotice"><b>Live database catalog v{version}</b> • Edit ya bulk upload karein, phir Save live. Storefront latest DB catalog directly read karta hai.</div>}
       {notice && <div className="successBox adminFeedback">{notice}</div>}
       {error && <div className="errorBox adminFeedback">{error}</div>}
 
