@@ -1,5 +1,5 @@
 -- Set the 22 approved Celebration necklaces to ₹149 sale price with an exact 20% discount.
--- ₹149 / 0.80 = ₹186.25 MRP. Delivery remains separate and is calculated at checkout.
+-- ₹149 / 0.80 = ₹186.25 MRP. Delivery is included in the ₹149 selling price.
 WITH transformed AS (
   SELECT cc.id,
          jsonb_set(
@@ -17,7 +17,7 @@ WITH transformed AS (
                           ),
                           '{retail,mrpPaise}', '18625'::jsonb, true
                         ),
-                        '{retail,unitSalePrice}', to_jsonb('₹149 per piece'::text), true
+                        '{retail,unitSalePrice}', to_jsonb('₹149 per piece, delivery included'::text), true
                       )
                  ELSE product
                END
