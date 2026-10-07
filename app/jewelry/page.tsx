@@ -12,5 +12,5 @@ export const metadata: Metadata = { title: "Jewelry & Gifts | Celebration", desc
 export default async function JewelryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [params, catalog, settings] = await Promise.all([searchParams, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
   const value = (key: string) => (typeof params[key] === "string" ? params[key] : "").slice(0, 100)
-  return <main className="collectionPage"><TrustStrip /><StorefrontHeader settings={settings?.settings || defaultStoreSettings} /><CatalogCollection products={catalog?.catalog.products || []} available={Boolean(catalog)} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort") }} /><SiteFooter /></main>
+  return <main className="collectionPage"><TrustStrip /><StorefrontHeader settings={settings?.settings || defaultStoreSettings} /><CatalogCollection products={catalog?.catalog.products || []} available={Boolean(catalog)} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} /><SiteFooter /></main>
 }
