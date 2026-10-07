@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache"
 import { redirect } from "next/navigation"
 import { routes } from "../config/routes"
 import { Storefront } from "../features/home/Storefront"
