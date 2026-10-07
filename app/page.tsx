@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache"
 import { redirect } from "next/navigation"
 import { routes } from "../config/routes"
 import { Storefront } from "../features/home/Storefront"
@@ -8,12 +7,6 @@ import { getTierPopularity } from "../lib/server/orders"
 import { defaultStoreSettings, getStoreSettings } from "../lib/server/store-settings"
 
 export const dynamic = "force-dynamic"
-
-const getCachedCatalog = unstable_cache(
-  () => getCatalogConfig(),
-  ["celebration-home-catalog"],
-  { revalidate: 30 }
-)
 
 const getCachedTierPopularity = unstable_cache(
   () => getTierPopularity(),
@@ -40,7 +33,7 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
   }
 
   const [catalogResult, proofResult, settingsResult] = await Promise.all([
-    getCachedCatalog().catch(() => null),
+    getCatalogConfig().catch(() => null),
     getCachedTierPopularity().catch(() => null),
     getCachedStoreSettings().catch(() => null)
   ])
