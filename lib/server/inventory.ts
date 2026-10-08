@@ -10,7 +10,13 @@ async function releaseExpiredWithClient(client: PoolClient) {
   const expiredRows = await client.query<{ product_id: string; quantity: number }>(
     `SELECT product_id, quantity
        FROM inventory_reservations
-      WHERE status = 'reserved' AND expires_at <= now()
+      WHERE status = 'reserved'
+        AND expires_at <= now()
+        AND EXISTS (
+          SELECT 1 FROM orders
+          WHERE orders.id = inventory_reservations.order_id
+            AND (orders.payment_status = 'failed' OR orders.status = 'cancelled')
+        )
       FOR UPDATE`
   )
   const totals = new Map<string, number>()
@@ -27,7 +33,13 @@ async function releaseExpiredWithClient(client: PoolClient) {
     await client.query(
       `UPDATE inventory_reservations
           SET status = 'released', updated_at = now()
-        WHERE status = 'reserved' AND expires_at <= now()`
+        WHERE status = 'reserved'
+          AND expires_at <= now()
+          AND EXISTS (
+            SELECT 1 FROM orders
+            WHERE orders.id = inventory_reservations.order_id
+              AND (orders.payment_status = 'failed' OR orders.status = 'cancelled')
+          )`
     )
   }
 }
