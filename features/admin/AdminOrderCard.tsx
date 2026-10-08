@@ -13,7 +13,7 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
   order: AdminOrder
   busy: boolean
   onStatus: (status: OrderStatus) => void | Promise<void>
-  onShipping: (provider: string, trackingNumber: string) => void | Promise<void>
+  onShipping: (provider: string, trackingNumber: string, weightGrams?: number) => void | Promise<void>
   onVideo: (file: File) => void | Promise<void>
 }) {
   const copy = uiContent.admin
