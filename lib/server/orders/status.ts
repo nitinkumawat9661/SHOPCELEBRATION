@@ -1,6 +1,7 @@
 import { orderEvents } from "../../../config/order-events"
 import { canAdminTransition, paymentStatusForOrderStatus, workflowActionTarget, type OrderStatus } from "../../domain/order-status"
 import { transaction } from "../db"
+import { releaseInventoryForOrderWithClient } from "../inventory"
 import { appendOrderEvent } from "./events"
 
 export function updateOrderStatus(publicId: string, nextStatus: OrderStatus) {
@@ -29,6 +30,7 @@ export function updateOrderStatus(publicId: string, nextStatus: OrderStatus) {
        WHERE id = $4`,
       [nextStatus, paymentStatus, deliveredStatus, row.id, "cancelled" satisfies OrderStatus]
     )
+    if (nextStatus === "cancelled") await releaseInventoryForOrderWithClient(client, row.id)
     await appendOrderEvent(client, row.id, orderEvents.statusChanged, { from: row.status, to: nextStatus })
     return { ok: true as const }
   })
