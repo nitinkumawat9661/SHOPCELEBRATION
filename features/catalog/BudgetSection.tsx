@@ -13,22 +13,16 @@ type TierSocialProof = {
   sharePercent: number
 }
 
-function valueScore(tier: Tier) {
-  return tier.price > 0 ? tier.maxChoices / tier.price : 0
-}
 
-function tierBadge(item: Tier, recommendedTierId: string, bestValueId: string, socialProof: TierSocialProof | null) {
+function tierBadge(item: Tier, recommendedTierId: string, socialProof: TierSocialProof | null) {
   if (socialProof && item.name === socialProof.tierName) return "MOST CHOSEN"
   if (item.id === recommendedTierId) return "RECOMMENDED"
-  if (item.id === bestValueId) return "BEST VALUE"
   const label = item.label?.trim()
   if (!label || UNSUPPORTED_SOCIAL_PROOF.has(label.toUpperCase())) return ""
   return label
 }
 
 export function BudgetSection({ tiers, selectedTierId, recommendedTierId, socialProof, onSelect }: { tiers: Tier[]; selectedTierId: string; recommendedTierId: string; socialProof: TierSocialProof | null; onSelect: (id: string) => void }) {
-  const bestValueId = tiers.reduce((best, item) => valueScore(item) > valueScore(best) ? item : best, tiers[0])?.id || ""
-
   return (
     <section id="budgets" className="celebrationBudgets">
       <div className="wrap">
@@ -38,7 +32,7 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
         </div>
         <div className="tiers">
           {tiers.map((item) => {
-            const badge = tierBadge(item, recommendedTierId, bestValueId, socialProof)
+            const badge = tierBadge(item, recommendedTierId, socialProof)
             return (
               <button type="button" key={item.id} className={`tier ${selectedTierId === item.id ? "active" : ""}`} aria-pressed={selectedTierId === item.id} onClick={() => onSelect(item.id)}>
                 {badge && <span className="badge">{badge}</span>}
@@ -46,14 +40,14 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
                 <div className="name">{item.name}</div>
-                <div className="note">{item.maxChoices} items included</div>
+                <div className="note">Curated for your occasion</div>
                 <span className="celebrationTierCta">Make it theirs <span aria-hidden="true">→</span></span>
               </button>
             )
           })}
         </div>
         <div className="budgetDecisionHint">
-          <div><b>Not sure which one to choose?</b><span>Pick the budget that feels right. Celebration curates the products inside; the item count stays exactly as shown.</span></div>
+          <div><b>Not sure which one to choose?</b><span>Pick the budget that feels right. Celebration curates the products and presentation inside the hamper.</span></div>
           <a className="secondary" href="#custom-request">Build around my budget</a>
         </div>
       </div>
