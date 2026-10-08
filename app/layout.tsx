@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
 import { publicEnv } from "../config/public-env"
 import { storeContent } from "../lib/domain/content"
+import { StorefrontAnalytics } from "../features/analytics/StorefrontAnalytics"
 import "./globals.css"
 
 const displayFont = localFont({
@@ -38,5 +39,5 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} ${accentFont.variable}`}><body>{children}</body></html>
+  return <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} ${accentFont.variable}`}><body><StorefrontAnalytics />{children}</body></html>
 }
