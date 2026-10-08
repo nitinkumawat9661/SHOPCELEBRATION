@@ -3,5 +3,6 @@ export { canPreparePackingVideo, findAdminPackingVideoKey, findOrderByTrackingTo
 export { updateOrderStatus } from "./status"
 export { approvePackingVideo, approvePackingVideoForAccount, bookOrderWithShipway, setPackingVideo, setShippingDetails } from "./fulfillment"
 export { reportOrderIssue } from "./issues"
+export { cancelCustomerOrder, customerCanCancelStatus } from "./cancel"
 export type { OrderRecord } from "./types"
 export type { TierPopularity } from "./read"
