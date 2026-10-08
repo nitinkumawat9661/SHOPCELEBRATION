@@ -98,13 +98,13 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   }, [order.created?.orderId])
 
   useEffect(() => {
-    if (order.errorCode !== "CART_PRICE_CHANGED" || order.submitting || order.paymentOrderId) return
+    if (!["CART_PRICE_CHANGED", "OUT_OF_STOCK"].includes(order.errorCode || "") || order.submitting || order.paymentOrderId) return
     setAccepted(false)
     setStep(1)
     frozenArgs.current = null
     setFrozenItems(null)
     order.reset()
-    setCheckoutError("A product price changed before payment. Review the refreshed cart and continue when you are ready.")
+    setCheckoutError(order.errorCode === "OUT_OF_STOCK" ? "A piece in your cart has just sold out. Review the refreshed cart before paying." : "A product price changed before payment. Review the refreshed cart and continue when you are ready.")
     void refreshCatalog()
   }, [order.errorCode, order.submitting])
 
