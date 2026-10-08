@@ -115,7 +115,7 @@ const customerUi = {
     ...ui.promise,
     kicker: "WHY CELEBRATION",
     title: "More confidence at every step.",
-    body: "Clear pricing, a packing video before dispatch, order tracking and support when you need it."
+    body: "Clear pricing, packing video for custom hampers before dispatch, order tracking and support when you need it."
   },
   cta: {
     ...ui.cta,

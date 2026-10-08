@@ -199,7 +199,7 @@ export function CustomerAccountPage() {
         <div>
           <div className="kicker">MY CELEBRATION</div>
           <h1>Hi {accountState.account.displayName}, your orders are all here.</h1>
-          <p>See what you ordered, what happens next, packing approval and shipping updates — without hunting through messages.</p>
+          <p>See what you ordered, what happens next and your shipping updates — without hunting through messages.</p>
         </div>
         <div className="customerDashActions">
           <Link className="primary" href={`${routes.home}#budgets`}>Create another hamper</Link>
