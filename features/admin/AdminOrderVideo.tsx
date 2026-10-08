@@ -13,6 +13,7 @@ export function AdminOrderVideo({ order, busy, onVideo }: {
   busy: boolean
   onVideo: (file: File) => void | Promise<void>
 }) {
+  if (order.orderType === "individual") return null
   const copy = uiContent.admin
   const canUpload = statusHasCapability(order.status, "packingVideoUpload")
   const hasVideo = Boolean(order.packingVideoKey)
