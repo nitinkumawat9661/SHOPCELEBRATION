@@ -155,7 +155,7 @@ export function PaymentStep({
   }
 
   useEffect(() => {
-    if (!individual && tier) trackConversion("checkout_reached", { tierId: tier.id })
+    if (individual || tier) trackConversion("checkout_reached", tier ? { tierId: tier.id } : {})
   }, [checkoutId])
 
   useEffect(() => {
