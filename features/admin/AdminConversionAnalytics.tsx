@@ -75,9 +75,7 @@ export function AdminConversionAnalytics() {
   useEffect(() => { void load(days) }, [days])
 
   const funnel = [
-    ["Store visits", analytics.funnel.storefront_view.sessions],
-    ["Budget selected", analytics.funnel.budget_selected.sessions],
-    ["Builder started", analytics.funnel.builder_started.sessions],
+    ["Commerce sessions", analytics.funnel.storefront_view.sessions],
     ["Checkout reached", analytics.funnel.checkout_reached.sessions],
     ["Payment started", analytics.funnel.payment_started.sessions]
   ] as const
@@ -104,7 +102,7 @@ export function AdminConversionAnalytics() {
         <section className="adminWorkspaceCard analyticsFunnelCard">
           <div className="kicker">FUNNEL</div><h3>Tracked customer journey</h3>
           <div className="analyticsFunnel">{funnel.map(([label, value]) => <div key={label}><div><span>{label}</span><b>{value}</b></div><i><em style={{ width: `${Math.max(value ? 4 : 0, Math.min(100, value * 100 / base))}%` }} /></i></div>)}</div>
-          <small className="adminMetricNote">Commerce visits are distinct anonymous browser sessions across home, jewelry/product pages and cart. Paid-order rate compares paid orders with those tracked sessions; it is operational analytics, not ad-platform attribution.</small>
+          <small className="adminMetricNote">Commerce sessions are distinct anonymous browser sessions across home, jewelry/product pages and cart. Hamper engagement: {analytics.funnel.budget_selected.sessions} sessions selected a budget; {analytics.funnel.builder_started.sessions} opened the hamper builder. Paid-order rate compares paid orders with tracked commerce sessions; it is operational analytics, not ad-platform attribution.</small>
         </section>
 
         <section className="adminWorkspaceCard analyticsOfferCard">
