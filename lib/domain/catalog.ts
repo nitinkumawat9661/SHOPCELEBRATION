@@ -51,6 +51,7 @@ export type GiftProduct = {
   salePricePaise?: number
   prepackagedRetail?: boolean
   retail?: RetailDeclarations
+  stockAvailable?: number
 }
 
 export function salePriceFromRupees(value: string): number | undefined {
@@ -96,10 +97,13 @@ export function productDiscountPercent(product: GiftProduct) {
   return Math.round((mrp - sale) * 100 / mrp)
 }
 
-export function isIndividuallySellable(product: GiftProduct) {
-  // ponytail: availability uses admin switches; add stock reservations for finite inventory.
+export function isIndividualListing(product: GiftProduct) {
   const price = product.salePricePaise
   return product.active !== false && product.sellIndividually === true && typeof price === "number" && Number.isSafeInteger(price) && price >= 100 && price <= Math.min(validation.catalog.maxPrice * 100, 2147483647)
+}
+
+export function isIndividuallySellable(product: GiftProduct) {
+  return isIndividualListing(product) && (product.stockAvailable == null || product.stockAvailable > 0)
 }
 
 export type CategoryOption = { id: string; label: string }
