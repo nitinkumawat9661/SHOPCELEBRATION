@@ -23,17 +23,42 @@ export async function POST(request: Request) {
 
 
     let shippingCourierName: string | null = null
-    if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && (order.status === "shipped" || order.status === "out_for_delivery")) {
+    if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && !["cancelled", "delivered", "issue_reported", "refund_or_replacement_resolved"].includes(order.status)) {
       try {
         const live = await getShipwayTracking(order.shippingTrackingNumber)
         shippingCourierName = live?.courierName || null
-        if ((live?.shipmentStatus === "OOD" || live?.shipmentStatus === "OFD") && order.status === "shipped") {
-          await updateOrderStatus(order.publicId, "out_for_delivery")
+        const remote = live?.shipmentStatus?.toUpperCase() || ""
+        const preDispatch = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status)
+        const pickedUpOrMoving = ["PKP", "INT", "UND", "DEX", "DRE", "CRTA", "CNA", "ODA", "SMD", "OTH"].includes(remote)
+
+        if ((remote === "CAN" || remote === "PCAN") && preDispatch) {
+          await updateOrderStatus(order.publicId, "cancelled")
           order = await findOrderByTrackingToken(token) || order
-        } else if (live?.shipmentStatus === "DEL") {
-          if (order.status === "shipped") await updateOrderStatus(order.publicId, "out_for_delivery")
-          await updateOrderStatus(order.publicId, "delivered")
-          order = await findOrderByTrackingToken(token) || order
+        } else if (pickedUpOrMoving && preDispatch) {
+          const moved = await updateOrderStatus(order.publicId, "shipped")
+          if (moved.ok) order = await findOrderByTrackingToken(token) || order
+        } else if (remote === "OOD" || remote === "OFD") {
+          if (preDispatch) {
+            const moved = await updateOrderStatus(order.publicId, "shipped")
+            if (moved.ok) order = await findOrderByTrackingToken(token) || order
+          }
+          if (order.status === "shipped") {
+            await updateOrderStatus(order.publicId, "out_for_delivery")
+            order = await findOrderByTrackingToken(token) || order
+          }
+        } else if (remote === "DEL") {
+          if (preDispatch) {
+            const moved = await updateOrderStatus(order.publicId, "shipped")
+            if (moved.ok) order = await findOrderByTrackingToken(token) || order
+          }
+          if (order.status === "shipped") {
+            await updateOrderStatus(order.publicId, "out_for_delivery")
+            order = await findOrderByTrackingToken(token) || order
+          }
+          if (order.status === "out_for_delivery") {
+            await updateOrderStatus(order.publicId, "delivered")
+            order = await findOrderByTrackingToken(token) || order
+          }
         }
       } catch (error) {
         console.error("shipway-tracking-sync", error)
