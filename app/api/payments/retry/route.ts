@@ -9,6 +9,7 @@ import { findCustomerAccountById } from "../../../../lib/server/customer-account
 import { createProviderCheckout, type ProviderCheckout } from "../../../../lib/server/payments/provider"
 import { bindPaymentAttempt, failPaymentAttempt, getPaymentOrder, paymentOrderClientResult, reservePaymentAttempt } from "../../../../lib/server/payments/store"
 import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
+import { ensureInventoryForPublicOrder } from "../../../../lib/server/inventory"
 
 type RetryBody = { publicOrderId?: unknown }
 
@@ -73,6 +74,7 @@ export async function POST(request: Request) {
       })
     }
 
+    await ensureInventoryForPublicOrder(publicOrderId, account.id)
     const reserved = await reservePaymentAttempt(publicOrderId, account.id, paymentGatewayConfig.provider)
     attemptId = reserved.attemptId
     const clientOrder = paymentOrderClientResult(reserved.order)
@@ -112,6 +114,6 @@ export async function POST(request: Request) {
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })
     const code = error instanceof Error ? error.message : "PAYMENT_PROVIDER_UNAVAILABLE"
     console.error("retry-payment", error)
-    return NextResponse.json({ ok: false, error: code }, { status: ["PAYMENT_ATTEMPT_INITIALIZING", "PAYMENT_ORDER_CANCELLED", "PAYMENT_ALREADY_CONFIRMED"].includes(code) ? 409 : 503 })
+    return NextResponse.json({ ok: false, error: code }, { status: ["PAYMENT_ATTEMPT_INITIALIZING", "PAYMENT_ORDER_CANCELLED", "PAYMENT_ALREADY_CONFIRMED", "OUT_OF_STOCK"].includes(code) ? 409 : 503 })
   }
 }
