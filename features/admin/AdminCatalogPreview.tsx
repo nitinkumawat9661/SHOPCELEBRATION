@@ -24,7 +24,7 @@ export function AdminCatalogPreview({ catalog, liveVersion, isDraft }: { catalog
       </div>
       <AdminPreviewHero onBuild={() => document.getElementById("budgets")?.scrollIntoView({ behavior: "smooth" })} tiers={tiers} products={products} />
       <OccasionRail value={occasion} occasions={catalog.occasions} onChange={setOccasion} />
-      <BudgetSection tiers={tiers} selectedTierId={tierId} recommendedTierId={catalog.settings.defaultTierId} socialProof={null} onSelect={setTierId} />
+      <BudgetSection tiers={tiers} selectedTierId={tierId} hasChosenTier={true} recommendedTierId={catalog.settings.defaultTierId} socialProof={null} onSelect={setTierId} />
       <ProductSection products={products} categories={categories} allCategoryId={catalog.settings.allCategory.id} category={category} onCategory={setCategory} />
       <section><div className="wrap"><h2>Individual sale preview</h2><p>Ye products hamper ke bina sell honge. Draft preview se checkout ya payment start nahi hota.</p>{individualProducts.length ? <div className="adminEditorList compact">{individualProducts.map((product) => <div className="adminDraftNotice" key={product.id}><b>{product.name}</b> • {formatMoney(product.salePricePaise! / 100)} • {product.category}</div>)}</div> : <div className="adminDraftNotice">No active products enabled for individual sale in this catalog.</div>}</div></section>
       <section><div className="wrap"><div className="adminDraftNotice"><b>Preview only</b> • Checkout, payment aur customer requests intentionally disabled hain.</div></div></section>
