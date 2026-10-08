@@ -35,8 +35,10 @@ export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommende
             const badge = tierBadge(item, recommendedTierId, socialProof)
             return (
               <button type="button" key={item.id} className={`tier ${hasChosenTier && selectedTierId === item.id ? "active" : ""}`} aria-pressed={hasChosenTier && selectedTierId === item.id} onClick={() => onSelect(item.id)}>
-                {badge && <span className="badge">{badge}</span>}
-                <div className="celebrationTierEyebrow">CURATED HAMPER</div>
+                <div className="celebrationTierMeta">
+                  <div className="celebrationTierEyebrow">CURATED HAMPER</div>
+                  {badge && <span className="badge">{badge}</span>}
+                </div>
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
                 <div className="name">{item.name}</div>
