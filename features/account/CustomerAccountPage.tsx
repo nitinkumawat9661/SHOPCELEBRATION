@@ -52,7 +52,7 @@ function nextUpdateText(status: OrderStatus) {
   const copy: Record<OrderStatus, string> = {
     payment_verification_pending: "We’re confirming your payment.",
     payment_verified: "Your order is ready to move into preparation.",
-    preparing: "We’re preparing your order. The packing video comes next.",
+    preparing: "We’re preparing your order.",
     packing_video_ready: "Your packing video is ready. Review it and approve dispatch.",
     customer_approved: "Approved. We’re arranging the courier next.",
     shipped: "Your order has been shipped.",
@@ -193,9 +193,10 @@ export function CustomerAccountPage() {
       <div className="customerOrderList">
         {orders.map((order) => {
           const individual = order.orderType === "individual"
-          const currentIndex = progressIndex(order.status)
+          const orderTimeline = individual ? customerTimeline.filter((status) => !["packing_video_ready", "customer_approved"].includes(status)) : customerTimeline
+          const currentIndex = orderTimeline.indexOf(order.status) >= 0 ? orderTimeline.indexOf(order.status) : order.status === "delivered" ? orderTimeline.length - 1 : 0
           const supportMessage = `Hi Celebration, I need help with order ${order.publicId}.`
-          const approvalReady = order.status === "packing_video_ready" && Boolean(order.packingVideoUrl)
+          const approvalReady = !individual && order.status === "packing_video_ready" && Boolean(order.packingVideoUrl)
           return (
             <article className="customerOrderCard" key={order.publicId}>
               <header className="customerOrderHead">
@@ -217,13 +218,13 @@ export function CustomerAccountPage() {
               <div className="checkoutProgressNote"><span>→</span><span><b>What’s next:</b> {nextUpdateText(order.status)}</span></div>
 
               <div className="customerProgress" aria-label="Order progress">
-                {customerTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
+                {orderTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
               </div>
 
               {!individual && order.productNames.length > 0 && <div className="customerOrderProducts"><span>Selected gifts</span><p>{order.productNames.join(" • ")}</p></div>}
 
               <div className="customerOrderUpdates">
-                <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>
+                {!individual && <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>}
                 <div className="customerUpdateCard"><span>Shipping</span>{order.shippingTrackingNumber ? <><b>Tracking • {order.shippingTrackingNumber}</b><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after dispatch</b>}</div>
               </div>
 
