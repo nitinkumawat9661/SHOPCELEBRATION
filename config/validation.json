@@ -40,7 +40,7 @@
     "max": 64
   },
   "trackingTokenTtlSeconds": 3888000,
-  "adminSessionTtlSeconds": 43200,
+  "adminSessionTtlSeconds": 7200,
   "customerSessionTtlSeconds": 2592000,
   "packingVideoMaxBytes": 83886080,
   "catalogImageMaxBytes": 5242880,
