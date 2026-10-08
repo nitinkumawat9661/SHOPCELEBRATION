@@ -32,7 +32,7 @@ function newCampaign(): Campaign {
     mode: "automatic",
     couponCode: "",
     scope: "all",
-    trigger: "hesitation",
+    trigger: "checkout",
     audience: "all",
     discountType: "percent",
     discountValue: 10,
@@ -132,7 +132,7 @@ export function AdminCampaigns() {
       {dirty && <div className="adminDraftNotice">Unpublished changes • Live checkout still uses the previous campaign rules.</div>}
       {notice && <div className="successBox adminFeedback">{notice}</div>}
       {error && <div className="errorBox adminFeedback">{error}</div>}
-      <div className="adminCampaignGuide"><b>Automatic</b> offers can trigger at checkout or after hesitation. <b>Coupon</b> offers apply only when the customer enters the exact code. Scope can cover hampers, individual items, or both. Usage limits reserve a quote for 60 minutes.</div>
+      <div className="adminCampaignGuide"><b>Automatic</b> offers apply at checkout. <b>Coupon</b> offers apply only when the customer enters the exact code. Hamper eligibility uses selected hamper tiers; individual-item eligibility uses selected products. Usage limits reserve a quote temporarily, but unpaid/failed orders do not permanently consume the offer.</div>
 
       {config.campaigns.length === 0 && <div className="trackingState">No campaigns yet. Add one when you want to run a genuine offer.</div>}
       <div className="adminCampaignList">
@@ -159,8 +159,8 @@ export function AdminCampaigns() {
           </div>
 
           <div className="campaignEligibility">
-            <div><b>Eligible hampers</b><small>Used for hamper/all scope. Nothing selected = all active hampers.</small><div className="campaignChoiceGrid">{catalog.tiers.filter((tier) => tier.active !== false).map((tier) => <label key={tier.id}><input type="checkbox" checked={campaign.eligibleTierIds.includes(tier.id)} onChange={() => toggleList(index, "eligibleTierIds", tier.id)} /><span>₹{tier.price} • {tier.name}</span></label>)}</div></div>
-            <div><b>Eligible products</b><small>Works for hampers and individual carts. Nothing selected = any product mix; otherwise at least one item must match.</small><div className="campaignChoiceGrid campaignProducts">{catalog.products.filter((product) => product.active !== false).map((product) => <label key={product.id}><input type="checkbox" checked={campaign.eligibleProductIds.includes(product.id)} onChange={() => toggleList(index, "eligibleProductIds", product.id)} /><span>{product.name}</span></label>)}</div></div>
+            <div><b>Eligible hampers</b><small>Applies only to hamper orders. Nothing selected = all active hampers.</small><div className="campaignChoiceGrid">{catalog.tiers.filter((tier) => tier.active !== false).map((tier) => <label key={tier.id}><input type="checkbox" checked={campaign.eligibleTierIds.includes(tier.id)} onChange={() => toggleList(index, "eligibleTierIds", tier.id)} /><span>₹{tier.price} • {tier.name}</span></label>)}</div></div>
+            <div><b>Eligible products</b><small>Applies only to individual-item carts. Nothing selected = any individual product; otherwise at least one cart item must match.</small><div className="campaignChoiceGrid campaignProducts">{catalog.products.filter((product) => product.active !== false).map((product) => <label key={product.id}><input type="checkbox" checked={campaign.eligibleProductIds.includes(product.id)} onChange={() => toggleList(index, "eligibleProductIds", product.id)} /><span>{product.name}</span></label>)}</div></div>
           </div>
           <footer><div className="adminCampaignPreview"><span>{campaign.badge}</span><b>{campaign.name}</b><small>{campaign.message}</small></div><button className="dangerButton" type="button" onClick={() => remove(index)}>Delete offer</button></footer>
         </article>)}
