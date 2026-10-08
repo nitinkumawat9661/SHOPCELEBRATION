@@ -169,3 +169,29 @@ export async function releaseInventoryForOrderWithClient(client: PoolClient, ord
     )
   }
 }
+
+export async function setInventoryQuantity(productIdValue: unknown, quantityValue: unknown) {
+  const productId = String(productIdValue ?? "").trim().toLowerCase()
+  const quantity = Number(quantityValue)
+  if (!/^[a-z0-9][a-z0-9-]{0,59}$/.test(productId)) throw new Error("INVALID_PRODUCT_ID")
+  if (!Number.isInteger(quantity) || quantity < 0 || quantity > 10000) throw new Error("INVALID_STOCK_QUANTITY")
+  const result = await queryInventoryQuantity(productId, quantity)
+  return { productId, availableQuantity: result }
+}
+
+async function queryInventoryQuantity(productId: string, quantity: number) {
+  const result = await transaction(async (client) => {
+    const saved = await client.query<{ available_quantity: number }>(
+      `INSERT INTO product_inventory (product_id, available_quantity, updated_at)
+       VALUES ($1, $2, now())
+       ON CONFLICT (product_id) DO UPDATE
+         SET available_quantity = EXCLUDED.available_quantity,
+             updated_at = now()
+       RETURNING available_quantity`,
+      [productId, quantity]
+    )
+    return saved.rows[0]?.available_quantity
+  })
+  if (!Number.isInteger(result)) throw new Error("INVENTORY_UPDATE_FAILED")
+  return result
+}
