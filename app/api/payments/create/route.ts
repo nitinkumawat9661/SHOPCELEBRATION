@@ -139,6 +139,6 @@ export async function POST(request: Request) {
     const snapshot = savedOrder ? await getPaymentOrder(savedOrder.publicId, savedOrder.customerAccountId).catch(() => null) : null
     const clientOrder = snapshot ? paymentOrderClientResult(snapshot) : null
     console.error("create-payment", error)
-    return NextResponse.json({ ok: false, error: code, ...(clientOrder ? { ...clientOrder, trackingPath: `${routes.track}#order=${encodeURIComponent(clientOrder.trackingToken)}` } : {}) }, { status: ["PAYMENT_ATTEMPT_INITIALIZING", "PAYMENT_ORDER_CANCELLED", "PAYMENT_ALREADY_CONFIRMED"].includes(code) ? 409 : 503 })
+    return NextResponse.json({ ok: false, error: code, ...(clientOrder ? { ...clientOrder, trackingPath: `${routes.track}#order=${encodeURIComponent(clientOrder.trackingToken)}` } : {}) }, { status: ["PAYMENT_ATTEMPT_INITIALIZING", "PAYMENT_ORDER_CANCELLED", "PAYMENT_ALREADY_CONFIRMED", "OUT_OF_STOCK"].includes(code) ? 409 : 503 })
   }
 }
