@@ -63,6 +63,9 @@ export function bookOrderWithShipway(publicId: string, packedWeightGrams: number
 
     const order = mapOrder(row)
     if (!statusHasCapability(order.status, "shippingUpdate")) return { ok: false as const, code: "SHIPPING_UPDATE_NOT_ALLOWED" }
+    if (order.orderType === "hamper" && order.status !== "customer_approved" && !["shipped", "out_for_delivery"].includes(order.status)) {
+      return { ok: false as const, code: "PACKING_APPROVAL_REQUIRED" }
+    }
     if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber) {
       return { ok: true as const, status: order.status, awb: order.shippingTrackingNumber, carrierId: order.shippingCarrierId, labelUrl: order.shippingLabelUrl }
     }
