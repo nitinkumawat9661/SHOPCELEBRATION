@@ -12,8 +12,8 @@
     "secondaryPrefix": "Starting",
     "stats": [
       "Budgets",
-      "Items included",
-      "Curated by us"
+      "Curated gifts",
+      "Made personal"
     ],
     "showcaseSubline": "Thoughtful • Personal • Made for them",
     "customFeelValue": "Custom"
@@ -21,7 +21,7 @@
   "budgets": {
     "kicker": "CHOOSE YOUR BUDGET",
     "title": "Start with a budget that feels right.",
-    "body": "Pick your budget and see the item count upfront. Celebration curates the products inside each hamper for you.",
+    "body": "Pick the budget that feels right. Celebration curates the products and presentation inside each hamper.",
     "choices": "items",
     "points": "curated mix"
   },
@@ -42,7 +42,7 @@
     ],
     "budget": {
       "title": "1. What budget are you thinking?",
-      "body": "Pick a budget first. Each option shows exactly how many items will be included.",
+      "body": "Pick a budget first. Celebration will curate the hamper around that budget and your occasion.",
       "next": "Add details →"
     },
     "products": {
@@ -59,7 +59,7 @@
       "choicesLabel": "items",
       "mixPointsLabel": "selection limit",
       "availableFrom": "{amount} se available",
-      "maxChoices": "{count} items included",
+      "maxChoices": "Curated selection",
       "mixExceedsBudget": "This combination does not fit the selected hamper"
     },
     "details": {
@@ -120,7 +120,7 @@
       "requiredBy": "Need by",
       "notSet": "Not set",
       "curate": "Curated by Celebration",
-      "note": "Celebration selects the product mix according to your budget, occasion and availability. The item count shown for your tier stays fixed; presentation may vary slightly."
+      "note": "Celebration selects the product mix according to your budget, occasion and availability; presentation may vary slightly."
     },
     "payment": {
       "title": "3. Review & pay",
