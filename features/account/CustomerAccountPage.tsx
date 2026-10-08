@@ -150,7 +150,7 @@ export function CustomerAccountPage() {
   if (!accountState.account) {
     return (
       <div className="accountPublicWrap">
-        <CustomerAuthPanel busy={accountState.busy} error={accountState.error} onAuthenticate={accountState.authenticate} onClearError={() => accountState.setError("")} onSuccess={(account) => notifyUx({ title: "Welcome back ✓", body: `${account.displayName}, your orders are loading.`, tone: "success" })} />
+        <CustomerAuthPanel busy={accountState.busy} error={accountState.error} initialMode="signup" passwordlessSignup onAuthenticate={accountState.authenticate} onClearError={() => accountState.setError("")} onSuccess={(account) => notifyUx({ title: "Welcome back ✓", body: `${account.displayName}, your orders are loading.`, tone: "success" })} />
       </div>
     )
   }
