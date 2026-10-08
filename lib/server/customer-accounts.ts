@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto"
+import { randomBytes, randomUUID } from "node:crypto"
 import type { PoolClient } from "pg"
 import { validation } from "../../config/validation"
 import { hasUnsafeText, sanitizeText } from "../validation/text"
@@ -133,6 +133,49 @@ export async function createCustomerAccount(input: { phone?: unknown; password?:
   } catch (error) {
     const dbError = error as { code?: string; constraint?: string }
     if (dbError.code === "23505" && dbError.constraint?.includes("phone")) throw new CustomerAccountError("ACCOUNT_EXISTS", 409)
+    throw error
+  }
+}
+
+export async function continueVerifiedCustomer(input: { phone?: unknown; displayName?: unknown }) {
+  const phone = normalizeCustomerPhone(input.phone)
+  const displayName = normalizeDisplayName(input.displayName)
+  const existing = await query<AccountRow>(
+    `SELECT id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at
+       FROM customer_accounts WHERE phone = $1 LIMIT 1`,
+    [phone]
+  )
+  const row = existing.rows[0]
+  if (row) {
+    if (row.status !== "active") throw new CustomerAccountError("INVALID_CREDENTIALS", 401)
+    const refreshed = await query<AccountRow>(
+      `UPDATE customer_accounts
+          SET phone_verified_at = COALESCE(phone_verified_at, now()),
+              last_login_at = now(),
+              updated_at = now()
+        WHERE id = $1
+        RETURNING id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at`,
+      [row.id]
+    )
+    return publicAccount(refreshed.rows[0])
+  }
+
+  const generatedPassword = randomBytes(32).toString("base64url")
+  const passwordHash = hashCustomerPassword(generatedPassword)
+  try {
+    const created = await query<AccountRow>(
+      `INSERT INTO customer_accounts (id, phone, display_name, password_hash, status, phone_verified_at, last_login_at)
+       VALUES ($1, $2, $3, $4, 'active', now(), now())
+       RETURNING id, phone, display_name, password_hash, status, session_version, phone_verified_at, created_at`,
+      [randomUUID(), phone, displayName, passwordHash]
+    )
+    return publicAccount(created.rows[0])
+  } catch (error) {
+    const dbError = error as { code?: string; constraint?: string }
+    if (dbError.code === "23505" && dbError.constraint?.includes("phone")) {
+      const raced = await findCustomerAccountByPhone(phone)
+      if (raced) return raced
+    }
     throw error
   }
 }
