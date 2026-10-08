@@ -209,14 +209,19 @@ function campaignMatches(
   if (campaign.mode === "automatic" && campaign.trigger !== trigger) return false
   if (campaign.scope !== "all" && campaign.scope !== orderType) return false
   if (subtotalPaise < toMinorUnits(campaign.minSubtotalRupees)) return false
-  if (campaign.eligibleTierIds.length && (!tierId || !campaign.eligibleTierIds.includes(tierId))) return false
-  if (campaign.eligibleProductIds.length && !selectedProductIds.some((id) => campaign.eligibleProductIds.includes(id))) return false
+  if (orderType === "hamper" && campaign.eligibleTierIds.length && (!tierId || !campaign.eligibleTierIds.includes(tierId))) return false
+  if (orderType === "individual" && campaign.eligibleProductIds.length && !selectedProductIds.some((id) => campaign.eligibleProductIds.includes(id))) return false
   return true
 }
 
 async function customerHasOrder(client: PoolClient, customerAccountId: string) {
   const result = await client.query<{ exists: boolean }>(
-    `SELECT EXISTS(SELECT 1 FROM orders WHERE customer_account_id = $1 AND status <> 'cancelled') AS exists`,
+    `SELECT EXISTS(
+       SELECT 1 FROM orders
+        WHERE customer_account_id = $1
+          AND status <> 'cancelled'
+          AND payment_status IN ('paid','verified')
+     ) AS exists`,
     [customerAccountId]
   )
   return Boolean(result.rows[0]?.exists)
@@ -226,7 +231,7 @@ async function usageAvailable(client: PoolClient, campaign: Campaign, customerAc
   if (campaign.totalLimit > 0) {
     const used = await client.query<CountRow>(
       `SELECT (
-         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND status <> 'cancelled') +
+         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND status <> 'cancelled' AND payment_status IN ('paid','verified')) +
          (SELECT count(*) FROM offer_quotes WHERE campaign_id = $1 AND redeemed_at IS NULL AND expires_at > now())
        )::int AS count`,
       [campaign.id]
@@ -236,7 +241,7 @@ async function usageAvailable(client: PoolClient, campaign: Campaign, customerAc
   if (campaign.perCustomerLimit > 0) {
     const used = await client.query<CountRow>(
       `SELECT (
-         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND customer_account_id = $2 AND status <> 'cancelled') +
+         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND customer_account_id = $2 AND status <> 'cancelled' AND payment_status IN ('paid','verified')) +
          (SELECT count(*) FROM offer_quotes WHERE campaign_id = $1 AND customer_account_id = $2 AND redeemed_at IS NULL AND expires_at > now())
        )::int AS count`,
       [campaign.id, customerAccountId]
