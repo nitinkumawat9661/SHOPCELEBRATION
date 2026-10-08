@@ -24,12 +24,12 @@ export const defaultStoreSettings: StoreSettings = {
   assistTitle: storeContent.support.assistTitle,
   assistBody: storeContent.support.assistBody,
   supportMessage: storeContent.support.supportMessage,
-  legalName: "",
-  businessAddress: "",
-  supportEmail: "",
+  legalName: "Celebration",
+  businessAddress: "Sikar, Rajasthan, India",
+  supportEmail: "support@shopcelebration.in",
   grievanceOfficerName: "",
   grievanceOfficerDesignation: "Grievance Officer",
-  grievanceEmail: "",
+  grievanceEmail: "support@shopcelebration.in",
   grievancePhone: storeContent.support.whatsapp
 }
 
@@ -85,12 +85,12 @@ export function normalizeStoreSettings(input: unknown): StoreSettings {
     assistTitle: text(raw.assistTitle, validation.storeSettings.shortTextMax, defaultStoreSettings.assistTitle),
     assistBody: text(raw.assistBody, validation.storeSettings.shortTextMax, defaultStoreSettings.assistBody),
     supportMessage: text(raw.supportMessage, validation.storeSettings.messageMax, defaultStoreSettings.supportMessage),
-    legalName: optionalText(raw.legalName, validation.storeSettings.shortTextMax),
-    businessAddress: optionalText(raw.businessAddress, validation.address.max),
-    supportEmail: optionalEmail(raw.supportEmail),
+    legalName: optionalText(raw.legalName, validation.storeSettings.shortTextMax) || defaultStoreSettings.legalName,
+    businessAddress: optionalText(raw.businessAddress, validation.address.max) || defaultStoreSettings.businessAddress,
+    supportEmail: optionalEmail(raw.supportEmail) || defaultStoreSettings.supportEmail,
     grievanceOfficerName: optionalText(raw.grievanceOfficerName, validation.storeSettings.shortTextMax),
     grievanceOfficerDesignation: text(raw.grievanceOfficerDesignation, validation.storeSettings.shortTextMax, defaultStoreSettings.grievanceOfficerDesignation),
-    grievanceEmail: optionalEmail(raw.grievanceEmail),
+    grievanceEmail: optionalEmail(raw.grievanceEmail) || defaultStoreSettings.grievanceEmail,
     grievancePhone: optionalPhone(raw.grievancePhone, supportWhatsapp)
   }
 }
