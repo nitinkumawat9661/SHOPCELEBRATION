@@ -2,6 +2,7 @@ import { validation } from "../../config/validation"
 import { defaultCatalog, type CatalogConfig, type GiftProduct, type Tier } from "../domain/catalog"
 import { hasUnsafeText, sanitizeText } from "../validation/text"
 import { query, transaction } from "./db"
+import { applyInventoryAvailability, inventoryAvailabilityForCatalog } from "./inventory"
 
 type CatalogRow = { payload: CatalogConfig; version: number }
 type DraftRow = { payload: CatalogConfig; base_version: number; updated_at: Date }
@@ -205,6 +206,11 @@ export function normalizeCatalogConfig(input: unknown): CatalogConfig {
   }
 }
 
+async function withInventory(catalog: CatalogConfig) {
+  const availability = await inventoryAvailabilityForCatalog(catalog)
+  return applyInventoryAvailability(catalog, availability)
+}
+
 async function recordRevision(version: number, catalog: CatalogConfig) {
   await query(`INSERT INTO catalog_revisions (version, payload) VALUES ($1, $2::jsonb)`, [version, JSON.stringify(catalog)])
 }
@@ -212,7 +218,10 @@ async function recordRevision(version: number, catalog: CatalogConfig) {
 export async function getCatalogConfig() {
   const result = await query<CatalogRow>("SELECT payload, version FROM catalog_config WHERE id = 'primary'")
   const row = result.rows[0]
-  if (row) return { catalog: normalizeCatalogConfig(row.payload), version: row.version }
+  if (row) {
+    const catalog = normalizeCatalogConfig(row.payload)
+    return { catalog: await withInventory(catalog), version: row.version }
+  }
 
   const seed = normalizeCatalogConfig(defaultCatalog)
   const inserted = await query<CatalogRow>(
@@ -224,12 +233,13 @@ export async function getCatalogConfig() {
   )
   if (inserted.rows[0]) {
     await recordRevision(inserted.rows[0].version, seed)
-    return { catalog: seed, version: inserted.rows[0].version }
+    return { catalog: await withInventory(seed), version: inserted.rows[0].version }
   }
 
   const concurrent = await query<CatalogRow>("SELECT payload, version FROM catalog_config WHERE id = 'primary'")
   if (!concurrent.rows[0]) throw new Error("CATALOG_SEED_FAILED")
-  return { catalog: normalizeCatalogConfig(concurrent.rows[0].payload), version: concurrent.rows[0].version }
+  const catalog = normalizeCatalogConfig(concurrent.rows[0].payload)
+  return { catalog: await withInventory(catalog), version: concurrent.rows[0].version }
 }
 
 export async function getCatalogAdminState() {
