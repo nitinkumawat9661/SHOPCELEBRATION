@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { validation } from "../../../config/validation"
-import { bookOrderWithShipway, findOrderByTrackingToken, updateOrderStatus } from "../../../lib/server/orders"
+import { findOrderByTrackingToken, updateOrderStatus } from "../../../lib/server/orders"
 import { getShipwayTracking } from "../../../lib/server/shipway"
 import { createPackingVideoViewUrl } from "../../../lib/server/r2"
 import { consumeRequestRateLimit } from "../../../lib/server/rate-limit"
@@ -21,15 +21,6 @@ export async function POST(request: Request) {
     let order = await findOrderByTrackingToken(token)
     if (!order) return NextResponse.json({ ok: false, error: "ORDER_NOT_FOUND" }, { status: 404 })
 
-    if (order.status === "customer_approved" && !order.shippingTrackingNumber) {
-      try {
-        const autoBooking = await bookOrderWithShipway(order.publicId)
-        if (!autoBooking.ok) console.error("shipway-auto-retry", { publicId: order.publicId, code: autoBooking.code })
-        order = await findOrderByTrackingToken(token) || order
-      } catch (error) {
-        console.error("shipway-auto-retry", { publicId: order.publicId, error })
-      }
-    }
 
     let shippingCourierName: string | null = null
     if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && (order.status === "shipped" || order.status === "out_for_delivery")) {
