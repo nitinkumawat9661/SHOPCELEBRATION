@@ -17,9 +17,32 @@ const bodyFont = localFont({ src: "./fonts/inter-latin.woff2", weight: "400 700"
 const accentFont = localFont({ src: "./fonts/allura-latin.woff2", weight: "400", variable: "--font-shopping-script", adjustFontFallback: "Times New Roman", display: "swap" })
 
 export const metadata: Metadata = {
-  title: storeContent.seo.title,
-  description: storeContent.seo.description,
-  robots: publicEnv.siteIndexable ? { index: true, follow: true } : { index: false, follow: false }
+  metadataBase: new URL("https://shopcelebration.in"),
+  title: {
+    default: "Celebration | Affordable Jewelry & Custom Gift Hampers Online",
+    template: "%s | Celebration"
+  },
+  description: "Shop affordable jewelry, anti-tarnish pieces marked with a 6-month guarantee, and custom gift hampers from Celebration. Secure online payment, order tracking and delivery across serviceable Indian pincodes.",
+  applicationName: "Celebration",
+  category: "shopping",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Celebration",
+    url: "/",
+    title: "Celebration | Affordable Jewelry & Custom Gift Hampers Online",
+    description: "Affordable jewelry and custom gift hampers with secure checkout, order tracking and delivery across serviceable Indian pincodes.",
+    images: [{ url: "/images/campaign/jewelry-1600.webp", width: 1600, height: 900, alt: "Celebration jewelry and gifting collection" }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Celebration | Affordable Jewelry & Custom Gift Hampers Online",
+    description: "Shop affordable jewelry and thoughtful custom gift hampers online.",
+    images: ["/images/campaign/jewelry-1600.webp"]
+  },
+  robots: publicEnv.siteIndexable
+    ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } }
+    : { index: false, follow: false }
 }
 
 export const viewport: Viewport = {
