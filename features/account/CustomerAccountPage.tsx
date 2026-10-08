@@ -45,6 +45,9 @@ function friendlyOrderError(code: string) {
   if (code === "UNAUTHORIZED") return "You’ve been signed out. Please sign in again."
   if (code === "RATE_LIMITED") return "Too many attempts. Please try again shortly."
   if (code === "APPROVAL_SERVICE_UNAVAILABLE") return "We couldn’t save the packing approval right now. Please try again."
+  if (code === "ORDER_ALREADY_SHIPPED" || code === "ORDER_CANCELLATION_NOT_ALLOWED") return "This order can no longer be cancelled because dispatch has already started."
+  if (code === "SHIPWAY_CANCEL_FAILED" || code === "SHIPWAY_CANCELLATION_UNAVAILABLE") return "The courier cancellation could not be confirmed. Your order was not cancelled here, so please try again or contact support."
+  if (code === "ORDER_CANCELLATION_FAILED") return "We couldn’t cancel this order right now. Please try again."
   return "We couldn’t load the latest order updates. Check your connection and try again."
 }
 
@@ -72,6 +75,7 @@ export function CustomerAccountPage() {
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [ordersError, setOrdersError] = useState("")
   const [approving, setApproving] = useState("")
+  const [cancelling, setCancelling] = useState("")
   const [approvalConsent, setApprovalConsent] = useState<Record<string, boolean>>({})
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null)
 
@@ -121,6 +125,40 @@ export function CustomerAccountPage() {
       notifyUx({ title: "Approval not saved", body: message, tone: "error" })
     } finally {
       setApproving("")
+    }
+  }
+
+  async function cancelOrder(order: DashboardOrder) {
+    const paid = ["paid", "verified", "success"].includes(order.paymentStatus.trim().toLowerCase())
+    const confirmed = window.confirm(paid
+      ? "Cancel this order? If cancellation succeeds, any eligible prepaid amount will need to be refunded to the original payment method."
+      : "Cancel this order? This cannot be undone.")
+    if (!confirmed) return
+
+    setCancelling(order.publicId)
+    setOrdersError("")
+    try {
+      const response = await fetch(routes.api.customerOrderCancel(order.publicId), { method: "POST" })
+      const data = await response.json() as { ok?: boolean; error?: string; shipwayCancelled?: boolean; refundRequired?: boolean }
+      if (!response.ok || !data.ok) throw new Error(data.error || "ORDER_CANCELLATION_FAILED")
+      notifyUx({
+        title: "Order cancelled ✓",
+        body: data.refundRequired
+          ? "Cancellation is confirmed. The prepaid amount is now due for refund to the original payment method."
+          : data.shipwayCancelled
+            ? "Celebration and the booked courier shipment were both cancelled."
+            : "Cancellation is confirmed before dispatch.",
+        tone: "success",
+        durationMs: 5000
+      })
+      await loadOrders()
+    } catch (cause) {
+      const code = cause instanceof Error ? cause.message : "ORDER_CANCELLATION_FAILED"
+      const message = friendlyOrderError(code)
+      setOrdersError(message)
+      notifyUx({ title: "Order not cancelled", body: message, tone: "error", durationMs: 5000 })
+    } finally {
+      setCancelling("")
     }
   }
 
@@ -197,6 +235,7 @@ export function CustomerAccountPage() {
           const currentIndex = orderTimeline.indexOf(order.status) >= 0 ? orderTimeline.indexOf(order.status) : order.status === "delivered" ? orderTimeline.length - 1 : 0
           const supportMessage = `Hi Celebration, I need help with order ${order.publicId}.`
           const approvalReady = !individual && order.status === "packing_video_ready" && Boolean(order.packingVideoUrl)
+          const canCancel = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status)
           return (
             <article className="customerOrderCard" key={order.publicId}>
               <header className="customerOrderHead">
@@ -225,7 +264,7 @@ export function CustomerAccountPage() {
 
               <div className="customerOrderUpdates">
                 {!individual && <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>}
-                <div className="customerUpdateCard"><span>Shipping</span>{order.shippingTrackingNumber ? <><b>Tracking • {order.shippingTrackingNumber}</b><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after dispatch</b>}</div>
+                <div className="customerUpdateCard"><span>Shipping</span>{order.shippingTrackingNumber ? <><b>{canCancel ? "Courier booked, awaiting pickup" : "Tracking"} • {order.shippingTrackingNumber}</b><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after courier booking</b>}</div>
               </div>
 
               {approvalReady && <div className="customerPackingApproval"><div><b>Your {individual ? "order" : "hamper"} is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this {individual ? "order" : "hamper"} for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}
@@ -233,6 +272,7 @@ export function CustomerAccountPage() {
               <footer className="customerOrderFooter">
                 <small>Last update: {new Date(order.updatedAt).toLocaleString("en-IN")}</small>
                 {individual && !["paid", "verified"].includes(order.paymentStatus) && order.status === "payment_verification_pending" && <Link className="primary" href={`${routes.paymentReturn}?order_id=${encodeURIComponent(order.publicId)}`}>Check / continue payment</Link>}
+                {canCancel && <button className="secondary danger" type="button" disabled={cancelling === order.publicId} onClick={() => cancelOrder(order)}>{cancelling === order.publicId ? "Cancelling…" : "Cancel order"}</button>}
                 <a className="secondary" href={supportWhatsappUrl(supportMessage, settings.whatsapp)} target="_blank" rel="noreferrer">WhatsApp support</a>
               </footer>
             </article>
