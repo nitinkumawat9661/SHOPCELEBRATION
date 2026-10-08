@@ -5,6 +5,7 @@ import { validation } from "../../../../config/validation"
 import { ADMIN_COOKIE_NAME, createAdminSession, verifyAdminPassword } from "../../../../lib/security/admin-session"
 import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../../lib/security/request"
 import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
+import { adminPasskeyExists } from "../../../../lib/server/admin-passkeys"
 
 export async function POST(request: Request) {
   try {
@@ -12,12 +13,14 @@ export async function POST(request: Request) {
     const allowed = await consumeRequestRateLimit("admin-login", request, validation.rateLimits.adminLogin)
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
 
+    if (await adminPasskeyExists()) return NextResponse.json({ ok: false, error: "PASSKEY_REQUIRED" }, { status: 409 })
+
     const body = await readJsonBody<{ password?: unknown }>(request)
     const password = typeof body.password === "string" ? body.password : ""
     if (!verifyAdminPassword(password)) return NextResponse.json({ ok: false, error: "INVALID_CREDENTIALS" }, { status: 401 })
 
     const response = NextResponse.json({ ok: true })
-    response.cookies.set(ADMIN_COOKIE_NAME, createAdminSession(), {
+    response.cookies.set(ADMIN_COOKIE_NAME, createAdminSession("password"), {
       httpOnly: true,
       secure: env.isProduction,
       sameSite: securityConfig.cookieSameSite as "strict" | "lax" | "none",
