@@ -10,7 +10,7 @@ export function SiteFooter() {
         <div className="footerLinks">
           <Link href={routes.policies}>{uiContent.footer.policy}</Link>
           <Link href={routes.terms}>Terms & Legal</Link>
-          <Link href={routes.privacy}>Privacy Policy</Link><Link href={routes.compliance}>Fair Shopping Review</Link>
+          <Link href={routes.privacy}>Privacy Policy</Link><Link href={routes.claim}>Raise a claim</Link><Link href={routes.compliance}>Fair Shopping Review</Link>
           <span className="tiny">{storeContent.brand.footerLine}</span>
         </div>
       </div>
