@@ -219,15 +219,18 @@ export function failPaymentAttempt(attemptId: string, code: string) {
     )
     const row = attempt.rows[0]
     if (!row) return
-    await client.query(
+    const failedOrder = await client.query<{ id: string }>(
       `UPDATE orders
-          SET payment_status = CASE WHEN payment_status IN ('paid', 'verified') THEN payment_status ELSE 'failed' END,
-              payment_error_code = CASE WHEN payment_status IN ('paid', 'verified') THEN payment_error_code ELSE $1 END,
+          SET payment_status = 'failed',
+              payment_error_code = $1,
               updated_at = now()
-        WHERE id = $2 AND provider_order_id = $3`,
+        WHERE id = $2
+          AND provider_order_id = $3
+          AND payment_status NOT IN ('paid', 'verified')
+        RETURNING id`,
       [code.slice(0, 200), row.order_id, row.provider_order_id]
     )
-    await releaseInventoryForOrderWithClient(client, row.order_id)
+    if (failedOrder.rowCount) await releaseInventoryForOrderWithClient(client, row.order_id)
   })
 }
 
