@@ -98,15 +98,14 @@ export function TrackingPage() {
               <div><span>{copy.status}</span><b>{customerStatusLabel(order.status)}</b></div>
             </div>
             {tracked.error && <div className="errorBox" role="alert">{tracked.error}</div>}
-            <TrackingTimeline status={order.status} />
-            <PackingApprovalCard
-              isIndividual={order.orderType === "individual"}
+            <TrackingTimeline status={order.status} orderType={order.orderType} />
+            {order.orderType === "hamper" && <PackingApprovalCard
               status={order.status}
               packingVideoUrl={order.packingVideoUrl}
               approving={tracked.approving}
               approvedAt={order.customerApprovedAt}
               onApprove={approve}
-            />
+            />}
             {approved && <div className="successBox" data-tracking-approved>{copy.approved}</div>}
             <div className="trackingCards" style={{ gridTemplateColumns: "1fr" }}>
               <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.shippingTrackingNumber ? <><p>{order.shippingCourierName || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><div className="adminActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></div></> : <p>Courier details will appear after shipping.</p>}</article>
