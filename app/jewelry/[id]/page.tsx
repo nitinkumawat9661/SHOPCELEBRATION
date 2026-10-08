@@ -116,7 +116,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             </div>
             <div className="marketplaceTrustGrid" aria-label="Shopping assurances">
               <div><span aria-hidden="true">🔒</span><b>Secure payment</b><small>Verified online checkout</small></div>
-              <div><span aria-hidden="true">🎥</span><b>Packing review</b><small>Video before dispatch where available</small></div>
+              {individual ? <div><span aria-hidden="true">✓</span><b>Live stock check</b><small>Availability rechecked before payment</small></div> : <div><span aria-hidden="true">🎥</span><b>Packing review</b><small>Hamper video before dispatch</small></div>}
               <div><span aria-hidden="true">📦</span><b>Order tracking</b><small>Follow progress online</small></div>
               <div><span aria-hidden="true">💬</span><b>Support</b><small>Help when you need it</small></div>
             </div>
