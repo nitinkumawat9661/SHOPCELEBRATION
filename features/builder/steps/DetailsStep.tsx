@@ -21,7 +21,7 @@ function RequiredLabel({ children }: { children: string }) {
   return <span>{cleanLabel(children)} <b className="requiredMark" aria-hidden="true">*</b></span>
 }
 
-export function DetailsStep({ tier, individual = false, summary, checkout, occasions, error, fieldErrors, updateField, onBack, onNext }: {
+export function DetailsStep({ tier, individual = false, summary, checkout, occasions, error, fieldErrors, updateField, onBack, backLabel, onNext }: {
   tier?: Tier
   individual?: boolean
   summary?: ReactNode
@@ -31,6 +31,7 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
   fieldErrors: CheckoutFieldErrors
   updateField: <K extends keyof CheckoutData>(key: K, value: CheckoutData[K]) => void
   onBack: () => void
+  backLabel?: string
   onNext: () => void
 }) {
   const copy = uiContent.builder.details
@@ -79,7 +80,7 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
 
           {error && <div className="errorBox" role="alert">{error}</div>}
           <div className="checkoutProgressNote"><span>✓</span><span><b>Before payment:</b> we validate the required fields and take you directly to anything that still needs attention.</span></div>
-          <div className="navRow detailActions"><button className="secondary" type="button" onClick={onBack}>{individual ? "Back to cart" : copy.back}</button><span className="tiny">{copy.nextHint}</span><button className="primary" type="button" onClick={onNext}>{copy.next}</button></div>
+          <div className="navRow detailActions"><button className="secondary" type="button" onClick={onBack}>{individual ? "Back to cart" : backLabel || copy.back}</button><span className="tiny">{copy.nextHint}</span><button className="primary" type="button" onClick={onNext}>{copy.next}</button></div>
         </div>
         {summary || (tier && <OrderSummary tier={tier} checkout={checkout} />)}
       </div>
