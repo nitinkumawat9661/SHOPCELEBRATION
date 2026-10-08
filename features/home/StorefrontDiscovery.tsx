@@ -17,6 +17,7 @@ type TierSocialProof = {
 type BuilderRequest = {
   active: boolean
   step: number
+  quickStart: boolean
   version: number
 }
 
@@ -47,10 +48,10 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
     return configured?.id || firstTierId(initialCatalog)
   })
   const [occasion, setOccasion] = useState(() => initialOccasion(initialCatalog))
-  const [builderRequest, setBuilderRequest] = useState<BuilderRequest>({ active: false, step: 1, version: 0 })
+  const [builderRequest, setBuilderRequest] = useState<BuilderRequest>({ active: false, step: 1, quickStart: false, version: 0 })
 
-  const openBuilder = useCallback((step = 1, tierId = selectedTierId) => {
-    setBuilderRequest((current) => ({ active: true, step, version: current.version + 1 }))
+  const openBuilder = useCallback((step = 1, tierId = selectedTierId, quickStart = false) => {
+    setBuilderRequest((current) => ({ active: true, step, quickStart, version: current.version + 1 }))
     trackLater("builder_started", tierId)
   }, [selectedTierId])
 
@@ -67,7 +68,7 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
   function pickTier(id: string) {
     setSelectedTierId(id)
     trackLater("budget_selected", id)
-    openBuilder(2, id)
+    openBuilder(2, id, true)
   }
 
   function pickOccasion(value: string) {
@@ -91,6 +92,7 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
         occasion={occasion}
         builderActive={builderRequest.active}
         requestedStep={builderRequest.step}
+        quickStart={builderRequest.quickStart}
         requestVersion={builderRequest.version}
         onBuild={openBuilder}
         onSelectionSync={syncSelection}
