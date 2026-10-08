@@ -20,13 +20,16 @@ async function setShippingDetailsWithClient(
   trackingNumber: string,
   metadata: ShippingMetadata = {}
 ) {
-  const current = await client.query<{ id: string; status: OrderStatus }>(`SELECT id, status FROM orders WHERE public_id = $1 FOR UPDATE`, [publicId])
+  const current = await client.query<{ id: string; status: OrderStatus; order_type: "hamper" | "individual" }>(`SELECT id, status, order_type FROM orders WHERE public_id = $1 FOR UPDATE`, [publicId])
   const order = current.rows[0]
   if (!order) return { ok: false as const, code: "ORDER_NOT_FOUND" }
   if (!statusHasCapability(order.status, "shippingUpdate")) return { ok: false as const, code: "SHIPPING_UPDATE_NOT_ALLOWED" }
+  if (order.order_type === "hamper" && order.status !== "customer_approved" && !["shipped", "out_for_delivery"].includes(order.status)) {
+    return { ok: false as const, code: "PACKING_APPROVAL_REQUIRED" }
+  }
 
   const shippedStatus = workflowActionTarget("shipped")
-  const nextStatus = order.status === "customer_approved" ? shippedStatus : order.status
+  const nextStatus = (order.order_type === "individual" && order.status === "preparing") || order.status === "customer_approved" ? shippedStatus : order.status
 
   await client.query(
     `UPDATE orders
@@ -82,9 +85,10 @@ export function bookOrderWithShipway(publicId: string) {
 
 export function setPackingVideo(publicId: string, key: string) {
   return transaction(async (client) => {
-    const current = await client.query<{ id: string; status: OrderStatus }>(`SELECT id, status FROM orders WHERE public_id = $1 FOR UPDATE`, [publicId])
+    const current = await client.query<{ id: string; status: OrderStatus; order_type: "hamper" | "individual" }>(`SELECT id, status, order_type FROM orders WHERE public_id = $1 FOR UPDATE`, [publicId])
     const order = current.rows[0]
     if (!order) return { ok: false as const, code: "ORDER_NOT_FOUND" }
+    if (order.order_type !== "hamper") return { ok: false as const, code: "PACKING_VIDEO_HAMPER_ONLY" }
     if (!statusHasCapability(order.status, "packingVideoUpload")) return { ok: false as const, code: "PACKING_VIDEO_UPLOAD_NOT_ALLOWED" }
 
     const nextStatus = workflowActionTarget("packingVideoReady")
@@ -94,7 +98,8 @@ export function setPackingVideo(publicId: string, key: string) {
   })
 }
 
-async function approveOrderRow(client: PoolClient, order: { id: string; public_id: string; status: OrderStatus; packing_video_key: string | null }) {
+async function approveOrderRow(client: PoolClient, order: { id: string; public_id: string; status: OrderStatus; packing_video_key: string | null; order_type: "hamper" | "individual" }) {
+  if (order.order_type !== "hamper") return { ok: false as const, code: "PACKING_VIDEO_HAMPER_ONLY" }
   if (!order.packing_video_key) return { ok: false as const, code: "PACKING_VIDEO_NOT_READY" }
   if (!statusHasCapability(order.status, "packingVideoApproval")) return { ok: false as const, code: "INVALID_STATUS_TRANSITION" }
 
@@ -106,8 +111,8 @@ async function approveOrderRow(client: PoolClient, order: { id: string; public_i
 
 export function approvePackingVideo(token: string) {
   return transaction(async (client) => {
-    const result = await client.query<{ id: string; public_id: string; status: OrderStatus; packing_video_key: string | null }>(
-      `SELECT id, public_id, status, packing_video_key FROM orders WHERE tracking_token_hash = $1 AND tracking_expires_at > now() FOR UPDATE`,
+    const result = await client.query<{ id: string; public_id: string; status: OrderStatus; packing_video_key: string | null; order_type: "hamper" | "individual" }>(
+      `SELECT id, public_id, status, packing_video_key, order_type FROM orders WHERE tracking_token_hash = $1 AND tracking_expires_at > now() FOR UPDATE`,
       [trackingTokenHash(token)]
     )
     const order = result.rows[0]
@@ -118,8 +123,8 @@ export function approvePackingVideo(token: string) {
 
 export function approvePackingVideoForAccount(publicId: string, customerAccountId: string) {
   return transaction(async (client) => {
-    const result = await client.query<{ id: string; public_id: string; status: OrderStatus; packing_video_key: string | null }>(
-      `SELECT id, public_id, status, packing_video_key
+    const result = await client.query<{ id: string; public_id: string; status: OrderStatus; packing_video_key: string | null; order_type: "hamper" | "individual" }>(
+      `SELECT id, public_id, status, packing_video_key, order_type
          FROM orders
         WHERE public_id = $1 AND customer_account_id = $2
         FOR UPDATE`,
