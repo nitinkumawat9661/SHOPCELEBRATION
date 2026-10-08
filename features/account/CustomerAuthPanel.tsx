@@ -186,19 +186,23 @@ export function CustomerAuthPanel({
   autoFocusPhone = false,
   onAuthenticate,
   onSuccess,
-  onClearError
+  onClearError,
+  initialMode = "login",
+  passwordlessSignup = false
 }: {
   busy: boolean
   error: string
   initialPhone?: string
   initialName?: string
   autoFocusPhone?: boolean
-  onAuthenticate: (mode: Mode, values: { phone: string; password: string; displayName?: string; accessToken?: string }) => Promise<CustomerAccountView | null>
+  onAuthenticate: (mode: Mode, values: { phone: string; password: string; displayName?: string; accessToken?: string; passwordless?: boolean }) => Promise<CustomerAccountView | null>
   onSuccess?: (account: CustomerAccountView) => void
   onClearError?: () => void
+  initialMode?: Mode
+  passwordlessSignup?: boolean
 }) {
   const settings = useStoreSettings()
-  const [mode, setMode] = useState<Mode>("login")
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [screen, setScreen] = useState<Screen>("auth")
   const [phone, setPhone] = useState(initialPhone)
   const [password, setPassword] = useState("")
@@ -432,7 +436,7 @@ export function CustomerAuthPanel({
         if (!accessToken) throw new Error("INVALID_OTP")
         setVerifiedAccessToken(accessToken)
       }
-      const account = await onAuthenticate("signup", { phone, password, displayName, accessToken })
+      const account = await onAuthenticate("signup", { phone, password: passwordlessSignup ? "" : password, displayName, accessToken, passwordless: passwordlessSignup })
       if (account) onSuccess?.(account)
     } catch (cause) {
       setLocalError(errorCopy.INVALID_OTP)
@@ -552,11 +556,11 @@ export function CustomerAuthPanel({
   if (screen === "signup-otp") {
     return (
       <div className="customerAuthCard customerResetCard">
-        <div className="customerAuthIntro"><div className="kicker">VERIFY MOBILE</div><h2>Enter the SMS OTP</h2><p>We sent a 6-digit code to <b>+91 {phone.slice(-10)}</b>. Your account is created only after this number is verified.</p></div>
+        <div className="customerAuthIntro"><div className="kicker">VERIFY MOBILE</div><h2>Enter the SMS OTP</h2><p>We sent a 6-digit code to <b>+91 {phone.slice(-10)}</b>. {passwordlessSignup ? "Verification securely links this checkout to your mobile number." : "Your account is created only after this number is verified."}</p></div>
         <form className="customerAuthForm" onSubmit={verifySignupOtp}>
           <label className="field"><span>6-digit OTP <b className="requiredMark">*</b></span><input className="control otpControl" inputMode="numeric" autoComplete="one-time-code" value={otp} required maxLength={6} pattern="[0-9]{6}" onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); clearErrors() }} placeholder="••••••" /></label>
           {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-          <button className="primary fullWidth" disabled={actionBusy || otp.length !== 6} type="submit">{actionBusy ? "Verifying…" : "Verify OTP & create account"}</button>
+          <button className="primary fullWidth" disabled={actionBusy || otp.length !== 6} type="submit">{actionBusy ? "Verifying…" : passwordlessSignup ? "Verify OTP & continue to payment" : "Verify OTP & create account"}</button>
           <div className="resetResendRow"><span>Didn’t get it?</span><button className="authTextButton" type="button" disabled={actionBusy || resendIn > 0} onClick={() => void resendOtp()}>{resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}</button></div>
           <button className="authTextButton" type="button" onClick={() => { setScreen("auth"); resetOtpWidget() }}>← Change mobile number</button>
         </form>
@@ -619,19 +623,19 @@ export function CustomerAuthPanel({
     <div className="customerAuthCard">
       <div className="customerAuthIntro">
         <div className="kicker">MY CELEBRATION</div>
-        <h2>{mode === "login" ? "Welcome back" : "Create your Celebration account"}</h2>
-        <p>{mode === "login" ? "Login to place your order and keep all updates in one place." : "Save your orders, packing updates and shipping details in one simple dashboard."}</p>
+        <h2>{mode === "login" ? "Welcome back" : passwordlessSignup ? "Verify your mobile to continue" : "Create your Celebration account"}</h2>
+        <p>{mode === "login" ? "Login to place your order and keep all updates in one place." : passwordlessSignup ? "No password needed for checkout. One OTP verifies your number and securely saves this order." : "Save your orders, packing updates and shipping details in one simple dashboard."}</p>
       </div>
 
-      <div className="customerAuthTabs" role="tablist" aria-label="Login or create account">
+      {!passwordlessSignup && <div className="customerAuthTabs" role="tablist" aria-label="Login or create account">
         <button type="button" role="tab" aria-selected={mode === "login"} className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")}>Login</button>
         <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "active" : ""} onClick={() => changeMode("signup")}>Create account</button>
-      </div>
+      </div>}
 
       <form className="customerAuthForm" onSubmit={submit}>
         {mode === "signup" && <label className="field"><span>Your name <b className="requiredMark">*</b></span><input className="control" value={displayName} required minLength={2} maxLength={80} autoComplete="name" onChange={(event) => { setDisplayName(event.target.value); clearErrors() }} placeholder="Full name" /></label>}
         <label className="field"><span>Mobile number <b className="requiredMark">*</b></span><input className="control" inputMode="tel" autoComplete="tel" value={phone} required autoFocus={autoFocusPhone} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "").slice(0, 13)); if (mode === "signup") resetOtpWidget(); clearErrors() }} placeholder="10-digit mobile" /></label>
-        <label className="field"><span>Password <b className="requiredMark">*</b></span><div className="passwordControlWrap"><input className="control" type={showPassword ? "text" : "password"} minLength={8} maxLength={72} required autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => { setPassword(event.target.value); clearErrors() }} placeholder="Minimum 8 characters" /><button className="passwordToggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div></label>
+        {!(mode === "signup" && passwordlessSignup) && <label className="field"><span>Password <b className="requiredMark">*</b></span><div className="passwordControlWrap"><input className="control" type={showPassword ? "text" : "password"} minLength={8} maxLength={72} required autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => { setPassword(event.target.value); clearErrors() }} placeholder="Minimum 8 characters" /><button className="passwordToggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div></label>}
         {mode === "signup" && <label className="policyCheck signupPolicyCheck"><input type="checkbox" checked={signupPolicyAccepted} disabled={actionBusy} onChange={(event) => { setSignupPolicyAccepted(event.target.checked); clearErrors() }} /><span>I agree to the <Link href={routes.terms} target="_blank">Terms &amp; Legal</Link> and acknowledge the <Link href={routes.privacy} target="_blank">Privacy Policy</Link>. My mobile number will be used for account security, OTP verification and order-related service.</span></label>}
         {mode === "signup" && <div className={`resetSecurityCard ${captchaVerified ? "verified" : widgetReady ? "pending" : "idle"}`}>
           <div className="resetSecurityHead">
@@ -642,7 +646,7 @@ export function CustomerAuthPanel({
         </div>}
         {mode === "login" && <div className="forgotPasswordRow"><button className="authTextButton" type="button" onClick={startForgotPassword}>Forgot password?</button></div>}
         {friendlyError && <div className="errorBox" role="alert">{friendlyError}</div>}
-        <button className="primary fullWidth" disabled={actionBusy || (mode === "signup" && (!signupPolicyAccepted || (!widgetReady && !resetPhoneReady) || (widgetReady && !captchaVerified)))} type="submit">{mode === "login" ? (busy ? "Signing in…" : "Login & continue") : actionBusy ? (widgetReady ? "Sending OTP…" : "Preparing verification…") : !widgetReady ? "Continue securely" : "Send OTP & continue"}</button>
+        <button className="primary fullWidth" disabled={actionBusy || (mode === "signup" && (!signupPolicyAccepted || (!widgetReady && !resetPhoneReady) || (widgetReady && !captchaVerified)))} type="submit">{mode === "login" ? (busy ? "Signing in…" : "Login & continue") : actionBusy ? (widgetReady ? "Sending OTP…" : "Preparing verification…") : !widgetReady ? "Continue securely" : passwordlessSignup ? "Send OTP" : "Send OTP & continue"}</button>
       </form>
 
       <div className="customerAuthHelp">

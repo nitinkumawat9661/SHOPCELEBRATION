@@ -217,7 +217,7 @@ export function AdminDashboard() {
           <AdminOrderToolbar search={search} filter={filter} sort={sort} total={admin.orders.length} visible={visibleOrders.length} counts={counts} onSearch={setSearch} onFilter={setFilter} onSort={setSort} />
           {admin.loading && <div className="trackingState">{uiContent.admin.loadingIndicator}</div>}
           {!admin.loading && visibleOrders.length === 0 && <div className="trackingState">{search ? copy.noMatchingOrders : copy.noOrders}</div>}
-          <div className="adminOrderList">{visibleOrders.map((order) => <AdminOrderCard key={order.publicId} order={order} busy={admin.busy === order.publicId} onStatus={(status) => admin.updateStatus(order, status)} onShipping={(provider, trackingNumber) => admin.saveShipping(order, provider, trackingNumber)} onVideo={(file) => admin.uploadVideo(order, file)} />)}</div>
+          <div className="adminOrderList">{visibleOrders.map((order) => <AdminOrderCard key={order.publicId} order={order} busy={admin.busy === order.publicId} onStatus={(status) => admin.updateStatus(order, status)} onShipping={(provider, trackingNumber, weightGrams) => admin.saveShipping(order, provider, trackingNumber, weightGrams)} onVideo={(file) => admin.uploadVideo(order, file)} />)}</div>
         </section>}
 
         {view === "requests" && <AdminCustomRequests />}

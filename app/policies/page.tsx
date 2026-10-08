@@ -65,7 +65,7 @@ export default async function PoliciesPage() {
           <div className="policySupport">
             <h2>Need cancellation, refund or issue help?</h2>
             <p>Use your Order ID when contacting support. Official customer support: WhatsApp +{settings.whatsapp}{settings.supportEmail ? ` • ${settings.supportEmail}` : ""}.</p>
-            <div className="policySupportActions"><Link className="primary" href={routes.account}>My Celebration</Link><Link className="secondary" href={routes.terms}>Terms &amp; Legal</Link><Link className="secondary" href={routes.privacy}>Privacy Policy</Link></div>
+            <div className="policySupportActions"><Link className="primary" href={routes.claim}>Raise a product claim</Link><Link className="secondary" href={routes.account}>My Celebration</Link><Link className="secondary" href={routes.terms}>Terms &amp; Legal</Link><Link className="secondary" href={routes.privacy}>Privacy Policy</Link></div>
           </div>
         </div>
       </section>

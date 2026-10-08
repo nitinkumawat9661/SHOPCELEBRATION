@@ -43,7 +43,7 @@ export function useCustomerAccount() {
 
   useEffect(() => { refresh() }, [refresh])
 
-  async function authenticate(mode: Mode, values: { phone: string; password: string; displayName?: string; accessToken?: string }) {
+  async function authenticate(mode: Mode, values: { phone: string; password: string; displayName?: string; accessToken?: string; passwordless?: boolean }) {
     setBusy(true)
     setError("")
     try {

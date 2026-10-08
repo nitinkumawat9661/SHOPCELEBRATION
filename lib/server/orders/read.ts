@@ -82,9 +82,9 @@ export async function getTierPopularity(): Promise<TierPopularity | null> {
 }
 
 export async function canPreparePackingVideo(publicId: string) {
-  const result = await query<{ status: OrderStatus }>(`SELECT status FROM orders WHERE public_id = $1`, [publicId])
+  const result = await query<{ status: OrderStatus; order_type: "hamper" | "individual" }>(`SELECT status, order_type FROM orders WHERE public_id = $1`, [publicId])
   const row = result.rows[0]
-  return Boolean(row && statusHasCapability(row.status, "packingVideoUpload"))
+  return Boolean(row && row.order_type === "hamper" && statusHasCapability(row.status, "packingVideoUpload"))
 }
 
 export async function findAdminPackingVideoKey(publicId: string) {

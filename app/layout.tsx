@@ -17,9 +17,17 @@ const bodyFont = localFont({ src: "./fonts/inter-latin.woff2", weight: "400 700"
 const accentFont = localFont({ src: "./fonts/allura-latin.woff2", weight: "400", variable: "--font-shopping-script", adjustFontFallback: "Times New Roman", display: "swap" })
 
 export const metadata: Metadata = {
-  title: storeContent.seo.title,
-  description: storeContent.seo.description,
-  robots: publicEnv.siteIndexable ? { index: true, follow: true } : { index: false, follow: false }
+  metadataBase: new URL("https://shopcelebration.in"),
+  title: {
+    default: "Celebration | Affordable Jewelry & Custom Gift Hampers Online",
+    template: "%s | Celebration"
+  },
+  description: "Shop affordable jewelry, anti-tarnish pieces marked with a 6-month guarantee, and custom gift hampers from Celebration. Secure online payment, order tracking and delivery across serviceable Indian pincodes.",
+  applicationName: "Celebration",
+  category: "shopping",
+  robots: publicEnv.siteIndexable
+    ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } }
+    : { index: false, follow: false }
 }
 
 export const viewport: Viewport = {

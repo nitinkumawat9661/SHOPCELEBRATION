@@ -23,6 +23,7 @@
     ],
     "preparing": [
       "packing_video_ready",
+      "shipped",
       "cancelled"
     ],
     "packing_video_ready": [
@@ -73,6 +74,7 @@
       "delivered"
     ],
     "shippingUpdate": [
+      "preparing",
       "customer_approved",
       "shipped",
       "out_for_delivery"

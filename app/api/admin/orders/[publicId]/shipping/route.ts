@@ -13,11 +13,13 @@ export async function POST(request: Request, context: { params: Promise<{ public
     const allowed = await consumeRequestRateLimit("admin-mutation", request, validation.rateLimits.adminMutation)
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
 
-    const body = await readJsonBody<{ mode?: unknown; provider?: unknown; trackingNumber?: unknown }>(request)
+    const body = await readJsonBody<{ mode?: unknown; provider?: unknown; trackingNumber?: unknown; weightGrams?: unknown }>(request)
     const publicId = (await context.params).publicId
     if (body.mode === "shipway") {
-      const result = await bookOrderWithShipway(publicId)
-      const status = result.ok ? 200 : result.code === "ORDER_NOT_FOUND" ? 404 : result.code === "SHIPPING_UPDATE_NOT_ALLOWED" ? 409 : 502
+      const weightGrams = Number(body.weightGrams)
+      if (!Number.isInteger(weightGrams)) return NextResponse.json({ ok: false, error: "INVALID_SHIPPING_WEIGHT" }, { status: 422 })
+      const result = await bookOrderWithShipway(publicId, weightGrams)
+      const status = result.ok ? 200 : result.code === "ORDER_NOT_FOUND" ? 404 : ["SHIPPING_UPDATE_NOT_ALLOWED", "PACKING_APPROVAL_REQUIRED"].includes(result.code) ? 409 : result.code === "INVALID_SHIPPING_WEIGHT" ? 422 : 502
       return NextResponse.json(result, { status })
     }
 

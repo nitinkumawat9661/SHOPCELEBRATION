@@ -213,6 +213,32 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     edit((current) => ({ ...current, products: current.products.map((item, i) => i === index ? { ...item, ...patch } : item) }))
   }
 
+  function replaceStockLocal(index: number, quantity: number) {
+    setCatalog((current) => ({ ...current, products: current.products.map((item, i) => i === index ? { ...item, stockAvailable: quantity } : item) }))
+  }
+
+  async function saveStock(index: number) {
+    const product = catalog.products[index]
+    const quantity = product.stockAvailable ?? 0
+    setBusy(`stock-${index}`)
+    setError("")
+    try {
+      const response = await fetch("/api/admin/inventory", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: product.id, quantity })
+      })
+      const data = await response.json() as { ok?: boolean; inventory?: { availableQuantity?: number }; error?: string }
+      if (!response.ok || !data.ok || typeof data.inventory?.availableQuantity !== "number") throw new Error(data.error || "INVENTORY_UPDATE_FAILED")
+      replaceStockLocal(index, data.inventory.availableQuantity)
+      setNotice(`${product.name}: available stock updated to ${data.inventory.availableQuantity}.`)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "INVENTORY_UPDATE_FAILED")
+    } finally {
+      setBusy("")
+    }
+  }
+
   function replaceRetail(index: number, patch: Partial<NonNullable<GiftProduct["retail"]>>) {
     const current = catalog.products[index]
     replaceProduct(index, { retail: { ...(current.retail || {}), ...patch } })
@@ -530,6 +556,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
               replaceProduct(index, { salePricePaise: amount })
             }} /></label>
             <label className="adminCheck"><input type="checkbox" checked={product.sellIndividually === true} onChange={(event) => replaceProduct(index, { sellIndividually: event.target.checked })} /> Sell individually without a hamper</label>
+            <label>Available stock<input type="number" min="0" max="10000" step="1" inputMode="numeric" disabled={!product.sellIndividually || busy === `stock-${index}`} value={product.stockAvailable ?? 0} onChange={(event) => replaceStockLocal(index, Math.max(0, Math.min(10000, Number(event.target.value) || 0)))} /></label>
+            <button className="secondary" type="button" disabled={!product.sellIndividually || busy === `stock-${index}`} onClick={() => void saveStock(index)}>{busy === `stock-${index}` ? "Saving stock…" : "Save stock"}</button>
           </div>
           <details className="adminOrderDetails">
             <summary>Retail declarations / Legal Metrology</summary>

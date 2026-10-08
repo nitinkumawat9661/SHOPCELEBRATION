@@ -6,7 +6,7 @@ import { useState } from "react"
 import { MAX_CART_QUANTITY } from "./cart"
 import { useCart } from "./useCart"
 
-export function AddToCart({ productId, buyNow = false }: { productId: string; buyNow?: boolean }) {
+export function AddToCart({ productId, buyNow = false, maxQuantity = MAX_CART_QUANTITY }: { productId: string; buyNow?: boolean; maxQuantity?: number }) {
   const cart = useCart()
   const router = useRouter()
   const [message, setMessage] = useState("")
@@ -38,9 +38,9 @@ export function AddToCart({ productId, buyNow = false }: { productId: string; bu
           <button
             type="button"
             aria-label="Increase quantity"
-            disabled={quantity >= MAX_CART_QUANTITY}
+            disabled={quantity >= Math.min(MAX_CART_QUANTITY, maxQuantity)}
             onClick={() => {
-              const error = cart.add(productId)
+              const error = quantity >= Math.min(MAX_CART_QUANTITY, maxQuantity) ? "No more stock is available for this item." : cart.add(productId)
               setMessage(error)
             }}
           >+</button>

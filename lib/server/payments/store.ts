@@ -4,6 +4,7 @@ import { securityConfig } from "../../../config/security"
 import { assertPaymentCanStart, isPaymentConfirmed } from "../../domain/payment"
 import { createTrackingToken } from "../../security/tokens"
 import { transaction } from "../db"
+import { commitInventoryForOrderWithClient, releaseInventoryForOrderWithClient } from "../inventory"
 import type { ProviderCheckout, ProviderPaymentResult } from "./provider"
 
 export type PaymentOrderSnapshot = {
@@ -218,14 +219,18 @@ export function failPaymentAttempt(attemptId: string, code: string) {
     )
     const row = attempt.rows[0]
     if (!row) return
-    await client.query(
+    const failedOrder = await client.query<{ id: string }>(
       `UPDATE orders
-          SET payment_status = CASE WHEN payment_status IN ('paid', 'verified') THEN payment_status ELSE 'failed' END,
-              payment_error_code = CASE WHEN payment_status IN ('paid', 'verified') THEN payment_error_code ELSE $1 END,
+          SET payment_status = 'failed',
+              payment_error_code = $1,
               updated_at = now()
-        WHERE id = $2 AND provider_order_id = $3`,
+        WHERE id = $2
+          AND provider_order_id = $3
+          AND payment_status NOT IN ('paid', 'verified')
+        RETURNING id`,
       [code.slice(0, 200), row.order_id, row.provider_order_id]
     )
+    if (failedOrder.rowCount) await releaseInventoryForOrderWithClient(client, row.order_id)
   })
 }
 
@@ -313,6 +318,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
             WHERE id = $7`,
           [result.provider, result.providerOrderId, result.providerPaymentId, reference, referenceHash, nextStatus, orderRow.id]
         )
+        await commitInventoryForOrderWithClient(client, orderRow.id)
         if (nextStatus !== previousStatus) {
           await client.query(
             `INSERT INTO order_events (id, order_id, event_type, payload)
@@ -329,6 +335,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
             WHERE id = $3`,
           [result.providerOrderId, result.errorCode || "PAYMENT_FAILED", orderRow.id]
         )
+        await releaseInventoryForOrderWithClient(client, orderRow.id)
       }
     }
 

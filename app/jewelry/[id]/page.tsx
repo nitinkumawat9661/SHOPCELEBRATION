@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { CatalogCard } from "../../../features/catalog/CatalogCard"
+import { SeoJsonLd } from "../../../features/seo/SeoJsonLd"
 import { ProductGallery } from "../../../features/catalog/ProductGallery"
 import { AddToCart } from "../../../features/cart/AddToCart"
 import { SiteFooter } from "../../../features/shell/SiteFooter"
@@ -9,25 +10,95 @@ import { StorefrontHeader } from "../../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../../features/shell/TrustStrip"
 import { isJewelryProduct } from "../../../lib/domain/catalog-discovery"
 import { formatMoney } from "../../../lib/domain/money"
-import { isIndividuallySellable, productDiscountPercent } from "../../../lib/domain/catalog"
+import { isIndividualListing, isIndividuallySellable, primaryProductImage, productDiscountPercent } from "../../../lib/domain/catalog"
 import { getCatalogConfig } from "../../../lib/server/catalog"
 import { defaultStoreSettings, getStoreSettings } from "../../../lib/server/store-settings"
 
 export const dynamic = "force-dynamic"
-export const metadata: Metadata = { title: "A Thoughtful Gift | Celebration" }
+const siteUrl = "https://shopcelebration.in"
+
+function productDescription(name: string, category: string, description?: string) {
+  const clean = description?.trim()
+  if (clean) return clean.slice(0, 155)
+  return `Shop ${name} from Celebration's ${category} collection. Secure online payment, delivery included where shown, live stock checks and order tracking.`
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const catalog = await getCatalogConfig().catch(() => null)
+  const product = catalog?.catalog.products.find((item) => item.id === id && item.active !== false)
+  if (!product) return { title: "Product not found", robots: { index: false, follow: false } }
+  const image = primaryProductImage(product)?.url
+  const description = productDescription(product.name, product.category, product.description)
+  const canonical = `/jewelry/${encodeURIComponent(product.id)}`
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      url: canonical,
+      title: `${product.name} | Celebration`,
+      description,
+      images: image ? [{ url: image, alt: product.name }] : undefined
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | Celebration`,
+      description,
+      images: image ? [image] : undefined
+    }
+  }
+}
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const [{ id }, catalog, settings] = await Promise.all([params, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
   const product = catalog?.catalog.products.find((item) => item.id === id && item.active !== false)
+  const listed = product ? isIndividualListing(product) : false
   const individual = product ? isIndividuallySellable(product) : false
-  const discount = product && individual ? productDiscountPercent(product) : null
-  const mrpPaise = product && individual ? product.retail?.mrpPaise : undefined
+  const soldOut = Boolean(product && listed && !individual)
+  const discount = product && listed ? productDiscountPercent(product) : null
+  const mrpPaise = product && listed ? product.retail?.mrpPaise : undefined
   if (catalog && !product) notFound()
   const collectionUrl = product && isJewelryProduct(product) ? "/jewelry" : "/jewelry?view=all"
   const related = catalog?.catalog.products.filter((item) => item.active !== false && item.id !== id && item.category === product?.category).slice(0, 4) || []
+  const image = product ? primaryProductImage(product)?.url : undefined
+  const productUrl = product ? `${siteUrl}/jewelry/${encodeURIComponent(product.id)}` : ""
+  const structuredData = product ? [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      sku: product.id,
+      category: product.category,
+      description: productDescription(product.name, product.category, product.description),
+      image: image ? [image.startsWith("/") ? `${siteUrl}${image}` : image] : undefined,
+      ...(listed ? {
+        offers: {
+          "@type": "Offer",
+          url: productUrl,
+          priceCurrency: "INR",
+          price: (product.salePricePaise! / 100).toFixed(2),
+          availability: individual ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          itemCondition: "https://schema.org/NewCondition",
+          seller: { "@type": "Organization", name: "Celebration", url: siteUrl }
+        }
+      } : {})
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "Jewelry & Gifts", item: `${siteUrl}/jewelry` },
+        { "@type": "ListItem", position: 3, name: product.name, item: productUrl }
+      ]
+    }
+  ] : null
 
   return (
     <main className="collectionPage">
+      {structuredData && <SeoJsonLd data={structuredData} />}
       <TrustStrip /><StorefrontHeader settings={settings?.settings || defaultStoreSettings} />
       {!product ? <section className="collectionSection"><div className="wrap collectionEmpty" role="status"><h1>This gift couldn’t load just now.</h1><p>Please try again in a moment.</p><Link href={`/jewelry/${encodeURIComponent(id)}`}>Try again →</Link><Link href="/jewelry?view=all">Back to the collection</Link></div></section> : <>
         <div className="wrap collectionBreadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true">›</span><Link href={collectionUrl}>Collection</Link><span aria-hidden="true">›</span><span>{product.name}</span></div>
@@ -38,9 +109,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.note && <p className="collectionDetailNote">{product.note}</p>}
             {product.highlights?.length ? <ul className="marketplaceHighlights">{product.highlights.map((item) => <li key={item}>{item}</li>)}</ul> : null}
             {product.retail?.warrantyOrGuarantee && <div className="antiTarnishGuarantee"><div><b>6-month anti-tarnish guarantee</b><span>Covered for verified tarnish issues under normal use. Keep dry and avoid perfume, sanitizer, soap, chlorine, salt water and harsh chemicals.</span></div><Link href="/policies">View coverage terms →</Link></div>}
-            <div className="collectionDetailPrice"><span>{individual ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(individual ? product.salePricePaise! / 100 : product.minTier)}</strong>{individual && mrpPaise && discount ? <span><s>{formatMoney(mrpPaise / 100)}</s> · {discount}% OFF</span> : null}<small>{individual ? "Delivery included. No extra delivery charge is added at checkout; pincode availability is verified before payment." : "Hamper budget, not an individual item price."}</small></div>
+            <div className="collectionDetailPrice"><span>{soldOut ? "Currently sold out" : listed ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(listed ? product.salePricePaise! / 100 : product.minTier)}</strong>{listed && mrpPaise && discount ? <span><s>{formatMoney(mrpPaise / 100)}</s> · {discount}% OFF</span> : null}<small>{soldOut ? "This piece is currently unavailable. Check back after a restock." : listed ? "Delivery included. No extra delivery charge is added at checkout; pincode availability is verified before payment." : "Hamper budget, not an individual item price."}</small></div>
             <div className="collectionDetailActions">
-              {individual ? <><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
+              {individual ? <><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} buyNow /></> : soldOut ? <span className="secondary" aria-disabled="true">Sold out</span> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
               <Link className="collectionDetailBack" href={collectionUrl}>Keep exploring</Link>
             </div>
             <div className="marketplaceTrustGrid" aria-label="Shopping assurances">
@@ -70,7 +141,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <div className="collectionDetailAbout"><h2>Product details</h2><p>{product.description || (individual ? "This gift is available individually and within eligible hampers. For a curated gift set, share your occasion and budget with our team." : "This gift is currently available within our curated hampers. The final selection is curated for your occasion.")}</p><Link href="/policies">Delivery & order policies <span aria-hidden="true">→</span></Link>{individual && <Link href="/#budgets">Explore our curated hampers →</Link>}</div>
           </div>
         </div></section>
-        {individual && <div className="mobileMarketplaceBuyBar" aria-label="Quick purchase controls"><div><small>{product.name}</small><b>{formatMoney(product.salePricePaise! / 100)}</b></div><AddToCart productId={product.id} /><AddToCart productId={product.id} buyNow /></div>}
+        {individual && <div className="mobileMarketplaceBuyBar" aria-label="Quick purchase controls"><div><small>{product.name}</small><b>{formatMoney(product.salePricePaise! / 100)}</b></div><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} buyNow /></div>}
         {related.length > 0 && <section className="collectionRelated"><div className="wrap collectionContainer"><div className="collectionHeading"><div><span className="collectionEyebrow">Keep the inspiration going</span><h2>More thoughtful details</h2></div><Link href={collectionUrl}>View collection →</Link></div><div className="collectionGrid">{related.map((item) => <CatalogCard product={item} key={item.id} />)}</div></div></section>}
       </>}
       <SiteFooter />

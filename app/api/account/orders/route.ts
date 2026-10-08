@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { getCustomerSession } from "../../../../lib/security/customer-session"
 import { findCustomerAccountById, listCustomerOrders } from "../../../../lib/server/customer-accounts"
 import { getCatalogConfig } from "../../../../lib/server/catalog"
-import { bookOrderWithShipway } from "../../../../lib/server/orders"
 import { productById } from "../../../../lib/domain/catalog"
 import { createPackingVideoViewUrl } from "../../../../lib/server/r2"
 
@@ -15,17 +14,7 @@ export async function GET() {
     const account = await findCustomerAccountById(session.accountId)
     if (!account) return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 })
 
-    let [orders, catalogResult] = await Promise.all([listCustomerOrders(account.id), getCatalogConfig()])
-    const pendingAutoBooking = orders.find((order) => order.status === "customer_approved" && !order.shippingTrackingNumber)
-    if (pendingAutoBooking) {
-      try {
-        const shipping = await bookOrderWithShipway(pendingAutoBooking.publicId)
-        if (!shipping.ok) console.error("customer-orders-auto-book", { publicId: pendingAutoBooking.publicId, code: shipping.code })
-        orders = await listCustomerOrders(account.id)
-      } catch (error) {
-        console.error("customer-orders-auto-book", { publicId: pendingAutoBooking.publicId, error })
-      }
-    }
+    const [orders, catalogResult] = await Promise.all([listCustomerOrders(account.id), getCatalogConfig()])
 
     const hydrated = await Promise.all(orders.map(async (order) => {
       let packingVideoUrl: string | null = null

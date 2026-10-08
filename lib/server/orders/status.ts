@@ -1,17 +1,19 @@
 import { orderEvents } from "../../../config/order-events"
 import { canAdminTransition, paymentStatusForOrderStatus, workflowActionTarget, type OrderStatus } from "../../domain/order-status"
 import { transaction } from "../db"
+import { releaseInventoryForOrderWithClient } from "../inventory"
 import { appendOrderEvent } from "./events"
 
 export function updateOrderStatus(publicId: string, nextStatus: OrderStatus) {
   return transaction(async (client) => {
-    const current = await client.query<{ id: string; status: OrderStatus; payment_status: string; shipping_tracking_number: string | null }>(
-      `SELECT id, status, payment_status, shipping_tracking_number FROM orders WHERE public_id = $1 FOR UPDATE`,
+    const current = await client.query<{ id: string; status: OrderStatus; payment_status: string; shipping_tracking_number: string | null; order_type: "hamper" | "individual" }>(
+      `SELECT id, status, payment_status, shipping_tracking_number, order_type FROM orders WHERE public_id = $1 FOR UPDATE`,
       [publicId]
     )
     const row = current.rows[0]
     if (!row) return { ok: false as const, code: "ORDER_NOT_FOUND" }
     if (!canAdminTransition(row.status, nextStatus)) return { ok: false as const, code: "INVALID_STATUS_TRANSITION" }
+    if (nextStatus === workflowActionTarget("shipped") && row.order_type === "hamper" && row.status !== "customer_approved") return { ok: false as const, code: "PACKING_APPROVAL_REQUIRED" }
     if (nextStatus === workflowActionTarget("shipped") && !row.shipping_tracking_number) {
       return { ok: false as const, code: "SHIPPING_DETAILS_REQUIRED" }
     }
@@ -29,6 +31,7 @@ export function updateOrderStatus(publicId: string, nextStatus: OrderStatus) {
        WHERE id = $4`,
       [nextStatus, paymentStatus, deliveredStatus, row.id, "cancelled" satisfies OrderStatus]
     )
+    if (nextStatus === "cancelled") await releaseInventoryForOrderWithClient(client, row.id)
     await appendOrderEvent(client, row.id, orderEvents.statusChanged, { from: row.status, to: nextStatus })
     return { ok: true as const }
   })
