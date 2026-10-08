@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { uiContent } from "../../lib/domain/content"
+import { formatMoney } from "../../lib/domain/money"
 import { BudgetStep } from "./steps/BudgetStep"
 import { DetailsStep } from "./steps/DetailsStep"
 import { PaymentStep } from "./steps/PaymentStep"
@@ -24,7 +25,7 @@ function historyBuilderStep(value: unknown) {
   return Number.isInteger(step) && step >= 1 && step <= 3 ? step : null
 }
 
-export function HamperBuilder({ state }: { state: ReturnType<typeof useHamperBuilder> }) {
+export function HamperBuilder({ state, quickStart = false }: { state: ReturnType<typeof useHamperBuilder>; quickStart?: boolean }) {
   const order = useOrderSubmit()
   const customer = useCustomerAccount()
   const storeSettings = useStoreSettings()
@@ -83,9 +84,9 @@ export function HamperBuilder({ state }: { state: ReturnType<typeof useHamperBui
 
     if (!historyInitialized.current) {
       window.history.replaceState(
-        { ...(window.history.state || {}), celebrationBuilder: true, celebrationBuilderStep: 1 },
+        { ...(window.history.state || {}), celebrationBuilder: true, celebrationBuilderStep: quickStart ? 2 : 1 },
         "",
-        builderStepUrl(1)
+        builderStepUrl(quickStart ? 2 : 1)
       )
       historyInitialized.current = true
     }
@@ -113,6 +114,13 @@ export function HamperBuilder({ state }: { state: ReturnType<typeof useHamperBui
     window.addEventListener("popstate", onPopState)
     return () => window.removeEventListener("popstate", onPopState)
   }, [state.setStep])
+
+  function changeBudget() {
+    document.getElementById("budgets")?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+      block: "start"
+    })
+  }
 
   function openAuth() {
     authReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -259,15 +267,16 @@ export function HamperBuilder({ state }: { state: ReturnType<typeof useHamperBui
 
   return (
     <>
-      <section id="builder" className="builder">
+      <section id="builder" className={`builder ${quickStart ? "quickBuilder" : ""}`}>
         <div className="wrap">
-          <div className="centerHead"><div className="kicker">{copy.kicker}</div><h2>{copy.title}</h2><p>{copy.body}</p></div>
+          <div className="centerHead quickBuilderHead"><div className="kicker">{quickStart ? "COMPLETE YOUR HAMPER" : copy.kicker}</div><h2>{quickStart ? "Just delivery, then payment." : copy.title}</h2><p>{quickStart ? "Your budget is already selected. Add the delivery details and you’re ready to pay." : copy.body}</p></div>
+          {quickStart && <div className="quickHamperSummary"><div><span>SELECTED HAMPER</span><b>{state.tier.name} • {formatMoney(state.tier.price)}</b><small>{state.checkout.occasion}</small></div><button className="secondary" type="button" onClick={changeBudget}>Change budget</button></div>}
           {state.catalogLoading && <div className="trackingState">Loading the latest hamper options…</div>}
           {state.catalogError && <div className="catalogLoadNotice" role="alert"><span>{state.catalogError}</span><button className="secondary" type="button" disabled={state.catalogLoading} onClick={state.retryCatalog}>{state.catalogLoading ? "Retrying…" : "Retry"}</button></div>}
-          <div className="steps fourSteps">{copy.stepLabels.map((label, index) => { const step = index + 1; return <button type="button" key={label} className={`stepBtn ${state.step === step ? "active" : state.step > step ? "done" : ""}`} aria-current={state.step === step ? "step" : undefined} onClick={() => moveToStep(step)}>{label}</button> })}</div>
+          <div className={`steps ${quickStart ? "quickSteps" : "fourSteps"}`}>{(quickStart ? [{ step: 2, label: "Delivery" }, { step: 3, label: "Payment" }] : copy.stepLabels.map((label, index) => ({ step: index + 1, label }))).map(({ step, label }) => <button type="button" key={label} className={`stepBtn ${state.step === step ? "active" : state.step > step ? "done" : ""}`} aria-current={state.step === step ? "step" : undefined} onClick={() => quickStart && step === 2 && state.step === 2 ? undefined : moveToStep(step)}>{label}</button>)}</div>
           <div className="builderCard" data-builder-step-shell>
             {state.step === 1 && <BudgetStep tierId={state.tierId} occasion={state.checkout.occasion} tiers={state.tiers} occasions={state.occasions} onTier={state.selectTier} onOccasion={(value) => state.updateField("occasion", value)} onNext={() => moveToStep(2)} />}
-            {state.step === 2 && <DetailsStep tier={state.tier} checkout={state.checkout} occasions={state.occasions} error={state.detailsError} fieldErrors={state.detailsFieldErrors} updateField={state.updateField} onBack={() => moveToStep(1)} onNext={moveToPayment} />}
+            {state.step === 2 && <DetailsStep tier={state.tier} checkout={state.checkout} occasions={state.occasions} error={state.detailsError} fieldErrors={state.detailsFieldErrors} updateField={state.updateField} onBack={quickStart ? changeBudget : () => moveToStep(1)} onNext={moveToPayment} />}
             {state.step === 3 && <div data-payment-checkout><PaymentStep tier={state.tier} checkout={state.checkout} selectedProductIds={state.selected} selectedNames={state.selectedNames} accepted={state.accepted} submitting={order.submitting} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} paymentState={order.paymentState} paymentOrderId={order.paymentOrderId} onAccepted={state.setAccepted} onReference={(value) => state.updateField("paymentReference", value)} onBack={() => moveToStep(2)} onSubmit={submit} onPay={pay} onRefreshPayment={() => void order.refreshPayment()} onWhatsapp={openWhatsapp} onLogin={openAuth} onNewOrder={startAnotherOrder} /></div>}
           </div>
         </div>
