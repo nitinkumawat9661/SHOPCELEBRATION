@@ -9,10 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/jewelry`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/compare`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${base}/claim`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${base}/policies`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
-    { url: `${base}/terms`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/privacy`, lastModified: now, changeFrequency: "monthly", priority: 0.3 }
+    { url: `${base}/claim`, lastModified: now, changeFrequency: "monthly", priority: 0.5 }
   ]
   const catalog = await getCatalogConfig().catch(() => null)
   const products: MetadataRoute.Sitemap = (catalog?.catalog.products || [])
