@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { validation } from "../../../../config/validation"
 import { createCustomerSession, customerCookieOptions, CUSTOMER_COOKIE_NAME } from "../../../../lib/security/customer-session"
 import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../../lib/security/request"
-import { createCustomerAccount, customerAccountView, CustomerAccountError, normalizeCustomerPhone } from "../../../../lib/server/customer-accounts"
+import { continueVerifiedCustomer, createCustomerAccount, customerAccountView, CustomerAccountError, normalizeCustomerPhone } from "../../../../lib/server/customer-accounts"
 import { consumeRequestRateLimit } from "../../../../lib/server/rate-limit"
 import { verifyMsg91AccessToken, SmsProviderError } from "../../../../lib/server/sms/provider"
 
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     enforceSameOrigin(request)
     const allowed = await consumeRequestRateLimit("customer-signup", request, validation.rateLimits.customerSignup)
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
-    const body = await readJsonBody<{ phone?: unknown; password?: unknown; displayName?: unknown; accessToken?: unknown }>(request)
+    const body = await readJsonBody<{ phone?: unknown; password?: unknown; displayName?: unknown; accessToken?: unknown; passwordless?: unknown }>(request)
     const phone = normalizeCustomerPhone(body.phone)
     const accessToken = typeof body.accessToken === "string" ? body.accessToken.trim() : ""
     if (!accessToken) return NextResponse.json({ ok: false, error: "PHONE_VERIFICATION_REQUIRED" }, { status: 401 })
@@ -28,8 +28,10 @@ export async function POST(request: Request) {
     }
     if (verifiedPhone !== phone) return NextResponse.json({ ok: false, error: "INVALID_OTP" }, { status: 401 })
 
-    const account = await createCustomerAccount({ ...body, phone })
-    const response = NextResponse.json({ ok: true, account: customerAccountView(account) }, { status: 201 })
+    const account = body.passwordless === true
+      ? await continueVerifiedCustomer({ phone, displayName: body.displayName })
+      : await createCustomerAccount({ ...body, phone })
+    const response = NextResponse.json({ ok: true, account: customerAccountView(account) }, { status: body.passwordless === true ? 200 : 201 })
     response.cookies.set(CUSTOMER_COOKIE_NAME, createCustomerSession(account.id, account.sessionVersion), customerCookieOptions())
     return response
   } catch (error) {
