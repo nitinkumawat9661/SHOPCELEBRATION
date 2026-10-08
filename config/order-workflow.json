@@ -28,10 +28,12 @@
     ],
     "packing_video_ready": [
       "customer_approved",
-      "preparing"
+      "preparing",
+      "cancelled"
     ],
     "customer_approved": [
-      "shipped"
+      "shipped",
+      "cancelled"
     ],
     "shipped": [
       "out_for_delivery"

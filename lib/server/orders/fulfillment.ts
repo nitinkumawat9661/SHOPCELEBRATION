@@ -11,6 +11,7 @@ type ShippingMetadata = {
   carrierId?: string | null
   labelUrl?: string | null
   bookedAt?: Date | null
+  markShipped?: boolean
 }
 
 async function setShippingDetailsWithClient(
@@ -29,7 +30,8 @@ async function setShippingDetailsWithClient(
   }
 
   const shippedStatus = workflowActionTarget("shipped")
-  const nextStatus = (order.order_type === "individual" && order.status === "preparing") || order.status === "customer_approved" ? shippedStatus : order.status
+  const shouldMarkShipped = metadata.markShipped !== false
+  const nextStatus = shouldMarkShipped && ((order.order_type === "individual" && order.status === "preparing") || order.status === "customer_approved") ? shippedStatus : order.status
 
   await client.query(
     `UPDATE orders
@@ -75,7 +77,8 @@ export function bookOrderWithShipway(publicId: string, packedWeightGrams: number
       const saved = await setShippingDetailsWithClient(client, publicId, "Shipway", shipment.awb, {
         carrierId: shipment.carrierId || null,
         labelUrl: shipment.labelUrl,
-        bookedAt: new Date()
+        bookedAt: new Date(),
+        markShipped: false
       })
       if (!saved.ok) return saved
       return { ok: true as const, status: saved.status, awb: shipment.awb, carrierId: shipment.carrierId || null, labelUrl: shipment.labelUrl }

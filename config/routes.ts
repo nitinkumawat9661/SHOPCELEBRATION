@@ -35,6 +35,7 @@ export const routes = {
     customerPasswordResetVerify: "/api/account/password-reset/verify",
     customerPasswordResetComplete: "/api/account/password-reset/complete",
     customerOrderApprove: (publicId: string) => `/api/account/orders/${encodeURIComponent(publicId)}/approve`,
+    customerOrderCancel: (publicId: string) => `/api/account/orders/${encodeURIComponent(publicId)}/cancel`,
     adminLogin: "/api/admin/login",
     adminLogout: "/api/admin/logout",
     adminOrders: "/api/admin/orders",
