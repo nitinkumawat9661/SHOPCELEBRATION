@@ -115,7 +115,7 @@ function normalizeCampaign(input: unknown): Campaign {
     startAt,
     endAt,
     totalLimit: integer(raw.totalLimit, 0, validation.campaign.maxUsageLimit),
-    perCustomerLimit: integer(raw.perCustomerLimit, 0, validation.campaign.maxUsageLimit)
+    perCustomerLimit: audience === "first_order" ? 1 : integer(raw.perCustomerLimit, 0, validation.campaign.maxUsageLimit)
   }
 }
 
@@ -231,7 +231,7 @@ async function usageAvailable(client: PoolClient, campaign: Campaign, customerAc
   if (campaign.totalLimit > 0) {
     const used = await client.query<CountRow>(
       `SELECT (
-         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND status <> 'cancelled' AND payment_status IN ('paid','verified')) +
+         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND status <> 'cancelled') +
          (SELECT count(*) FROM offer_quotes WHERE campaign_id = $1 AND redeemed_at IS NULL AND expires_at > now())
        )::int AS count`,
       [campaign.id]
@@ -241,7 +241,7 @@ async function usageAvailable(client: PoolClient, campaign: Campaign, customerAc
   if (campaign.perCustomerLimit > 0) {
     const used = await client.query<CountRow>(
       `SELECT (
-         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND customer_account_id = $2 AND status <> 'cancelled' AND payment_status IN ('paid','verified')) +
+         (SELECT count(*) FROM orders WHERE campaign_id = $1 AND customer_account_id = $2 AND status <> 'cancelled') +
          (SELECT count(*) FROM offer_quotes WHERE campaign_id = $1 AND customer_account_id = $2 AND redeemed_at IS NULL AND expires_at > now())
        )::int AS count`,
       [campaign.id, customerAccountId]
