@@ -17,6 +17,7 @@ type TailProps = {
   occasion: string
   builderActive: boolean
   requestedStep: number
+  quickStart: boolean
   requestVersion: number
   onBuild: (step?: number) => void
   onSelectionSync: (tierId: string, occasion: string) => void

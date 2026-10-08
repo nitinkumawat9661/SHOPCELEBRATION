@@ -27,3 +27,22 @@
   .customerAuthCard{padding:17px!important}
   .customerAuthIntro h2{font-size:25px!important}
 }
+
+.quickBuilder{padding-block:34px 48px}
+.quickBuilder .quickBuilderHead{margin-bottom:12px}
+.quickBuilder .quickBuilderHead h2{font-size:clamp(28px,3vw,38px)}
+.quickBuilder .quickBuilderHead p{max-width:560px;margin-inline:auto}
+.quickHamperSummary{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 12px;padding:12px 14px;border:1px solid #ead7c7;border-radius:16px;background:#fffaf4}
+.quickHamperSummary>div{display:grid;gap:2px;min-width:0}
+.quickHamperSummary span{font-size:8px;font-weight:900;letter-spacing:.08em;color:var(--muted)}
+.quickHamperSummary b{font-size:13px;color:#5d2423;overflow-wrap:anywhere}
+.quickHamperSummary small{font-size:9px;color:var(--muted)}
+.quickHamperSummary .secondary{flex:0 0 auto;min-height:36px;padding:8px 10px}
+.quickSteps{position:static;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));top:auto;box-shadow:none;margin-bottom:12px}
+.quickSteps .stepBtn{min-width:0;flex:1 1 auto;padding:10px 8px;font-size:9px}
+.quickBuilder .builderCard{padding:12px}
+@media(max-width:640px){
+  .quickBuilder{padding-block:24px 38px}
+  .quickHamperSummary{align-items:flex-start;padding:11px 12px}
+  .quickHamperSummary .secondary{font-size:9px;white-space:nowrap}
+}

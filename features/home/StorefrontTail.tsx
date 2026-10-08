@@ -24,6 +24,7 @@ export function StorefrontTail({
   occasion,
   builderActive,
   requestedStep,
+  quickStart,
   requestVersion,
   onBuild,
   onSelectionSync
@@ -34,6 +35,7 @@ export function StorefrontTail({
   occasion: string
   builderActive: boolean
   requestedStep: number
+  quickStart: boolean
   requestVersion: number
   onBuild: (step?: number) => void
   onSelectionSync: (tierId: string, occasion: string) => void
@@ -60,7 +62,7 @@ export function StorefrontTail({
   return (
     <>
       <UxMessenger />
-      <LazyHamperBuilder state={state} active={builderActive} />
+      <LazyHamperBuilder state={state} active={builderActive} quickStart={quickStart} />
       <PromiseSection />
       <CustomRequestSection />
       <FinalCta onBuild={() => onBuild(1)} />

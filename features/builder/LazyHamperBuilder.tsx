@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState, type ComponentType } from "re
 import type { useHamperBuilder } from "./useHamperBuilder"
 
 type BuilderState = ReturnType<typeof useHamperBuilder>
-type BuilderComponent = ComponentType<{ state: BuilderState }>
+type BuilderComponent = ComponentType<{ state: BuilderState; quickStart?: boolean }>
 
-export function LazyHamperBuilder({ state, active = false }: { state: BuilderState; active?: boolean }) {
+export function LazyHamperBuilder({ state, active = false, quickStart = false }: { state: BuilderState; active?: boolean; quickStart?: boolean }) {
   const placeholderRef = useRef<HTMLElement>(null)
   const loadingRef = useRef<Promise<void> | null>(null)
   const [Builder, setBuilder] = useState<BuilderComponent | null>(null)
@@ -37,7 +37,7 @@ export function LazyHamperBuilder({ state, active = false }: { state: BuilderSta
     return () => observer.disconnect()
   }, [active, Builder, loadBuilder])
 
-  if (Builder) return <Builder state={state} />
+  if (Builder) return <Builder state={state} quickStart={quickStart} />
 
   return (
     <section ref={placeholderRef} id="builder" className="builder lazyBuilderPlaceholder" aria-label="Hamper builder">
