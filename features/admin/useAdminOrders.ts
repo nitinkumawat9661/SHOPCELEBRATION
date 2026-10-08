@@ -21,7 +21,7 @@ type AdminOrdersState = {
   load: () => Promise<void>
   logout: () => Promise<void>
   updateStatus: (order: AdminOrder, status: OrderStatus) => Promise<void>
-  saveShipping: (order: AdminOrder, provider: string, trackingNumber: string) => Promise<void>
+  saveShipping: (order: AdminOrder, provider: string, trackingNumber: string, weightGrams?: number) => Promise<void>
   uploadVideo: (order: AdminOrder, file: File) => Promise<void>
 }
 
@@ -76,13 +76,13 @@ export function useAdminOrders(): AdminOrdersState {
     }, `${uiContent.admin.statusUpdated}: ${orderStatusLabels[status]}`)
   }
 
-  async function saveShipping(order: AdminOrder, provider: string, trackingNumber: string) {
+  async function saveShipping(order: AdminOrder, provider: string, trackingNumber: string, weightGrams?: number) {
     const shipwayAuto = provider === "__SHIPWAY_AUTO__"
     return mutate(order.publicId, async () => {
       const response = await fetch(routes.api.adminOrderShipping(order.publicId), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(shipwayAuto ? { mode: "shipway" } : { provider, trackingNumber })
+        body: JSON.stringify(shipwayAuto ? { mode: "shipway", weightGrams } : { provider, trackingNumber })
       })
       const result = await response.json()
       if (!response.ok || !result.ok) throw new Error(messageFor(result.error, result.error || errorMessages.UNKNOWN))
