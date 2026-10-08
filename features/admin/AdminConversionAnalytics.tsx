@@ -86,17 +86,17 @@ export function AdminConversionAnalytics() {
   return (
     <section className="adminWorkspaceCard adminAnalyticsWorkspace">
       <div className="adminWorkspaceHead">
-        <div><div className="kicker">CONVERSION ANALYTICS</div><h2>What moves customers forward?</h2><p>Privacy-safe funnel counts use anonymous browser-session hashes; campaign revenue comes from actual non-cancelled orders.</p></div>
+        <div><div className="kicker">CONVERSION ANALYTICS</div><h2>What moves customers forward?</h2><p>Privacy-safe funnel counts use anonymous browser-session hashes; campaign revenue and order KPIs count only paid/verified, non-cancelled orders.</p></div>
         <div className="adminActions"><select value={days} onChange={(event) => setDays(Number(event.target.value))}><option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option></select><button className="secondary" type="button" disabled={loading} onClick={() => load()}>{loading ? "Refreshing…" : "Refresh"}</button></div>
       </div>
       {error && <div className="errorBox adminFeedback">{error}</div>}
 
       <div className="adminKpiGrid analyticsKpis">
-        <div><span>Orders</span><b>{analytics.orders}</b><small>{analytics.orderRate}% of tracked visits</small></div>
-        <div><span>Order value</span><b>{formatMoney(analytics.revenuePaise / 100)}</b><small>Non-cancelled submitted orders</small></div>
+        <div><span>Paid orders</span><b>{analytics.orders}</b><small>{analytics.orderRate}% of tracked commerce sessions</small></div>
+        <div><span>Paid revenue</span><b>{formatMoney(analytics.revenuePaise / 100)}</b><small>Paid/verified, non-cancelled orders</small></div>
         <div><span>Discount given</span><b>{formatMoney(analytics.discountPaise / 100)}</b><small>Real campaign discount</small></div>
         <div><span>Checkout rate</span><b>{analytics.checkoutRate}%</b><small>Tracked visit → checkout</small></div>
-        <div><span>Offer redemption</span><b>{analytics.offerRedemptionRate}%</b><small>{analytics.offerRedemptions}/{analytics.offerQuotes} reserved quotes</small></div>
+        <div><span>Offer redemption</span><b>{analytics.offerRedemptionRate}%</b><small>{analytics.offerRedemptions}/{analytics.offerQuotes} quotes that became paid orders</small></div>
         <div><span>Budget requests</span><b>{analytics.customRequests}</b><small>Custom hamper leads</small></div>
       </div>
 
@@ -104,12 +104,12 @@ export function AdminConversionAnalytics() {
         <section className="adminWorkspaceCard analyticsFunnelCard">
           <div className="kicker">FUNNEL</div><h3>Tracked customer journey</h3>
           <div className="analyticsFunnel">{funnel.map(([label, value]) => <div key={label}><div><span>{label}</span><b>{value}</b></div><i><em style={{ width: `${Math.max(value ? 4 : 0, Math.min(100, value * 100 / base))}%` }} /></i></div>)}</div>
-          <small className="adminMetricNote">One browser session can create multiple events; funnel uses distinct sessions at each step, not personally identified users.</small>
+          <small className="adminMetricNote">Commerce visits are distinct anonymous browser sessions across home, jewelry/product pages and cart. Paid-order rate compares paid orders with those tracked sessions; it is operational analytics, not ad-platform attribution.</small>
         </section>
 
         <section className="adminWorkspaceCard analyticsOfferCard">
           <div className="kicker">OFFER IMPACT</div><h3>Discount economics</h3>
-          <div className="analyticsMoney"><div><span>Gross before discount</span><b>{formatMoney(analytics.subtotalPaise / 100)}</b></div><div><span>Discount</span><b>− {formatMoney(analytics.discountPaise / 100)}</b></div><div><span>Submitted order value</span><b>{formatMoney(analytics.revenuePaise / 100)}</b></div></div>
+          <div className="analyticsMoney"><div><span>Gross before discount</span><b>{formatMoney(analytics.subtotalPaise / 100)}</b></div><div><span>Discount</span><b>− {formatMoney(analytics.discountPaise / 100)}</b></div><div><span>Paid revenue</span><b>{formatMoney(analytics.revenuePaise / 100)}</b></div></div>
         </section>
       </div>
 
