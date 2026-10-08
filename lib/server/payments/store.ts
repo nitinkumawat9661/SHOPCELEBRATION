@@ -4,6 +4,7 @@ import { securityConfig } from "../../../config/security"
 import { assertPaymentCanStart, isPaymentConfirmed } from "../../domain/payment"
 import { createTrackingToken } from "../../security/tokens"
 import { transaction } from "../db"
+import { commitInventoryForOrderWithClient, releaseInventoryForOrderWithClient } from "../inventory"
 import type { ProviderCheckout, ProviderPaymentResult } from "./provider"
 
 export type PaymentOrderSnapshot = {
@@ -226,6 +227,7 @@ export function failPaymentAttempt(attemptId: string, code: string) {
         WHERE id = $2 AND provider_order_id = $3`,
       [code.slice(0, 200), row.order_id, row.provider_order_id]
     )
+    await releaseInventoryForOrderWithClient(client, row.order_id)
   })
 }
 
@@ -313,6 +315,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
             WHERE id = $7`,
           [result.provider, result.providerOrderId, result.providerPaymentId, reference, referenceHash, nextStatus, orderRow.id]
         )
+        await commitInventoryForOrderWithClient(client, orderRow.id)
         if (nextStatus !== previousStatus) {
           await client.query(
             `INSERT INTO order_events (id, order_id, event_type, payload)
@@ -329,6 +332,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
             WHERE id = $3`,
           [result.providerOrderId, result.errorCode || "PAYMENT_FAILED", orderRow.id]
         )
+        await releaseInventoryForOrderWithClient(client, orderRow.id)
       }
     }
 
