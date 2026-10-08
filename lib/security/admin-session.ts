@@ -4,10 +4,12 @@ import { env, requireEnv, requireSecret } from "../../config/env"
 import { securityConfig } from "../../config/security"
 import { validation } from "../../config/validation"
 import { signValue, verifySignedValue } from "./tokens"
+import { adminPasskeyExists } from "../server/admin-passkeys"
 
 export const ADMIN_COOKIE_NAME = securityConfig.adminCookieName
 
-type SessionPayload = { exp: number; version: string }
+export type AdminAuthMethod = "password" | "passkey"
+type SessionPayload = { exp: number; version: string; method: AdminAuthMethod }
 
 function scryptOptions() {
   return {
@@ -39,26 +41,40 @@ export function verifyAdminPassword(password: string) {
   return actual.length === expected.length && timingSafeEqual(actual, expected)
 }
 
-export function createAdminSession() {
+export function createAdminSession(method: AdminAuthMethod) {
   const payload: SessionPayload = {
     exp: Math.floor(Date.now() / 1000) + validation.adminSessionTtlSeconds,
-    version: requireEnv("adminSessionVersion")
+    version: requireEnv("adminSessionVersion"),
+    method
   }
   return signValue(Buffer.from(JSON.stringify(payload)).toString("base64url"), requireSecret("adminSessionSecret"))
 }
 
-export function validateAdminSession(value: string | undefined) {
-  if (!value) return false
+export function validateAdminSession(value: string | undefined): SessionPayload | null {
+  if (!value) return null
   const encoded = verifySignedValue(value, requireSecret("adminSessionSecret"))
-  if (!encoded) return false
+  if (!encoded) return null
   try {
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as SessionPayload
-    return payload.exp > Math.floor(Date.now() / 1000) && payload.version === env.adminSessionVersion
+    if (payload.exp <= Math.floor(Date.now() / 1000) || payload.version !== env.adminSessionVersion) return null
+    if (payload.method !== "password" && payload.method !== "passkey") return null
+    return payload
   } catch {
-    return false
+    return null
+  }
+}
+
+export async function getAdminAccessState() {
+  const session = validateAdminSession((await cookies()).get(ADMIN_COOKIE_NAME)?.value)
+  const passkeyEnabled = await adminPasskeyExists()
+  const authenticated = Boolean(session && (session.method === "passkey" || !passkeyEnabled))
+  return {
+    authenticated,
+    passkeyEnabled,
+    method: authenticated ? session?.method || null : null
   }
 }
 
 export async function isAdminRequest() {
-  return validateAdminSession((await cookies()).get(ADMIN_COOKIE_NAME)?.value)
+  return (await getAdminAccessState()).authenticated
 }
