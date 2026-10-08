@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { routes } from "../../config/routes"
 import type { CatalogConfig } from "../../lib/domain/catalog"
-import { defaultCatalog } from "../../lib/domain/catalog"
+import { defaultCatalog, isIndividualListing } from "../../lib/domain/catalog"
 import type { Campaign, CampaignConfig } from "../../lib/domain/campaign"
 
 const emptyConfig: CampaignConfig = { campaigns: [] }
@@ -132,27 +132,27 @@ export function AdminCampaigns() {
       {dirty && <div className="adminDraftNotice">Unpublished changes • Live checkout still uses the previous campaign rules.</div>}
       {notice && <div className="successBox adminFeedback">{notice}</div>}
       {error && <div className="errorBox adminFeedback">{error}</div>}
-      <div className="adminCampaignGuide"><b>Automatic</b> offers apply at checkout. <b>Coupon</b> offers apply only when the customer enters the exact code. Hamper eligibility uses selected hamper tiers; individual-item eligibility uses selected products. Usage limits reserve a quote temporarily, but unpaid/failed orders do not permanently consume the offer.</div>
+      <div className="adminCampaignGuide"><b>Automatic</b> offers apply at checkout. <b>Coupon</b> offers apply only when the customer enters the exact code. Hamper eligibility uses selected hamper tiers; individual-item eligibility uses selected products. Active quotes and submitted offer orders reserve usage so limited campaigns cannot be oversubscribed; cancelling an order releases its slot.</div>
 
       {config.campaigns.length === 0 && <div className="trackingState">No campaigns yet. Add one when you want to run a genuine offer.</div>}
       <div className="adminCampaignList">
         {config.campaigns.map((campaign, index) => <article className={`adminCampaignCard ${campaign.active ? "active" : ""}`} key={`${campaign.id}-${index}`}>
           <header><div><span>{campaign.active ? "LIVE WHEN ELIGIBLE" : "DRAFT / OFF"}</span><h3>{campaign.name}</h3><small>{campaign.id}</small></div><label className="adminToggle"><input type="checkbox" checked={campaign.active} onChange={(event) => patch(index, "active", event.target.checked)} /><span>Active</span></label></header>
           <div className="adminSettingsGrid campaignBasics">
-            <label>Campaign ID<input value={campaign.id} maxLength={60} onChange={(event) => patch(index, "id", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} /></label>
+            <label>Campaign ID<input value={campaign.id} readOnly /><small>Generated automatically; kept stable for analytics history.</small></label>
             <label>Name<input value={campaign.name} maxLength={100} onChange={(event) => patch(index, "name", event.target.value)} /></label>
             <label>Badge<input value={campaign.badge} maxLength={40} onChange={(event) => patch(index, "badge", event.target.value)} /></label>
             <label>Offer type<select value={campaign.mode} onChange={(event) => patch(index, "mode", event.target.value as Campaign["mode"])}><option value="automatic">Automatic</option><option value="coupon">Coupon code</option></select></label>
             {campaign.mode === "coupon" && <label>Coupon code<input value={campaign.couponCode} maxLength={32} placeholder="WELCOME10" onChange={(event) => patch(index, "couponCode", event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ""))} /></label>}
             <label>Applies to<select value={campaign.scope} onChange={(event) => patch(index, "scope", event.target.value as Campaign["scope"])}><option value="all">All orders</option><option value="hamper">Hampers only</option><option value="individual">Individual items only</option></select></label>
             <label>Trigger<select value="checkout" disabled><option value="checkout">Checkout</option></select><small>Checkout-only to avoid manipulative hesitation offers.</small></label>
-            <label>Audience<select value={campaign.audience} onChange={(event) => patch(index, "audience", event.target.value as Campaign["audience"])}><option value="all">Everyone</option><option value="first_order">First order only</option></select></label>
+            <label>Audience<select value={campaign.audience} onChange={(event) => { const audience = event.target.value as Campaign["audience"]; replace(index, { ...campaign, audience, perCustomerLimit: audience === "first_order" ? 1 : campaign.perCustomerLimit }) }}><option value="all">Everyone</option><option value="first_order">First paid order only</option></select></label>
             <label>Discount type<select value={campaign.discountType} onChange={(event) => patch(index, "discountType", event.target.value as Campaign["discountType"])}><option value="percent">Percent</option><option value="fixed">Fixed ₹</option></select></label>
             <label>Discount value<input type="number" min={1} value={campaign.discountValue} onChange={(event) => patch(index, "discountValue", Number(event.target.value))} /><small>{campaign.discountType === "percent" ? "% off" : "Rupees off"}</small></label>
             <label>Max discount ₹<input type="number" min={0} value={campaign.maxDiscountRupees} onChange={(event) => patch(index, "maxDiscountRupees", Number(event.target.value))} /><small>0 = no extra cap</small></label>
             <label>Minimum order ₹<input type="number" min={0} value={campaign.minSubtotalRupees} onChange={(event) => patch(index, "minSubtotalRupees", Number(event.target.value))} /></label>
             <label>Total uses<input type="number" min={0} value={campaign.totalLimit} onChange={(event) => patch(index, "totalLimit", Number(event.target.value))} /><small>0 = unlimited</small></label>
-            <label>Uses per customer<input type="number" min={0} value={campaign.perCustomerLimit} onChange={(event) => patch(index, "perCustomerLimit", Number(event.target.value))} /><small>0 = unlimited</small></label>
+            <label>Uses per customer<input type="number" min={campaign.audience === "first_order" ? 1 : 0} disabled={campaign.audience === "first_order"} value={campaign.audience === "first_order" ? 1 : campaign.perCustomerLimit} onChange={(event) => patch(index, "perCustomerLimit", Number(event.target.value))} /><small>{campaign.audience === "first_order" ? "Locked to 1 for first-order campaigns" : "0 = unlimited"}</small></label>
             <label>Starts<input type="datetime-local" value={localDateTime(campaign.startAt)} onChange={(event) => patch(index, "startAt", isoDateTime(event.target.value))} /></label>
             <label>Ends<input type="datetime-local" value={localDateTime(campaign.endAt)} onChange={(event) => patch(index, "endAt", isoDateTime(event.target.value))} /></label>
             <label className="adminWide">Customer message<input value={campaign.message} maxLength={180} onChange={(event) => patch(index, "message", event.target.value)} /></label>
@@ -160,7 +160,7 @@ export function AdminCampaigns() {
 
           <div className="campaignEligibility">
             <div><b>Eligible hampers</b><small>Applies only to hamper orders. Nothing selected = all active hampers.</small><div className="campaignChoiceGrid">{catalog.tiers.filter((tier) => tier.active !== false).map((tier) => <label key={tier.id}><input type="checkbox" checked={campaign.eligibleTierIds.includes(tier.id)} onChange={() => toggleList(index, "eligibleTierIds", tier.id)} /><span>₹{tier.price} • {tier.name}</span></label>)}</div></div>
-            <div><b>Eligible products</b><small>Applies only to individual-item carts. Nothing selected = any individual product; otherwise at least one cart item must match.</small><div className="campaignChoiceGrid campaignProducts">{catalog.products.filter((product) => product.active !== false).map((product) => <label key={product.id}><input type="checkbox" checked={campaign.eligibleProductIds.includes(product.id)} onChange={() => toggleList(index, "eligibleProductIds", product.id)} /><span>{product.name}</span></label>)}</div></div>
+            <div><b>Eligible products</b><small>Applies only to individual-item carts. Nothing selected = any individual product; otherwise at least one cart item must match.</small><div className="campaignChoiceGrid campaignProducts">{catalog.products.filter((product) => isIndividualListing(product)).map((product) => <label key={product.id}><input type="checkbox" checked={campaign.eligibleProductIds.includes(product.id)} onChange={() => toggleList(index, "eligibleProductIds", product.id)} /><span>{product.name}</span></label>)}</div></div>
           </div>
           <footer><div className="adminCampaignPreview"><span>{campaign.badge}</span><b>{campaign.name}</b><small>{campaign.message}</small></div><button className="dangerButton" type="button" onClick={() => remove(index)}>Delete offer</button></footer>
         </article>)}
