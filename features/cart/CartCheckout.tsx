@@ -58,7 +58,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   const locked = loading || order.submitting || Boolean(order.paymentOrderId || order.created)
   const items = frozenItems || cart.items
   const rows = items.map((item) => ({ ...item, product: catalog?.products.find((product) => product.id === item.productId) }))
-  const unavailable = rows.some((row) => !row.product || !isIndividuallySellable(row.product))
+  const unavailable = rows.some((row) => !row.product || !isIndividuallySellable(row.product) || (row.product.stockAvailable != null && row.quantity > row.product.stockAvailable))
   const subtotalPaise = rows.reduce((total, row) => total + (row.product && isIndividuallySellable(row.product) ? (row.product.salePricePaise || 0) * row.quantity : 0), 0)
   const amountTooLarge = subtotalPaise > 2_147_483_647
   const activeKey = cartKey(cart.items)
@@ -129,7 +129,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
     if (!latest) return
     if (cart.items.some((item) => {
       const product = latest.products.find((product) => product.id === item.productId)
-      return !product || !isIndividuallySellable(product)
+      return !product || !isIndividuallySellable(product) || (product.stockAvailable != null && item.quantity > product.stockAvailable)
     })) return
     if (cart.items.reduce((total, item) => total + latest.products.find((product) => product.id === item.productId)!.salePricePaise! * item.quantity, 0) > 2_147_483_647) return
     setCheckoutError("")
@@ -199,7 +199,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
         if (!latest) return
         if (latestCartKey.current !== activeKey) { setCheckoutError("Your cart changed. Return to your cart and review it before payment."); return }
         const latestRows = items.map((item) => ({ ...item, product: latest.products.find((product) => product.id === item.productId) }))
-        if (latestRows.some((row) => !row.product || !isIndividuallySellable(row.product))) { setCheckoutError("An item is no longer available. Return to your cart and remove it before payment."); return }
+        if (latestRows.some((row) => !row.product || !isIndividuallySellable(row.product) || (row.product.stockAvailable != null && row.quantity > row.product.stockAvailable))) { setCheckoutError("An item is no longer available. Return to your cart and remove it before payment."); return }
         const latestTotal = latestRows.reduce((total, row) => total + row.product!.salePricePaise! * row.quantity, 0)
         if (latestTotal !== subtotalPaise || latestRows.some((row, index) => row.product!.salePricePaise !== rows[index].product?.salePricePaise)) {
           setAccepted(false)
@@ -236,10 +236,10 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
           <div className="cartRowPhoto">{row.product ? <CatalogProductImage product={row.product} /> : <span>Unavailable item</span>}</div>
           <div className="cartRowCopy"><span className="kicker">{row.product?.category || "CATALOG ITEM"}</span><h2>{row.product ? <Link href={`/jewelry/${encodeURIComponent(row.productId)}`}>{row.product.name}</Link> : row.productId}</h2>
             <p>{row.product && isIndividuallySellable(row.product) ? `${formatMoney((row.product.salePricePaise || 0) / 100)} each` : !catalog ? "Availability cannot be checked until the catalog loads. Try again shortly." : "This item is no longer available for individual purchase. Remove it to continue."}</p>
-            <div className="cartRowControls"><div className="cartQuantity"><button type="button" aria-label={`Reduce quantity of ${row.product?.name || row.productId}`} disabled={locked || row.quantity <= 1} onClick={() => cart.quantity(row.productId, row.quantity - 1)}>−</button><output aria-label="Quantity">{row.quantity}</output><button type="button" aria-label={`Increase quantity of ${row.product?.name || row.productId}`} disabled={locked || row.quantity >= MAX_CART_QUANTITY} onClick={() => cart.quantity(row.productId, row.quantity + 1)}>+</button></div><button className="cartRemove" type="button" disabled={locked} onClick={() => cart.remove(row.productId)}>Remove</button></div>
+            <div className="cartRowControls"><div className="cartQuantity"><button type="button" aria-label={`Reduce quantity of ${row.product?.name || row.productId}`} disabled={locked || row.quantity <= 1} onClick={() => cart.quantity(row.productId, row.quantity - 1)}>−</button><output aria-label="Quantity">{row.quantity}</output><button type="button" aria-label={`Increase quantity of ${row.product?.name || row.productId}`} disabled={locked || row.quantity >= Math.min(MAX_CART_QUANTITY, row.product?.stockAvailable ?? MAX_CART_QUANTITY)} onClick={() => cart.quantity(row.productId, row.quantity + 1)}>+</button></div><button className="cartRemove" type="button" disabled={locked} onClick={() => cart.remove(row.productId)}>Remove</button></div>
           </div><strong className="cartRowTotal">{row.product && isIndividuallySellable(row.product) ? formatMoney((row.product.salePricePaise || 0) * row.quantity / 100) : "—"}</strong>
         </article>)}<Link className="cartContinueLink" href="/jewelry?view=all">← Continue shopping</Link></div>
-        <div>{summary}{catalog && unavailable && <p className="errorBox" role="alert">Remove unavailable items to continue.</p>}{amountTooLarge && <p className="errorBox" role="alert">This cart exceeds the supported order amount. Remove some items to continue.</p>}<button className="primary cartCheckoutButton" type="button" disabled={loading || locked || unavailable || amountTooLarge || !catalog || Boolean(catalogError)} onClick={() => void beginCheckout()}>{loading ? "Checking current prices…" : "Continue to delivery"}</button><p className="cartAccountHint">Started a payment earlier? <Link href="/account">Check your saved orders</Link> before paying again.</p></div>
+        <div>{summary}{catalog && unavailable && <p className="errorBox" role="alert">One or more items are sold out or exceed the available stock. Adjust your cart to continue.</p>}{amountTooLarge && <p className="errorBox" role="alert">This cart exceeds the supported order amount. Remove some items to continue.</p>}<button className="primary cartCheckoutButton" type="button" disabled={loading || locked || unavailable || amountTooLarge || !catalog || Boolean(catalogError)} onClick={() => void beginCheckout()}>{loading ? "Checking current prices…" : "Continue to delivery"}</button><p className="cartAccountHint">Started a payment earlier? <Link href="/account">Check your saved orders</Link> before paying again.</p></div>
       </div> : <section id="builder" className="cartCheckoutBuilder"><div className="builderCard">
         {step === 2 && <DetailsStep individual summary={summary} checkout={checkout} occasions={[]} error={detailsError} fieldErrors={fieldErrors} updateField={updateField} onBack={() => setStep(1)} onNext={continueToPayment} />}
         {step === 3 && <div ref={paymentRef} tabIndex={-1}>
