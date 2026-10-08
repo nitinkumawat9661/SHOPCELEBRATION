@@ -245,20 +245,29 @@ function productsFor(order: OrderRecord) {
   }]
 }
 
-export async function bookShipwayShipment(order: OrderRecord): Promise<ShipwayBooking> {
+function packedWeight(order: OrderRecord, value: number) {
+  if (!Number.isInteger(value)) throw new ShipwayApiError("INVALID_SHIPPING_WEIGHT")
+  if (order.orderType === "individual") {
+    if (value < 80 || value > 200) throw new ShipwayApiError("INVALID_SHIPPING_WEIGHT")
+    return value
+  }
+  if (value < 100 || value > 30000) throw new ShipwayApiError("INVALID_SHIPPING_WEIGHT")
+  return value
+}
+
+export async function bookShipwayShipment(order: OrderRecord, packedWeightGrams: number): Promise<ShipwayBooking> {
   const warehouseId = numericId(requireEnv("shipwayWarehouseId"), "INVALID_SHIPWAY_WAREHOUSE_ID")
   const returnWarehouseId = numericId(requireEnv("shipwayReturnWarehouseId"), "INVALID_SHIPWAY_RETURN_WAREHOUSE_ID")
   const name = splitName(order.receiverName)
-  const estimatedWeightGrams = order.orderType === "individual"
-    ? order.lineItems.reduce((total, item) => total + item.quantity * 80, 0)
-    : undefined
-  const selectedCarrier = await quoteShipwayShipping({ toPincode: order.pincode, weightGrams: estimatedWeightGrams })
+  const weightGrams = packedWeight(order, packedWeightGrams)
+  const selectedCarrier = await quoteShipwayShipping({ toPincode: order.pincode, weightGrams })
 
   console.info("shipway-carrier-selected", {
     orderId: order.publicId,
     carrierId: selectedCarrier.carrierId,
     carrier: selectedCarrier.carrierName,
-    quotedCharge: selectedCarrier.chargeRupees
+    quotedCharge: selectedCarrier.chargeRupees,
+    packedWeightGrams: weightGrams
   })
 
   const payload = {
