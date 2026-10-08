@@ -337,3 +337,32 @@ export async function getShipwayTracking(awb: string): Promise<ShipwayTracking |
     trackUrl: httpsUrl(tracking.track_url)
   }
 }
+
+
+function shipwayCancelAccepted(raw: unknown) {
+  const rows = objectList(raw)
+  const values = rows.flatMap((row) => [
+    row.success,
+    row.status,
+    row.message,
+    row.msg
+  ]).filter((value) => value !== undefined && value !== null)
+  return values.some((value) => {
+    if (value === true || value === 1 || value === "1") return true
+    const text = String(value).trim().toLowerCase()
+    return text === "success" || text.includes("cancelled successfully") || text.includes("canceled successfully") || text.includes("cancel successfully")
+  })
+}
+
+export async function cancelShipwayShipment(awb: string) {
+  if (!/^[A-Za-z0-9._-]{4,120}$/.test(awb)) throw new ShipwayApiError("INVALID_SHIPWAY_AWB")
+  const raw = await request("/api/Cancel/", {
+    method: "POST",
+    body: JSON.stringify({ awb_number: awb })
+  })
+  if (!shipwayCancelAccepted(raw)) {
+    console.error("shipway-cancel-response", { awb, responseType: Array.isArray(raw) ? "array" : typeof raw })
+    throw new ShipwayApiError("SHIPWAY_CANCEL_FAILED")
+  }
+  return { ok: true as const }
+}
