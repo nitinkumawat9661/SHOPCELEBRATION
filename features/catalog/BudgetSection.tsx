@@ -22,7 +22,7 @@ function tierBadge(item: Tier, recommendedTierId: string, socialProof: TierSocia
   return label
 }
 
-export function BudgetSection({ tiers, selectedTierId, recommendedTierId, socialProof, onSelect }: { tiers: Tier[]; selectedTierId: string; recommendedTierId: string; socialProof: TierSocialProof | null; onSelect: (id: string) => void }) {
+export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommendedTierId, socialProof, onSelect }: { tiers: Tier[]; selectedTierId: string; hasChosenTier: boolean; recommendedTierId: string; socialProof: TierSocialProof | null; onSelect: (id: string) => void }) {
   return (
     <section id="budgets" className="celebrationBudgets">
       <div className="wrap">
@@ -34,14 +34,14 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
           {tiers.map((item) => {
             const badge = tierBadge(item, recommendedTierId, socialProof)
             return (
-              <button type="button" key={item.id} className={`tier ${selectedTierId === item.id ? "active" : ""}`} aria-pressed={selectedTierId === item.id} onClick={() => onSelect(item.id)}>
+              <button type="button" key={item.id} className={`tier ${hasChosenTier && selectedTierId === item.id ? "active" : ""}`} aria-pressed={hasChosenTier && selectedTierId === item.id} onClick={() => onSelect(item.id)}>
                 {badge && <span className="badge">{badge}</span>}
                 <div className="celebrationTierEyebrow">CURATED HAMPER</div>
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
                 <div className="name">{item.name}</div>
                 <div className="note">Curated for your occasion</div>
-                <span className="celebrationTierCta"><span>{selectedTierId === item.id ? "Selected" : "Choose this hamper"}</span><span className="celebrationTierArrow" aria-hidden="true">→</span></span>
+                <span className="celebrationTierCta"><span>{hasChosenTier && selectedTierId === item.id ? "Selected" : "Choose this hamper"}</span><span className="celebrationTierArrow" aria-hidden="true">→</span></span>
               </button>
             )
           })}
