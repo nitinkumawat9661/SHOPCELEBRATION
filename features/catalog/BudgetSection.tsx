@@ -36,12 +36,12 @@ export function BudgetSection({ tiers, selectedTierId, recommendedTierId, social
             return (
               <button type="button" key={item.id} className={`tier ${selectedTierId === item.id ? "active" : ""}`} aria-pressed={selectedTierId === item.id} onClick={() => onSelect(item.id)}>
                 {badge && <span className="badge">{badge}</span>}
-                <div className="celebrationTierRibbon" aria-hidden="true">✦</div>
+                <div className="celebrationTierEyebrow">CURATED HAMPER</div>
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
                 <div className="name">{item.name}</div>
                 <div className="note">Curated for your occasion</div>
-                <span className="celebrationTierCta">Make it theirs <span aria-hidden="true">→</span></span>
+                <span className="celebrationTierCta"><span>{selectedTierId === item.id ? "Selected" : "Choose this hamper"}</span><span className="celebrationTierArrow" aria-hidden="true">→</span></span>
               </button>
             )
           })}
