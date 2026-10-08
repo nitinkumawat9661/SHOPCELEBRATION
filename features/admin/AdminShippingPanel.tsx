@@ -10,7 +10,7 @@ export function AdminShippingPanel({ order, busy, onShipping }: {
   onShipping: (provider: string, trackingNumber: string) => void | Promise<void>
 }) {
   const copy = uiContent.admin
-  const editable = statusHasCapability(order.status, "shippingUpdate")
+  const editable = statusHasCapability(order.status, "shippingUpdate") && (order.orderType === "individual" || order.status !== "preparing")
   const hasShipping = Boolean(order.shippingProvider && order.shippingTrackingNumber)
 
   if (editable) {
@@ -24,7 +24,7 @@ export function AdminShippingPanel({ order, busy, onShipping }: {
           <b>{copy.shippingHeading}</b>
           <span>{order.status === "customer_approved" ? "Customer approval complete. Automatic Shipway booking normally runs immediately; use retry only if AWB is still missing." : copy.shippingUpdateHint}</span>
         </div>
-        {!hasShipping && order.status === "customer_approved" && <button className="primary" type="button" disabled={busy} onClick={() => onShipping("__SHIPWAY_AUTO__", "")}>{busy ? copy.working : "Retry automatic Shipway booking"}</button>}
+        {!hasShipping && (order.status === "customer_approved" || (order.orderType === "individual" && order.status === "preparing")) && <button className="primary" type="button" disabled={busy} onClick={() => onShipping("__SHIPWAY_AUTO__", "")}>{busy ? copy.working : "Retry automatic Shipway booking"}</button>}
         {hasShipping && <div className="adminShippingSaved">
           <b>{copy.shippingSavedHeading}</b>
           <span>{order.shippingProvider}{uiContent.common.separator}{order.shippingTrackingNumber}</span>
