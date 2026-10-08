@@ -7,22 +7,23 @@ import { transaction } from "./db"
 const RESERVATION_MINUTES = 30
 
 async function releaseExpiredWithClient(client: PoolClient) {
-  const expired = await client.query<{ product_id: string; quantity: number }>(
-    `SELECT product_id, sum(quantity)::int AS quantity
+  const expiredRows = await client.query<{ product_id: string; quantity: number }>(
+    `SELECT product_id, quantity
        FROM inventory_reservations
       WHERE status = 'reserved' AND expires_at <= now()
-      GROUP BY product_id
       FOR UPDATE`
   )
-  for (const row of expired.rows) {
+  const totals = new Map<string, number>()
+  for (const row of expiredRows.rows) totals.set(row.product_id, (totals.get(row.product_id) || 0) + row.quantity)
+  for (const [productId, quantity] of totals) {
     await client.query(
       `UPDATE product_inventory
           SET available_quantity = available_quantity + $1, updated_at = now()
         WHERE product_id = $2`,
-      [row.quantity, row.product_id]
+      [quantity, productId]
     )
   }
-  if (expired.rows.length) {
+  if (expiredRows.rows.length) {
     await client.query(
       `UPDATE inventory_reservations
           SET status = 'released', updated_at = now()
