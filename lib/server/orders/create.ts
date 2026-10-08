@@ -12,9 +12,11 @@ import { markOfferQuoteRedeemed, resolveOrderPricing, type OrderPricing } from "
 import { normalizeCatalogConfig } from "../catalog"
 import { transaction } from "../db"
 import { createPublicOrderId } from "../order-id"
+import { reserveInventoryForOrderWithClient } from "../inventory"
 import { appendOrderEvent } from "./events"
 
 type ExistingOrder = {
+  id: string
   order_type: "hamper" | "individual"
   tier_id: string | null
   selected_product_ids: string[]
@@ -49,7 +51,7 @@ function existingPricing(row: ExistingOrder): OrderPricing & { shippingPaise: nu
 
 async function findExisting(client: PoolClient, idempotencyKey: string) {
   const existing = await client.query<ExistingOrder>(
-    `SELECT order_type, tier_id, selected_product_ids, line_items, public_id, customer_account_id, subtotal_paise, discount_paise, shipping_paise, amount_paise,
+    `SELECT id, order_type, tier_id, selected_product_ids, line_items, public_id, customer_account_id, subtotal_paise, discount_paise, shipping_paise, amount_paise,
             campaign_id, campaign_title, offer_quote_id
        FROM orders WHERE idempotency_key = $1`,
     [idempotencyKey]
@@ -77,6 +79,7 @@ async function insertOrder(
   const already = await findExisting(client, input.idempotencyKey)
   if (already) {
     validateExistingOrder(already, input, customerAccountId)
+    if (input.orderType === "individual") await reserveInventoryForOrderWithClient(client, already.id, input.lineItems)
     return { publicId: already.public_id, trackingToken, pricing: existingPricing(already) }
   }
 
@@ -160,10 +163,12 @@ async function insertOrder(
     const existing = await findExisting(client, input.idempotencyKey)
     if (!existing) throw new Error("IDEMPOTENCY_LOOKUP_FAILED")
     validateExistingOrder(existing, input, customerAccountId)
+    if (input.orderType === "individual") await reserveInventoryForOrderWithClient(client, existing.id, input.lineItems)
     return { publicId: existing.public_id, trackingToken, pricing: existingPricing(existing) }
   }
 
   await client.query(`UPDATE orders SET shipping_paise = $1 WHERE id = $2`, [pricing.shippingPaise, internalId])
+  if (input.orderType === "individual") await reserveInventoryForOrderWithClient(client, internalId, input.lineItems)
   await markOfferQuoteRedeemed(client, pricing.offerQuoteId)
   await appendOrderEvent(client, internalId, orderEvents.created, {
     status: orderConfig.initialStatus,
