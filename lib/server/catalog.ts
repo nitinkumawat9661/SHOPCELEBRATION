@@ -247,8 +247,10 @@ export async function getCatalogAdminState() {
   const result = await query<DraftRow>("SELECT payload, base_version, updated_at FROM catalog_drafts WHERE id = 'primary'")
   const draft = result.rows[0]
   if (!draft) return { ...live, draftExists: false, draftBaseVersion: null, draftUpdatedAt: null }
+  const draftCatalog = normalizeCatalogConfig(draft.payload)
+  const draftAvailability = await inventoryAvailabilityForCatalog(draftCatalog)
   return {
-    catalog: normalizeCatalogConfig(draft.payload),
+    catalog: applyInventoryAvailability(draftCatalog, draftAvailability),
     version: live.version,
     draftExists: true,
     draftBaseVersion: draft.base_version,
