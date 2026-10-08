@@ -115,7 +115,7 @@ function normalizeCampaign(input: unknown): Campaign {
     startAt,
     endAt,
     totalLimit: integer(raw.totalLimit, 0, validation.campaign.maxUsageLimit),
-    perCustomerLimit: integer(raw.perCustomerLimit, 0, validation.campaign.maxUsageLimit)
+    perCustomerLimit: audience === "first_order" ? 1 : integer(raw.perCustomerLimit, 0, validation.campaign.maxUsageLimit)
   }
 }
 
@@ -209,14 +209,19 @@ function campaignMatches(
   if (campaign.mode === "automatic" && campaign.trigger !== trigger) return false
   if (campaign.scope !== "all" && campaign.scope !== orderType) return false
   if (subtotalPaise < toMinorUnits(campaign.minSubtotalRupees)) return false
-  if (campaign.eligibleTierIds.length && (!tierId || !campaign.eligibleTierIds.includes(tierId))) return false
-  if (campaign.eligibleProductIds.length && !selectedProductIds.some((id) => campaign.eligibleProductIds.includes(id))) return false
+  if (orderType === "hamper" && campaign.eligibleTierIds.length && (!tierId || !campaign.eligibleTierIds.includes(tierId))) return false
+  if (orderType === "individual" && campaign.eligibleProductIds.length && !selectedProductIds.some((id) => campaign.eligibleProductIds.includes(id))) return false
   return true
 }
 
 async function customerHasOrder(client: PoolClient, customerAccountId: string) {
   const result = await client.query<{ exists: boolean }>(
-    `SELECT EXISTS(SELECT 1 FROM orders WHERE customer_account_id = $1 AND status <> 'cancelled') AS exists`,
+    `SELECT EXISTS(
+       SELECT 1 FROM orders
+        WHERE customer_account_id = $1
+          AND status <> 'cancelled'
+          AND payment_status IN ('paid','verified')
+     ) AS exists`,
     [customerAccountId]
   )
   return Boolean(result.rows[0]?.exists)

@@ -64,7 +64,8 @@ export async function getConversionAnalytics(days = 30) {
               COALESCE(sum(discount_paise),0)::int AS discount_paise
          FROM orders
         WHERE created_at >= now() - ($1::text || ' days')::interval
-          AND status <> 'cancelled'`,
+          AND status <> 'cancelled'
+          AND payment_status IN ('paid','verified')`,
       [safeDays]
     ),
     query<RequestStatsRow>(
@@ -74,7 +75,14 @@ export async function getConversionAnalytics(days = 30) {
     ),
     query<QuoteStatsRow>(
       `SELECT count(*)::int AS quotes,
-              count(*) FILTER (WHERE redeemed_at IS NOT NULL)::int AS redeemed
+              count(*) FILTER (
+                WHERE EXISTS (
+                  SELECT 1 FROM orders
+                   WHERE orders.offer_quote_id = offer_quotes.id
+                     AND orders.status <> 'cancelled'
+                     AND orders.payment_status IN ('paid','verified')
+                )
+              )::int AS redeemed
          FROM offer_quotes
         WHERE created_at >= now() - ($1::text || ' days')::interval`,
       [safeDays]
@@ -87,7 +95,9 @@ export async function getConversionAnalytics(days = 30) {
               COALESCE(sum(discount_paise),0)::int AS discount_paise
          FROM orders
         WHERE created_at >= now() - ($1::text || ' days')::interval
-          AND status <> 'cancelled' AND campaign_id IS NOT NULL
+          AND status <> 'cancelled'
+          AND payment_status IN ('paid','verified')
+          AND campaign_id IS NOT NULL
         GROUP BY campaign_id
         ORDER BY orders DESC, revenue_paise DESC`,
       [safeDays]

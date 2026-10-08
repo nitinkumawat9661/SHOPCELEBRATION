@@ -30,7 +30,7 @@ function initialOccasion(catalog: CatalogConfig) {
     : (catalog.occasions[0] || "")
 }
 
-function trackLater(eventName: "storefront_view" | "budget_selected" | "builder_started", tierId?: string) {
+function trackLater(eventName: "budget_selected" | "builder_started", tierId?: string) {
   if (typeof window === "undefined") return
   void import("../analytics/conversion").then(({ trackConversion }) => {
     trackConversion(eventName, tierId ? { tierId } : {})
@@ -54,32 +54,6 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
     trackLater("builder_started", tierId)
   }, [selectedTierId])
 
-  useEffect(() => {
-    let tracked = false
-    let timer = 0
-    const send = () => {
-      if (tracked) return
-      tracked = true
-      cleanup()
-      trackLater("storefront_view")
-    }
-    const onScroll = () => {
-      if (window.scrollY >= 80) send()
-    }
-    const cleanup = () => {
-      window.clearTimeout(timer)
-      window.removeEventListener("scroll", onScroll)
-      window.removeEventListener("pointerdown", send)
-      window.removeEventListener("keydown", send)
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true })
-    window.addEventListener("pointerdown", send, { passive: true, once: true })
-    window.addEventListener("keydown", send, { once: true })
-    timer = window.setTimeout(send, 12000)
-
-    return cleanup
-  }, [])
 
   useEffect(() => {
     function onBuilderOpen(event: Event) {

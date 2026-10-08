@@ -57,7 +57,7 @@ const customerUi = {
       choicesLabel: "items",
       mixPointsLabel: "mix limit",
       availableFrom: "Available from {amount}",
-      maxChoices: "Up to {count} items",
+      maxChoices: "Curated selection",
       mixExceedsBudget: "This combination goes above the selected budget"
     },
     details: {

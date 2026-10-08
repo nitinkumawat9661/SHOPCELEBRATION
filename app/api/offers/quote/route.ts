@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const items = Array.isArray(body.items)
       ? body.items.map((value) => value && typeof value === "object" ? value as { productId?: unknown; quantity?: unknown } : {})
       : []
-    const trigger: CampaignTrigger = body.trigger === "hesitation" ? "hesitation" : "checkout"
+    const trigger: CampaignTrigger = "checkout"
     const couponCode = typeof body.couponCode === "string" ? body.couponCode : ""
     const { catalog } = await getCatalogConfig()
     const quote = await createBestOfferQuote({ customerAccountId: account.id, orderType, tierId, selectedProductIds, items, trigger, couponCode, catalog })
