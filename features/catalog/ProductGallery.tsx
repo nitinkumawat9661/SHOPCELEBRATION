@@ -29,6 +29,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
           style={{ backgroundImage: `url("${currentSprite.url}")`, backgroundPosition: currentSprite.backgroundPosition }}
         /> : <SafeCatalogImage
           src={catalogImageVariant(current.url, "main")}
+          fallbackSrc={current.fallbackUrl}
           srcSet={catalogImageVariant(current.url, "zoom") !== current.url
             ? `${catalogImageVariant(current.url, "main")} 900w, ${catalogImageVariant(current.url, "zoom")} 1600w`
             : undefined}
