@@ -29,9 +29,18 @@ type DashboardOrder = {
   receiverName: string
   packingVideoUrl: string | null
   shippingTrackingNumber: string | null
+  estimatedDeliveryDate: string | null
   customerApprovedAt: string | null
   createdAt: string
   updatedAt: string
+}
+
+function formatDeliveryDate(value: string | null | undefined) {
+  if (!value) return ""
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return value
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(date)
 }
 
 function progressIndex(status: OrderStatus) {
@@ -277,7 +286,7 @@ export function CustomerAccountPage() {
 
               <div className="customerOrderUpdates">
                 {!individual && <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>}
-                <div className="customerUpdateCard"><span>Shipping</span>{order.status === "cancelled" ? <b>{order.shippingTrackingNumber ? `Shipment cancelled • ${order.shippingTrackingNumber}` : "Shipment cancelled"}</b> : order.shippingTrackingNumber ? <><b>{canCancel ? "Courier booked, awaiting pickup" : "Tracking"} • {order.shippingTrackingNumber}</b><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after courier booking</b>}</div>
+                <div className="customerUpdateCard"><span>Shipping</span>{order.status === "cancelled" ? <b>{order.shippingTrackingNumber ? `Shipment cancelled • ${order.shippingTrackingNumber}` : "Shipment cancelled"}</b> : order.shippingTrackingNumber ? <><b>{canCancel ? "Courier booked, awaiting pickup" : "Tracking"} • {order.shippingTrackingNumber}</b><small className="customerEta">{order.estimatedDeliveryDate ? <>Estimated delivery: <strong>{formatDeliveryDate(order.estimatedDeliveryDate)}</strong></> : "Estimated delivery will update after courier routing."}</small><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>Tracking appears here after courier booking</b>}</div>
               </div>
 
               {approvalReady && <div className="customerPackingApproval"><div><b>Your {individual ? "order" : "hamper"} is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this {individual ? "order" : "hamper"} for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}

@@ -4,6 +4,7 @@ import { findCustomerAccountById, listCustomerOrders } from "../../../../lib/ser
 import { getCatalogConfig } from "../../../../lib/server/catalog"
 import { productById } from "../../../../lib/domain/catalog"
 import { createPackingVideoViewUrl } from "../../../../lib/server/r2"
+import { getShipwayTracking } from "../../../../lib/server/shipway"
 
 export const dynamic = "force-dynamic"
 
@@ -18,6 +19,14 @@ export async function GET() {
 
     const hydrated = await Promise.all(orders.map(async (order) => {
       let packingVideoUrl: string | null = null
+      let estimatedDeliveryDate: string | null = null
+      if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && !["cancelled", "delivered", "issue_reported", "refund_or_replacement_resolved"].includes(order.status)) {
+        try {
+          estimatedDeliveryDate = (await getShipwayTracking(order.shippingTrackingNumber))?.estimatedDeliveryDate || null
+        } catch (error) {
+          console.error("customer-order-edd", error)
+        }
+      }
       if (order.packingVideoKey) {
         try {
           packingVideoUrl = await createPackingVideoViewUrl(order.packingVideoKey)
@@ -39,6 +48,7 @@ export async function GET() {
         receiverName: order.receiverName,
         packingVideoUrl,
         shippingTrackingNumber: order.shippingTrackingNumber,
+        estimatedDeliveryDate,
         customerApprovedAt: order.customerApprovedAt,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt

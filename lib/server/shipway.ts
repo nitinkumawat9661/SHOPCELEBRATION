@@ -20,6 +20,7 @@ export type ShipwayTracking = {
   currentStatus: string
   courierName: string | null
   trackUrl: string | null
+  estimatedDeliveryDate: string | null
 }
 
 export type ShipwayRateQuote = {
@@ -86,6 +87,50 @@ function objectList(value: unknown): Record<string, unknown>[] {
 function positiveNumber(value: unknown) {
   const number = Number(value)
   return Number.isFinite(number) && number > 0 ? number : null
+}
+
+function normalizeDeliveryDate(value: unknown) {
+  if (typeof value !== "string" && typeof value !== "number") return null
+  const text = String(value).trim()
+  if (!text) return null
+
+  const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (iso) {
+    const candidate = `${iso[1]}-${iso[2]}-${iso[3]}`
+    const parsed = new Date(`${candidate}T00:00:00Z`)
+    return Number.isFinite(parsed.getTime()) ? candidate : null
+  }
+
+  const dmy = text.match(/^(\d{2})[-/](\d{2})[-/](\d{4})/)
+  if (dmy) {
+    const candidate = `${dmy[3]}-${dmy[2]}-${dmy[1]}`
+    const parsed = new Date(`${candidate}T00:00:00Z`)
+    return Number.isFinite(parsed.getTime()) ? candidate : null
+  }
+
+  const parsed = new Date(text)
+  return Number.isFinite(parsed.getTime()) ? parsed.toISOString().slice(0, 10) : null
+}
+
+function estimatedDeliveryDateFrom(raw: unknown) {
+  const keys = [
+    "expected_delivery_date",
+    "expected_delivery",
+    "estimated_delivery_date",
+    "estimated_delivery",
+    "edd",
+    "edd_date",
+    "promised_delivery_date",
+    "promised_delivery"
+  ]
+  for (const row of objectList(raw)) {
+    for (const key of keys) {
+      if (!(key in row)) continue
+      const normalized = normalizeDeliveryDate(row[key])
+      if (normalized) return normalized
+    }
+  }
+  return null
 }
 
 async function shipwayWarehousePincode(warehouseId: string) {
@@ -348,11 +393,21 @@ export async function getShipwayTracking(awb: string): Promise<ShipwayTracking |
   const shipmentStatus = String(tracking.shipment_status ?? "").trim().toUpperCase()
   const details = Array.isArray(tracking.shipment_details) ? tracking.shipment_details : []
   const current = details[0] && typeof details[0] === "object" ? details[0] as Record<string, unknown> : {}
+  let estimatedDeliveryDate = estimatedDeliveryDateFrom(raw)
+  if (!estimatedDeliveryDate) {
+    try {
+      const orderRaw = await request(`/api/getorders?awb_number=${encodeURIComponent(awb)}`, { method: "GET" })
+      estimatedDeliveryDate = estimatedDeliveryDateFrom(orderRaw)
+    } catch (error) {
+      console.warn("shipway-edd-fallback", error instanceof Error ? error.message : "unknown")
+    }
+  }
   return {
     shipmentStatus,
     currentStatus: String(current.current_status ?? "").trim(),
     courierName: typeof current.courier_name === "string" && current.courier_name.trim() ? current.courier_name.trim() : null,
-    trackUrl: httpsUrl(tracking.track_url)
+    trackUrl: httpsUrl(tracking.track_url),
+    estimatedDeliveryDate
   }
 }
 

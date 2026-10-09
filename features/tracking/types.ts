@@ -15,6 +15,7 @@ export type TrackedOrder = {
   packingVideoUrl: string | null
   shippingTrackingNumber: string | null
   shippingCourierName?: string | null
+  estimatedDeliveryDate?: string | null
   issueType: string | null
   issueNote: string | null
   customerApprovedAt: string | null

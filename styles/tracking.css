@@ -34,3 +34,6 @@
   .trackingTimelineMobile.cancelled>summary b{color:#8c2424}
   .trackingTimelineMobile .timeline{margin:0;padding:5px 10px 10px;border-top:1px solid var(--line)}
 }
+
+.trackingEta{margin:5px 0 10px}
+.trackingEta strong{color:var(--m)}
