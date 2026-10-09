@@ -60,7 +60,7 @@ export default async function JewelryPage({ searchParams }: { searchParams: Prom
   return <main className="collectionPage">
     <SeoJsonLd data={itemList} />
     <TrustStrip />
-    <StorefrontHeader settings={settings?.settings || defaultStoreSettings} />
+    <StorefrontHeader settings={settings?.settings || defaultStoreSettings} searchQuery={value("q")} />
     <CatalogCollection products={catalog?.catalog.products || []} available={Boolean(catalog)} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} />
     <SiteFooter />
   </main>
