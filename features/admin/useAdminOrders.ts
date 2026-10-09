@@ -21,7 +21,7 @@ type AdminOrdersState = {
   load: () => Promise<void>
   logout: () => Promise<void>
   updateStatus: (order: AdminOrder, status: OrderStatus) => Promise<void>
-  saveShipping: (order: AdminOrder, provider: string, trackingNumber: string, weightGrams?: number) => Promise<void>
+  saveShipping: (order: AdminOrder, provider: string, trackingNumber: string, packed?: { weightGrams: number; lengthCm: number; breadthCm: number; heightCm: number }) => Promise<void>
   uploadVideo: (order: AdminOrder, file: File) => Promise<void>
 }
 
@@ -76,18 +76,18 @@ export function useAdminOrders(): AdminOrdersState {
     }, `${uiContent.admin.statusUpdated}: ${orderStatusLabels[status]}`)
   }
 
-  async function saveShipping(order: AdminOrder, provider: string, trackingNumber: string, weightGrams?: number) {
+  async function saveShipping(order: AdminOrder, provider: string, trackingNumber: string, packed?: { weightGrams: number; lengthCm: number; breadthCm: number; heightCm: number }) {
     const shipwayAuto = provider === "__SHIPWAY_AUTO__"
     return mutate(order.publicId, async () => {
       const response = await fetch(routes.api.adminOrderShipping(order.publicId), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(shipwayAuto ? { mode: "shipway", weightGrams } : { provider, trackingNumber })
+        body: JSON.stringify(shipwayAuto ? { mode: "shipway", ...packed } : { provider, trackingNumber })
       })
       const result = await response.json()
       if (!response.ok || !result.ok) throw new Error(messageFor(result.error, result.error || errorMessages.UNKNOWN))
       if (shipwayAuto && result.labelUrl) window.open(result.labelUrl, "_blank", "noopener,noreferrer")
-    }, shipwayAuto ? "Shipway shipment booked. AWB saved and order marked shipped." : uiContent.admin.shippingSavedNotice)
+    }, shipwayAuto ? "Shipway shipment booked and AWB saved. Order will move to shipped after courier pickup/tracking confirms movement." : uiContent.admin.shippingSavedNotice)
   }
 
   async function uploadVideo(order: AdminOrder, file: File) {
