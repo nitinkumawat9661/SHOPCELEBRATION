@@ -13,13 +13,17 @@
 
 ## 1. प्रोडक्ट इमेजेस को अपने सर्वर पर लाओ (Highest Priority)
 
-- [ ] Pending — मौजूदा Meesho इमेज डोमेन (upload.meeshosupplyassets.com) पर निर्भरता जाँचो।
-- [ ] Pending — सभी Meesho वाली प्रोडक्ट इमेज URLs स्कैन और सूचीबद्ध करो।
-- [ ] Pending — उन इमेजेस को डाउनलोड करो।
-- [ ] Pending — इमेजेस को अपनी वेबसाइट के मौजूदा स्टोरेज में सेव करो (जैसे /public/catalog/necklaces/ या मौजूदा CDN/storage path)।
-- [ ] Pending — डेटाबेस / CMS / JSON / Prisma (जो वास्तव में प्रोजेक्ट में उपयोग होता है) के इमेज फ़ील्ड को Meesho URL के बजाय अपने लोकल या CDN पाथ पर अपडेट करो।
-- [ ] Pending — प्रोडक्ट पेज पर इमेज फ़ेल होने पर खाली/सफ़ेद बॉक्स न दिखे; साफ ब्रांडेड फॉलबैक प्लेसहोल्डर दिखे।
-- [ ] Pending — इमेजेस को WebP में ऑप्टिमाइज़ करो और thumbnail + main + zoom के सही साइज बनाओ।
+- [x] Done — मौजूदा Meesho इमेज डोमेन (upload.meeshosupplyassets.com) पर निर्भरता जाँचो।
+- [x] Done — सभी Meesho वाली प्रोडक्ट इमेज URLs स्कैन और सूचीबद्ध करो।
+- [x] Done — उन इमेजेस को डाउनलोड करो।
+- [x] Done — 67 Meesho images Cloudflare R2 में सेव और सभी 201 variants verify हुए; 22 original Celebration images पहले से अपनी domain पर हैं।
+- [x] Done — PostgreSQL catalog और bootstrap JSON के 67 products को Celebration R2 URLs पर बदला; original **उसी SKU की** Meesho image backup के रूप में रखी।
+- [ ] Pending — Product card/gallery में branded fallback लागू; production पर image-failure simulation और mobile visual QA अब भी बाकी।
+- [ ] Pending — 67 migrated images के WebP thumbnail/main/zoom सभी verify; पहले से first-party 22 PNG images की WebP optimization अभी बाकी।
+
+**Section 1 image-priority rule (owner confirmation):** Celebration की same-product image हमेशा पहले; वही image fail होने पर सिर्फ उसी original photo की Meesho URL fallback; अन्य SKU की photo कभी replace/borrow नहीं करनी। अंतिम fallback Celebration का branded placeholder।
+
+**Four verification gates (2026-10-10):** 89 unique SKUs, 67 original URL-SHA matched to correct SKUs, hero/gallery identity checked, 201 R2 WebP variants verified; 22 first-party URLs reachable। मगर दो SKU (`celebration-necklace-030` और `-031`) की image bytes identical मिली हैं। इनके actual physical reference photos से human visual review **Pending** है; automatically image/title change नहीं करना। विवरण: `docs/CATALOG_IMAGE_OWNERSHIP_AUDIT.md`।
 
 ---
 
