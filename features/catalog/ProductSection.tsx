@@ -1,6 +1,7 @@
 "use client"
 
-import { formatMoney, type CategoryOption, type GiftProduct } from "../../lib/domain/catalog"
+import { catalogImageVariant, formatMoney, type CategoryOption, type GiftProduct } from "../../lib/domain/catalog"
+import { SafeCatalogImage } from "./SafeCatalogImage"
 import { uiContent } from "../../lib/domain/content"
 
 export function ProductSection({ products, categories, allCategoryId, category, onCategory }: {
@@ -28,7 +29,7 @@ export function ProductSection({ products, categories, allCategoryId, category, 
             <div className="productReveal" key={product.id}>
               <article className="product">
                 <div className="prodTop">
-                  {product.imageUrl ? <img className="catalogProductImage" src={product.imageUrl} alt={product.name} loading="lazy" /> : <div className="prodIcon" aria-hidden="true">{product.icon || "🎁"}</div>}
+                  {product.imageUrl ? <SafeCatalogImage className="catalogProductImage" src={catalogImageVariant(product.imageUrl, "thumb")} alt={product.name} /> : <SafeCatalogImage className="catalogProductImage" src="" alt={product.name} />}
                   <div className="cat">{product.category}</div>
                 </div>
                 <h3>{product.name}</h3><p>{product.note}</p><div className="productUnlock">{uiContent.products.from} {formatMoney(product.minTier)}</div>
