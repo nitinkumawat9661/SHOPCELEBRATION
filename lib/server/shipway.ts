@@ -248,26 +248,40 @@ function productsFor(order: OrderRecord) {
 function packedWeight(order: OrderRecord, value: number) {
   if (!Number.isInteger(value)) throw new ShipwayApiError("INVALID_SHIPPING_WEIGHT")
   if (order.orderType === "individual") {
-    if (value < 80 || value > 200) throw new ShipwayApiError("INVALID_SHIPPING_WEIGHT")
+    if (value < 1 || value > 5000) throw new ShipwayApiError("INVALID_SHIPPING_WEIGHT")
     return value
   }
   if (value < 100 || value > 30000) throw new ShipwayApiError("INVALID_SHIPPING_WEIGHT")
   return value
 }
 
-export async function bookShipwayShipment(order: OrderRecord, packedWeightGrams: number): Promise<ShipwayBooking> {
+function packedDimension(value: number) {
+  if (!Number.isInteger(value) || value < 1 || value > 200) throw new ShipwayApiError("INVALID_SHIPPING_DIMENSIONS")
+  return value
+}
+
+export async function bookShipwayShipment(order: OrderRecord, packed: {
+  weightGrams: number
+  lengthCm: number
+  breadthCm: number
+  heightCm: number
+}): Promise<ShipwayBooking> {
   const warehouseId = numericId(requireEnv("shipwayWarehouseId"), "INVALID_SHIPWAY_WAREHOUSE_ID")
   const returnWarehouseId = numericId(requireEnv("shipwayReturnWarehouseId"), "INVALID_SHIPWAY_RETURN_WAREHOUSE_ID")
   const name = splitName(order.receiverName)
-  const weightGrams = packedWeight(order, packedWeightGrams)
-  const selectedCarrier = await quoteShipwayShipping({ toPincode: order.pincode, weightGrams })
+  const weightGrams = packedWeight(order, packed.weightGrams)
+  const lengthCm = packedDimension(packed.lengthCm)
+  const breadthCm = packedDimension(packed.breadthCm)
+  const heightCm = packedDimension(packed.heightCm)
+  const selectedCarrier = await quoteShipwayShipping({ toPincode: order.pincode, weightGrams, lengthCm, breadthCm, heightCm })
 
   console.info("shipway-carrier-selected", {
     orderId: order.publicId,
     carrierId: selectedCarrier.carrierId,
     carrier: selectedCarrier.carrierName,
     quotedCharge: selectedCarrier.chargeRupees,
-    packedWeightGrams: weightGrams
+    packedWeightGrams: weightGrams,
+    box: { lengthCm, breadthCm, heightCm }
   })
 
   const payload = {
@@ -296,6 +310,10 @@ export async function bookShipwayShipment(order: OrderRecord, packedWeightGrams:
     ...(name.last ? { shipping_lastname: name.last } : {}),
     shipping_phone: order.phone,
     shipping_zipcode: order.pincode,
+    order_weight: weightGrams,
+    box_length: lengthCm,
+    box_breadth: breadthCm,
+    box_height: heightCm,
     ...(orderDate(order.createdAt) ? { order_date: orderDate(order.createdAt) } : {})
   }
 

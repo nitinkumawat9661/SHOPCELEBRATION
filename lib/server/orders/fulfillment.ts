@@ -56,7 +56,7 @@ export function setShippingDetails(publicId: string, provider: string, trackingN
   return transaction((client) => setShippingDetailsWithClient(client, publicId, provider, trackingNumber, metadata))
 }
 
-export function bookOrderWithShipway(publicId: string, packedWeightGrams: number) {
+export function bookOrderWithShipway(publicId: string, packed: { weightGrams: number; lengthCm: number; breadthCm: number; heightCm: number }) {
   return transaction(async (client) => {
     await client.query(`SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, [`shipway-book:${publicId}`])
     const current = await client.query<DbOrder>(`SELECT ${ORDER_SELECT} FROM orders WHERE public_id = $1 FOR UPDATE`, [publicId])
@@ -73,7 +73,7 @@ export function bookOrderWithShipway(publicId: string, packedWeightGrams: number
     }
 
     try {
-      const shipment = await bookShipwayShipment(order, packedWeightGrams)
+      const shipment = await bookShipwayShipment(order, packed)
       const saved = await setShippingDetailsWithClient(client, publicId, "Shipway", shipment.awb, {
         carrierId: shipment.carrierId || null,
         labelUrl: shipment.labelUrl,
