@@ -127,3 +127,6 @@
   .customerProgressMobile.cancelled>summary>b{color:#8c2424}
   .customerProgressMobile .customerProgress{margin:0;padding:4px 12px 10px;border-top:1px solid var(--line)}
 }
+
+.customerEta{font-size:9px;line-height:1.4;color:var(--muted)}
+.customerEta strong{color:var(--m)}
