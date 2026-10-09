@@ -202,6 +202,135 @@ export function bindPaymentAttempt(attemptId: string, checkout: ProviderCheckout
     const orderId = attempt.rows[0]?.order_id
     if (!orderId) throw new Error("PAYMENT_ATTEMPT_NOT_FOUND")
     const current = await client.query<PaymentOrderRow>(
+      `UPDATE payment_attempts
+          SET status = 'failed', error_code = $1, updated_at = now()
+        WHERE id = $2
+        RETURNING order_id, provider_order_id`,
+      [code.slice(0, 200), attemptId]
+    )
+    const row = attempt.rows[0]
+    if (!row) return
+    const failedOrder = await client.query<{ id: string }>(
+      `UPDATE orders
+          SET payment_status = 'failed',
+              payment_error_code = $1,
+              updated_at = now()
+        WHERE id = $2
+          AND provider_order_id = $3
+          AND payment_status NOT IN ('paid', 'verified')
+        RETURNING id`,
+      [code.slice(0, 200), row.order_id, row.provider_order_id]
+    )
+    if (failedOrder.rowCount) await releaseInventoryForOrderWithClient(client, row.order_id)
+  })
+}
+
+async function paymentAttemptForResult(client: PoolClient, result: ProviderPaymentResult) {
+  const attempt = await client.query<PaymentAttemptRow>(
+    `SELECT id, order_id, attempt_no, provider, provider_order_id, provider_session_id, provider_payment_id, status, created_at
+       FROM payment_attempts
+      WHERE provider = $1 AND provider_order_id = $2
+      FOR UPDATE`,
+    [result.provider, result.providerOrderId]
+  )
+  return attempt.rows[0] || null
+}
+
+export function applyProviderPaymentResult(result: ProviderPaymentResult) {
+  return transaction(async (client) => {
+    const attempt = await paymentAttemptForResult(client, result)
+    if (!attempt) throw new Error("PAYMENT_ATTEMPT_NOT_FOUND")
+
+    const orderResult = await client.query<PaymentOrderRow>(
+      `SELECT id, order_type, line_items, tier_id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
+              campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
+         FROM orders WHERE id = $1 FOR UPDATE`,
+      [attempt.order_id]
+    )
+    const orderRow = orderResult.rows[0]
+    if (!orderRow) throw new Error("PAYMENT_ORDER_NOT_FOUND")
+    if ((result.status === "paid" && result.amountPaise == null) || (result.amountPaise != null && result.amountPaise !== orderRow.amount_paise)) {
+      throw new Error("PAYMENT_AMOUNT_MISMATCH")
+    }
+
+    const eventInsert = await client.query<{ id: string }>(
+      `INSERT INTO payment_events (id, provider, provider_event_id, order_id, event_type, payload)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb)
+       ON CONFLICT (provider, provider_event_id) DO NOTHING
+       RETURNING id`,
+      [randomUUID(), result.provider, result.eventId, orderRow.id, result.eventType, JSON.stringify(result.payload ?? {})]
+    )
+
+    if (eventInsert.rowCount) {
+      await client.query(
+        `UPDATE payment_attempts
+            SET status = $1,
+                provider_payment_id = COALESCE($2, provider_payment_id),
+                error_code = $3,
+                updated_at = now()
+          WHERE id = $4`,
+        [result.status, result.providerPaymentId, result.errorCode || null, attempt.id]
+      )
+
+      if (result.status === "paid") {
+        const reference = result.providerPaymentId || result.providerOrderId
+        const referenceHash = createHash(securityConfig.hashAlgorithm).update(reference).digest("hex")
+        const previousStatus = orderRow.status
+        const nextStatus = previousStatus === "payment_verification_pending" ? "payment_verified" : previousStatus
+        await client.query(
+          `UPDATE orders
+              SET payment_provider = $1,
+                  provider_order_id = $2,
+                  provider_payment_id = COALESCE($3, provider_payment_id),
+                  payment_reference = COALESCE(payment_reference, $4),
+                  payment_reference_hash = COALESCE(payment_reference_hash, $5),
+                  payment_status = 'paid',
+                  payment_error_code = NULL,
+                  paid_at = COALESCE(paid_at, now()),
+                  status = $6,
+                  updated_at = now()
+            WHERE id = $7`,
+          [result.provider, result.providerOrderId, result.providerPaymentId, reference, referenceHash, nextStatus, orderRow.id]
+        )
+        await commitInventoryForOrderWithClient(client, orderRow.id)
+        if (nextStatus !== previousStatus) {
+          await client.query(
+            `INSERT INTO order_events (id, order_id, event_type, payload)
+             VALUES ($1,$2,'status_changed',$3::jsonb)`,
+            [randomUUID(), orderRow.id, JSON.stringify({ from: previousStatus, to: nextStatus, source: "payment_gateway", provider: result.provider })]
+          )
+        }
+      } else if (result.status === "failed" && !isPaymentConfirmed(orderRow.payment_status, orderRow.status)) {
+        await client.query(
+          `UPDATE orders
+              SET payment_status = CASE WHEN provider_order_id = $1 THEN 'failed' ELSE payment_status END,
+                  payment_error_code = CASE WHEN provider_order_id = $1 THEN $2 ELSE payment_error_code END,
+                  updated_at = now()
+            WHERE id = $3`,
+          [result.providerOrderId, result.errorCode || "PAYMENT_FAILED", orderRow.id]
+        )
+        await releaseInventoryForOrderWithClient(client, orderRow.id)
+      }
+    }
+
+    const current = await client.query<{
+      id: string
+      public_id: string
+      customer_account_id: string
+      idempotency_key: string
+      amount_paise: number
+      subtotal_paise: number
+      discount_paise: number
+    shipping_paise: number
+      campaign_id: string | null
+      campaign_title: string | null
+      tier_name: string
+      customer_name: string
+      phone: string
+      payment_status: string
+      status: string
+      payment_attempt_count: number
+    }>(
       `SELECT id, order_type, line_items, tier_id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
               campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
          FROM orders WHERE id = $1`,
