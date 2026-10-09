@@ -51,8 +51,6 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   const preparingPayment = useRef(false)
   const latestCartKey = useRef("")
   const paymentRef = useRef<HTMLDivElement>(null)
-  const continueButtonRef = useRef<HTMLButtonElement>(null)
-  const [showFloatingContinue, setShowFloatingContinue] = useState(false)
   const [draftOwner, setDraftOwner] = useState<string | null>(null)
   const [savedAddress, setSavedAddress] = useState<DeliveryAddress | null>(null)
   const [addressSaveError, setAddressSaveError] = useState("")
@@ -60,25 +58,6 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
 
   useEffect(() => setReady(true), [])
 
-  // When the primary checkout action scrolls behind the sticky header or out of
-  // view, keep an accessible equivalent visible at the bottom of the viewport.
-  useEffect(() => {
-    if (!ready || step !== 1 || !cart.items.length) {
-      setShowFloatingContinue(false)
-      return
-    }
-    const button = continueButtonRef.current
-    if (!button) return
-    if (!("IntersectionObserver" in window)) {
-      setShowFloatingContinue(true)
-      return
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      setShowFloatingContinue(!entry.isIntersecting)
-    }, { threshold: 0.45, rootMargin: "-168px 0px -12px 0px" })
-    observer.observe(button)
-    return () => observer.disconnect()
-  }, [ready, step, cart.items.length])
   useEffect(() => {
     if (!ready || customer.loading || draftOwner !== null) return
     const owner = customer.account?.id || "guest"
@@ -316,16 +295,17 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   }
 
   const shownTotalPaise = order.orderTotalPaise ?? order.created?.payablePaise ?? subtotalPaise
+  const continueDisabled = loading || locked || unavailable || amountTooLarge || !catalog || Boolean(catalogError)
+  const continueLabel = loading ? "Checking current prices…" : "Continue to delivery"
+
   const summary = <aside className="summary individualSummary">
     <div className="kicker">YOUR ITEMS</div><div className="sumPrice">{formatMoney(shownTotalPaise / 100)}</div>
+    {step === 1 && <button className="primary cartCheckoutButton" type="button" disabled={continueDisabled} onClick={() => void beginCheckout()}>{continueLabel}</button>}
     {rows.map((row) => <div className="sumRow" key={row.productId}><span>{row.product?.name || "Unavailable item"} × {row.quantity}</span><b>{row.product && isIndividuallySellable(row.product) ? formatMoney((row.product.salePricePaise || 0) * row.quantity / 100) : "Unavailable"}</b></div>)}
     <div className="sumRow"><span>Delivery</span><b>{shippingLoading ? "Checking availability…" : "Included"}</b></div>
     {shippingError && <p className="errorBox" role="alert">{shippingError}</p>}
     <p className="note">Delivery is included in the listed product price. No extra delivery charge is added at checkout; your pincode is checked only for delivery availability.</p>
   </aside>
-
-  const continueDisabled = loading || locked || unavailable || amountTooLarge || !catalog || Boolean(catalogError)
-  const continueLabel = loading ? "Checking current prices…" : "Continue to delivery"
 
   if (!ready) return <section className="wrap cartLoading" role="status">Loading your cart…</section>
   return <section className="wrap cartContents">
@@ -343,7 +323,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
             <div className="cartRowControls"><div className="cartQuantity"><button type="button" aria-label={`Reduce quantity of ${row.product?.name || row.productId}`} disabled={locked || row.quantity <= 1} onClick={() => cart.quantity(row.productId, row.quantity - 1)}>−</button><output aria-label="Quantity">{row.quantity}</output><button type="button" aria-label={`Increase quantity of ${row.product?.name || row.productId}`} disabled={locked || row.quantity >= Math.min(MAX_CART_QUANTITY, row.product?.stockAvailable ?? MAX_CART_QUANTITY)} onClick={() => cart.quantity(row.productId, row.quantity + 1)}>+</button></div><button className="cartRemove" type="button" disabled={locked} onClick={() => cart.remove(row.productId)}>Remove</button></div>
           </div><strong className="cartRowTotal">{row.product && isIndividuallySellable(row.product) ? formatMoney((row.product.salePricePaise || 0) * row.quantity / 100) : "—"}</strong>
         </article>)}<Link className="cartContinueLink" href="/jewelry?view=all">← Continue shopping</Link></div>
-        <div>{summary}{catalog && unavailable && <p className="errorBox" role="alert">One or more items are sold out or exceed the available stock. Adjust your cart to continue.</p>}{amountTooLarge && <p className="errorBox" role="alert">This cart exceeds the supported order amount. Remove some items to continue.</p>}<button ref={continueButtonRef} className="primary cartCheckoutButton" type="button" disabled={continueDisabled} onClick={() => void beginCheckout()}>{continueLabel}</button><p className="cartAccountHint">Started a payment earlier? <Link href="/account">Check your saved orders</Link> before paying again.</p></div>
+        <div className="cartCheckoutSidebar">{summary}{catalog && unavailable && <p className="errorBox" role="alert">One or more items are sold out or exceed the available stock. Adjust your cart to continue.</p>}{amountTooLarge && <p className="errorBox" role="alert">This cart exceeds the supported order amount. Remove items to continue.</p>}<p className="cartAccountHint">Started a payment earlier? <Link href="/account">Check your saved orders</Link> before paying again.</p></div>
       </div> : <section id="builder" className="cartCheckoutBuilder"><div className="builderCard">
         {step === 2 && <DetailsStep individual summary={summary} checkout={checkout} occasions={[]} error={detailsError} fieldErrors={fieldErrors} updateField={updateField} savedAddress={savedAddress}
           onUseSavedAddress={() => { if (savedAddress) setCheckout((current) => applyDelivery(current, savedAddress)) }}
@@ -355,12 +335,6 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
         </div>}
       </div></section>}
     </>}
-    {step === 1 && items.length > 0 && showFloatingContinue && <div className="cartFloatingContinue" role="group" aria-label="Continue checkout">
-      <div className="cartFloatingContinueDetails">
-        <strong>{formatMoney(subtotalPaise / 100)}</strong><small>Delivery included</small>
-      </div>
-      <button className="primary cartCheckoutButton" type="button" disabled={continueDisabled}
-        onClick={() => void beginCheckout()}>{continueLabel}</button>
-    </div>}
+
   </section>
 }
