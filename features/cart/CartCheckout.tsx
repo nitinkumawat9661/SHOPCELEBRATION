@@ -62,11 +62,17 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
     const owner = customer.account?.id || "guest"
     const draft = readCheckoutDraft("cart", owner)
     if (draft) {
-      setCheckout((current) => ({ ...current, ...draft.checkout, paymentReference: "" }))
+      setCheckout((current) => ({ ...current, ...draft.checkout, phone: customer.account?.phone || draft.checkout.phone || current.phone, paymentReference: "" }))
       setStep(draft.step)
     }
     setDraftOwner(owner)
   }, [ready, customer.loading, customer.account?.id, draftOwner])
+
+  useEffect(() => {
+    if (draftOwner !== "guest" || !customer.account?.id) return
+    clearCheckoutDraft("cart", "guest")
+    setDraftOwner(customer.account.id)
+  }, [draftOwner, customer.account?.id])
 
   useEffect(() => {
     if (!draftOwner || order.created || order.paymentOrderId) return
