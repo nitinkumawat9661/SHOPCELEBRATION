@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto"
 import type { PoolClient } from "pg"
 import type { CatalogConfig } from "../domain/catalog"
 import type { OrderLineItem } from "../domain/order"
-import { transaction } from "./db"
+import { transaction, query } from "./db"
+import { reservationReviewStatus } from "../domain/reservation-review"
 
 const RESERVATION_MINUTES = 30
 
@@ -194,4 +195,50 @@ async function queryInventoryQuantity(productId: string, quantity: number) {
   })
   if (!Number.isInteger(result)) throw new Error("INVENTORY_UPDATE_FAILED")
   return result
+}
+
+type ReservationReviewRow = {
+  publicId: string
+  orderStatus: string
+  paymentStatus: string
+  expiresAt: Date
+  quantity: number
+  productCount: number
+}
+
+export async function getInventoryReservationReview() {
+  // Read-only audit: unconfirmed pending payments are NOT safe to release
+  // on a timer. This list is for authorized operator reconciliation.
+  const result = await query<ReservationReviewRow>(
+    `SELECT o.public_id AS "publicId", o.status AS "orderStatus",
+            o.payment_status AS "paymentStatus",
+            MIN(r.expires_at) AS "expiresAt",
+            SUM(r.quantity)::int AS "quantity", COUNT(*)::int AS "productCount"
+       FROM inventory_reservations r
+       JOIN orders o ON o.id = r.order_id
+      WHERE r.status = 'reserved'
+      GROUP BY o.id
+      ORDER BY MIN(r.expires_at), o.public_id
+      LIMIT 101`
+  )
+  const now = Date.now()
+  const items = result.rows.slice(0, 100).map((row) => {
+    const expiresAt = row.expiresAt.toISOString()
+    return {
+      publicId: row.publicId,
+      orderStatus: row.orderStatus,
+      paymentStatus: row.paymentStatus,
+      expiresAt,
+      quantity: row.quantity,
+      productCount: row.productCount,
+      review: reservationReviewStatus({ expiresAt, paymentStatus: row.paymentStatus, orderStatus: row.orderStatus }, now)
+    }
+  })
+  return {
+    items,
+    moreResults: result.rows.length > 100,
+    expiredPending: items.filter((item) => item.review === "payment_review").length,
+    active: items.filter((item) => item.review === "active").length,
+    anomalies: items.filter((item) => item.review === "terminal_cleanup" || item.review === "paid_stock_review").length
+  }
 }

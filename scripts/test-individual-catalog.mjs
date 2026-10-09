@@ -9,7 +9,7 @@ const out = join(root, ".individual-catalog-test")
 assert.equal(dirname(out), root)
 await mkdir(out, { recursive: true })
 try {
-  const sources = ["lib/domain/catalog.ts", "lib/server/catalog.ts", "lib/server/inventory.ts", "lib/server/db.ts", "lib/validation/text.ts", "config/validation.ts", "config/database.ts", "config/env.ts", "config/security.ts", "config/payment.ts"]
+  const sources = ["lib/domain/catalog.ts", "lib/server/catalog.ts", "lib/server/inventory.ts", "lib/domain/reservation-review.ts", "lib/server/db.ts", "lib/validation/text.ts", "config/validation.ts", "config/database.ts", "config/env.ts", "config/security.ts", "config/payment.ts"]
   for (const source of sources) {
     const result = ts.transpileModule(await readFile(join(root, source), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } })
     const target = join(out, source.replace(/\.ts$/, ".js"))

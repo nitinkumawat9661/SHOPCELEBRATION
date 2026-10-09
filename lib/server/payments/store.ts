@@ -303,7 +303,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
     if (eventInsert.rowCount) {
       await client.query(
         `UPDATE payment_attempts
-            SET status = $1,
+            SET status = CASE WHEN status = 'paid' AND $1 <> 'paid' THEN 'paid' ELSE $1 END,
                 provider_payment_id = COALESCE($2, provider_payment_id),
                 error_code = $3,
                 updated_at = now()
@@ -340,15 +340,23 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
           )
         }
       } else if (result.status === "failed" && !isPaymentConfirmed(orderRow.payment_status, orderRow.status)) {
-        await client.query(
+        // An older attempt may fail after checkout retry has created a newer
+        // active payment. Never release stock reserved for that newer attempt.
+        const currentAttemptFailed = await client.query<{ id: string }>(
           `UPDATE orders
-              SET payment_status = CASE WHEN provider_order_id = $1 THEN 'failed' ELSE payment_status END,
-                  payment_error_code = CASE WHEN provider_order_id = $1 THEN $2 ELSE payment_error_code END,
+              SET payment_status = 'failed',
+                  payment_error_code = $2,
                   updated_at = now()
-            WHERE id = $3`,
+            WHERE id = $3
+              AND provider_order_id = $1
+              AND payment_status NOT IN ('paid', 'verified')
+              AND status <> 'cancelled'
+            RETURNING id`,
           [result.providerOrderId, result.errorCode || "PAYMENT_FAILED", orderRow.id]
         )
-        await releaseInventoryForOrderWithClient(client, orderRow.id)
+        if (currentAttemptFailed.rowCount) {
+          await releaseInventoryForOrderWithClient(client, orderRow.id)
+        }
       }
     }
 
