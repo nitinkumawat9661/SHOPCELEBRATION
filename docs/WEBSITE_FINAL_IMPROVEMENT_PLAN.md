@@ -29,9 +29,11 @@
 
 ## 2. 25% OFF बैज की एकरूपता पूरी तरह हटाओ
 
-- [ ] Pending — हर प्रोडक्ट पर एक जैसा “25% OFF” बैज लगाना बंद करो।
-- [ ] Pending — डायनामिक बैज सिस्टम बनाओ: कुछ प्रोडक्ट्स पर “Bestseller”, कुछ पर “New”, कुछ पर “Limited”, कुछ पर अलग डिस्काउंट (15%, 20%, 30% आदि), और कुछ पर कोई बैज नहीं।
-- [ ] Pending — बैज के डिज़ाइन में भी उचित वैरायटी लाओ, ताकि सब एक जैसे न दिखें।
+- [x] Done — customer-facing card और product gallery में एक जैसा “25% OFF” badge हटाया; price/MRP के सही savings अलग दिखते हैं।
+- [ ] Pending — dynamic badge logic और admin choices तैयार: Bestseller / New केवल वास्तविक वेरिफ़ाइड स्थिति में, Limited केवल live stock 1–3 पर, अलग % OFF सिर्फ वास्तविक MRP और selling price से, तथा कई products बिना badge। Live पर Bestseller/New किसी प्रोडक्ट के लिए बिना साक्ष्य घोषित नहीं किया गया है।
+- [x] Done — badge kinds के अनुसार अलग premium color, spacing और आकार; mobile पर भी responsive।
+
+**Section 2 सत्यापन:** इस सेक्शन में मौजूदा 89 प्रोडक्ट्स के original prices/MRP नहीं बदले। पुरानी 65 `25% OFF` labels को customer badges के रूप में render नहीं किया जाता; दूसरे वास्तविक price discounts अलग-अलग दिखेंगे। `Bestseller` और `New` को बिना सत्यापित बिक्री/नए आगमन के अपने-आप assign नहीं किया गया। Admin में सत्यापित products को ये badges दिया जा सकता है; `Limited` के लिए live inventory भी आवश्यक है।
 
 ---
 

@@ -9,7 +9,7 @@ const out = join(root, ".individual-catalog-test")
 assert.equal(dirname(out), root)
 await mkdir(out, { recursive: true })
 try {
-  const sources = ["lib/domain/catalog.ts", "lib/server/catalog.ts", "lib/server/inventory.ts", "lib/domain/reservation-review.ts", "lib/server/db.ts", "lib/validation/text.ts", "config/validation.ts", "config/database.ts", "config/env.ts", "config/security.ts", "config/payment.ts"]
+  const sources = ["lib/domain/catalog-badges.ts", "lib/domain/catalog.ts", "lib/server/catalog.ts", "lib/server/inventory.ts", "lib/domain/reservation-review.ts", "lib/server/db.ts", "lib/validation/text.ts", "config/validation.ts", "config/database.ts", "config/env.ts", "config/security.ts", "config/payment.ts"]
   for (const source of sources) {
     const result = ts.transpileModule(await readFile(join(root, source), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } })
     const target = join(out, source.replace(/\.ts$/, ".js"))
@@ -23,8 +23,31 @@ try {
   }
   const require = createRequire(import.meta.url)
   const { defaultCatalog, salePriceFromRupees, isIndividuallySellable, productImages, primaryProductImage } = require(join(out, "lib/domain/catalog.js"))
+  const { productBadge, productSavingLabel } = require(join(out, "lib/domain/catalog-badges.js"))
   const { normalizeCatalogConfig, CatalogValidationError } = require(join(out, "lib/server/catalog.js"))
   const { validation } = require(join(out, "config/validation.js"))
+  // No invented badges: legacy repeated 25% OFF is hidden, truthful
+  // price savings are still disclosed, and all status claims are conditional.
+  const badgeFixture = { id: "badge-fixture", active: true, sellIndividually: true, salePricePaise: 15000, retail: { mrpPaise: 20000 }, stockAvailable: 8, badge: "25% OFF" }
+  assert.equal(productBadge(badgeFixture), null, "Do not show uniform 25%-off badges")
+  assert.equal(productSavingLabel(badgeFixture), "Save ₹50", "Show accurate rupee savings")
+  assert.deepEqual(productBadge({ ...badgeFixture, retail: { mrpPaise: 30000 }, badge: "25% OFF" }), { kind: "discount", label: "50% OFF" })
+  assert.equal(productBadge({ ...badgeFixture, retail: { mrpPaise: 30000 }, badge: "30% OFF" })?.label, "50% OFF", "Badge percentage must come from price, not legacy text")
+  assert.equal(productBadge({ ...badgeFixture, badge: "" }), null, "Some products must have no badges")
+  assert.deepEqual(productBadge({ ...badgeFixture, badge: "New" }), { kind: "new", label: "New" })
+  assert.deepEqual(productBadge({ ...badgeFixture, badge: "Bestseller" }), { kind: "bestseller", label: "Bestseller" })
+  assert.equal(productBadge({ ...badgeFixture, badge: "Limited" }), null, "Do not invent limited stock")
+  assert.deepEqual(productBadge({ ...badgeFixture, badge: "Limited", stockAvailable: 2 }), { kind: "limited", label: "Limited · 2 left" })
+  assert.deepEqual(productBadge({ ...badgeFixture, badge: "Limited", stockAvailable: 0 }), { kind: "sold-out", label: "Sold out" })
+  assert.equal(productBadge({ ...badgeFixture, badge: "Limited", stockAvailable: undefined }), null, "Limited needs known live inventory")
+  assert.equal(productBadge({ ...badgeFixture, sellIndividually: false, salePricePaise: undefined, badge: "Limited" }), null, "Hamper-only gift has no scarce retail stock claim")
+  assert.equal(productSavingLabel({ ...badgeFixture, retail: { mrpPaise: 15000 } }), null, "No savings unless MRP actually exceeds sale price")
+
+  for (const component of ["features/catalog/CatalogCard.tsx", "features/catalog/ProductGallery.tsx"]) {
+    const jsx = await readFile(join(root, component), "utf8")
+    assert(jsx.includes("productBadge(product)"), `Catalog badges must use consistent resolver: ${component}`)
+    assert(!jsx.includes("product.badge &&"), `Old hardcoded badges still leak: ${component}`)
+  }
   const normalized = normalizeCatalogConfig(defaultCatalog)
   assert.equal(normalized.products.length, defaultCatalog.products.length, "Default catalog normalization changed the product count")
   const baseFixtureProduct = {

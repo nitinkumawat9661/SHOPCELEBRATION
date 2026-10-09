@@ -11,7 +11,8 @@ import { StorefrontHeader } from "../../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../../features/shell/TrustStrip"
 import { isJewelryProduct } from "../../../lib/domain/catalog-discovery"
 import { formatMoney } from "../../../lib/domain/money"
-import { isIndividualListing, isIndividuallySellable, primaryProductImage, productDiscountPercent } from "../../../lib/domain/catalog"
+import { isIndividualListing, isIndividuallySellable, primaryProductImage } from "../../../lib/domain/catalog"
+import { productSavingLabel } from "../../../lib/domain/catalog-badges"
 import { getCatalogConfig } from "../../../lib/server/catalog"
 import { defaultStoreSettings, getStoreSettings } from "../../../lib/server/store-settings"
 
@@ -58,7 +59,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const listed = product ? isIndividualListing(product) : false
   const individual = product ? isIndividuallySellable(product) : false
   const soldOut = Boolean(product && listed && !individual)
-  const discount = product && listed ? productDiscountPercent(product) : null
+  const savings = product && listed ? productSavingLabel(product) : null
   const mrpPaise = product && listed ? product.retail?.mrpPaise : undefined
   if (catalog && !product) notFound()
   const collectionUrl = product && isJewelryProduct(product) ? "/jewelry" : "/jewelry?view=all"
@@ -111,7 +112,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.note && <p className="collectionDetailNote">{product.note}</p>}
             {product.highlights?.length ? <ul className="marketplaceHighlights">{product.highlights.map((item) => <li key={item}>{item}</li>)}</ul> : null}
             {product.retail?.warrantyOrGuarantee && <div className="antiTarnishGuarantee"><div><b>6-month anti-tarnish guarantee</b><span>Covered for verified tarnish issues under normal use. Keep dry and avoid perfume, sanitizer, soap, chlorine, salt water and harsh chemicals.</span></div><Link href="/policies">View coverage terms →</Link></div>}
-            <div className="collectionDetailPrice"><span>{soldOut ? "Currently sold out" : listed ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(listed ? product.salePricePaise! / 100 : product.minTier)}</strong>{listed && mrpPaise && discount ? <span><s>{formatMoney(mrpPaise / 100)}</s> · {discount}% OFF</span> : null}<small>{soldOut ? "This piece is currently unavailable. Check back after a restock." : listed ? "Delivery included. No extra delivery charge is added at checkout; pincode availability is verified before payment." : "Hamper budget, not an individual item price."}</small></div>
+            <div className="collectionDetailPrice"><span>{soldOut ? "Currently sold out" : listed ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(listed ? product.salePricePaise! / 100 : product.minTier)}</strong>{listed && mrpPaise && savings ? <span><s>{formatMoney(mrpPaise / 100)}</s> · {savings}</span> : null}<small>{soldOut ? "This piece is currently unavailable. Check back after a restock." : listed ? "Delivery included. No extra delivery charge is added at checkout; pincode availability is verified before payment." : "Hamper budget, not an individual item price."}</small></div>
             <div className="collectionDetailActions">
               {individual ? <><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} buyNow /></> : soldOut ? <span className="secondary" aria-disabled="true">Sold out</span> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
               <Link className="collectionDetailBack" href={collectionUrl}>Keep exploring</Link>
