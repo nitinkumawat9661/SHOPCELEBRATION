@@ -4,6 +4,7 @@ import { uiContent } from "../../../lib/domain/content"
 import { todayForDateInput, type CheckoutFieldErrors } from "../validation"
 import { OrderSummary } from "../components/OrderSummary"
 import type { CheckoutData } from "../types"
+import type { DeliveryAddress } from "../../../lib/domain/delivery-address"
 
 function fieldClass(error?: string, wide = false) {
   return `field ${wide ? "wide " : ""}${error ? "invalid" : ""}`.trim()
@@ -21,7 +22,7 @@ function RequiredLabel({ children }: { children: string }) {
   return <span>{cleanLabel(children)} <b className="requiredMark" aria-hidden="true">*</b></span>
 }
 
-export function DetailsStep({ tier, individual = false, summary, checkout, occasions, error, fieldErrors, updateField, onBack, backLabel, onNext }: {
+export function DetailsStep({ tier, individual = false, summary, checkout, occasions, error, fieldErrors, updateField, savedAddress, onUseSavedAddress, onBack, backLabel, onNext }: {
   tier?: Tier
   individual?: boolean
   summary?: ReactNode
@@ -30,6 +31,8 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
   error: string
   fieldErrors: CheckoutFieldErrors
   updateField: <K extends keyof CheckoutData>(key: K, value: CheckoutData[K]) => void
+  savedAddress?: DeliveryAddress | null
+  onUseSavedAddress?: () => void
   onBack: () => void
   backLabel?: string
   onNext: () => void
@@ -62,10 +65,17 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
 
             <section className="checkoutSectionCard" aria-labelledby="checkout-address-title">
               <div className="checkoutSectionHead"><div><span>DELIVERY</span><h4 id="checkout-address-title">Where should we send it?</h4></div><small>Enter a complete address to reduce delivery issues.</small></div>
+              {savedAddress && <div className="savedDeliveryChoice" role="group" aria-label="Saved delivery address">
+                <div><strong>Your saved address</strong><p>{savedAddress.address}, {savedAddress.city}, {savedAddress.state} {savedAddress.pincode}</p></div>
+                <div className="savedDeliveryActions">
+                  <button className="secondary" type="button" onClick={onUseSavedAddress}>Use saved address</button>
+                  <button className="secondary" type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('[data-checkout-field="address"]')?.focus()}>Change address</button>
+                </div>
+              </div>}
               <div className="checkoutFormGrid">
                 <label className={fieldClass(fieldErrors.pincode)}><RequiredLabel>{fields.pincode[0]}</RequiredLabel><input data-checkout-field="pincode" className="control" inputMode="numeric" maxLength={6} value={checkout.pincode} onChange={(e) => updateField("pincode", e.target.value.replace(/\D/g, ""))} placeholder={fields.pincode[1]} autoComplete="postal-code" aria-invalid={Boolean(fieldErrors.pincode)} /><FieldError text={fieldErrors.pincode} /></label>
                 <label className={fieldClass(fieldErrors.city)}><span>{cleanLabel(fields.city[0])} {individual ? <b className="requiredMark" aria-hidden="true">*</b> : <small className="optionalLabel">optional</small>}</span><input data-checkout-field="city" className="control" value={checkout.city} onChange={(e) => updateField("city", e.target.value)} placeholder={fields.city[1]} autoComplete="address-level2" aria-invalid={Boolean(fieldErrors.city)} /><FieldError text={fieldErrors.city} /></label>
-                <label className={fieldClass(fieldErrors.address, true)}><RequiredLabel>{fields.address[0]}</RequiredLabel><textarea data-checkout-field="address" className="control" rows={3} value={checkout.address} onChange={(e) => updateField("address", e.target.value)} placeholder={fields.address[1]} autoComplete="street-address" aria-invalid={Boolean(fieldErrors.address)} /><FieldError text={fieldErrors.address} /></label>
+                <label className={fieldClass(fieldErrors.address, true)}><RequiredLabel>{fields.address[0]}</RequiredLabel><textarea data-checkout-field="address" name="street-address" className="control" rows={3} value={checkout.address} onChange={(e) => updateField("address", e.target.value)} placeholder={fields.address[1]} autoComplete="street-address" aria-invalid={Boolean(fieldErrors.address)} /><FieldError text={fieldErrors.address} /></label>
                 <label className={fieldClass(fieldErrors.state, true)}><span>{cleanLabel(fields.state[0])} {individual ? <b className="requiredMark" aria-hidden="true">*</b> : <small className="optionalLabel">optional</small>}</span><input data-checkout-field="state" className="control" value={checkout.state} onChange={(e) => updateField("state", e.target.value)} placeholder={fields.state[1]} autoComplete="address-level1" aria-invalid={Boolean(fieldErrors.state)} /><FieldError text={fieldErrors.state} /></label>
               </div>
             </section>
