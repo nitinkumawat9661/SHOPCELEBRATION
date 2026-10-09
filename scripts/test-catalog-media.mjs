@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process"
 const root = new URL("../", import.meta.url)
 const read = (file) => readFile(new URL(file, root), "utf8")
 const seed = JSON.parse(await read("content/catalog.json"))
+const sources = JSON.parse(await read("content/catalog-image-source-map.json")).products
 const isMeesho = (url) => {
   try { return new URL(url).hostname === "upload.meeshosupplyassets.com" } catch { return false }
 }
@@ -28,5 +29,7 @@ const scan = spawnSync(process.execPath, [new URL("scripts/rehost-meesho-catalog
   env: { ...process.env, DATABASE_URL: "" }, encoding: "utf8", timeout: 20000
 })
 assert.equal(scan.status, 0, scan.stderr)
-assert(scan.stdout.includes(`${external.size} unique Meesho image sources`), "Bootstrap URLs scanned incorrectly")
-console.log(`Catalog media checks passed; bootstrap has ${external.size} Meesho-hosted images pending actual migration.`)
+assert.equal(external.size, 0, "Bootstrap primary image fields must be hosted by Celebration")
+assert.equal(Object.keys(sources).length, 67, "All 67 verified original URLs must remain traceable to their SKUs")
+assert(scan.stdout.includes("0 unique Meesho image sources"), "Bootstrap scan incorrectly reports third-party images")
+console.log(`Catalog media checks passed: ${Object.keys(sources).length} original photo fallbacks preserved, zero primary Meesho image URLs.`)
