@@ -79,6 +79,19 @@ export function primaryProductImage(product: GiftProduct) {
   return productImages(product)[0]
 }
 
+/**
+ * Rehosted images carry deterministic R2 thumb / main / zoom variants.
+ * For all other catalog URLs, preserve the original URL unchanged.
+ */
+export function catalogImageVariant(url: string, variant: "thumb" | "main" | "zoom") {
+  if (!url.startsWith("/api/catalog/image?key=")) return url
+  const params = new URLSearchParams(url.split("?")[1] || "")
+  const key = params.get("key") || ""
+  if (!/^catalog\/rehost\/meesho\/[a-f0-9]{64}\/main\.webp$/.test(key)) return url
+  params.set("key", key.replace(/\/main\.webp$/, `/${variant}.webp`))
+  return `/api/catalog/image?${params.toString()}`
+}
+
 export function catalogSpriteImage(url: string) {
   const match = url.match(/^(.*)\?tile=([0-4])$/)
   if (!match) return null
