@@ -57,5 +57,5 @@ jobs:
           test "$ACTIVE" = "/var/www/celebration/releases/github-$SHORT"
           cd "$ACTIVE"
           # Env is loaded only in the Node process, never echoed to Actions.
-          timeout 1800 node -e 'const { loadEnvConfig } = require("@next/env"); loadEnvConfig(process.cwd(), false); process.argv.push("--apply"); import("./scripts/rehost-meesho-catalog-images.mjs").catch(err => { console.error("Catalog migration failed:", err.message); process.exitCode = 1 })'
+          timeout 1800 node -e 'const { loadEnvConfig } = require("@next/env"); loadEnvConfig(process.cwd(), false); process.argv.push("--apply", "--allow-partial"); import("./scripts/rehost-meesho-catalog-images.mjs").catch(err => { console.error("Catalog migration failed:", err.message); process.exitCode = 1 })'
           REMOTE
