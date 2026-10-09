@@ -39,9 +39,11 @@
 
 ## 3. रिव्यू सिस्टम (फेक नहीं डालना)
 
-- [ ] Pending — असली कस्टमर रिव्यू के लिए नाम, शहर, स्टार रेटिंग, टेक्स्ट और उपलब्ध होने पर फोटो वाला सिस्टम तैयार रखो।
-- [ ] Pending — टेस्टिंग में फेक डेटा इस्तेमाल कर सकते हैं, पर लाइव साइट पर कोई फेक रिव्यू, नाम या रीजन पब्लिश नहीं करना है।
-- [ ] Pending — वास्तविक रिव्यू न होने पर “Be the first to review this product” दिखाओ।
+- [x] Done — real customer reviews: verified, paid, delivered individual order वाले ग्राहक ही account name, order city, rating 1–5, text और optional EXIF-removed photo जमा कर सकते हैं; admin moderation के बाद ही public दिखेगा।
+- [x] Done — live database migration में कोई fake/sample review seed नहीं; सिर्फ verified delivered purchases के genuine submissions और admin-approved reviews public।
+- [x] Done — बिना approved customer reviews के product page पर “Be the first to review this product” दिखता है, नकली नाम/rating नहीं।
+
+**Section 3 verification:** Database migration 036 केवल empty review table बनाती है। Submitted reviews default `pending` हैं। Review eligibility के लिए actual paid/verified **delivered** order, logged-in phone-verified customer और उसी product SKU का match अनिवार्य है। फोटो private Cloudflare R2 में रहती है; approval के बाद ही public हो सकती है। Review names और cities account/order से आते हैं—कभी fabricated नहीं। First genuine customer submission पर end-to-end manual smoke test अब भी उपयोगी रहेगा; इसलिए किसी fake live review से test नहीं किया गया।
 
 ---
 
