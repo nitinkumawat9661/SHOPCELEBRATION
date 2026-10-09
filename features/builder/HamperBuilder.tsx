@@ -91,7 +91,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
 
   function rememberAddress() {
     if (!customer.account || !state.checkout.address.trim() || !state.checkout.city.trim()
-      || !state.checkout.state.trim() || !/^\\d{6}$/.test(state.checkout.pincode)) return
+      || !state.checkout.state.trim() || !/^\d{6}$/.test(state.checkout.pincode)) return
     void saveDefaultAddress(state.checkout).then(setSavedAddress).catch(() => {
       notifyUx({ title: "Address not saved", body: "Your delivery details remain in this checkout, but your account default could not be updated.", tone: "info" })
     })
@@ -283,7 +283,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
     state.updateField("phone", account.phone)
     state.updateField("customerName", customerName)
     closeAuth(false)
-    if (state.checkout.address.trim() && state.checkout.city.trim() && state.checkout.state.trim() && /^\\d{6}$/.test(state.checkout.pincode)) {
+    if (state.checkout.address.trim() && state.checkout.city.trim() && state.checkout.state.trim() && /^\d{6}$/.test(state.checkout.pincode)) {
       void saveDefaultAddress({ ...state.checkout, phone: account.phone }).then(setSavedAddress).catch(() => {
         notifyUx({ title: "Address not saved", body: "You can still finish checkout. Your account address was not saved.", tone: "info" })
       })
