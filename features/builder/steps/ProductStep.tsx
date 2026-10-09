@@ -10,7 +10,8 @@ function ruleMessage(rule: SelectionRule, copy: typeof uiContent.builder.product
 }
 
 function ProductVisual({ product }: { product: GiftProduct }) {
-  if (product.imageUrl) return <SafeCatalogImage className="catalogProductImage" src={catalogImageVariant(product.imageUrl, "thumb")} alt={product.name} />
+  const primary = primaryProductImage(product)
+  if (primary) return <SafeCatalogImage className="catalogProductImage" src={catalogImageVariant(primary.url, "thumb")} fallbackSrc={primary.fallbackUrl} alt={product.name} />
   return <span className="pickIcon">{product.icon || "🎁"}</span>
 }
 
