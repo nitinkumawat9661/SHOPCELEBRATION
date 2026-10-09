@@ -77,7 +77,7 @@ export function productImages(product: GiftProduct): ProductImage[] {
       seen.add(item.url)
       return true
     })
-  if (product.imageUrl && !seen.has(product.imageUrl)) images.unshift({ url: product.imageUrl, alt: product.name })
+  if (product.imageUrl && !seen.has(product.imageUrl)) images.unshift({ url: product.imageUrl, alt: product.name, fallbackUrl: undefined })
   return images
 }
 
