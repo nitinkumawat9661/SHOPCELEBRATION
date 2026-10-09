@@ -5,6 +5,7 @@ import { CatalogCard } from "../../../features/catalog/CatalogCard"
 import { SeoJsonLd } from "../../../features/seo/SeoJsonLd"
 import { ProductGallery } from "../../../features/catalog/ProductGallery"
 import { AddToCart } from "../../../features/cart/AddToCart"
+import { ProductViewAnalytics } from "../../../features/analytics/ProductViewAnalytics"
 import { SiteFooter } from "../../../features/shell/SiteFooter"
 import { StorefrontHeader } from "../../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../../features/shell/TrustStrip"
@@ -99,6 +100,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   return (
     <main className="collectionPage">
       {structuredData && <SeoJsonLd data={structuredData} />}
+      {product && listed && typeof product.salePricePaise === "number" && <ProductViewAnalytics productId={product.id} name={product.name} category={product.category} pricePaise={product.salePricePaise} />}
       <TrustStrip /><StorefrontHeader settings={settings?.settings || defaultStoreSettings} />
       {!product ? <section className="collectionSection"><div className="wrap collectionEmpty" role="status"><h1>This gift couldn’t load just now.</h1><p>Please try again in a moment.</p><Link href={`/jewelry/${encodeURIComponent(id)}`}>Try again →</Link><Link href="/jewelry?view=all">Back to the collection</Link></div></section> : <>
         <div className="wrap collectionBreadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true">›</span><Link href={collectionUrl}>Collection</Link><span aria-hidden="true">›</span><span>{product.name}</span></div>
@@ -111,7 +113,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.retail?.warrantyOrGuarantee && <div className="antiTarnishGuarantee"><div><b>6-month anti-tarnish guarantee</b><span>Covered for verified tarnish issues under normal use. Keep dry and avoid perfume, sanitizer, soap, chlorine, salt water and harsh chemicals.</span></div><Link href="/policies">View coverage terms →</Link></div>}
             <div className="collectionDetailPrice"><span>{soldOut ? "Currently sold out" : listed ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(listed ? product.salePricePaise! / 100 : product.minTier)}</strong>{listed && mrpPaise && discount ? <span><s>{formatMoney(mrpPaise / 100)}</s> · {discount}% OFF</span> : null}<small>{soldOut ? "This piece is currently unavailable. Check back after a restock." : listed ? "Delivery included. No extra delivery charge is added at checkout; pincode availability is verified before payment." : "Hamper budget, not an individual item price."}</small></div>
             <div className="collectionDetailActions">
-              {individual ? <><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} buyNow /></> : soldOut ? <span className="secondary" aria-disabled="true">Sold out</span> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
+              {individual ? <><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} buyNow /></> : soldOut ? <span className="secondary" aria-disabled="true">Sold out</span> : <Link className="collectionApply" href="/#budgets">Choose your hamper <span aria-hidden="true">→</span></Link>}
               <Link className="collectionDetailBack" href={collectionUrl}>Keep exploring</Link>
             </div>
             <div className="marketplaceTrustGrid" aria-label="Shopping assurances">
@@ -141,7 +143,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <div className="collectionDetailAbout"><h2>Product details</h2><p>{product.description || (individual ? "This gift is available individually and within eligible hampers. For a curated gift set, share your occasion and budget with our team." : "This gift is currently available within our curated hampers. The final selection is curated for your occasion.")}</p><Link href="/policies">Delivery & order policies <span aria-hidden="true">→</span></Link>{individual && <Link href="/#budgets">Explore our curated hampers →</Link>}</div>
           </div>
         </div></section>
-        {individual && <div className="mobileMarketplaceBuyBar" aria-label="Quick purchase controls"><div><small>{product.name}</small><b>{formatMoney(product.salePricePaise! / 100)}</b></div><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} buyNow /></div>}
+        {individual && <div className="mobileMarketplaceBuyBar" aria-label="Quick purchase controls"><div><small>{product.name}</small><b>{formatMoney(product.salePricePaise! / 100)}</b></div><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} buyNow /></div>}
         {related.length > 0 && <section className="collectionRelated"><div className="wrap collectionContainer"><div className="collectionHeading"><div><span className="collectionEyebrow">Keep the inspiration going</span><h2>More thoughtful details</h2></div><Link href={collectionUrl}>View collection →</Link></div><div className="collectionGrid">{related.map((item) => <CatalogCard product={item} key={item.id} />)}</div></div></section>}
       </>}
       <SiteFooter />
