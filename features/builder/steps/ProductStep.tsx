@@ -1,5 +1,6 @@
-import { canSelectProduct, formatMoney, type CatalogConfig, type CategoryOption, type GiftProduct, type SelectionRule, type Tier } from "../../../lib/domain/catalog"
+import { catalogImageVariant, canSelectProduct, formatMoney, type CatalogConfig, type CategoryOption, type GiftProduct, type SelectionRule, type Tier } from "../../../lib/domain/catalog"
 import { uiContent } from "../../../lib/domain/content"
+import { SafeCatalogImage } from "../../catalog/SafeCatalogImage"
 
 function ruleMessage(rule: SelectionRule, copy: typeof uiContent.builder.products) {
   if (rule.reason === "minTier") return copy.availableFrom.replace("{amount}", formatMoney(rule.value || 0))
@@ -9,7 +10,7 @@ function ruleMessage(rule: SelectionRule, copy: typeof uiContent.builder.product
 }
 
 function ProductVisual({ product }: { product: GiftProduct }) {
-  if (product.imageUrl) return <img className="catalogProductImage" src={product.imageUrl} alt="" loading="lazy" />
+  if (product.imageUrl) return <SafeCatalogImage className="catalogProductImage" src={catalogImageVariant(product.imageUrl, "thumb")} alt={product.name} />
   return <span className="pickIcon">{product.icon || "🎁"}</span>
 }
 
