@@ -57,4 +57,8 @@ jobs:
           test "$ACTIVE" = "/var/www/celebration/releases/github-$SHORT"
           cd "$ACTIVE"
           timeout 900 node -e 'const {loadEnvConfig}=require("@next/env");loadEnvConfig(process.cwd(),false);process.argv.push("--apply");import("./scripts/audit-catalog-image-ownership.mjs").catch(err=>{console.error("Ownership review failed:",err.message);process.exitCode=1})'
+          # Check persisted source ownership after backfill, then request every
+          # product hero through the same public HTTP route customers use.
+          timeout 900 node -e 'const {loadEnvConfig}=require("@next/env");loadEnvConfig(process.cwd(),false);import("./scripts/audit-catalog-image-ownership.mjs").catch(err=>{console.error("Post-write review failed:",err.message);process.exitCode=1})'
+          timeout 600 node -e 'const {loadEnvConfig}=require("@next/env");loadEnvConfig(process.cwd(),false);import("./scripts/verify-public-catalog-media.mjs").catch(err=>{console.error("Public media failed:",err.message);process.exitCode=1})'
           REMOTE
