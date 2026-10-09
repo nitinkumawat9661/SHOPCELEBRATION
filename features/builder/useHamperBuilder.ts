@@ -10,11 +10,24 @@ const BUILDER_DRAFT_KEY = "celebration:hamper-draft:v1"
 const BUILDER_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 type BuilderDraft = {
-  v: 2
+  v: 3
   tierId: string
   occasion: string
   step: number
+  checkout: Partial<CheckoutData>
   updatedAt: number
+}
+
+const DRAFT_FIELDS = ["customerName", "phone", "receiverName", "address", "city", "state", "pincode", "requiredDate", "message"] as const
+function draftCheckout(value: unknown): Partial<CheckoutData> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {}
+  const result: Partial<CheckoutData> = {}
+  const source = value as Record<string, unknown>
+  for (const key of DRAFT_FIELDS) {
+    if (typeof source[key] === "string" && (source[key] as string).length <= 600) result[key] = source[key] as string
+  }
+  if (result.requiredDate && result.requiredDate < new Date().toLocaleDateString("en-CA")) result.requiredDate = ""
+  return result
 }
 
 export type TierSocialProof = {
@@ -67,7 +80,7 @@ function readBuilderDraft(catalog: CatalogConfig) {
     const raw = window.localStorage.getItem(BUILDER_DRAFT_KEY)
     if (!raw) return null
     const value = JSON.parse(raw) as Partial<BuilderDraft>
-    if (value.v !== 2 || typeof value.updatedAt !== "number" || Date.now() - value.updatedAt > BUILDER_DRAFT_TTL_MS) {
+    if (![2, 3].includes(Number(value.v)) || typeof value.updatedAt !== "number" || Date.now() - value.updatedAt > BUILDER_DRAFT_TTL_MS) {
       removeBuilderDraft()
       return null
     }
@@ -78,9 +91,9 @@ function readBuilderDraft(catalog: CatalogConfig) {
       ? value.occasion
       : catalog.settings.defaultOccasion
     const requestedStep = Number(value.step)
-    const step = Number.isInteger(requestedStep) && requestedStep >= 1 && requestedStep <= 3 ? requestedStep : 1
+    const step = Number.isInteger(requestedStep) && requestedStep >= 1 && requestedStep <= 3 ? Math.min(requestedStep, 2) : 1
 
-    return { tierId: tier.id, occasion, step }
+    return { tierId: tier.id, occasion, step, checkout: Number(value.v) === 3 ? draftCheckout(value.checkout) : {} }
   } catch {
     removeBuilderDraft()
     return null
@@ -139,7 +152,7 @@ export function useHamperBuilder(initial: InitialBuilderData = {}) {
     if (draft) {
       setTierId(draft.tierId)
       setStep(draft.step)
-      setCheckout((current) => ({ ...current, occasion: draft.occasion }))
+      setCheckout((current) => ({ ...current, ...draft.checkout, occasion: draft.occasion, paymentReference: "" }))
       setDraftRestored(true)
     }
     setDraftReady(true)
@@ -152,6 +165,7 @@ export function useHamperBuilder(initial: InitialBuilderData = {}) {
     const meaningful = tierId !== defaultTier.id
       || checkout.occasion !== catalog.settings.defaultOccasion
       || safeStep > 1
+      || DRAFT_FIELDS.some((field) => field !== "state" && checkout[field].trim().length > 0)
 
     if (!meaningful) {
       removeBuilderDraft()
@@ -159,14 +173,15 @@ export function useHamperBuilder(initial: InitialBuilderData = {}) {
     }
 
     const draft: BuilderDraft = {
-      v: 2,
+      v: 3,
       tierId,
       occasion: checkout.occasion,
       step: safeStep,
+      checkout: draftCheckout(checkout),
       updatedAt: Date.now()
     }
     try { window.localStorage.setItem(BUILDER_DRAFT_KEY, JSON.stringify(draft)) } catch { /* non-critical preference cache */ }
-  }, [catalog, checkout.occasion, draftReady, step, tierId])
+  }, [catalog, checkout, draftReady, step, tierId])
 
   const tiers = visibleTiers(catalog)
   const occasions = catalog.occasions
