@@ -1,21 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Link from "next/link"
-import { catalogSpriteImage, isIndividualListing, isIndividuallySellable, primaryProductImage, productDiscountPercent, type GiftProduct } from "../../lib/domain/catalog"
+import { catalogImageVariant, catalogSpriteImage, isIndividualListing, isIndividuallySellable, primaryProductImage, productDiscountPercent, type GiftProduct } from "../../lib/domain/catalog"
 import { AddToCart } from "../cart/AddToCart"
 import { formatMoney } from "../../lib/domain/money"
+import { SafeCatalogImage } from "./SafeCatalogImage"
 
 export function CatalogProductImage({ product, priority = false }: { product: GiftProduct; priority?: boolean }) {
-  const [failed, setFailed] = useState(false)
-
   const primary = primaryProductImage(product)
-
-  useEffect(() => {
-    setFailed(false)
-  }, [primary?.url])
-
-  if (primary && !failed) {
+  if (primary) {
     const sprite = catalogSpriteImage(primary.url)
     if (sprite) {
       return <div
@@ -25,24 +18,14 @@ export function CatalogProductImage({ product, priority = false }: { product: Gi
         style={{ backgroundImage: `url("${sprite.url}")`, backgroundPosition: sprite.backgroundPosition }}
       />
     }
-    return <img
+    return <SafeCatalogImage
       className="catalogPhoto"
-      src={primary.url}
+      src={catalogImageVariant(primary.url, "thumb")}
       alt={primary.alt || product.name}
       loading={priority ? "eager" : "lazy"}
-      decoding="async"
-      referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
     />
   }
-
-  return (
-    <div className={`catalogPhotoPlaceholder${failed ? " catalogPhotoFailed" : ""}`} role="img" aria-label={`${product.name} image ${failed ? "unavailable" : "not added"}`}>
-      <span className="catalogPhotoPlaceholderIcon" aria-hidden="true">{product.icon || "✦"}</span>
-      {failed && <small>Image unavailable</small>}
-      {!failed && <small>{product.category}</small>}
-    </div>
-  )
+  return <SafeCatalogImage className="catalogPhoto" src="" alt={product.name} />
 }
 
 export function CatalogCard({ product }: { product: GiftProduct }) {
