@@ -13,10 +13,11 @@ import { AdminOrderCard } from "./AdminOrderCard"
 import { AdminOrderToolbar } from "./AdminOrderToolbar"
 import { AdminStoreSettings } from "./AdminStoreSettings"
 import { AdminReservationReview } from "./AdminReservationReview"
+import { AdminReviews } from "./AdminReviews"
 import { countAdminFilter, defaultAdminOrderFilter, filterAdminOrders, type AdminOrderSort } from "./orderFilters"
 import { useAdminOrders } from "./useAdminOrders"
 
-type AdminView = "overview" | "orders" | "requests" | CatalogAdminSection | "campaigns" | "analytics" | "settings" | "history"
+type AdminView = "overview" | "orders" | "requests" | "reviews" | CatalogAdminSection | "campaigns" | "analytics" | "settings" | "history"
 
 type AdminNavItem = { id: AdminView; label: string; helper: string }
 type AdminNavGroup = { label: string; items: AdminNavItem[] }
@@ -42,6 +43,7 @@ const navGroups: AdminNavGroup[] = [
     items: [
       { id: "tiers", label: "Hampers & Pricing", helper: "Budgets and limits" },
       { id: "products", label: "Products", helper: "Items and images" },
+      { id: "reviews", label: "Customer Reviews", helper: "Genuine verified feedback" },
       { id: "occasions", label: "Occasions", helper: "Builder defaults" }
     ]
   },
@@ -64,6 +66,7 @@ const viewCopy: Record<AdminView, { kicker: string; title: string; body: string 
   analytics: { kicker: "INSIGHTS", title: "Conversion analytics", body: "Funnel, checkout, campaign redemption aur order-value impact dekhein." },
   tiers: { kicker: "CATALOG", title: "Hampers & pricing", body: "Price tiers, sizes aur selection limits without code deploy manage karein." },
   products: { kicker: "CATALOG", title: "Products & items", body: "Items, images, categories, eligibility aur display order manage karein." },
+  reviews: { kicker: "CATALOG", title: "Real customer reviews", body: "Sirf real delivered orders ke reviews publish karein. Pending feedback ko verify karein." },
   occasions: { kicker: "CATALOG", title: "Occasions & defaults", body: "Builder occasions aur default selections control karein." },
   settings: { kicker: "SYSTEM", title: "Store settings", body: "Support details aur storefront helper content runtime par update karein." },
   history: { kicker: "SYSTEM", title: "Change history", body: "Published catalog versions dekhein aur zarurat par restore karein." }
@@ -227,6 +230,7 @@ export function AdminDashboard() {
         {view === "campaigns" && <AdminCampaigns />}
         {view === "analytics" && <AdminConversionAnalytics />}
         {(view === "tiers" || view === "products" || view === "occasions") && <AdminCatalogManager section={view} />}
+        {view === "reviews" && <AdminReviews />}
         {view === "settings" && <AdminStoreSettings />}
         {view === "history" && <AdminCatalogHistory />}
       </div>
