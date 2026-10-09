@@ -1,0 +1,66 @@
+/* Compact delivery step only. Checkout logic and hamper forms are untouched. */
+.cartPage:has(.cartDeliveryStep) .celebrationNav{display:none}
+@media(min-width:760px){
+.cartPage:has(.cartDeliveryStep) .celebrationHeaderTop{min-height:66px}
+.cartPage:has(.cartDeliveryStep) .celebrationBrand>span{font-size:30px}
+}
+.cartPage #builder.marketCartCheckoutBuilder{scroll-margin-top:90px}
+.cartPage #builder.marketCartCheckoutBuilder>.builderCard{padding:0;border:0;background:transparent;box-shadow:none}
+.cartPage #builder .cartDeliveryStep .builderTitle{margin-bottom:13px}
+.cartPage #builder .cartDeliveryStep .builderTitle h3{font:750 clamp(22px,2.3vw,27px)/1.2 var(--font-shopping-sans),Arial,sans-serif;letter-spacing:-.02em;color:#302428;margin:0}
+.cartPage #builder .cartDeliveryStep .builderTitle p{font-size:12px;line-height:1.4;margin:4px 0 0;color:#75696c}
+.cartPage #builder .cartDeliveryStep .detailsGrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.cartPage #builder .cartDeliveryStep .detailsGrid>*{min-width:0}
+.cartPage #builder .cartDeliveryStep .checkoutSectionStack{display:grid;gap:10px}
+.cartPage #builder .cartDeliveryStep .checkoutSectionCard,
+.cartPage #builder .cartDeliveryStep .checkoutSectionCard:first-child,
+.cartPage #builder .cartDeliveryStep .checkoutSectionCard:last-child{display:block;margin:0;min-width:0;padding:14px 16px;border:1px solid #e7e0e1;border-radius:12px;background:#fff;box-shadow:none}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead{display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px;padding:0;border:0}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead>div{min-width:0}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead span{font:800 9px/1.3 var(--font-shopping-sans),Arial,sans-serif;letter-spacing:.1em;color:#984358}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead h4{margin:4px 0 0;font:700 17px/1.3 var(--font-shopping-sans),Arial,sans-serif;letter-spacing:-.018em;color:#302428}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead small{flex:0 1 190px;max-width:190px;text-align:right;font:400 10px/1.4 var(--font-shopping-sans),Arial,sans-serif;color:#807376}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .wide{grid-column:1/-1}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .field{min-width:0;margin:0}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .field>span{display:flex;align-items:center;gap:5px;margin:0 0 5px;color:#453b3f;font:650 12px/1.35 var(--font-shopping-sans),Arial,sans-serif}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .control{display:block;min-width:0;width:100%;height:46px;min-height:46px;padding:9px 12px;border:1px solid #d8cfd1;border-radius:8px;background:#fff;color:#302428;box-shadow:none;font:400 15px/1.4 var(--font-shopping-sans),Arial,sans-serif}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid textarea.control{height:auto;min-height:68px;resize:vertical;padding:10px 12px}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .control::placeholder{color:#978b8f;font-size:13px}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .control:focus{border-color:#971f39;outline:2px solid #f3cdd7;outline-offset:0;box-shadow:0 0 0 2px rgba(145,20,44,.07)}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .field.invalid .control{border-color:#c64745;background:#fffafa}
+.cartPage #builder .cartDeliveryStep .savedDeliveryChoice{margin:0 0 10px;padding:10px 12px;border-radius:9px}
+.cartPage #builder .cartDeliveryStep .savedDeliveryChoice p{font-size:11px;margin:3px 0 8px}
+.cartPage #builder .cartDeliveryStep .checkoutProgressNote{margin:10px 0 0;padding:9px 11px;border-radius:10px;font-size:11px;line-height:1.45}
+.cartPage #builder .cartDeliveryStep .detailActions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:0;margin:13px 0 0}
+.cartPage #builder .cartDeliveryStep .detailActions .primary{min-height:46px;font-size:13px;padding:10px 18px}
+.cartPage #builder .cartDeliveryStep .detailActions .tiny{flex:1;min-width:120px;font-size:10px;line-height:1.4}
+.cartPage #builder .cartDeliveryStep .detailsGrid>.marketCartSummary{position:sticky;top:86px;align-self:start;min-width:0;padding:18px;border:1px solid #e7e0e1;border-radius:12px;background:#fff;box-shadow:none}
+.cartPage #builder .cartDeliveryStep .marketCartSummaryHead{padding-bottom:10px;margin-bottom:12px}
+.cartPage #builder .cartDeliveryStep .marketCartSummaryHead h2{font-size:17px;line-height:1.3}
+.cartPage #builder .cartDeliveryStep .marketCartPriceRows{gap:11px;padding-bottom:12px;font-size:12px}
+.cartPage #builder .cartDeliveryStep .marketCartSummaryTotal{padding:14px 0 11px}
+.cartPage #builder .cartDeliveryStep .marketCartSummaryTotal strong{font:800 22px/1.2 var(--font-shopping-sans),Arial,sans-serif;color:#8d142a}
+.cartPage #builder .cartDeliveryStep .marketCartSummaryFoot{padding:11px 0 7px}
+.cartPage #builder .cartDeliveryStep .marketCartSummaryFoot p{font-size:10px}
+.cartPage #builder .cartDeliveryStep .marketCartPolicyLink{font-size:10px}
+@media(min-width:760px) and (max-width:1050px){
+.cartPage #builder .cartDeliveryStep .detailsGrid{grid-template-columns:minmax(0,1fr) 285px;gap:14px}
+}
+@media(max-width:759px){
+.cartPage #builder.marketCartCheckoutBuilder{scroll-margin-top:140px}
+.cartPage #builder .cartDeliveryStep .detailsGrid{grid-template-columns:1fr;gap:12px}
+.cartPage #builder .cartDeliveryStep .builderTitle h3{font-size:23px}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead{align-items:flex-start;flex-direction:column;gap:2px}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead small{flex:auto;max-width:none;text-align:left}
+.cartPage #builder .cartDeliveryStep .checkoutSectionCard,
+.cartPage #builder .cartDeliveryStep .checkoutSectionCard:first-child,
+.cartPage #builder .cartDeliveryStep .checkoutSectionCard:last-child{padding:13px 12px}
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid .control{font-size:16px}
+.cartPage #builder .cartDeliveryStep .detailsGrid>.marketCartSummary{position:static;width:100%;padding:16px}
+}
+@media(max-width:480px){
+.cartPage #builder .cartDeliveryStep .checkoutFormGrid{grid-template-columns:1fr;gap:10px}
+.cartPage #builder .cartDeliveryStep .checkoutSectionHead h4{font-size:16px}
+.cartPage #builder .cartDeliveryStep .detailActions .tiny{order:3;flex-basis:100%}
+}
