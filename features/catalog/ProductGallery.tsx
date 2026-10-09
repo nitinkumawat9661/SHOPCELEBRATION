@@ -3,11 +3,13 @@
 import { useMemo, useState } from "react"
 import { catalogImageVariant, catalogSpriteImage, productImages, type GiftProduct } from "../../lib/domain/catalog"
 import { SafeCatalogImage } from "./SafeCatalogImage"
+import { productBadge } from "../../lib/domain/catalog-badges"
 
 export function ProductGallery({ product }: { product: GiftProduct }) {
   const images = useMemo(() => productImages(product), [product])
   const [active, setActive] = useState(0)
   const current = images[active] || images[0]
+  const badge = productBadge(product)
 
   if (!current) {
     return (
@@ -38,7 +40,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
           loading="eager"
           fetchPriority="high"
         />}
-        {product.badge && <span className="marketplaceProductBadge">{product.badge}</span>}
+        {badge && <span className={`marketplaceProductBadge marketplaceProductBadge--${badge.kind}`}>{badge.label}</span>}
         {images.length > 1 && <>
           <button className="marketplaceGalleryArrow previous" type="button" aria-label="Previous image" onClick={() => setActive((currentIndex) => (currentIndex - 1 + images.length) % images.length)}>‹</button>
           <button className="marketplaceGalleryArrow next" type="button" aria-label="Next image" onClick={() => setActive((currentIndex) => (currentIndex + 1) % images.length)}>›</button>
