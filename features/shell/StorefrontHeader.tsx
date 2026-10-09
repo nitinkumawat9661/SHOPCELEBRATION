@@ -6,7 +6,7 @@ import type { StoreSettings } from "../../lib/server/store-settings"
 import { StoreIcon } from "./StoreIcon"
 import { CartLink } from "../cart/AddToCart"
 
-export function StorefrontHeader({ settings, onCreate, showAccount = true }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean }) {
+export function StorefrontHeader({ settings, onCreate, showAccount = true, searchQuery = "" }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean; searchQuery?: string }) {
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
   return <>
     <header className="celebrationHeader">
@@ -16,7 +16,7 @@ export function StorefrontHeader({ settings, onCreate, showAccount = true }: { s
         </Link>
         <form className="celebrationSearch" action="/jewelry" role="search">
           <input type="hidden" name="view" value="all" />
-          <input type="search" name="q" aria-label="Search gifts" placeholder="Find a little something they'll love…" maxLength={100} />
+          <input type="search" name="q" defaultValue={searchQuery} aria-label="Search gifts" placeholder="Find a little something they'll love…" maxLength={100} />
           <button type="submit" aria-label="Search gifts"><StoreIcon name="search" size={19} /></button>
         </form>
         <div className="celebrationHeaderActions">
