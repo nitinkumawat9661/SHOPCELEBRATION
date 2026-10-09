@@ -305,7 +305,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
     </div>
     <div className="marketCartPriceRows">
       <div><span>Subtotal ({itemCount} {itemCount === 1 ? "item" : "items"})</span><b>{formatMoney(subtotalPaise / 100)}</b></div>
-      <div><span>Delivery charges</span><b className="marketCartIncluded">Included</b></div>
+      <div><span>Delivery charges</span><b className="marketCartIncluded">FREE</b></div>
     </div>
     <div className="marketCartSummaryTotal">
       <span>Total payable</span><strong>{formatMoney(shownTotalPaise / 100)}</strong>
@@ -376,7 +376,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
                   {salePaise != null && mrpPaise && mrpPaise > salePaise && <del aria-label="Maximum retail price">{formatMoney(mrpPaise / 100)}</del>}
                   {discount != null && <span className="marketCartDiscount">{discount}% off MRP</span>}
                 </div>
-                <p className="marketCartItemDelivery">Delivery included · Address checked at next step</p>
+                <p className="marketCartItemDelivery">FREE delivery · Address checked at next step</p>
                 <div className="cartRowControls marketCartItemActions">
                   <div className="cartQuantity" role="group" aria-label={"Quantity for " + (row.product?.name || row.productId)}>
                     <button type="button" aria-label={"Decrease quantity of " + (row.product?.name || row.productId)} disabled={locked || row.quantity <= 1} onClick={() => cart.quantity(row.productId, row.quantity - 1)}>−</button>
