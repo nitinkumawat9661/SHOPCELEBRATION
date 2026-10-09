@@ -130,3 +130,16 @@
 
 .customerEta{font-size:9px;line-height:1.4;color:var(--muted)}
 .customerEta strong{color:var(--m)}
+
+.customerDefaultAddress{margin:22px 0 28px;padding:20px;border:1px solid #dfcbb5;border-radius:17px;background:#fffbf5}
+.customerDefaultAddressHeading{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.customerDefaultAddressHeading h2{margin:6px 0;color:#801124;font-size:21px}
+.defaultAddressSummary{font-size:14px;line-height:1.7;color:#654c3d;margin:14px 0 0}
+.defaultAddressForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.defaultAddressForm label{display:grid;gap:6px;font-size:12px;font-weight:600;color:#654c3d}
+.defaultAddressForm label:has(textarea){grid-column:1/-1}
+.defaultAddressForm input,.defaultAddressForm textarea{font:inherit;padding:12px;border:1px solid #d9c2a9;border-radius:9px;background:white;width:100%;color:#351d20}
+.defaultAddressForm textarea{min-height:82px;resize:vertical}
+.defaultAddressActions{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.defaultAddressStatus{font-size:13px;color:#674d3d;margin:12px 0 0}
+@media(max-width:600px){.defaultAddressForm{grid-template-columns:1fr}.customerDefaultAddress{padding:16px}}

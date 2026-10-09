@@ -14,6 +14,9 @@ import { CustomerAuthPanel } from "../account/CustomerAuthPanel"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import { focusCheckoutField, notifyUx, scrollToUxTarget } from "../ux/UxMessenger"
 import { trackGa4BeginCheckout } from "../analytics/ga4"
+import type { DeliveryAddress } from "../../lib/domain/delivery-address"
+import { deliveryHasInput } from "../../lib/domain/delivery-address"
+import { loadDefaultAddress, saveDefaultAddress } from "../checkout/delivery-preferences"
 
 function builderStepUrl(step: number) {
   const url = new URL(window.location.href)
@@ -32,6 +35,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
   const storeSettings = useStoreSettings()
   const [showAuth, setShowAuth] = useState(false)
   const [portalReady, setPortalReady] = useState(false)
+  const [savedAddress, setSavedAddress] = useState<DeliveryAddress | null>(null)
   const initialStep = useRef(true)
   const previousStep = useRef(state.step)
   const historyInitialized = useRef(false)
@@ -65,10 +69,33 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
   }, [state.step, state.tier.id, state.tier.name, state.tier.price, state.checkout.occasion])
 
   useEffect(() => {
-    if (!customer.account) return
+    if (!customer.account) { setSavedAddress(null); return }
     state.updateField("phone", customer.account.phone)
     if (!state.checkout.customerName.trim()) state.updateField("customerName", customer.account.displayName)
+    let cancelled = false
+    void loadDefaultAddress().then((address) => {
+      if (cancelled) return
+      setSavedAddress(address)
+      if (address && !deliveryHasInput(state.checkout)) useSavedAddress(address)
+    }).catch(() => { /* Guest-entered address and browser autofill remain available. */ })
+    return () => { cancelled = true }
   }, [customer.account?.id])
+
+  function useSavedAddress(address: DeliveryAddress) {
+    if (!state.checkout.receiverName.trim()) state.updateField("receiverName", address.receiverName)
+    state.updateField("address", address.address)
+    state.updateField("city", address.city)
+    state.updateField("state", address.state)
+    state.updateField("pincode", address.pincode)
+  }
+
+  function rememberAddress() {
+    if (!customer.account || !state.checkout.address.trim() || !state.checkout.city.trim()
+      || !state.checkout.state.trim() || !/^\d{6}$/.test(state.checkout.pincode)) return
+    void saveDefaultAddress(state.checkout).then(setSavedAddress).catch(() => {
+      notifyUx({ title: "Address not saved", body: "Your delivery details remain in this checkout, but your account default could not be updated.", tone: "info" })
+    })
+  }
 
   useEffect(() => {
     if (!state.draftRestored) return
@@ -224,6 +251,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
 
   function moveToPayment() {
     const invalidField = state.goToPayment()
+    if (!invalidField) rememberAddress()
     if (invalidField) {
       notifyUx({ title: "Complete this field", body: "We’ve highlighted the detail that needs attention.", tone: "error" })
       window.setTimeout(() => focusCheckoutField(invalidField), 80)
@@ -236,6 +264,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
       openAuth()
       return
     }
+    rememberAddress()
     await order.submit({ ...submitArgs, offerQuoteId, checkout: { ...state.checkout, phone: customer.account.phone } })
   }
 
@@ -245,6 +274,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
       openAuth()
       return
     }
+    rememberAddress()
     await order.pay({ ...submitArgs, offerQuoteId, checkout: { ...state.checkout, phone: customer.account.phone } })
   }
 
@@ -253,6 +283,11 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
     state.updateField("phone", account.phone)
     state.updateField("customerName", customerName)
     closeAuth(false)
+    if (state.checkout.address.trim() && state.checkout.city.trim() && state.checkout.state.trim() && /^\d{6}$/.test(state.checkout.pincode)) {
+      void saveDefaultAddress({ ...state.checkout, phone: account.phone }).then(setSavedAddress).catch(() => {
+        notifyUx({ title: "Address not saved", body: "You can still finish checkout. Your account address was not saved.", tone: "info" })
+      })
+    }
     notifyUx({ title: "You’re signed in ✓", body: "Your hamper is saved. Continue to secure payment.", tone: "success", durationMs: 2400 })
     window.setTimeout(() => scrollToUxTarget(document.querySelector("[data-payment-checkout]"), "center"), 120)
   }
@@ -292,7 +327,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
           <div className={`steps ${quickStart ? "quickSteps" : "fourSteps"}`}>{(quickStart ? [{ step: 2, label: "Delivery" }, { step: 3, label: "Payment" }] : copy.stepLabels.map((label, index) => ({ step: index + 1, label }))).map(({ step, label }) => <button type="button" key={label} className={`stepBtn ${state.step === step ? "active" : state.step > step ? "done" : ""}`} aria-current={state.step === step ? "step" : undefined} onClick={() => quickStart && step === 2 && state.step === 2 ? undefined : moveToStep(step)}>{label}</button>)}</div>
           <div className="builderCard" data-builder-step-shell>
             {state.step === 1 && <BudgetStep tierId={state.tierId} occasion={state.checkout.occasion} tiers={state.tiers} occasions={state.occasions} onTier={state.selectTier} onOccasion={(value) => state.updateField("occasion", value)} onNext={() => moveToStep(2)} />}
-            {state.step === 2 && <DetailsStep tier={state.tier} checkout={state.checkout} occasions={state.occasions} error={state.detailsError} fieldErrors={state.detailsFieldErrors} updateField={state.updateField} onBack={quickStart ? changeBudget : () => moveToStep(1)} backLabel={quickStart ? "Change budget" : undefined} onNext={moveToPayment} />}
+            {state.step === 2 && <DetailsStep tier={state.tier} checkout={state.checkout} occasions={state.occasions} error={state.detailsError} fieldErrors={state.detailsFieldErrors} updateField={state.updateField} savedAddress={savedAddress} onUseSavedAddress={() => { if (savedAddress) useSavedAddress(savedAddress) }} onBack={quickStart ? changeBudget : () => moveToStep(1)} backLabel={quickStart ? "Change budget" : undefined} onNext={moveToPayment} />}
             {state.step === 3 && <div data-payment-checkout><PaymentStep tier={state.tier} checkout={state.checkout} selectedProductIds={state.selected} selectedNames={state.selectedNames} accepted={state.accepted} submitting={order.submitting} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} paymentState={order.paymentState} paymentOrderId={order.paymentOrderId} onAccepted={state.setAccepted} onReference={(value) => state.updateField("paymentReference", value)} onBack={() => moveToStep(2)} onSubmit={submit} onPay={pay} onRefreshPayment={() => void order.refreshPayment()} onWhatsapp={openWhatsapp} onLogin={openAuth} onNewOrder={startAnotherOrder} /></div>}
           </div>
         </div>

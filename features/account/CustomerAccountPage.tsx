@@ -10,6 +10,7 @@ import { supportWhatsappUrl } from "../../lib/domain/support"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import { notifyUx } from "../ux/UxMessenger"
 import { CustomerAuthPanel } from "./CustomerAuthPanel"
+import { DefaultAddressPanel } from "./DefaultAddressPanel"
 import { useCustomerAccount } from "./useCustomerAccount"
 
 type DashboardOrder = {
@@ -221,6 +222,8 @@ export function CustomerAccountPage() {
         <div><span>In progress</span><b>{stats.active}</b></div>
         <div><span>Delivered</span><b>{stats.delivered}</b></div>
       </section>
+
+      <DefaultAddressPanel accountId={accountState.account.id} />
 
       <div className="customerDashToolbar">
         <div><div className="kicker">YOUR ORDERS</div><h2>Order progress</h2>{lastRefreshedAt && <div className="dashboardActionNote">Last refreshed {lastRefreshedAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>}</div>
