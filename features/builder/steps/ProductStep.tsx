@@ -1,4 +1,4 @@
-import { catalogImageVariant, canSelectProduct, formatMoney, type CatalogConfig, type CategoryOption, type GiftProduct, type SelectionRule, type Tier } from "../../../lib/domain/catalog"
+import { catalogImageVariant, canSelectProduct, formatMoney, primaryProductImage, type CatalogConfig, type CategoryOption, type GiftProduct, type SelectionRule, type Tier } from "../../../lib/domain/catalog"
 import { uiContent } from "../../../lib/domain/content"
 import { SafeCatalogImage } from "../../catalog/SafeCatalogImage"
 
