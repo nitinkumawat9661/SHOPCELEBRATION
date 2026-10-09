@@ -4,9 +4,17 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { MAX_CART_QUANTITY } from "./cart"
+import { trackGa4AddToCart } from "../analytics/ga4"
 import { useCart } from "./useCart"
 
-export function AddToCart({ productId, buyNow = false, maxQuantity = MAX_CART_QUANTITY }: { productId: string; buyNow?: boolean; maxQuantity?: number }) {
+export function AddToCart({ productId, productName, productCategory, pricePaise, buyNow = false, maxQuantity = MAX_CART_QUANTITY }: {
+  productId: string
+  productName?: string
+  productCategory?: string
+  pricePaise?: number
+  buyNow?: boolean
+  maxQuantity?: number
+}) {
   const cart = useCart()
   const router = useRouter()
   const [message, setMessage] = useState("")
@@ -16,9 +24,13 @@ export function AddToCart({ productId, buyNow = false, maxQuantity = MAX_CART_QU
     return (
       <div className="cartAddControl">
         <button className="primary" type="button" onClick={() => {
-          const error = quantity > 0 ? "" : cart.add(productId)
+          const addedNow = quantity <= 0
+          const error = addedNow ? cart.add(productId) : ""
           setMessage(error)
-          if (!error) router.push("/cart")
+          if (!error) {
+            if (addedNow && productName && typeof pricePaise === "number") trackGa4AddToCart({ item_id: productId, item_name: productName, item_category: productCategory, price: pricePaise / 100, quantity: 1 })
+            router.push("/cart")
+          }
         }}>Buy now</button>
         {message && <span className="cartAddFeedback" role="status">{message}</span>}
       </div>
@@ -42,6 +54,7 @@ export function AddToCart({ productId, buyNow = false, maxQuantity = MAX_CART_QU
             onClick={() => {
               const error = quantity >= Math.min(MAX_CART_QUANTITY, maxQuantity) ? "No more stock is available for this item." : cart.add(productId)
               setMessage(error)
+              if (!error && productName && typeof pricePaise === "number") trackGa4AddToCart({ item_id: productId, item_name: productName, item_category: productCategory, price: pricePaise / 100, quantity: 1 })
             }}
           >+</button>
         </div>
@@ -56,6 +69,7 @@ export function AddToCart({ productId, buyNow = false, maxQuantity = MAX_CART_QU
       <button className="secondary" type="button" onClick={() => {
         const error = cart.add(productId)
         setMessage(error || "")
+        if (!error && productName && typeof pricePaise === "number") trackGa4AddToCart({ item_id: productId, item_name: productName, item_category: productCategory, price: pricePaise / 100, quantity: 1 })
       }}>Add to cart</button>
       {message && <span className="cartAddFeedback" role="status">{message}</span>}
     </div>

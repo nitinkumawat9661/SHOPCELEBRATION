@@ -17,6 +17,7 @@ import { useStoreSettings } from "../shell/useStoreSettings"
 import { routes } from "../../config/routes"
 import { cartKey, MAX_CART_QUANTITY, type CartItem } from "./cart"
 import { useCart } from "./useCart"
+import { trackGa4BeginCheckout } from "../analytics/ga4"
 
 function blankCheckout(): CheckoutData {
   return { customerName: "", phone: "", receiverName: "", address: "", city: "", state: storeContent.checkout.defaultState, pincode: "", requiredDate: "", occasion: "Individual purchase", message: "", paymentReference: "" }
@@ -132,6 +133,16 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
       return !product || !isIndividuallySellable(product) || (product.stockAvailable != null && item.quantity > product.stockAvailable)
     })) return
     if (cart.items.reduce((total, item) => total + latest.products.find((product) => product.id === item.productId)!.salePricePaise! * item.quantity, 0) > 2_147_483_647) return
+    const gaRows = cart.items.map((item) => ({ item, product: latest.products.find((product) => product.id === item.productId) }))
+    const gaItems = gaRows.flatMap(({ item, product }) => product && isIndividuallySellable(product) ? [{
+      item_id: product.id,
+      item_name: product.name,
+      item_category: product.category,
+      price: (product.salePricePaise || 0) / 100,
+      quantity: item.quantity
+    }] : [])
+    const gaValue = gaItems.reduce((total, item) => total + (item.price || 0) * (item.quantity || 1), 0)
+    trackGa4BeginCheckout(gaItems, gaValue)
     setCheckoutError("")
     order.reset()
     setStep(2)

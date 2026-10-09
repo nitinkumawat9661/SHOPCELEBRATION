@@ -13,6 +13,7 @@ import { useCustomerAccount } from "../account/useCustomerAccount"
 import { CustomerAuthPanel } from "../account/CustomerAuthPanel"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import { focusCheckoutField, notifyUx, scrollToUxTarget } from "../ux/UxMessenger"
+import { trackGa4BeginCheckout } from "../analytics/ga4"
 
 function builderStepUrl(step: number) {
   const url = new URL(window.location.href)
@@ -37,6 +38,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
   const applyingHistory = useRef(false)
   const authSheetRef = useRef<HTMLDivElement>(null)
   const authReturnFocus = useRef<HTMLElement | null>(null)
+  const gaCheckoutKey = useRef("")
   const copy = uiContent.builder
   const submitArgs = {
     tier: state.tier,
@@ -47,6 +49,20 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
   }
 
   useEffect(() => setPortalReady(true), [])
+
+  useEffect(() => {
+    if (state.step < 2) return
+    const key = `${state.tier.id}:${state.checkout.occasion}`
+    if (gaCheckoutKey.current === key) return
+    gaCheckoutKey.current = key
+    trackGa4BeginCheckout([{
+      item_id: `hamper:${state.tier.id}`,
+      item_name: state.tier.name,
+      item_category: "Gift Hamper",
+      price: state.tier.price,
+      quantity: 1
+    }], state.tier.price)
+  }, [state.step, state.tier.id, state.tier.name, state.tier.price, state.checkout.occasion])
 
   useEffect(() => {
     if (!customer.account) return

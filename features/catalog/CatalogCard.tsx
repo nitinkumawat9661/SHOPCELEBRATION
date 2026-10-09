@@ -64,7 +64,7 @@ export function CatalogCard({ product }: { product: GiftProduct }) {
           <div className="catalogCardPrice"><span>{soldOut ? "Currently sold out" : listed ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(listed ? product.salePricePaise! / 100 : product.minTier)}</strong>{listed && mrpPaise && discount ? <small><s>{formatMoney(mrpPaise / 100)}</s> {discount}% OFF</small> : null}</div>
         </div>
       </Link>
-      {individual && <AddToCart productId={product.id} maxQuantity={product.stockAvailable ?? 1} />}
+      {individual && <AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} />}
     </article>
   )
 }

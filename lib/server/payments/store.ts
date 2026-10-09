@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto"
 import type { PoolClient } from "pg"
 import { securityConfig } from "../../../config/security"
 import { assertPaymentCanStart, isPaymentConfirmed } from "../../domain/payment"
+import type { OrderLineItem } from "../../domain/order"
 import { createTrackingToken } from "../../security/tokens"
 import { transaction } from "../db"
 import { commitInventoryForOrderWithClient, releaseInventoryForOrderWithClient } from "../inventory"
@@ -9,6 +10,9 @@ import type { ProviderCheckout, ProviderPaymentResult } from "./provider"
 
 export type PaymentOrderSnapshot = {
   internalId: string
+  orderType: "hamper" | "individual"
+  lineItems: OrderLineItem[]
+  tierId: string | null
   publicId: string
   customerAccountId: string
   idempotencyKey: string
@@ -47,6 +51,9 @@ async function findOrderForUpdate(client: PoolClient, publicId: string, customer
   }
   const result = await client.query<{
     id: string
+    order_type: "hamper" | "individual"
+    line_items: OrderLineItem[]
+    tier_id: string | null
     public_id: string
     customer_account_id: string
     idempotency_key: string
@@ -63,7 +70,7 @@ async function findOrderForUpdate(client: PoolClient, publicId: string, customer
     status: string
     payment_attempt_count: number
   }>(
-    `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
+    `SELECT id, order_type, line_items, tier_id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
             campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
        FROM orders
       WHERE public_id = $1${ownerClause}
@@ -76,6 +83,9 @@ async function findOrderForUpdate(client: PoolClient, publicId: string, customer
 function mapSnapshot(row: NonNullable<Awaited<ReturnType<typeof findOrderForUpdate>>>): PaymentOrderSnapshot {
   return {
     internalId: row.id,
+    orderType: row.order_type,
+    lineItems: row.line_items,
+    tierId: row.tier_id,
     publicId: row.public_id,
     customerAccountId: row.customer_account_id,
     idempotencyKey: row.idempotency_key,
@@ -252,13 +262,16 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
 
     const orderResult = await client.query<{
       id: string
+      order_type: "hamper" | "individual"
+      line_items: OrderLineItem[]
+      tier_id: string | null
       public_id: string
       customer_account_id: string
       idempotency_key: string
       amount_paise: number
       subtotal_paise: number
       discount_paise: number
-    shipping_paise: number
+      shipping_paise: number
       campaign_id: string | null
       campaign_title: string | null
       tier_name: string
@@ -268,7 +281,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
       status: string
       payment_attempt_count: number
     }>(
-      `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
+      `SELECT id, order_type, line_items, tier_id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
               campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
          FROM orders WHERE id = $1 FOR UPDATE`,
       [attempt.order_id]
@@ -341,13 +354,16 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
 
     const current = await client.query<{
       id: string
+      order_type: "hamper" | "individual"
+      line_items: OrderLineItem[]
+      tier_id: string | null
       public_id: string
       customer_account_id: string
       idempotency_key: string
       amount_paise: number
       subtotal_paise: number
       discount_paise: number
-    shipping_paise: number
+      shipping_paise: number
       campaign_id: string | null
       campaign_title: string | null
       tier_name: string
@@ -357,13 +373,47 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
       status: string
       payment_attempt_count: number
     }>(
-      `SELECT id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
+      `SELECT id, order_type, line_items, tier_id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
               campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
          FROM orders WHERE id = $1`,
       [orderRow.id]
     )
     return mapSnapshot(current.rows[0])
   })
+}
+
+function analyticsItems(order: PaymentOrderSnapshot) {
+  const merchandisePaise = Math.max(0, order.amountPaise - order.shippingPaise)
+
+  if (order.orderType === "individual" && order.lineItems.length) {
+    const multiplier = order.subtotalPaise > 0 ? merchandisePaise / order.subtotalPaise : 1
+    return order.lineItems.map((item) => ({
+      item_id: item.productId,
+      item_name: item.name,
+      item_brand: "Celebration",
+      price: Number(((item.unitPricePaise * multiplier) / 100).toFixed(2)),
+      quantity: item.quantity
+    }))
+  }
+
+  return [{
+    item_id: order.tierId ? `hamper:${order.tierId}` : "celebration-hamper",
+    item_name: order.tierName,
+    item_brand: "Celebration",
+    item_category: "Gift Hamper",
+    price: Number((merchandisePaise / 100).toFixed(2)),
+    quantity: 1
+  }]
+}
+
+function analyticsPurchase(order: PaymentOrderSnapshot) {
+  return {
+    transaction_id: order.publicId,
+    value: Number((Math.max(0, order.amountPaise - order.shippingPaise) / 100).toFixed(2)),
+    currency: "INR" as const,
+    shipping: Number((order.shippingPaise / 100).toFixed(2)),
+    items: analyticsItems(order)
+  }
 }
 
 export function paymentOrderClientResult(order: PaymentOrderSnapshot) {
@@ -377,6 +427,7 @@ export function paymentOrderClientResult(order: PaymentOrderSnapshot) {
     campaignId: order.campaignId,
     campaignTitle: order.campaignTitle,
     paymentStatus: order.paymentStatus,
-    status: order.status
+    status: order.status,
+    analyticsPurchase: analyticsPurchase(order)
   }
 }

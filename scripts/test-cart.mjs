@@ -44,6 +44,7 @@ const dependencies = {
   "../../lib/domain/content": { errorMessages: {}, storeContent: {}, uiContent: {} },
   "../../lib/domain/catalog": {}, "../../lib/domain/support": {},
   "../../config/routes": { routes },
+  "../analytics/ga4": { trackGa4Purchase() {} },
   "../builder/validation": { validateCheckoutDetails(details) { validations++; return details.requiredDate === "expired" ? "Expired date" : "" }, validatePaymentReference() { return "" } }
 }
 const hookExports = {}
