@@ -31,6 +31,8 @@ export type RetailDeclarations = {
 export type ProductImage = {
   url: string
   alt?: string
+  /** Original source for this exact photograph; never another product's photo. */
+  fallbackUrl?: string
 }
 
 export type GiftProduct = {
@@ -65,7 +67,11 @@ export function productImages(product: GiftProduct): ProductImage[] {
   const seen = new Set<string>()
   const images = (product.images || [])
     .filter((item) => item && typeof item.url === "string" && item.url.trim())
-    .map((item) => ({ url: item.url.trim(), alt: item.alt?.trim() || undefined }))
+    .map((item) => ({
+      url: item.url.trim(),
+      alt: item.alt?.trim() || undefined,
+      fallbackUrl: item.fallbackUrl?.trim() || undefined
+    }))
     .filter((item) => {
       if (seen.has(item.url)) return false
       seen.add(item.url)
