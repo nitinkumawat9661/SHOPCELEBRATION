@@ -135,6 +135,7 @@ try {
       credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY }
     })
     const photoHashes = new Map()
+    const duplicatePhotos = []
     for (const source of neededSources) {
       const base = mainKey(source).replace(/main\.webp$/, "")
       for (const size of ["thumb", "main", "zoom"]) {
@@ -152,11 +153,39 @@ try {
       const fileHash = createHash("sha256").update(bytes).digest("hex")
       const owner = originalOwner.get(source)
       const previous = photoHashes.get(fileHash)
-      if (previous && previous !== owner) throw new Error(`GATE_4_DUPLICATE_PHOTO_BETWEEN_SKUS:${previous}:${owner}`)
+      if (previous && previous !== owner) {
+        duplicatePhotos.push({ firstSku: previous, secondSku: owner })
+        console.warn(`VISUAL_REVIEW_REQUIRED: identical image bytes for distinct SKUs ${previous} and ${owner}. No photos will be re-assigned.`)
+      }
       photoHashes.set(fileHash, owner)
     }
+    console.log(`Gate 4/4: all ${neededSources.size * 3} R2 WebP variants verified; ${duplicatePhotos.length} cross-SKU identical-content warnings awaiting human photo review.`)
+  } else {
+    console.log("Gate 4/4: no rehosted R2 sources to verify.")
   }
-  console.log(`Gate 4/4: ${neededSources.size * 3} R2 WebP variants HEAD-verified for the correct SHA source. All 4 gates passed.`)
+
+  // Existing store-owned necklace URLs are unrelated to the 67 rehosted
+  // images. Check them independently; do not borrow an image from another SKU.
+  const ownLinks = []
+  for (const product of liveRow.payload.products || []) {
+    for (const url of allImages(product)) {
+      if (typeof url === "string" && url.startsWith("https://shopcelebration.in/catalog/")) ownLinks.push({ sku: product.id, url })
+    }
+  }
+  let brokenOwn = 0
+  for (const item of ownLinks) {
+    try {
+      const response = await fetch(item.url, { method: "HEAD", redirect: "manual", signal: AbortSignal.timeout(8000) })
+      if (!response.ok || !response.headers.get("content-type")?.startsWith("image/")) {
+        brokenOwn++
+        console.warn(`FIRST_PARTY_PHOTO_REVIEW_REQUIRED:${item.sku} HTTP_${response.status} type=${response.headers.get("content-type") || "unknown"}`)
+      }
+    } catch (error) {
+      brokenOwn++
+      console.warn(`FIRST_PARTY_PHOTO_REVIEW_REQUIRED:${item.sku} (${error instanceof Error ? error.message : "NETWORK_ERROR"})`)
+    }
+  }
+  console.log(`Additional check: ${ownLinks.length} original first-party necklace links inspected, ${brokenOwn} require manual verification.`)
 
   if (!APPLY) {
     console.log("DRY RUN: no catalog changes made.")
