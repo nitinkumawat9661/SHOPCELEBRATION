@@ -11,14 +11,25 @@ function progressIndex(status: OrderStatus, individual: boolean) {
 }
 
 export function TrackingTimeline({ status, orderType = "hamper" }: { status: OrderStatus; orderType?: "hamper" | "individual" }) {
-  if (status === "cancelled") {
-    return <div className="timeline"><div className="timelineItem done"><span>{uiContent.common.current}</span><div><b>Cancelled</b></div></div></div>
-  }
   const individual = orderType === "individual"
+  const cancelled = status === "cancelled"
   const milestones = individual ? ["Confirmed", "Shipped", "On the way", "Delivered"] : ["Confirmed", "Packing video", "Shipped", "On the way", "Delivered"]
-  const currentIndex = progressIndex(status, individual)
-  return <div className="timeline" aria-label="Order progress">{milestones.map((label, index) => {
-    const currentLabel = status === "payment_verification_pending" && index === 0 ? "Confirming payment" : label
-    return <div className={`timelineItem ${index <= currentIndex ? "done" : ""}`} key={label}><span>{index < currentIndex ? uiContent.common.yes : index === currentIndex ? uiContent.common.current : ""}</span><div><b>{currentLabel}</b></div></div>
-  })}</div>
+  const currentIndex = cancelled ? -1 : progressIndex(status, individual)
+
+  const timeline = <div className={`timeline ${cancelled ? "cancelled" : ""}`} aria-label="Order progress">
+    {cancelled
+      ? <div className="timelineItem cancelledItem"><span>×</span><div><b>Cancelled</b><small>This order will not move to shipping.</small></div></div>
+      : milestones.map((label, index) => {
+          const currentLabel = status === "payment_verification_pending" && index === 0 ? "Confirming payment" : label
+          return <div className={`timelineItem ${index <= currentIndex ? "done" : ""}`} key={label}><span>{index < currentIndex ? uiContent.common.yes : index === currentIndex ? uiContent.common.current : ""}</span><div><b>{currentLabel}</b></div></div>
+        })}
+  </div>
+
+  return <>
+    <div className="trackingTimelineDesktop">{timeline}</div>
+    <details className={`trackingTimelineMobile ${cancelled ? "cancelled" : ""}`}>
+      <summary><span>Tracking timeline</span><b>{cancelled ? "Cancelled" : milestones[Math.max(0, currentIndex)]}</b></summary>
+      {timeline}
+    </details>
+  </>
 }

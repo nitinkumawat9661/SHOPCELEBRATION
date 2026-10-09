@@ -232,7 +232,8 @@ export function CustomerAccountPage() {
         {orders.map((order) => {
           const individual = order.orderType === "individual"
           const orderTimeline = individual ? customerTimeline.filter((status) => !["packing_video_ready", "customer_approved"].includes(status)) : customerTimeline
-          const currentIndex = orderTimeline.indexOf(order.status) >= 0 ? orderTimeline.indexOf(order.status) : order.status === "delivered" ? orderTimeline.length - 1 : 0
+          const cancelled = order.status === "cancelled"
+          const currentIndex = cancelled ? -1 : orderTimeline.indexOf(order.status) >= 0 ? orderTimeline.indexOf(order.status) : order.status === "delivered" ? orderTimeline.length - 1 : 0
           const supportMessage = `Hi Celebration, I need help with order ${order.publicId}.`
           const approvalReady = !individual && order.status === "packing_video_ready" && Boolean(order.packingVideoUrl)
           const canCancel = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status)
@@ -256,9 +257,21 @@ export function CustomerAccountPage() {
 
               <div className="checkoutProgressNote"><span>→</span><span><b>What’s next:</b> {nextUpdateText(order.status)}</span></div>
 
-              <div className="customerProgress" aria-label="Order progress">
-                {orderTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
+              <div className="customerProgressDesktop">
+                <div className={`customerProgress ${cancelled ? "cancelled" : ""}`} aria-label="Order progress">
+                  {cancelled
+                    ? <div className="current cancelledStep"><i>×</i><span>Cancelled</span></div>
+                    : orderTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
+                </div>
               </div>
+              <details className={`customerProgressMobile ${cancelled ? "cancelled" : ""}`}>
+                <summary><span>Tracking timeline</span><b>{cancelled ? "Cancelled" : orderStatusLabels[order.status]}</b></summary>
+                <div className={`customerProgress ${cancelled ? "cancelled" : ""}`} aria-label="Order progress">
+                  {cancelled
+                    ? <div className="current cancelledStep"><i>×</i><span>Cancelled</span></div>
+                    : orderTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
+                </div>
+              </details>
 
               {!individual && order.productNames.length > 0 && <div className="customerOrderProducts"><span>Selected gifts</span><p>{order.productNames.join(" • ")}</p></div>}
 
