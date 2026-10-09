@@ -1,0 +1,45 @@
+/* Section 3 — only authentic customer reviews are published. */
+.productReviews {padding:48px 0 62px;border-top:1px solid #ead8cb;background:#fffbf7;color:#45332f}
+.productReviewsHead{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:24px}
+.productReviewsHead h2{margin:6px 0 8px;font-family:Georgia,serif;font-size:clamp(29px,4vw,42px);font-weight:500;letter-spacing:-.035em}
+.productReviewsHead p:not(.collectionEyebrow){font-size:13px;line-height:1.6;color:#6d5950}
+.productReviewsSummary{display:grid;gap:3px;white-space:nowrap;text-align:right}
+.productReviewsSummary strong{font-size:28px;font-weight:650}.productReviewsSummary strong span{color:#a67a3c}
+.productReviewsSummary small{font-size:11px;color:#705a4c}
+.productReviewsEmpty{padding:28px 20px;background:#fff;border:1px solid #eadace;border-radius:14px}
+.productReviewsEmpty p{margin:0 0 6px;font-size:17px;font-weight:700}
+.productReviewsEmpty span{font-size:13px;color:#776358}
+.productReviewsList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.productReview{padding:20px;background:#fff;border:1px solid #eadace;border-radius:12px;min-width:0}
+.productReviewTop{display:flex;flex-wrap:wrap;align-items:center;gap:7px 10px}
+.productReviewTop strong{font-size:14px}.productReviewTop span{font-size:11px;color:#6f5c51}
+.productReviewTop .productReviewVerified{color:#346948;background:#e9f4ed;padding:3px 7px;border-radius:4px}
+.productReviewRating{color:#a77b3b;font-size:17px;letter-spacing:2px;margin:12px 0}
+.productReview p{font-size:13px;line-height:1.75;margin:0 0 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.productReview img{display:block;width:auto;max-width:180px;height:auto;max-height:180px;object-fit:contain;border-radius:8px;margin:8px 0}
+.productReview time{color:#836b5f;font-size:11px}
+.productReviewWrite{margin-top:26px;padding:25px;background:#fff;border-radius:12px;border:1px solid #eadace}
+.productReviewWrite h3{margin:0 0 12px;font:500 25px Georgia,serif}
+.productReviewWrite>p{font-size:13px;line-height:1.6;color:#6f5a50}
+.productReviewWrite a{color:#8d2637;text-decoration:underline}
+.productReviewWrite form{display:grid;gap:15px;max-width:700px}
+.productReviewWrite form>label:not(.productReviewConsent){display:grid;gap:7px;color:#493a34;font-weight:650;font-size:13px}
+.productReviewWrite select,.productReviewWrite textarea,.productReviewWrite input[type=file]{width:100%;max-width:100%;padding:11px;background:#fffdfb;color:#412e2d;border:1px solid #cdb9ab;border-radius:7px;font:inherit;font-weight:400}
+.productReviewWrite textarea{resize:vertical;min-height:110px}
+.productReviewWrite label small{color:#74655e;font-weight:400}
+.productReviewConsent{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.5;cursor:pointer}
+.productReviewConsent input{width:18px;height:18px;flex:0 0 18px;margin-top:1px;accent-color:#8c2338}
+.productReviewWrite button{justify-self:start;min-height:44px;padding:11px 23px;border:0;border-radius:7px;background:#7d1d37;color:white;font-weight:700;cursor:pointer}
+.productReviewWrite button:disabled{opacity:.55;cursor:not-allowed}
+.productReviewSuccess{color:#24613b!important}.productReviewError{color:#a32436!important}
+.adminReviewsList{display:grid;gap:12px;margin-top:18px}
+.adminReviewItem{display:flex;justify-content:space-between;align-items:start;gap:16px;padding:17px;border:1px solid #e5d5c8;border-radius:11px;background:white}
+.adminReviewItem small{display:block;color:#795d51;font-size:11px;overflow-wrap:anywhere}
+.adminReviewItem h3{margin:6px 0;font-size:16px}.adminReviewItem p{max-width:760px;white-space:pre-wrap;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.adminReviewItem img{display:block;border-radius:7px;object-fit:contain;max-width:120px;height:auto}
+.adminReviewButtons{display:flex;gap:7px;flex-wrap:wrap}.adminReviewButtons button{min-height:44px;padding:10px 12px;white-space:nowrap}
+@media(max-width:700px){
+ .productReviews{padding:32px 0 44px}.productReviewsHead{align-items:start;flex-direction:column;gap:12px}
+ .productReviewsSummary{text-align:left}.productReviewsList{grid-template-columns:1fr}
+ .productReviewWrite{padding:18px}.adminReviewItem{flex-direction:column}.adminReviewButtons{width:100%}
+}
