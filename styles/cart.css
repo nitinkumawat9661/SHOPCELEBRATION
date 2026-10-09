@@ -25,3 +25,6 @@
 .savedDeliveryActions{display:flex;gap:9px;flex-wrap:wrap}
 .savedDeliveryActions .secondary{min-height:40px;padding:8px 12px}
 @media(max-width:599px){.cartCheckoutBuilder,.cartHeading{scroll-margin-top:138px}}
+
+/* The floating WhatsApp chip previously covered the right edge of Continue to delivery. */
+.cartPage .celebrationSupport{display:none}
