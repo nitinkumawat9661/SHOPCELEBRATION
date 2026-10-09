@@ -28,18 +28,12 @@
 
 /* The floating WhatsApp chip previously covered the right edge of Continue to delivery. */
 .cartPage .celebrationSupport{display:none}
-
-/* Keep checkout actionable when the inline CTA has scrolled out of view. */
-.cartPage .cartCheckoutButton{display:block;visibility:visible;position:relative;z-index:1}
-.cartFloatingContinue{position:fixed;right:max(20px,calc((100vw - 1320px)/2 + 20px));bottom:20px;z-index:65;display:flex;align-items:center;gap:14px;width:min(490px,calc(100vw - 40px));padding:12px 14px;border:1px solid #dfcbb4;border-radius:16px;background:#fffbf5;box-shadow:0 10px 35px rgba(52,25,23,.2)}
-.cartFloatingContinueDetails{display:flex;flex-direction:column;flex:0 0 auto;gap:2px;min-width:105px}
-.cartFloatingContinueDetails strong{font:600 21px/1.25 var(--font-display);color:#801124}
-.cartFloatingContinueDetails small{font-size:11px;color:#70574b}
-.cartFloatingContinue .cartCheckoutButton{flex:1;min-width:0;min-height:48px;margin:0}
-@media(max-width:599px){
-  .cartFloatingContinue{left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));width:auto;gap:8px;padding:9px 10px;border-radius:13px}
-  .cartFloatingContinueDetails{min-width:80px}
-  .cartFloatingContinueDetails strong{font-size:18px}
-  .cartFloatingContinueDetails small{font-size:10px}
-  .cartFloatingContinue .cartCheckoutButton{font-size:12px}
+/* Single in-flow checkout CTA: no floating overlay or duplicate button. */
+.cartCheckoutSidebar{min-width:0}
+.cartPage .individualSummary .cartCheckoutButton{display:block;width:100%;min-height:50px;margin:16px 0 10px;position:static;visibility:visible}
+@media(min-width:980px){
+  .cartCheckoutSidebar{position:sticky;top:188px;align-self:start}
+}
+@media(max-width:979px){
+  .cartCheckoutSidebar{position:static}
 }
