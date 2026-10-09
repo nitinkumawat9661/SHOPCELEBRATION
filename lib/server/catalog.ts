@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { validation } from "../../config/validation"
 import { defaultCatalog, type CatalogConfig, type GiftProduct, type Tier } from "../domain/catalog"
 import { hasUnsafeText, sanitizeText } from "../validation/text"
@@ -53,6 +54,35 @@ function imageUrl(value: unknown) {
   }
 }
 
+function sameImageMeeshoFallback(imageUrl: string, value: unknown) {
+  if (value === undefined || value === null || value === "") return undefined
+  const fallback = imageUrlExternal(value)
+  if (!fallback) throw new CatalogValidationError("INVALID_IMAGE_FALLBACK")
+  let parsed: URL
+  try { parsed = new URL(fallback) } catch { throw new CatalogValidationError("INVALID_IMAGE_FALLBACK") }
+  if (parsed.protocol !== "https:" || parsed.hostname !== "upload.meeshosupplyassets.com" || parsed.port || parsed.username || parsed.password) {
+    throw new CatalogValidationError("INVALID_IMAGE_FALLBACK")
+  }
+  // Prove same image URL: stored R2 key is the hash of this exact original URL.
+  const main = new URL(imageUrl, "https://shopcelebration.in")
+  const key = main.pathname === "/api/catalog/image" ? main.searchParams.get("key") || "" : ""
+  const digest = createHash("sha256").update(fallback).digest("hex")
+  if (key !== `catalog/rehost/meesho/${digest}/main.webp`) {
+    throw new CatalogValidationError("IMAGE_FALLBACK_SOURCE_MISMATCH")
+  }
+  return fallback
+}
+
+function imageUrlExternal(value: unknown) {
+  const valueText = cleanOptional(value, validation.catalog.imageUrlMax)
+  if (!valueText) return ""
+  try {
+    const u = new URL(valueText)
+    if (u.protocol !== "https:") throw new Error("protocol")
+    return u.toString()
+  } catch { throw new CatalogValidationError("INVALID_IMAGE_FALLBACK") }
+}
+
 function normalizeProductImages(input: unknown, fallbackImageUrl: string, productName: string) {
   const raw = Array.isArray(input) ? input : []
   if (raw.length > validation.catalog.maxImages) throw new CatalogValidationError("TOO_MANY_PRODUCT_IMAGES")
@@ -63,9 +93,11 @@ function normalizeProductImages(input: unknown, fallbackImageUrl: string, produc
     if (!url) throw new CatalogValidationError("INVALID_IMAGE_URL")
     if (seen.has(url)) throw new CatalogValidationError("DUPLICATE_PRODUCT_IMAGE")
     seen.add(url)
+    const fallbackUrl = sameImageMeeshoFallback(url, item.fallbackUrl)
     return {
       url,
-      alt: cleanOptional(item.alt, validation.catalog.nameMax) || productName
+      alt: cleanOptional(item.alt, validation.catalog.nameMax) || productName,
+      ...(fallbackUrl ? { fallbackUrl } : {})
     }
   })
   if (!images.length && fallbackImageUrl) images.push({ url: fallbackImageUrl, alt: productName })
