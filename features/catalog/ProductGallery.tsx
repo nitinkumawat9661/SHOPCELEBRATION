@@ -1,7 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { catalogSpriteImage, productImages, type GiftProduct } from "../../lib/domain/catalog"
+import { catalogImageVariant, catalogSpriteImage, productImages, type GiftProduct } from "../../lib/domain/catalog"
+import { SafeCatalogImage } from "./SafeCatalogImage"
 
 export function ProductGallery({ product }: { product: GiftProduct }) {
   const images = useMemo(() => productImages(product), [product])
@@ -11,8 +12,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
   if (!current) {
     return (
       <div className="marketplaceGallery marketplaceGalleryEmpty" role="img" aria-label={`${product.name} image not added`}>
-        <span aria-hidden="true">{product.icon || "✦"}</span>
-        <small>Product image coming soon</small>
+        <SafeCatalogImage src="" alt={product.name} />
       </div>
     )
   }
@@ -27,12 +27,15 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
           role="img"
           aria-label={current.alt || product.name}
           style={{ backgroundImage: `url("${currentSprite.url}")`, backgroundPosition: currentSprite.backgroundPosition }}
-        /> : <img
-          src={current.url}
+        /> : <SafeCatalogImage
+          src={catalogImageVariant(current.url, "main")}
+          srcSet={catalogImageVariant(current.url, "zoom") !== current.url
+            ? `${catalogImageVariant(current.url, "main")} 900w, ${catalogImageVariant(current.url, "zoom")} 1600w`
+            : undefined}
+          sizes="(max-width: 700px) 100vw, 50vw"
           alt={current.alt || product.name}
-          decoding="async"
+          loading="eager"
           fetchPriority="high"
-          referrerPolicy="no-referrer"
         />}
         {product.badge && <span className="marketplaceProductBadge">{product.badge}</span>}
         {images.length > 1 && <>
@@ -60,7 +63,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
                   backgroundImage: `url("${catalogSpriteImage(image.url)!.url}")`,
                   backgroundPosition: catalogSpriteImage(image.url)!.backgroundPosition
                 }}
-              /> : <img src={image.url} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" referrerPolicy="no-referrer" />}
+              /> : <SafeCatalogImage src={catalogImageVariant(image.url, "thumb")} alt={image.alt || product.name} loading={index === 0 ? "eager" : "lazy"} />}
             </button>
           ))}
         </div>
