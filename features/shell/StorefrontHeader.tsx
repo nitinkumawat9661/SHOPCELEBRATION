@@ -6,7 +6,7 @@ import type { StoreSettings } from "../../lib/server/store-settings"
 import { StoreIcon } from "./StoreIcon"
 import { CartLink } from "../cart/AddToCart"
 
-export function StorefrontHeader({ settings, onCreate, showAccount = true }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean }) {
+export function StorefrontHeader({ settings, onCreate, showAccount = true, searchQuery = "" }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean; searchQuery?: string }) {
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
   return <>
     <header className="celebrationHeader">
