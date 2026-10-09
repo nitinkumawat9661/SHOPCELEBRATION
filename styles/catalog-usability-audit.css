@@ -1,0 +1,46 @@
+/* Collection usability fixes identified during storefront audit. */
+.collectionPage .collectionSearchFeedback{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:8px 14px;margin:0 0 16px;padding:10px 14px;border:1px solid #e8d9cd;
+  border-radius:10px;background:#fffaf5;color:#604a41;font-size:12px;line-height:1.45
+}
+.collectionPage .collectionSearchFeedback strong{color:#80152b;overflow-wrap:anywhere}
+.collectionPage .collectionSearchFeedback a{
+  display:inline-flex;align-items:center;min-height:36px;
+  color:#87172e;font-weight:750;text-decoration:underline;text-underline-offset:3px
+}
+.collectionPage .collectionResultMeta p{overflow-wrap:anywhere}
+.collectionPage .marketplaceFilterSheet:focus{outline:none}
+.collectionPage .marketplaceFilterSheet :is(button,a):focus-visible{
+  outline:3px solid #b76c81;outline-offset:2px
+}
+@media(max-width:700px){
+  /* Header is itself sticky and sits above the filters. Stop the filter bar
+     from sliding invisibly behind it during scrolling. */
+  .collectionPage .marketplaceFilterBar{
+    position:relative;top:auto;margin-inline:0;border:1px solid #ead8c9;
+    border-radius:10px;box-shadow:0 2px 10px #4a29130d
+  }
+}
+@media(max-width:620px){
+  .collectionPage .collectionGrid .catalogCard>.cartAddControl button{
+    min-height:44px;font-size:11px;padding:8px
+  }
+  .collectionPage .collectionGrid .catalogInlineQuantity{
+    min-height:44px;grid-template-columns:44px minmax(0,1fr) 44px
+  }
+  .collectionPage .collectionGrid .catalogInlineQuantity button,
+  .collectionPage .collectionGrid .catalogInlineQuantity output{
+    min-height:44px;font-size:13px
+  }
+  .collectionPage .collectionGrid .catalogCard h3{font-size:12px;line-height:1.32}
+  .collectionPage .collectionGrid .catalogCardPrice strong{font-size:15px}
+  .collectionPage .collectionGrid .catalogCardPrice small{font-size:9px}
+  .collectionPage .collectionGrid .catalogGuarantee{font-size:9px}
+}
+@media(max-width:379px){
+  .collectionPage .collectionGrid .catalogCard h3{font-size:11.5px;line-height:1.3}
+  .collectionPage .collectionGrid .catalogCard>.cartAddControl button{min-height:44px;font-size:10.5px}
+  .collectionPage .collectionGrid .catalogInlineQuantity button,
+  .collectionPage .collectionGrid .catalogInlineQuantity output{min-height:44px}
+}
