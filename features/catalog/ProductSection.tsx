@@ -1,6 +1,6 @@
 "use client"
 
-import { catalogImageVariant, formatMoney, type CategoryOption, type GiftProduct } from "../../lib/domain/catalog"
+import { catalogImageVariant, formatMoney, primaryProductImage, type CategoryOption, type GiftProduct } from "../../lib/domain/catalog"
 import { SafeCatalogImage } from "./SafeCatalogImage"
 import { uiContent } from "../../lib/domain/content"
 
