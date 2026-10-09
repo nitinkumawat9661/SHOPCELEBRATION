@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { routes } from "../../config/routes"
 import { formatMoney } from "../../lib/domain/catalog"
+import { trackGa4Purchase, type Ga4Purchase } from "../analytics/ga4"
 
 type PaymentCheckout =
   | { provider: "cashfree"; mode: "test" | "live"; providerOrderId: string; paymentSessionId: string; amountPaise: number; currency: "INR" }
@@ -18,6 +19,7 @@ type ReturnResult = {
   payablePaise?: number
   paymentStatus?: string
   status?: string
+  analyticsPurchase?: Ga4Purchase
   checkout?: PaymentCheckout
 }
 
@@ -145,8 +147,9 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
 
   useEffect(() => {
     if (phase !== "success" || !result?.orderId) return
+    trackGa4Purchase(result.analyticsPurchase)
     const target = result.trackingPath || routes.account
-    const timer = window.setTimeout(() => window.location.replace(target), 350)
+    const timer = window.setTimeout(() => window.location.replace(target), 450)
     return () => window.clearTimeout(timer)
   }, [phase, result?.orderId, result?.trackingPath])
 
