@@ -43,6 +43,11 @@ try {
   assert.equal(productBadge({ ...badgeFixture, sellIndividually: false, salePricePaise: undefined, badge: "Limited" }), null, "Hamper-only gift has no scarce retail stock claim")
   assert.equal(productSavingLabel({ ...badgeFixture, retail: { mrpPaise: 15000 } }), null, "No savings unless MRP actually exceeds sale price")
 
+  for (const component of ["features/catalog/CatalogCard.tsx", "features/catalog/ProductGallery.tsx"]) {
+    const jsx = await readFile(join(root, component), "utf8")
+    assert(jsx.includes("productBadge(product)"), `Catalog badges must use consistent resolver: ${component}`)
+    assert(!jsx.includes("product.badge &&"), `Old hardcoded badges still leak: ${component}`)
+  }
   const normalized = normalizeCatalogConfig(defaultCatalog)
   assert.equal(normalized.products.length, defaultCatalog.products.length, "Default catalog normalization changed the product count")
   const baseFixtureProduct = {
