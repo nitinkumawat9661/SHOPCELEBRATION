@@ -15,6 +15,14 @@ import { PackingApprovalCard } from "./PackingApprovalCard"
 import { TrackingLookup } from "./TrackingLookup"
 import { useTrackedOrder } from "./useTrackedOrder"
 
+function formatDeliveryDate(value: string | null | undefined) {
+  if (!value) return ""
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return value
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(date)
+}
+
 function customerStatusLabel(status: OrderStatus) {
   if (status === "payment_verification_pending") return "Confirming payment"
   if (status === "payment_verified" || status === "preparing") return "Confirmed"
@@ -108,7 +116,7 @@ export function TrackingPage() {
             />}
             {approved && <div className="successBox" data-tracking-approved>{copy.approved}</div>}
             <div className="trackingCards" style={{ gridTemplateColumns: "1fr" }}>
-              <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.status === "cancelled" ? <p>{order.shippingTrackingNumber ? <>Shipment cancelled{uiContent.common.separator}{order.shippingTrackingNumber}</> : "Shipment cancelled before dispatch."}</p> : order.shippingTrackingNumber ? <><p>{order.shippingCourierName || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><div className="adminActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></div></> : <p>Courier details will appear after shipping.</p>}</article>
+              <article><div className="promiseIcon">{copy.shippingIcon}</div><h2>{copy.shipping}</h2>{order.status === "cancelled" ? <p>{order.shippingTrackingNumber ? <>Shipment cancelled{uiContent.common.separator}{order.shippingTrackingNumber}</> : "Shipment cancelled before dispatch."}</p> : order.shippingTrackingNumber ? <><p>{order.shippingCourierName || "Courier"}{uiContent.common.separator}{order.shippingTrackingNumber}</p><p className="trackingEta">{order.estimatedDeliveryDate ? <>Estimated delivery: <strong>{formatDeliveryDate(order.estimatedDeliveryDate)}</strong></> : "Estimated delivery will update after the courier confirms the route."}</p><div className="adminActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking number</button></div></> : <p>Courier details will appear after shipping.</p>}</article>
             </div>
             {statusHasCapability(order.status, "issueReport") && order.issueReportDeadline && <div className="policyNotice issueDeadline"><strong>Issue-report window</strong><span>Report a wrong, damaged, defective or missing-item issue by {new Date(order.issueReportDeadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}. Statutory rights that cannot legally be excluded are not waived by this operational reporting window.</span></div>}
             {statusHasCapability(order.status, "issueReport") && !issueSubmitted && <IssueForm token={token || ""} onSubmitted={issueDone} onError={tracked.setError} />}
