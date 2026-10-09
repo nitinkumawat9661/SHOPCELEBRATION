@@ -914,3 +914,27 @@ Tracked ecommerce events:
 - `purchase`
 
 The purchase event is emitted only after server-confirmed payment and uses the Celebration public order ID as GA4 `transaction_id`. Customer names, phone numbers, delivery addresses and other PII are not sent to GA4.
+
+---
+
+## 2026-10-10 operational audit update (supersedes the Sep 25 continuation snapshot)
+
+Production source: `nitinkumawat9661/SHOPCELEBRATION`, `main`. Follow the latest `main` and its green immutable-release GitHub Action, not the historical commit/bridge instructions above.
+
+**Verified from repository and Actions:** Next.js/TypeScript/PostgreSQL store; DB-backed catalog and inventory; paid-order checkout and idempotent payment webhook handling; account, order, admin, campaign, tracking, Shipway integration; 35 DB migrations; public health check in the deployment workflow. Recent PRs #65–72 completed the Cart, Delivery, saved-address persistence and customer-facing collection search/filter improvements. The deploy workflow builds, tests, migrates, performs loopback and external public health checks, and rolls back on failure. A passing health check is not a substitute for actual user interaction or courier settlement verification.
+
+**Bootstrap-catalog discrepancy fixed in this audit:** `content/catalog.json` retained *old* names, prices and image URLs for 12 adjustable rings even though DB migrations #030–032 had corrected the live products. The seed is aligned with the canonical migration values, with an automated parity regression check. This does **not** overwrite the live published DB catalog or prices.
+
+**Checks reported completed by store operator:** checkout flow, payment, stock deduction, saved addresses, cancelled-order customer tracking, admin analytics and progress UI. These are user-performed operational checks, not independently reproduced from a cloud browser in this audit.
+
+**Still pending verification / decisions (do not silently mark complete):**
+
+- Actual courier pickup, Shipway AWB lifecycle, shipment tracking accuracy, and delivered-state propagation. Operator plans a physical shipment verification.
+- WhatsApp automatic notifications await a separate Celebration SIM and Meta Cloud API onboarding, templates, consent and operational send verification. No notifications are currently deployed; personal WhatsApp must remain untouched.
+- Automatic refunds are deliberately out of scope per operator instruction. Paid cancellations may still require an **external/manual financial reconciliation**; never label a cancelled paid order `refunded` without provider evidence.
+- Abandoned pending payments can leave stock reserved: current `releaseExpiredWithClient` releases expired holds only for orders marked `failed` or `cancelled`. Do not blindly release unresolved pending holds because delayed successful gateway events can otherwise cause overselling. Before enabling automatic recovery, design and test gateway reconciliation, hold expiry, late-payment handling, and audit visibility.
+- Estimated delivery dates depend on Shipway supplying a trustworthy `estimatedDeliveryDate` after booking. Pre-order checkout currently confirms serviceability, not a guaranteed ETA. Do not invent a delivery promise.
+- Run fresh real-device browser checks at 360/390px, tablet and desktop, Lighthouse/Core Web Vitals, accessibility/keyboard tests and checkout-to-tracking smoke tests after deploy. CI/typecheck/health do not cover these.
+- Review whether to introduce server-side pagination as live catalog size scales; 89 products are in the bootstrap seed as of this audit, but live DB catalog can differ.
+
+**Next action after this seed consistency fix:** physical Shipway shipment-status and ETA verification, followed by payment-reservation reconciliation design. Record evidence and only then consider further growth/UI features. No refunds or WhatsApp API work until the explicit prerequisites are met.
