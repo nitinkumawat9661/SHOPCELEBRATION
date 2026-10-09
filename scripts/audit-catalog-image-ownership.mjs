@@ -13,7 +13,7 @@
 import { createHash } from "node:crypto"
 import { readFile } from "node:fs/promises"
 import pg from "pg"
-import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { GetObjectCommand, HeadObjectCommand, S3Client } from "@aws-sdk/client-s3"
 
 const APPLY = process.argv.includes("--apply")
 const seed = JSON.parse(await readFile(new URL("../content/catalog.json", import.meta.url), "utf8"))
@@ -121,6 +121,7 @@ try {
       endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY }
     })
+    const photoHashes = new Map()
     for (const source of neededSources) {
       const base = mainKey(source).replace(/main\.webp$/, "")
       for (const size of ["thumb", "main", "zoom"]) {
@@ -131,6 +132,15 @@ try {
           throw new Error(`GATE_4_BAD_R2_ASSET:${size}:${digest(source)}`)
         }
       }
+      // Detect identical bytes under two unrelated SKU image URLs.
+      const body = await s3.send(new GetObjectCommand({ Bucket: process.env.R2_BUCKET, Key: mainKey(source) }))
+      if (!body.Body) throw new Error("GATE_4_EMPTY_IMAGE")
+      const bytes = await body.Body.transformToByteArray()
+      const fileHash = createHash("sha256").update(bytes).digest("hex")
+      const owner = seedIndex.byUrl.get(source)
+      const previous = photoHashes.get(fileHash)
+      if (previous && previous !== owner) throw new Error(`GATE_4_DUPLICATE_PHOTO_BETWEEN_SKUS:${previous}:${owner}`)
+      photoHashes.set(fileHash, owner)
     }
   }
   console.log(`Gate 4/4: ${neededSources.size * 3} R2 WebP variants HEAD-verified for the correct SHA source. All 4 gates passed.`)
