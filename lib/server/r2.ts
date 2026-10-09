@@ -1,4 +1,4 @@
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { createReadStream } from "node:fs"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { requireEnv } from "../../config/env"
@@ -142,4 +142,27 @@ export async function createCatalogImageViewUrl(key: string) {
     new GetObjectCommand({ Bucket: requireEnv("r2Bucket"), Key: key }),
     { expiresIn: storageConfig.viewUrlTtlSeconds }
   )
+}
+
+/** Customer review photos are private until their genuine-purchase review is approved. */
+export function isReviewPhotoKey(key: string) {
+  return /^reviews\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.webp$/i.test(key)
+}
+
+export async function uploadReviewPhoto(key: string, content: Buffer) {
+  if (!isReviewPhotoKey(key) || content.length < 1 || content.length > 3 * 1024 * 1024) throw new Error("INVALID_REVIEW_PHOTO")
+  await client().send(new PutObjectCommand({
+    Bucket: requireEnv("r2Bucket"), Key: key, Body: content,
+    ContentType: "image/webp", ContentLength: content.length, CacheControl: "private, no-store"
+  }))
+}
+export async function deleteReviewPhoto(key: string) {
+  if (!isReviewPhotoKey(key)) return
+  await client().send(new DeleteObjectCommand({ Bucket: requireEnv("r2Bucket"), Key: key }))
+}
+export async function readReviewPhoto(key: string) {
+  if (!isReviewPhotoKey(key)) throw new Error("INVALID_REVIEW_PHOTO")
+  const file = await client().send(new GetObjectCommand({ Bucket: requireEnv("r2Bucket"), Key: key }))
+  if (file.ContentType !== "image/webp" || !file.Body) throw new Error("REVIEW_PHOTO_UNAVAILABLE")
+  return Buffer.from(await file.Body.transformToByteArray())
 }
