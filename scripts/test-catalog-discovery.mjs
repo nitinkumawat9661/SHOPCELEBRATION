@@ -25,4 +25,19 @@ assert.deepEqual(discoverProducts(products, { view: "all", sort: "name" }).map((
 assert.equal(discoverProducts(products, { category: "Unknown" }).length, 0)
 assert.equal(discoverProducts(products, { q: "missing" }).length, 0)
 assert.deepEqual(products.map((p) => p.id), ["bracelet", "ring", "gift", "hidden"])
+// Search should match keywords across fields, not only an adjacent name phrase.
+const searchable = [
+  { id: "a", name: "Korean Flower Pendant", category: "Necklaces", note: "", description: "Sparkling JD stone imported piece", highlights: ["Anti tarnish"], sellIndividually: true, salePricePaise: 14950, minTier: 100 },
+  { id: "b", name: "Gold Bracelet", category: "Bracelets", note: "", sellIndividually: true, salePricePaise: 17950, minTier: 100 },
+  { id: "c", name: "Silk gift box", category: "Gift Boxes", note: "", minTier: 100 },
+  { id: "d", name: "Pearl necklace", category: "Necklaces", note: "", sellIndividually: true, salePricePaise: 12000, minTier: 100 }
+]
+assert.deepEqual(discoverProducts(searchable, { view: "all", q: "Korean stone" }).map((p) => p.id), ["a"])
+assert.deepEqual(discoverProducts(searchable, { view: "all", q: "Anti tarnish" }).map((p) => p.id), ["a"])
+assert.deepEqual(discoverProducts(searchable, { view: "all", price: "120-149" }).map((p) => p.id), ["a", "d"])
+assert.deepEqual(discoverProducts(searchable, { view: "all", price: "150-179" }).map((p) => p.id), ["b"])
+assert.deepEqual(discoverProducts(searchable, { view: "all", sort: "price-high" }).map((p) => p.id), ["b", "a", "d", "c"])
+assert.deepEqual(discoverProducts(searchable, { view: "all", sort: "price-low" }).map((p) => p.id), ["d", "a", "b", "c"])
+assert.deepEqual(discoverProducts(searchable, { view: "all", price: "under-120" }).map((p) => p.id), [])
+assert.deepEqual(discoverProducts(searchable, { view: "all", price: "180-plus" }).map((p) => p.id), [])
 console.log("Catalog discovery passed: jewelry matching, active-only filtering, search, category and hamper-budget sorting.")
