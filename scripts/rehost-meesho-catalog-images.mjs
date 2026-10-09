@@ -3,6 +3,8 @@
  * Rehost *existing* Meesho catalog images in Celebration R2.
  * --dry-run (default): inventory only; --apply: download, WebP-optimize,
  * verify all R2 variants, then atomically replace matching live CMS URLs.
+ * --allow-partial permits publishing only successfully verified assets while
+ * failed sources retain their original URLs for later manual recovery.
  * No Shipway, order, payment, price or stock writes.
  *
  * Production: load .env.production via @next/env before executing this file.
@@ -14,6 +16,7 @@ import sharp from "sharp"
 import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 
 const APPLY = process.argv.includes("--apply")
+const ALLOW_PARTIAL = process.argv.includes("--allow-partial")
 const HOST = "upload.meeshosupplyassets.com"
 const BUCKET_PREFIX = "catalog/rehost/meesho"
 const MAX_BYTES = 12 * 1024 * 1024
@@ -70,8 +73,8 @@ async function imageData(url) {
       if (!response.ok) throw new Error(`HTTP_${response.status}`)
       const length = Number(response.headers.get("content-length") || 0)
       if (length > MAX_BYTES) throw new Error("SOURCE_TOO_LARGE")
-      const type = response.headers.get("content-type") || ""
-      if (!type.startsWith("image/")) throw new Error("NOT_IMAGE")
+      // Some legitimate PNGs are served as application/octet-stream.
+      // Validate actual decoded pixels with Sharp instead of trusting MIME.
       const reader = response.body?.getReader()
       if (!reader) throw new Error("EMPTY_BODY")
       const parts = []
@@ -180,7 +183,9 @@ try {
         console.error(`Image unavailable: ${source} (${error?.message || error})`)
       }
     }
-    if (failures.length) throw new Error(`Aborted without catalog changes: ${failures.length}/${sources.size} image sources failed. Do not switch to URLs until every object is verified.`)
+    if (failures.length && !ALLOW_PARTIAL) throw new Error(`Aborted without catalog changes: ${failures.length}/${sources.size} image sources failed. Do not switch to URLs until every object is verified.`)
+    if (!replacements.size) throw new Error("No verified images were available to migrate.")
+    if (failures.length) console.warn(`PARTIAL MIGRATION: ${failures.length} unavailable image sources remain unchanged; only verified R2 objects will be published.`)
     await database.query("BEGIN")
     try {
       const locked = (await database.query("SELECT version,payload FROM catalog_config WHERE id='primary' FOR UPDATE")).rows[0]
@@ -207,7 +212,7 @@ try {
         )
       }
       await database.query("COMMIT")
-      console.log(`MIGRATED: ${replacements.size} sources; live image references changed: ${updated.changed}; draft: ${draftChanged}; new catalog version ${saved.rows[0].version}.`)
+      console.log(`MIGRATED: ${replacements.size} sources; live image references changed: ${updated.changed}; draft: ${draftChanged}; still externally hosted: ${failures.length}; new catalog version ${saved.rows[0].version}.`)
     } catch (error) {
       await database.query("ROLLBACK")
       throw error
