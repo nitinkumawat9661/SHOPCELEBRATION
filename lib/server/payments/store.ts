@@ -303,7 +303,7 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
     if (eventInsert.rowCount) {
       await client.query(
         `UPDATE payment_attempts
-            SET status = $1,
+            SET status = CASE WHEN status = 'paid' AND $1 <> 'paid' THEN 'paid' ELSE $1 END,
                 provider_payment_id = COALESCE($2, provider_payment_id),
                 error_code = $3,
                 updated_at = now()
