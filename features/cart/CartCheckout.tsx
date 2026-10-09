@@ -18,6 +18,8 @@ import { routes } from "../../config/routes"
 import { cartKey, MAX_CART_QUANTITY, type CartItem } from "./cart"
 import { useCart } from "./useCart"
 import { trackGa4BeginCheckout } from "../analytics/ga4"
+import { applyDelivery, deliveryHasInput, type DeliveryAddress } from "../../lib/domain/delivery-address"
+import { clearCheckoutDraft, loadDefaultAddress, readCheckoutDraft, saveDefaultAddress, writeCheckoutDraft } from "../checkout/delivery-preferences"
 
 function blankCheckout(): CheckoutData {
   return { customerName: "", phone: "", receiverName: "", address: "", city: "", state: storeContent.checkout.defaultState, pincode: "", requiredDate: "", occasion: "Individual purchase", message: "", paymentReference: "" }
@@ -49,8 +51,54 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   const preparingPayment = useRef(false)
   const latestCartKey = useRef("")
   const paymentRef = useRef<HTMLDivElement>(null)
+  const [draftOwner, setDraftOwner] = useState<string | null>(null)
+  const [savedAddress, setSavedAddress] = useState<DeliveryAddress | null>(null)
+  const [addressSaveError, setAddressSaveError] = useState("")
+  const renderedStep = useRef(1)
 
   useEffect(() => setReady(true), [])
+  useEffect(() => {
+    if (!ready || customer.loading || draftOwner !== null) return
+    const owner = customer.account?.id || "guest"
+    const draft = readCheckoutDraft("cart", owner)
+    if (draft) {
+      setCheckout((current) => ({ ...current, ...draft.checkout, paymentReference: "" }))
+      setStep(draft.step)
+    }
+    setDraftOwner(owner)
+  }, [ready, customer.loading, customer.account?.id, draftOwner])
+
+  useEffect(() => {
+    if (!draftOwner || order.created || order.paymentOrderId) return
+    writeCheckoutDraft("cart", draftOwner, checkout, step)
+  }, [draftOwner, checkout, step, order.created?.orderId, order.paymentOrderId])
+
+  useEffect(() => {
+    if (!ready || renderedStep.current === step) return
+    renderedStep.current = step
+    const timer = window.setTimeout(() => {
+      const target = step === 1 ? document.querySelector(".cartHeading") : document.getElementById("builder")
+      target?.scrollIntoView({ block: "start", behavior: "auto" })
+    }, 60)
+    return () => window.clearTimeout(timer)
+  }, [ready, step])
+
+  useEffect(() => {
+    const accountId = customer.account?.id
+    if (!accountId) { setSavedAddress(null); return }
+    let cancelled = false
+    void loadDefaultAddress().then((address) => {
+      if (cancelled) return
+      setSavedAddress(address)
+      if (address) setCheckout((current) => deliveryHasInput(current) ? current : applyDelivery(current, address))
+    }).catch(() => { if (!cancelled) setAddressSaveError("Saved address is unavailable right now. You can still enter an address.") })
+    return () => { cancelled = true }
+  }, [customer.account?.id])
+
+  useEffect(() => {
+    if (!customer.account || step !== 3 || Object.keys(validateCheckoutFields(checkout)).length || !checkout.city.trim() || !checkout.state.trim()) return
+    void saveDefaultAddress(checkout).then(setSavedAddress).catch(() => setAddressSaveError("We could not save this address to your account. Your checkout details are still here."))
+  }, [customer.account?.id, step])
   useEffect(() => {
     if (!customer.account || order.paymentOrderId || order.created) return
     setCheckout((current) => ({ ...current, phone: customer.account!.phone, customerName: current.customerName.trim() || customer.account!.displayName }))
@@ -92,11 +140,14 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
 
   useEffect(() => {
     if (!order.created) return
-    if (order.paymentState === "paid") cart.removePurchased(items)
+    if (order.paymentState === "paid") {
+      if (draftOwner) clearCheckoutDraft("cart", draftOwner)
+      cart.removePurchased(items)
+    }
     const target = paymentRef.current?.querySelector<HTMLElement>("[data-order-success]")
     target?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
     target?.focus({ preventScroll: true })
-  }, [order.created?.orderId])
+  }, [order.created?.orderId, order.paymentState])
 
   useEffect(() => {
     if (!["CART_PRICE_CHANGED", "OUT_OF_STOCK"].includes(order.errorCode || "") || order.submitting || order.paymentOrderId) return
@@ -151,6 +202,7 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
   function updateField<K extends keyof CheckoutData>(key: K, value: CheckoutData[K]) {
     if (locked) return
     setCheckout((current) => ({ ...current, [key]: value }))
+    if (["pincode", "address", "city", "state", "receiverName"].includes(key)) setAddressSaveError("")
     if (key === "pincode") {
       setShippingPaise(null)
       setShippingError("")
@@ -187,6 +239,10 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
         throw new Error(result.error || "SHIPWAY_RATE_UNAVAILABLE")
       }
       setShippingPaise(0)
+      if (customer.account) {
+        try { setSavedAddress(await saveDefaultAddress(checkout)); setAddressSaveError("") }
+        catch { setAddressSaveError("Delivery will work, but your default address could not be saved. Try again later.") }
+      }
       setAccepted(false)
       order.reset()
       setStep(3)
@@ -252,7 +308,9 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
         </article>)}<Link className="cartContinueLink" href="/jewelry?view=all">← Continue shopping</Link></div>
         <div>{summary}{catalog && unavailable && <p className="errorBox" role="alert">One or more items are sold out or exceed the available stock. Adjust your cart to continue.</p>}{amountTooLarge && <p className="errorBox" role="alert">This cart exceeds the supported order amount. Remove some items to continue.</p>}<button className="primary cartCheckoutButton" type="button" disabled={loading || locked || unavailable || amountTooLarge || !catalog || Boolean(catalogError)} onClick={() => void beginCheckout()}>{loading ? "Checking current prices…" : "Continue to delivery"}</button><p className="cartAccountHint">Started a payment earlier? <Link href="/account">Check your saved orders</Link> before paying again.</p></div>
       </div> : <section id="builder" className="cartCheckoutBuilder"><div className="builderCard">
-        {step === 2 && <DetailsStep individual summary={summary} checkout={checkout} occasions={[]} error={detailsError} fieldErrors={fieldErrors} updateField={updateField} onBack={() => setStep(1)} onNext={continueToPayment} />}
+        {step === 2 && <DetailsStep individual summary={summary} checkout={checkout} occasions={[]} error={detailsError} fieldErrors={fieldErrors} updateField={updateField} savedAddress={savedAddress}
+          onUseSavedAddress={() => { if (savedAddress) setCheckout((current) => applyDelivery(current, savedAddress)) }}
+          onBack={() => setStep(1)} onNext={continueToPayment} />}
         {step === 3 && <div ref={paymentRef} tabIndex={-1}>
           {showAuth && !customer.account && <div className="cartAuthPanel"><CustomerAuthPanel busy={customer.busy} error={customer.error} initialPhone={checkout.phone} initialName={checkout.customerName} initialMode="signup" passwordlessSignup onAuthenticate={customer.authenticate} onClearError={() => customer.setError("")} onSuccess={() => { setShowAuth(false); paymentRef.current?.focus() }} /><button type="button" className="secondary" onClick={() => setShowAuth(false)}>Back to payment</button></div>}
           <PaymentStep individual={{ subtotalPaise, itemKey: cartKey(items), label: "Individual gifts", items }} orderTotalPaise={order.orderTotalPaise} shippingPaise={shippingPaise} paymentBlocked={unavailable || amountTooLarge || !catalog || Boolean(catalogError) || shippingPaise == null} checkout={checkout} selectedProductIds={[]} selectedNames={names} accepted={accepted} submitting={order.submitting || loading} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} paymentState={order.paymentState} paymentOrderId={order.paymentOrderId} onAccepted={(value) => { if (!locked) setAccepted(value) }} onReference={(value) => updateField("paymentReference", value)} onBack={() => { if (!locked) { order.reset(); setStep(2) } }} onSubmit={() => undefined} onPay={(offerQuoteId) => void submit(offerQuoteId)} onRefreshPayment={() => void order.refreshPayment()} onWhatsapp={() => { if (order.created) window.open(order.whatsappUrl(frozenArgs.current || args, order.created, settings.whatsapp), "_blank", "noopener,noreferrer") }} onLogin={() => setShowAuth(true)} onNewOrder={() => { if (order.created) router.push("/jewelry?view=all") }} />
