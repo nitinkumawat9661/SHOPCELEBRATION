@@ -168,7 +168,9 @@ async function uploadVariants(s3, source) {
 
 const seed = JSON.parse(await readFile(new URL("../content/catalog.json", import.meta.url), "utf8"))
 const seedUrls = scan(seed)
-const owners = seedOwners(seed.products)
+const manifest = JSON.parse(await readFile(new URL("../content/catalog-image-source-map.json", import.meta.url), "utf8"))
+const owners = new Map(Object.entries(manifest.products).map(([id, entry]) => [entry.sourceUrl, id]))
+if (owners.size !== Object.keys(manifest.products).length) throw new Error("DUPLICATE_ORIGINAL_PRODUCT_PHOTO")
 console.log(`Bootstrap: ${seed.products?.length || 0} products, ${seedUrls.size} unique Meesho image sources.`)
 const dbUrl = process.env.DATABASE_URL?.trim()
 if (!dbUrl) {
