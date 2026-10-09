@@ -30,28 +30,6 @@ export type PaymentOrderSnapshot = {
   paymentAttemptCount: number
 }
 
-type PaymentOrderRow = {
-  id: string
-  order_type: "hamper" | "individual"
-  line_items: OrderLineItem[]
-  tier_id: string | null
-  public_id: string
-  customer_account_id: string
-  idempotency_key: string
-  amount_paise: number
-  subtotal_paise: number
-  discount_paise: number
-  shipping_paise: number
-  campaign_id: string | null
-  campaign_title: string | null
-  tier_name: string
-  customer_name: string
-  phone: string
-  payment_status: string
-  status: string
-  payment_attempt_count: number
-}
-
 type PaymentAttemptRow = {
   id: string
   order_id: string
@@ -71,7 +49,27 @@ async function findOrderForUpdate(client: PoolClient, publicId: string, customer
     params.push(customerAccountId)
     ownerClause = ` AND customer_account_id = $${params.length}`
   }
-  const result = await client.query<PaymentOrderRow>(
+  const result = await client.query<{
+    id: string
+    order_type: "hamper" | "individual"
+    line_items: OrderLineItem[]
+    tier_id: string | null
+    public_id: string
+    customer_account_id: string
+    idempotency_key: string
+    amount_paise: number
+    subtotal_paise: number
+    discount_paise: number
+    shipping_paise: number
+    campaign_id: string | null
+    campaign_title: string | null
+    tier_name: string
+    customer_name: string
+    phone: string
+    payment_status: string
+    status: string
+    payment_attempt_count: number
+  }>(
     `SELECT id, order_type, line_items, tier_id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
             campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
        FROM orders
@@ -201,7 +199,28 @@ export function bindPaymentAttempt(attemptId: string, checkout: ProviderCheckout
     )
     const orderId = attempt.rows[0]?.order_id
     if (!orderId) throw new Error("PAYMENT_ATTEMPT_NOT_FOUND")
-    const current = await client.query<PaymentOrderRow>(
+    const current = await client.query<{ status: string; payment_status: string }>(`SELECT status, payment_status FROM orders WHERE id = $1 FOR UPDATE`, [orderId])
+    const order = current.rows[0]
+    if (!order) throw new Error("PAYMENT_ORDER_NOT_FOUND")
+    assertPaymentCanStart(order.status)
+    if (isPaymentConfirmed(order.payment_status, order.status)) throw new Error("PAYMENT_ALREADY_CONFIRMED")
+    await client.query(
+      `UPDATE orders
+          SET payment_provider = $1,
+              provider_order_id = $2,
+              provider_session_id = $3,
+              payment_status = 'pending',
+              payment_error_code = NULL,
+              updated_at = now()
+        WHERE id = $4`,
+      [checkout.provider, checkout.providerOrderId, session, orderId]
+    )
+  })
+}
+
+export function failPaymentAttempt(attemptId: string, code: string) {
+  return transaction(async (client) => {
+    const attempt = await client.query<{ order_id: string; provider_order_id: string }>(
       `UPDATE payment_attempts
           SET status = 'failed', error_code = $1, updated_at = now()
         WHERE id = $2
@@ -241,7 +260,27 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
     const attempt = await paymentAttemptForResult(client, result)
     if (!attempt) throw new Error("PAYMENT_ATTEMPT_NOT_FOUND")
 
-    const orderResult = await client.query<PaymentOrderRow>(
+    const orderResult = await client.query<{
+      id: string
+      order_type: "hamper" | "individual"
+      line_items: OrderLineItem[]
+      tier_id: string | null
+      public_id: string
+      customer_account_id: string
+      idempotency_key: string
+      amount_paise: number
+      subtotal_paise: number
+      discount_paise: number
+      shipping_paise: number
+      campaign_id: string | null
+      campaign_title: string | null
+      tier_name: string
+      customer_name: string
+      phone: string
+      payment_status: string
+      status: string
+      payment_attempt_count: number
+    }>(
       `SELECT id, order_type, line_items, tier_id, public_id, customer_account_id, idempotency_key, amount_paise, subtotal_paise, discount_paise, shipping_paise,
               campaign_id, campaign_title, tier_name, customer_name, phone, payment_status, status, payment_attempt_count
          FROM orders WHERE id = $1 FOR UPDATE`,
@@ -315,13 +354,16 @@ export function applyProviderPaymentResult(result: ProviderPaymentResult) {
 
     const current = await client.query<{
       id: string
+      order_type: "hamper" | "individual"
+      line_items: OrderLineItem[]
+      tier_id: string | null
       public_id: string
       customer_account_id: string
       idempotency_key: string
       amount_paise: number
       subtotal_paise: number
       discount_paise: number
-    shipping_paise: number
+      shipping_paise: number
       campaign_id: string | null
       campaign_title: string | null
       tier_name: string
