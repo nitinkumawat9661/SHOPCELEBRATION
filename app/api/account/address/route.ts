@@ -18,7 +18,8 @@ async function authorized() {
 
 function validateAddress(input: unknown): DeliveryAddress | null {
   if (!input || typeof input !== "object" || Array.isArray(input)) return null
-  const fields = input as Record<string, unknown>
+  const fields = { ...(input as Record<string, unknown>) }
+  if (typeof fields.address === "string") fields.address = fields.address.replace(/\r\n?|\n/g, ", ")
   const required = ["receiverName", "address", "city", "state", "pincode"] as const
   if (required.some((key) => typeof fields[key] !== "string" || hasUnsafeText(fields[key]))) return null
   const receiverName = sanitizeText(fields.receiverName, validation.name.max)
