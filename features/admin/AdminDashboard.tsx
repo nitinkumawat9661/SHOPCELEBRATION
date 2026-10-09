@@ -12,6 +12,7 @@ import { AdminCustomRequests } from "./AdminCustomRequests"
 import { AdminOrderCard } from "./AdminOrderCard"
 import { AdminOrderToolbar } from "./AdminOrderToolbar"
 import { AdminStoreSettings } from "./AdminStoreSettings"
+import { AdminReservationReview } from "./AdminReservationReview"
 import { countAdminFilter, defaultAdminOrderFilter, filterAdminOrders, type AdminOrderSort } from "./orderFilters"
 import { useAdminOrders } from "./useAdminOrders"
 
@@ -204,6 +205,8 @@ export function AdminDashboard() {
               </div>
             </section>
           </div>
+
+          <AdminReservationReview openOrder={(publicId) => { setSearch(publicId); setFilter("all"); setView("orders") }} />
 
           <section className="adminWorkspaceCard">
             <div className="adminWorkspaceHead"><div><div className="kicker">RECENT ACTIVITY</div><h2>Latest orders</h2><p>Recent orders ka quick operational view.</p></div><button className="secondary" type="button" onClick={() => openOrders("active")}>Order workspace</button></div>
