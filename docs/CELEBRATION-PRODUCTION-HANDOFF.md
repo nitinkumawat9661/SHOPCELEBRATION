@@ -900,3 +900,17 @@ If another engineer/agent picks this up now, do this first:
 ---
 
 **End of handoff.**
+
+## Google Analytics 4
+
+GA4 ecommerce tracking is optional and remains disabled unless the production build has:
+
+`NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-XXXXXXXXXX`
+
+Tracked ecommerce events:
+- `view_item`
+- `add_to_cart`
+- `begin_checkout`
+- `purchase`
+
+The purchase event is emitted only after server-confirmed payment and uses the Celebration public order ID as GA4 `transaction_id`. Customer names, phone numbers, delivery addresses and other PII are not sent to GA4.
