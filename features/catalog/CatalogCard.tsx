@@ -21,6 +21,7 @@ export function CatalogProductImage({ product, priority = false }: { product: Gi
     return <SafeCatalogImage
       className="catalogPhoto"
       src={catalogImageVariant(primary.url, "thumb")}
+      fallbackSrc={primary.fallbackUrl}
       alt={primary.alt || product.name}
       loading={priority ? "eager" : "lazy"}
     />

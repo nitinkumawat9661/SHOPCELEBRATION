@@ -41,19 +41,42 @@ function scan(payload) {
   return used
 }
 
-function replaceCatalog(payload, replacements) {
+function seedOwners(products) {
+  const result = new Map()
+  const seenIds = new Set()
+  for (const product of products || []) {
+    if (seenIds.has(product.id)) throw new Error("DUPLICATE_SEED_SKU")
+    seenIds.add(product.id)
+    const sources = [product.imageUrl, ...(product.images || []).map((image) => image.url)]
+    for (const source of sources) {
+      if (!isMeesho(source)) continue
+      if (result.has(source) && result.get(source) !== product.id) {
+        throw new Error("MEESHO_SOURCE_SHARED_ACROSS_SKUS")
+      }
+      result.set(source, product.id)
+    }
+  }
+  return result
+}
+
+function replaceCatalog(payload, replacements, owners) {
   const next = structuredClone(payload)
   let changed = 0
   for (const product of next.products || []) {
-    if (replacements.has(product.imageUrl)) {
-      product.imageUrl = replacements.get(product.imageUrl)
+    const original = product.imageUrl
+    if (replacements.has(original)) {
+      if (owners.get(original) !== product.id) throw new Error(`SKU_SOURCE_MISMATCH:${product.id}`)
+      product.imageUrl = replacements.get(original)
+      if (!product.images?.length) product.images = [{ url: product.imageUrl, alt: product.name, fallbackUrl: original }]
       changed++
     }
     for (const image of product.images || []) {
-      if (replacements.has(image.url)) {
-        image.url = replacements.get(image.url)
-        changed++
-      }
+      if (!replacements.has(image.url)) continue
+      const source = image.url
+      if (owners.get(source) !== product.id) throw new Error(`SKU_SOURCE_MISMATCH:${product.id}`)
+      image.url = replacements.get(source)
+      image.fallbackUrl = source
+      changed++
     }
   }
   return { payload: next, changed }
@@ -145,6 +168,9 @@ async function uploadVariants(s3, source) {
 
 const seed = JSON.parse(await readFile(new URL("../content/catalog.json", import.meta.url), "utf8"))
 const seedUrls = scan(seed)
+const manifest = JSON.parse(await readFile(new URL("../content/catalog-image-source-map.json", import.meta.url), "utf8"))
+const owners = new Map(Object.entries(manifest.products).map(([id, entry]) => [entry.sourceUrl, id]))
+if (owners.size !== Object.keys(manifest.products).length) throw new Error("DUPLICATE_ORIGINAL_PRODUCT_PHOTO")
 console.log(`Bootstrap: ${seed.products?.length || 0} products, ${seedUrls.size} unique Meesho image sources.`)
 const dbUrl = process.env.DATABASE_URL?.trim()
 if (!dbUrl) {
@@ -162,6 +188,7 @@ try {
   if (!live) throw new Error("LIVE_CATALOG_MISSING")
   const draft = (await database.query("SELECT payload,base_version,updated_at FROM catalog_drafts WHERE id='primary'")).rows[0] || null
   const sources = new Set([...scan(live.payload), ...(draft ? scan(draft.payload) : [])])
+  for (const source of sources) if (!owners.has(source)) throw new Error("UNVERIFIED_SKU_IMAGE_SOURCE: cannot migrate unknown product photo")
   console.log(`Live: ${live.payload.products?.length || 0} products, ${scan(live.payload).size} remote sources. Draft: ${draft ? scan(draft.payload).size : 0}. Unique sources to rehost: ${sources.size}.`)
   if (!APPLY) {
     console.log("DRY RUN only. No downloads, cloud writes or database changes.")
@@ -196,7 +223,7 @@ try {
         throw new Error("CATALOG_DRAFT_CHANGED_DURING_DOWNLOAD")
       }
       if (latestDraft && latestDraft.base_version !== locked.version) throw new Error("CATALOG_DRAFT_ALREADY_OUTDATED")
-      const updated = replaceCatalog(locked.payload, replacements)
+      const updated = replaceCatalog(locked.payload, replacements, owners)
       const saved = await database.query(
         "UPDATE catalog_config SET payload=$1::jsonb,version=version+1,updated_at=now() WHERE id='primary' RETURNING version",
         [JSON.stringify(updated.payload)]
@@ -204,7 +231,7 @@ try {
       await database.query("INSERT INTO catalog_revisions(version,payload) VALUES($1,$2::jsonb)", [saved.rows[0].version, JSON.stringify(updated.payload)])
       let draftChanged = 0
       if (latestDraft) {
-        const nextDraft = replaceCatalog(latestDraft.payload, replacements)
+        const nextDraft = replaceCatalog(latestDraft.payload, replacements, owners)
         draftChanged = nextDraft.changed
         await database.query(
           "UPDATE catalog_drafts SET payload=$1::jsonb,base_version=$2,updated_at=now() WHERE id='primary'",

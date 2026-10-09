@@ -29,6 +29,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
           style={{ backgroundImage: `url("${currentSprite.url}")`, backgroundPosition: currentSprite.backgroundPosition }}
         /> : <SafeCatalogImage
           src={catalogImageVariant(current.url, "main")}
+          fallbackSrc={current.fallbackUrl}
           srcSet={catalogImageVariant(current.url, "zoom") !== current.url
             ? `${catalogImageVariant(current.url, "main")} 900w, ${catalogImageVariant(current.url, "zoom")} 1600w`
             : undefined}
@@ -63,7 +64,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
                   backgroundImage: `url("${catalogSpriteImage(image.url)!.url}")`,
                   backgroundPosition: catalogSpriteImage(image.url)!.backgroundPosition
                 }}
-              /> : <SafeCatalogImage src={catalogImageVariant(image.url, "thumb")} alt={image.alt || product.name} loading={index === 0 ? "eager" : "lazy"} />}
+              /> : <SafeCatalogImage src={catalogImageVariant(image.url, "thumb")} fallbackSrc={image.fallbackUrl} alt={image.alt || product.name} loading={index === 0 ? "eager" : "lazy"} />}
             </button>
           ))}
         </div>

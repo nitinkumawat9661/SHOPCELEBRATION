@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { createHash } from "node:crypto"
 import { readFile } from "node:fs/promises"
 
 const read = (relative) => readFile(new URL(`../${relative}`, import.meta.url), "utf8")
@@ -18,8 +19,10 @@ for (const [, id, imageUrl, name] of imageRows) {
   const product = products.get(id)
   assert(product, `Missing ring ${id}`)
   assert.equal(product.name, name, `Stale ring name: ${id}`)
-  assert.equal(product.imageUrl, imageUrl, `Stale ring imageUrl: ${id}`)
-  assert.deepEqual(product.images, [{ url: imageUrl, alt: name }], `Stale ring gallery: ${id}`)
+  const key = `catalog/rehost/meesho/${createHash("sha256").update(imageUrl).digest("hex")}/main.webp`
+  const owned = `/api/catalog/image?key=${encodeURIComponent(key)}`
+  assert.equal(product.imageUrl, owned, `Ring must use first-party image: ${id}`)
+  assert.deepEqual(product.images, [{ url: owned, alt: name, fallbackUrl: imageUrl }], `Ring must preserve original SAME-PRODUCT backup: ${id}`)
 }
 for (const [, id, price, badge, unitPrice] of priceRows) {
   const product = products.get(id)
