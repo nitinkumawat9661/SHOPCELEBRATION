@@ -24,10 +24,11 @@ export function AddToCart({ productId, productName, productCategory, pricePaise,
     return (
       <div className="cartAddControl">
         <button className="primary" type="button" onClick={() => {
-          const error = quantity > 0 ? "" : cart.add(productId)
+          const addedNow = quantity <= 0
+          const error = addedNow ? cart.add(productId) : ""
           setMessage(error)
           if (!error) {
-            if (productName && typeof pricePaise === "number") trackGa4AddToCart({ item_id: productId, item_name: productName, item_category: productCategory, price: pricePaise / 100, quantity: 1 })
+            if (addedNow && productName && typeof pricePaise === "number") trackGa4AddToCart({ item_id: productId, item_name: productName, item_category: productCategory, price: pricePaise / 100, quantity: 1 })
             router.push("/cart")
           }
         }}>Buy now</button>
