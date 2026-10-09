@@ -998,11 +998,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648657/file_0000000071f882119af8262e54fc6150.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F92fc2539eec92ffcb35bd64d0a69bc6cf368ffe8dde211c1bb19796a144e1eb4%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648657/file_0000000071f882119af8262e54fc6150.png",
-          "alt": "Korean Pearl Halo Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F92fc2539eec92ffcb35bd64d0a69bc6cf368ffe8dde211c1bb19796a144e1eb4%2Fmain.webp",
+          "alt": "Korean Pearl Halo Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648657/file_0000000071f882119af8262e54fc6150.png"
         }
       ],
       "active": true,
@@ -1039,11 +1040,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648751/file_00000000cb288208ae37a241a3cec65d.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F102d4651fd067469b21481fd60497fb92618571694535afc035bad3266c3ea4e%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648751/file_00000000cb288208ae37a241a3cec65d.png",
-          "alt": "Korean Cute Teddy Bear Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F102d4651fd067469b21481fd60497fb92618571694535afc035bad3266c3ea4e%2Fmain.webp",
+          "alt": "Korean Cute Teddy Bear Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648751/file_00000000cb288208ae37a241a3cec65d.png"
         }
       ],
       "active": true,
@@ -1080,11 +1082,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648715/file_000000003a7c82089b1d8a71f556be86.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F455286b8989b6cf4fe0d933fc3658d54e04c4e273bc89c1aa080d59f86f8990e%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648715/file_000000003a7c82089b1d8a71f556be86.png",
-          "alt": "Snap Ghost Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F455286b8989b6cf4fe0d933fc3658d54e04c4e273bc89c1aa080d59f86f8990e%2Fmain.webp",
+          "alt": "Snap Ghost Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648715/file_000000003a7c82089b1d8a71f556be86.png"
         }
       ],
       "active": true,
@@ -1121,11 +1124,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648805/file_00000000827882088ec82249dbe93503.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F0cfd2fed5393de75dc3180a275b50f15b7f79cc8db5020f2cd223114ba1e2573%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648805/file_00000000827882088ec82249dbe93503.png",
-          "alt": "Korean Blue Heart Butterfly Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F0cfd2fed5393de75dc3180a275b50f15b7f79cc8db5020f2cd223114ba1e2573%2Fmain.webp",
+          "alt": "Korean Blue Heart Butterfly Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648805/file_00000000827882088ec82249dbe93503.png"
         }
       ],
       "active": true,
@@ -1162,11 +1166,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648534/file_000000000dec8211a51cb80a91856409.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fd3b49f5f71956b315d4622778b89de829c857dd815ecfbaa5c3bbad5d6677b65%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648534/file_000000000dec8211a51cb80a91856409.png",
-          "alt": "Korean Dolphin Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fd3b49f5f71956b315d4622778b89de829c857dd815ecfbaa5c3bbad5d6677b65%2Fmain.webp",
+          "alt": "Korean Dolphin Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648534/file_000000000dec8211a51cb80a91856409.png"
         }
       ],
       "active": true,
@@ -1203,11 +1208,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648806/file_00000000a5788208a886f2bcb5bbeb68.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F6f48b4e5bf3a52d93eee9d95df3282844d60c5d02d44bf2548b4fb37e0c28f45%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648806/file_00000000a5788208a886f2bcb5bbeb68.png",
-          "alt": "Korean Trinity Heart Pearl Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F6f48b4e5bf3a52d93eee9d95df3282844d60c5d02d44bf2548b4fb37e0c28f45%2Fmain.webp",
+          "alt": "Korean Trinity Heart Pearl Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648806/file_00000000a5788208a886f2bcb5bbeb68.png"
         }
       ],
       "active": true,
@@ -1244,11 +1250,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648807/file_0000000022688208836236582c716b36.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fa09b1f5c7ef3fe672053afd804e4b4908d65b9eab500e0895fd4e5db4eb70fef%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648807/file_0000000022688208836236582c716b36.png",
-          "alt": "Korean Pink Love Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fa09b1f5c7ef3fe672053afd804e4b4908d65b9eab500e0895fd4e5db4eb70fef%2Fmain.webp",
+          "alt": "Korean Pink Love Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648807/file_0000000022688208836236582c716b36.png"
         }
       ],
       "active": true,
@@ -1285,11 +1292,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648719/file_00000000742c8208be0acf749361ff3e.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F38820d2c65fe90f6e8f71eecf813a761891b6037c9ccd1adcc7880c25e8d0fbb%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648719/file_00000000742c8208be0acf749361ff3e.png",
-          "alt": "Korean Mother-of-Pearl Bar Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F38820d2c65fe90f6e8f71eecf813a761891b6037c9ccd1adcc7880c25e8d0fbb%2Fmain.webp",
+          "alt": "Korean Mother-of-Pearl Bar Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648719/file_00000000742c8208be0acf749361ff3e.png"
         }
       ],
       "active": true,
@@ -1326,11 +1334,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648793/file_000000005f80820884c5dced069ba239.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F00745f08b6cc22eed5890e197ab129c19753601279fb1bb8ced422007715e365%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648793/file_000000005f80820884c5dced069ba239.png",
-          "alt": "Korean Black Cat Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F00745f08b6cc22eed5890e197ab129c19753601279fb1bb8ced422007715e365%2Fmain.webp",
+          "alt": "Korean Black Cat Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648793/file_000000005f80820884c5dced069ba239.png"
         }
       ],
       "active": true,
@@ -1367,11 +1376,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648810/file_0000000018008208a276f3d01ac77ec1.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F4035045affcbc4cf0baf2073a2fae5b3ec5bdc37e0f9117f8e0b2a38fab5d369%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648810/file_0000000018008208a276f3d01ac77ec1.png",
-          "alt": "Korean Mother-of-Pearl Dolphin Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F4035045affcbc4cf0baf2073a2fae5b3ec5bdc37e0f9117f8e0b2a38fab5d369%2Fmain.webp",
+          "alt": "Korean Mother-of-Pearl Dolphin Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648810/file_0000000018008208a276f3d01ac77ec1.png"
         }
       ],
       "active": true,
@@ -1408,11 +1418,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648721/file_00000000636482088fad0bdb3239f937.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F0b89b9919600bb73486bb4e6b687232e245dae30c8c706cfe5bc69928e657e66%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648721/file_00000000636482088fad0bdb3239f937.png",
-          "alt": "Korean Black Butterfly Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F0b89b9919600bb73486bb4e6b687232e245dae30c8c706cfe5bc69928e657e66%2Fmain.webp",
+          "alt": "Korean Black Butterfly Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648721/file_00000000636482088fad0bdb3239f937.png"
         }
       ],
       "active": true,
@@ -1449,11 +1460,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648814/file_00000000a2a88208932fe3896cc41bc3.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff154dea196cbfd281739ca9d318db61d591bd2dbf09301116cfec8a3222ae055%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648814/file_00000000a2a88208932fe3896cc41bc3.png",
-          "alt": "Korean Pearl Crescent Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff154dea196cbfd281739ca9d318db61d591bd2dbf09301116cfec8a3222ae055%2Fmain.webp",
+          "alt": "Korean Pearl Crescent Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648814/file_00000000a2a88208932fe3896cc41bc3.png"
         }
       ],
       "active": true,
@@ -1490,11 +1502,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648692/file_000000008cd08208b56d175f0e618107.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F61c604b612f94302cfa1379d4edd25b1459abb17ff2d259952309e3cfe16e18d%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648692/file_000000008cd08208b56d175f0e618107.png",
-          "alt": "Korean Butterfly Pearl Drop Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F61c604b612f94302cfa1379d4edd25b1459abb17ff2d259952309e3cfe16e18d%2Fmain.webp",
+          "alt": "Korean Butterfly Pearl Drop Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648692/file_000000008cd08208b56d175f0e618107.png"
         }
       ],
       "active": true,
@@ -1531,11 +1544,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648557/file_0000000088908208bd84e90c3f89e804.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc76099f8a37f799b5a6a5096402662ec5123b34bb3caaa3cc2769de60534c509%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648557/file_0000000088908208bd84e90c3f89e804.png",
-          "alt": "Korean Blue-Eye Cat Crystal Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc76099f8a37f799b5a6a5096402662ec5123b34bb3caaa3cc2769de60534c509%2Fmain.webp",
+          "alt": "Korean Blue-Eye Cat Crystal Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648557/file_0000000088908208bd84e90c3f89e804.png"
         }
       ],
       "active": true,
@@ -1572,11 +1586,12 @@
         "Imported premium styling"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648768/file_000000006f2c82088aa27e145f345295.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F4adce917104bb6169b6d385d33e99743583e142f2a6dfb91203475105fe01c48%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791355648768/file_000000006f2c82088aa27e145f345295.png",
-          "alt": "Korean Eiffel Tower Pearl Necklace & Earrings Set"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F4adce917104bb6169b6d385d33e99743583e142f2a6dfb91203475105fe01c48%2Fmain.webp",
+          "alt": "Korean Eiffel Tower Pearl Necklace & Earrings Set",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791355648768/file_000000006f2c82088aa27e145f345295.png"
         }
       ],
       "active": true,
@@ -1612,11 +1627,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358526/AdorableTeddyBearNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F1216194e3db1204ccf234e979cfb3fc610b08116bc419f218ed7c8e5d8b7e709%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358526/AdorableTeddyBearNecklaceAd.png",
-          "alt": "Cute Korean Teddy Bear Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F1216194e3db1204ccf234e979cfb3fc610b08116bc419f218ed7c8e5d8b7e709%2Fmain.webp",
+          "alt": "Cute Korean Teddy Bear Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358526/AdorableTeddyBearNecklaceAd.png"
         }
       ],
       "active": true,
@@ -1651,11 +1667,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375395227/ButterflyBlackDropNecklaceElegance.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc7279a5fc30209cfea529c98a45fe990ac52ad29eed82ac73d407a39bad5c642%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375395227/ButterflyBlackDropNecklaceElegance.png",
-          "alt": "Korean Black Butterfly Drop Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc7279a5fc30209cfea529c98a45fe990ac52ad29eed82ac73d407a39bad5c642%2Fmain.webp",
+          "alt": "Korean Black Butterfly Drop Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375395227/ButterflyBlackDropNecklaceElegance.png"
         }
       ],
       "active": true,
@@ -1690,11 +1707,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358660/ButterflyCharmNecklaceCelebrationAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff7feac5d0d0389cfd6c9573c1c396a45a31f83310aa366217a7b1c1d24f16fbc%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358660/ButterflyCharmNecklaceCelebrationAd.png",
-          "alt": "Korean Crystal Butterfly Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff7feac5d0d0389cfd6c9573c1c396a45a31f83310aa366217a7b1c1d24f16fbc%2Fmain.webp",
+          "alt": "Korean Crystal Butterfly Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358660/ButterflyCharmNecklaceCelebrationAd.png"
         }
       ],
       "active": true,
@@ -1729,11 +1747,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358321/CelebrationFour-PetalNecklaceElegance.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F81e741dd6db689c41439aff6c4101b6ca2b7e54996e73c52ff9157fec6f73215%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358321/CelebrationFour-PetalNecklaceElegance.png",
-          "alt": "Korean Four-Petal Flower Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F81e741dd6db689c41439aff6c4101b6ca2b7e54996e73c52ff9157fec6f73215%2Fmain.webp",
+          "alt": "Korean Four-Petal Flower Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358321/CelebrationFour-PetalNecklaceElegance.png"
         }
       ],
       "active": true,
@@ -1768,11 +1787,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358578/CelebrationPearDropNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F2c4feb6bf36beb115d2c47970016ba0fda54d9c56d5dff411a35ec9f7aeca05a%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358578/CelebrationPearDropNecklaceAd.png",
-          "alt": "Korean Pear Drop Crystal Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F2c4feb6bf36beb115d2c47970016ba0fda54d9c56d5dff411a35ec9f7aeca05a%2Fmain.webp",
+          "alt": "Korean Pear Drop Crystal Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358578/CelebrationPearDropNecklaceAd.png"
         }
       ],
       "active": true,
@@ -1807,11 +1827,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358597/CelebrationSquareStoneNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F980ad0e7cf531f8bbe06e363979810616054cc55a349b8507cf4a90a9057245d%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358597/CelebrationSquareStoneNecklaceAd.png",
-          "alt": "Korean Square Solitaire Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F980ad0e7cf531f8bbe06e363979810616054cc55a349b8507cf4a90a9057245d%2Fmain.webp",
+          "alt": "Korean Square Solitaire Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358597/CelebrationSquareStoneNecklaceAd.png"
         }
       ],
       "active": true,
@@ -1846,11 +1867,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358598/CelestialStarGlowNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F717ac3c2efd919f873b305df613eb2a40bc73e33b1f6e263391a9ca8656e939b%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358598/CelestialStarGlowNecklaceAd.png",
-          "alt": "Korean Celestial Star Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F717ac3c2efd919f873b305df613eb2a40bc73e33b1f6e263391a9ca8656e939b%2Fmain.webp",
+          "alt": "Korean Celestial Star Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358598/CelestialStarGlowNecklaceAd.png"
         }
       ],
       "active": true,
@@ -1885,11 +1907,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358682/DazzlingStarCharmNecklaceAd02.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fda44791ad5d6c3162eeaadebceb8e4e5922b5b1b193b0016962a86ae130fbe42%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358682/DazzlingStarCharmNecklaceAd02.png",
-          "alt": "Korean Dazzling Star Pendant Necklace – Silver"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fda44791ad5d6c3162eeaadebceb8e4e5922b5b1b193b0016962a86ae130fbe42%2Fmain.webp",
+          "alt": "Korean Dazzling Star Pendant Necklace – Silver",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358682/DazzlingStarCharmNecklaceAd02.png"
         }
       ],
       "active": true,
@@ -1924,11 +1947,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358494/DazzlingStarCharmNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fdaf5303b485f54c6f028f8a2336c21f699747ae641e7dd5f1da6485477c6e133%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358494/DazzlingStarCharmNecklaceAd.png",
-          "alt": "Korean Dazzling Star Pendant Necklace – Sparkle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fdaf5303b485f54c6f028f8a2336c21f699747ae641e7dd5f1da6485477c6e133%2Fmain.webp",
+          "alt": "Korean Dazzling Star Pendant Necklace – Sparkle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358494/DazzlingStarCharmNecklaceAd.png"
         }
       ],
       "active": true,
@@ -1963,11 +1987,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358658/DazzlingStarCharmNecklace.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc26f6b481c44c175e9da2414553c98580a83f264155ea36c8d88bea8713a913a%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358658/DazzlingStarCharmNecklace.png",
-          "alt": "Korean Dazzling Star Pendant Necklace – Minimal"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc26f6b481c44c175e9da2414553c98580a83f264155ea36c8d88bea8713a913a%2Fmain.webp",
+          "alt": "Korean Dazzling Star Pendant Necklace – Minimal",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358658/DazzlingStarCharmNecklace.png"
         }
       ],
       "active": true,
@@ -2002,11 +2027,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358476/ElegantBowRibbonNecklaceAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc02255679d84397f3dbbd1066573b2e3feec96067862dd56934c9c243e8b3a24%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358476/ElegantBowRibbonNecklaceAdvertisement.png",
-          "alt": "Korean Bow Ribbon Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc02255679d84397f3dbbd1066573b2e3feec96067862dd56934c9c243e8b3a24%2Fmain.webp",
+          "alt": "Korean Bow Ribbon Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358476/ElegantBowRibbonNecklaceAdvertisement.png"
         }
       ],
       "active": true,
@@ -2041,11 +2067,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358276/ElegantButterflyPendantJewelryAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F971f8422184427776ad839e6db1f845d4b7a658df11a9bdbac2a97edbc119074%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358276/ElegantButterflyPendantJewelryAd.png",
-          "alt": "Korean Butterfly Crystal Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F971f8422184427776ad839e6db1f845d4b7a658df11a9bdbac2a97edbc119074%2Fmain.webp",
+          "alt": "Korean Butterfly Crystal Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358276/ElegantButterflyPendantJewelryAd.png"
         }
       ],
       "active": true,
@@ -2080,11 +2107,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358338/ElegantCloverCharmJewelryAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F1f6165b63ddd5f8d4d87cbe4834097b8b692b95ca7ce3a39bd20f62f04a1a160%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358338/ElegantCloverCharmJewelryAdvertisement.png",
-          "alt": "Korean Clover Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F1f6165b63ddd5f8d4d87cbe4834097b8b692b95ca7ce3a39bd20f62f04a1a160%2Fmain.webp",
+          "alt": "Korean Clover Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358338/ElegantCloverCharmJewelryAdvertisement.png"
         }
       ],
       "active": true,
@@ -2119,11 +2147,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358622/ElegantEmeraldButterflyNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F1b735f04a968a62e03f026b8ec8b568f0497543b071001ee517ac76f366aec7a%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358622/ElegantEmeraldButterflyNecklaceAd.png",
-          "alt": "Korean Emerald Butterfly Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F1b735f04a968a62e03f026b8ec8b568f0497543b071001ee517ac76f366aec7a%2Fmain.webp",
+          "alt": "Korean Emerald Butterfly Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358622/ElegantEmeraldButterflyNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2158,11 +2187,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358620/ElegantHummingbirdNecklaceShowcase.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F5dd70b0c93b71c5e60063ff392cf567523f99df8126c5251131278c9465e224b%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358620/ElegantHummingbirdNecklaceShowcase.png",
-          "alt": "Korean Hummingbird Crystal Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F5dd70b0c93b71c5e60063ff392cf567523f99df8126c5251131278c9465e224b%2Fmain.webp",
+          "alt": "Korean Hummingbird Crystal Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358620/ElegantHummingbirdNecklaceShowcase.png"
         }
       ],
       "active": true,
@@ -2197,11 +2227,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358549/ElegantMermaidPearlNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fda7dea2f63972ac1cc72aa8a483837d6313eb4cad4f9fd2ad72d26d062c43f34%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358549/ElegantMermaidPearlNecklaceAd.png",
-          "alt": "Korean Mermaid Pearl Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fda7dea2f63972ac1cc72aa8a483837d6313eb4cad4f9fd2ad72d26d062c43f34%2Fmain.webp",
+          "alt": "Korean Mermaid Pearl Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358549/ElegantMermaidPearlNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2236,11 +2267,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358256/ElegantPearlDropNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fde07e483f7da0e329e8476fa8106c8db543088daced244108bba5c40653f6e11%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358256/ElegantPearlDropNecklaceAd.png",
-          "alt": "Korean Pearl Drop Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fde07e483f7da0e329e8476fa8106c8db543088daced244108bba5c40653f6e11%2Fmain.webp",
+          "alt": "Korean Pearl Drop Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358256/ElegantPearlDropNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2275,11 +2307,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358523/ElegantPearlFlowerNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F051cab19d566b37d4fe2ea9a339005b7e13593ec4c422ba7fabf7ca0b701ea72%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358523/ElegantPearlFlowerNecklaceAd.png",
-          "alt": "Korean Pearl Flower Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F051cab19d566b37d4fe2ea9a339005b7e13593ec4c422ba7fabf7ca0b701ea72%2Fmain.webp",
+          "alt": "Korean Pearl Flower Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358523/ElegantPearlFlowerNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2314,11 +2347,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358623/ElegantPinkCrystalNecklaceGiftAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F41e6cce811ac7100a0834486c5fbd814bfb874ca26e4012ff4c8bcc02f8b36d5%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358623/ElegantPinkCrystalNecklaceGiftAd.png",
-          "alt": "Korean Pink Crystal Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F41e6cce811ac7100a0834486c5fbd814bfb874ca26e4012ff4c8bcc02f8b36d5%2Fmain.webp",
+          "alt": "Korean Pink Crystal Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358623/ElegantPinkCrystalNecklaceGiftAd.png"
         }
       ],
       "active": true,
@@ -2353,11 +2387,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358666/ElegantSquareStoneNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F91976622bcdc0092e165b9b9143c174e22aba739f20d234aa608f45cef710e04%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358666/ElegantSquareStoneNecklaceAd.png",
-          "alt": "Korean Square Halo Crystal Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F91976622bcdc0092e165b9b9143c174e22aba739f20d234aa608f45cef710e04%2Fmain.webp",
+          "alt": "Korean Square Halo Crystal Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358666/ElegantSquareStoneNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2392,11 +2427,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358286/ElegantTulipBloomNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F82caa9f26c64e97675bb1369e845ce56811b6e32a9d19bda09923d6815efb34d%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358286/ElegantTulipBloomNecklaceAd.png",
-          "alt": "Korean Tulip Flower Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F82caa9f26c64e97675bb1369e845ce56811b6e32a9d19bda09923d6815efb34d%2Fmain.webp",
+          "alt": "Korean Tulip Flower Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358286/ElegantTulipBloomNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2431,11 +2467,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358617/GlamorousPinkStoneNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fe88c4072c1b06a9e3032bfc1ff01d619a50163e4b1821b38ab4565531db2ad26%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358617/GlamorousPinkStoneNecklaceAd.png",
-          "alt": "Korean Pink Stone Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fe88c4072c1b06a9e3032bfc1ff01d619a50163e4b1821b38ab4565531db2ad26%2Fmain.webp",
+          "alt": "Korean Pink Stone Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358617/GlamorousPinkStoneNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2470,11 +2507,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358595/GracefulButterflyHeartNecklace.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fa2ddf28834079ad732ff3bf9711ae355289b3203c2a7c10c0ce177e1521bc8e7%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358595/GracefulButterflyHeartNecklace.png",
-          "alt": "Korean Butterfly Heart Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fa2ddf28834079ad732ff3bf9711ae355289b3203c2a7c10c0ce177e1521bc8e7%2Fmain.webp",
+          "alt": "Korean Butterfly Heart Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358595/GracefulButterflyHeartNecklace.png"
         }
       ],
       "active": true,
@@ -2509,11 +2547,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358582/GracefulSwanPearlNecklaceAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F7de6feec0109d76fb0ea6182d74f3df25e3bea8fcdfb4d7e60d44bc109c37605%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358582/GracefulSwanPearlNecklaceAd.png",
-          "alt": "Korean Swan Pearl Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F7de6feec0109d76fb0ea6182d74f3df25e3bea8fcdfb4d7e60d44bc109c37605%2Fmain.webp",
+          "alt": "Korean Swan Pearl Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358582/GracefulSwanPearlNecklaceAd.png"
         }
       ],
       "active": true,
@@ -2548,11 +2587,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358660/HeartbeatHeartNecklaceAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F612e1d2aa532e153e7cdac319c6b14432a8061138184254af3c4c5c87a0d7815%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358660/HeartbeatHeartNecklaceAdvertisement.png",
-          "alt": "Korean Heartbeat Heart Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F612e1d2aa532e153e7cdac319c6b14432a8061138184254af3c4c5c87a0d7815%2Fmain.webp",
+          "alt": "Korean Heartbeat Heart Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358660/HeartbeatHeartNecklaceAdvertisement.png"
         }
       ],
       "active": true,
@@ -2587,11 +2627,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375357892/PinkStarNecklaceCollection.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F47f4ff0b4d4c4b7fae002c0178e9a6862b75a682397141b44c879b57e54220dc%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375357892/PinkStarNecklaceCollection.png",
-          "alt": "Korean Pink Star Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F47f4ff0b4d4c4b7fae002c0178e9a6862b75a682397141b44c879b57e54220dc%2Fmain.webp",
+          "alt": "Korean Pink Star Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375357892/PinkStarNecklaceCollection.png"
         }
       ],
       "active": true,
@@ -2626,11 +2667,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358537/RadiantSunburstNecklaceAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc392e1807bd2b960ef3570fef4f36c08821119840c7a1eafd575330b82f147af%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358537/RadiantSunburstNecklaceAdvertisement.png",
-          "alt": "Korean Sunburst Crystal Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc392e1807bd2b960ef3570fef4f36c08821119840c7a1eafd575330b82f147af%2Fmain.webp",
+          "alt": "Korean Sunburst Crystal Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358537/RadiantSunburstNecklaceAdvertisement.png"
         }
       ],
       "active": true,
@@ -2665,11 +2707,12 @@
         "Delivery included"
       ],
       "badge": "25% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358614/RomanticHeartCrystalNecklaceAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F8f2a8b81f6074e9b5fbac3847b5774a98206ae38369a3d0991db651195a5d910%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791375358614/RomanticHeartCrystalNecklaceAdvertisement.png",
-          "alt": "Korean Romantic Heart Crystal Pendant Necklace"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F8f2a8b81f6074e9b5fbac3847b5774a98206ae38369a3d0991db651195a5d910%2Fmain.webp",
+          "alt": "Korean Romantic Heart Crystal Pendant Necklace",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791375358614/RomanticHeartCrystalNecklaceAdvertisement.png"
         }
       ],
       "active": true,
@@ -2704,11 +2747,12 @@
         "Trending contemporary design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253243/CelebrationBracelet_GoldenFestiveElegance.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff907544735e7237594395f0d280976ffc89101203f862752b443c9e1e828509e%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253243/CelebrationBracelet_GoldenFestiveElegance.png",
-          "alt": "Korean Contemporary Open Cuff Gold Bracelet"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff907544735e7237594395f0d280976ffc89101203f862752b443c9e1e828509e%2Fmain.webp",
+          "alt": "Korean Contemporary Open Cuff Gold Bracelet",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253243/CelebrationBracelet_GoldenFestiveElegance.png"
         }
       ],
       "active": true,
@@ -2743,11 +2787,12 @@
         "Trending floral design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253262/CelebrationDaisyGoldBangleAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F00d460b3f90ea00b173b8ea94884272fdfe78f5b3efceddb603772d5c3db9bfb%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253262/CelebrationDaisyGoldBangleAd.png",
-          "alt": "Korean Daisy Flower Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F00d460b3f90ea00b173b8ea94884272fdfe78f5b3efceddb603772d5c3db9bfb%2Fmain.webp",
+          "alt": "Korean Daisy Flower Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253262/CelebrationDaisyGoldBangleAd.png"
         }
       ],
       "active": true,
@@ -2782,11 +2827,12 @@
         "Trending evil eye design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253303/CelebrationEvil-EyeBraceletCollection.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ffa248d80baae04c4155f8ca6684960b66b03ae23af198c3e5658760a69c8af05%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253303/CelebrationEvil-EyeBraceletCollection.png",
-          "alt": "Korean Evil Eye Nazar Gold Bracelet"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ffa248d80baae04c4155f8ca6684960b66b03ae23af198c3e5658760a69c8af05%2Fmain.webp",
+          "alt": "Korean Evil Eye Nazar Gold Bracelet",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253303/CelebrationEvil-EyeBraceletCollection.png"
         }
       ],
       "active": true,
@@ -2821,11 +2867,12 @@
         "Trending gold filigree design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253198/CelebrationGoldBangleGiftAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F93853389a11173cb8b015d71ae7c6de9dd6a24235678a4c086798bcbfb1a0d3a%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253198/CelebrationGoldBangleGiftAd.png",
-          "alt": "Korean Filigree Ridge Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F93853389a11173cb8b015d71ae7c6de9dd6a24235678a4c086798bcbfb1a0d3a%2Fmain.webp",
+          "alt": "Korean Filigree Ridge Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253198/CelebrationGoldBangleGiftAd.png"
         }
       ],
       "active": true,
@@ -2860,11 +2907,12 @@
         "Trending geometric design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253147/CelebrationGoldBangleGiftAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F31991808478955c224412c539898d70f73ca8f9782c56975438d044a420e3615%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253147/CelebrationGoldBangleGiftAd.png",
-          "alt": "Korean Geometric Line Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F31991808478955c224412c539898d70f73ca8f9782c56975438d044a420e3615%2Fmain.webp",
+          "alt": "Korean Geometric Line Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253147/CelebrationGoldBangleGiftAd.png"
         }
       ],
       "active": true,
@@ -2899,11 +2947,12 @@
         "Trending hand-crafted design"
       ],
       "badge": "58% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253186/CelebrationGoldBangleGiftAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F564abe34aa24cb501701fd59d6e1e6c8850f9782f3902d8897898b6a7ea40e67%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253186/CelebrationGoldBangleGiftAdvertisement.png",
-          "alt": "Korean Sculpted Open Cuff Gold Bracelet"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F564abe34aa24cb501701fd59d6e1e6c8850f9782f3902d8897898b6a7ea40e67%2Fmain.webp",
+          "alt": "Korean Sculpted Open Cuff Gold Bracelet",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253186/CelebrationGoldBangleGiftAdvertisement.png"
         }
       ],
       "active": true,
@@ -2938,11 +2987,12 @@
         "Trending contemporary design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253263/CelebrationGoldBangleGiftShowcase.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fb0e9ab9040b43531fb192e2fcb2edc28c3824712b4da4adf1b2858c8e128a993%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253263/CelebrationGoldBangleGiftShowcase.png",
-          "alt": "Korean Minimal Curve Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fb0e9ab9040b43531fb192e2fcb2edc28c3824712b4da4adf1b2858c8e128a993%2Fmain.webp",
+          "alt": "Korean Minimal Curve Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253263/CelebrationGoldBangleGiftShowcase.png"
         }
       ],
       "active": true,
@@ -2977,11 +3027,12 @@
         "Trending chain linked design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253266/CelebrationGoldBraceletAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F658238b069d6d3b8033696f6d7c648bedd54a2c0261bf870f35565ace8d3483c%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253266/CelebrationGoldBraceletAd.png",
-          "alt": "Korean Chain Link Gold Bracelet"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F658238b069d6d3b8033696f6d7c648bedd54a2c0261bf870f35565ace8d3483c%2Fmain.webp",
+          "alt": "Korean Chain Link Gold Bracelet",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253266/CelebrationGoldBraceletAd.png"
         }
       ],
       "active": true,
@@ -3016,11 +3067,12 @@
         "Trending heart design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253219/CelebrationGoldHeartBangleGiftSet.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fe68a4edec2540772c67c67e92b3947e74221e65b1fe659a7843eef9a2f83f039%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253219/CelebrationGoldHeartBangleGiftSet.png",
-          "alt": "Korean Heart Charm Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fe68a4edec2540772c67c67e92b3947e74221e65b1fe659a7843eef9a2f83f039%2Fmain.webp",
+          "alt": "Korean Heart Charm Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253219/CelebrationGoldHeartBangleGiftSet.png"
         }
       ],
       "active": true,
@@ -3055,11 +3107,12 @@
         "Trending contemporary design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253192/CelebrationSerpentineGoldBangleAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fadcdb8b12a35b916ebf58fee848db44825e9e809e2de060bdb4307212861debe%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253192/CelebrationSerpentineGoldBangleAd.png",
-          "alt": "Korean Serpent Twist Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fadcdb8b12a35b916ebf58fee848db44825e9e809e2de060bdb4307212861debe%2Fmain.webp",
+          "alt": "Korean Serpent Twist Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253192/CelebrationSerpentineGoldBangleAd.png"
         }
       ],
       "active": true,
@@ -3094,11 +3147,12 @@
         "Trending geometric design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253284/Celebration_GoldenSquareBangle.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff7550fedf8b1983980e6b4645e37fac8b61530614d5ff37d0bbe905086e34037%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253284/Celebration_GoldenSquareBangle.png",
-          "alt": "Korean Square Geometric Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff7550fedf8b1983980e6b4645e37fac8b61530614d5ff37d0bbe905086e34037%2Fmain.webp",
+          "alt": "Korean Square Geometric Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253284/Celebration_GoldenSquareBangle.png"
         }
       ],
       "active": true,
@@ -3133,11 +3187,12 @@
         "Trending butterfly design"
       ],
       "badge": "50% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253234/ElegantButterflyGoldBangleCelebrationAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc085fe8664f3da37c9549bcb4f4d797e7ca601794b49d1dd3ce21e2c22fe0a68%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791393253234/ElegantButterflyGoldBangleCelebrationAd.png",
-          "alt": "Korean Butterfly Charm Gold Bangle"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fc085fe8664f3da37c9549bcb4f4d797e7ca601794b49d1dd3ce21e2c22fe0a68%2Fmain.webp",
+          "alt": "Korean Butterfly Charm Gold Bangle",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791393253234/ElegantButterflyGoldBangleCelebrationAd.png"
         }
       ],
       "active": true,
@@ -3172,11 +3227,12 @@
         "Gold Plated finish"
       ],
       "badge": "24% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449025/CelebrationCrownRingJewelryAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F12740a0101be8429ddeb88e8092110140f8cca8cc82e5d64f59f43dc735d5f48%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449025/CelebrationCrownRingJewelryAdvertisement.png",
-          "alt": "Korean Crown Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F12740a0101be8429ddeb88e8092110140f8cca8cc82e5d64f59f43dc735d5f48%2Fmain.webp",
+          "alt": "Korean Crown Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449025/CelebrationCrownRingJewelryAdvertisement.png"
         }
       ],
       "active": true,
@@ -3211,11 +3267,12 @@
         "Gold Plated finish"
       ],
       "badge": "30% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406448940/CelebrationDouble-HeartRingAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F0eddd6894210f9e35d8eb54a65b68279fef81d17938ede9187d5c643ed7dbcf0%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406448940/CelebrationDouble-HeartRingAdvertisement.png",
-          "alt": "Korean Twin Heart Bypass Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F0eddd6894210f9e35d8eb54a65b68279fef81d17938ede9187d5c643ed7dbcf0%2Fmain.webp",
+          "alt": "Korean Twin Heart Bypass Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406448940/CelebrationDouble-HeartRingAdvertisement.png"
         }
       ],
       "active": true,
@@ -3250,11 +3307,12 @@
         "Gold Plated finish"
       ],
       "badge": "35% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406448989/CelebrationHeartRingGiftBanner.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fe4f6af71dc9c1391e6a7f90adeb6f256036f0e70e4365edfdd15d8a5edc37bc9%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406448989/CelebrationHeartRingGiftBanner.png",
-          "alt": "Korean Open Heart Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fe4f6af71dc9c1391e6a7f90adeb6f256036f0e70e4365edfdd15d8a5edc37bc9%2Fmain.webp",
+          "alt": "Korean Open Heart Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406448989/CelebrationHeartRingGiftBanner.png"
         }
       ],
       "active": true,
@@ -3289,11 +3347,12 @@
         "Gold Plated finish"
       ],
       "badge": "30% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449137/CelebrationRingFestiveJewelryAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F5bd96acdd7bd7fe3a32061e57412c5f09341db52ab4a6907e1b2445f77fbe541%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449137/CelebrationRingFestiveJewelryAd.png",
-          "alt": "Korean Geometric Arc Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F5bd96acdd7bd7fe3a32061e57412c5f09341db52ab4a6907e1b2445f77fbe541%2Fmain.webp",
+          "alt": "Korean Geometric Arc Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449137/CelebrationRingFestiveJewelryAd.png"
         }
       ],
       "active": true,
@@ -3328,11 +3387,12 @@
         "Gold Plated finish"
       ],
       "badge": "30% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449145/CelebrationRinginBloom.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F12ea336f8ecd09aeb944484eac6d028f2340c0cd7dbf1e084c795a94fd13c503%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449145/CelebrationRinginBloom.png",
-          "alt": "Korean Floral Petal Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F12ea336f8ecd09aeb944484eac6d028f2340c0cd7dbf1e084c795a94fd13c503%2Fmain.webp",
+          "alt": "Korean Floral Petal Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449145/CelebrationRinginBloom.png"
         }
       ],
       "active": true,
@@ -3367,11 +3427,12 @@
         "Gold Plated finish"
       ],
       "badge": "24% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449146/CelebrationRing_ABrighterYou.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fd9cd241c0bdda81229e11fd3cec1805b679b8af8a3c7678169e553c1e6c3f53c%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449146/CelebrationRing_ABrighterYou.png",
-          "alt": "Korean Minimal Crest Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Fd9cd241c0bdda81229e11fd3cec1805b679b8af8a3c7678169e553c1e6c3f53c%2Fmain.webp",
+          "alt": "Korean Minimal Crest Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449146/CelebrationRing_ABrighterYou.png"
         }
       ],
       "active": true,
@@ -3406,11 +3467,12 @@
         "Gold Plated finish"
       ],
       "badge": "35% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449171/CelebrationRing_ARomanticSurprise.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F46ce01933ef75969569b83b6b34af2896653fcee69be910638addff495bc24b0%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449171/CelebrationRing_ARomanticSurprise.png",
-          "alt": "Korean Love Curve Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F46ce01933ef75969569b83b6b34af2896653fcee69be910638addff495bc24b0%2Fmain.webp",
+          "alt": "Korean Love Curve Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449171/CelebrationRing_ARomanticSurprise.png"
         }
       ],
       "active": true,
@@ -3445,11 +3507,12 @@
         "Gold Plated finish"
       ],
       "badge": "44% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449034/CelebrationRing_TimelessSparkle.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Faaefec3a9cbd5344e64c1aa039785b2c7e9b1d6f28e2d336d71cc5d0ef389372%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449034/CelebrationRing_TimelessSparkle.png",
-          "alt": "Korean Minimal Beam Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Faaefec3a9cbd5344e64c1aa039785b2c7e9b1d6f28e2d336d71cc5d0ef389372%2Fmain.webp",
+          "alt": "Korean Minimal Beam Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449034/CelebrationRing_TimelessSparkle.png"
         }
       ],
       "active": true,
@@ -3484,11 +3547,12 @@
         "Gold Plated finish"
       ],
       "badge": "35% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449135/ChatGPTImageOct8202601_01_02AM.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F461a9f883d0e0b08b84095d11dc8bdc8db0e8092610c3da4164aff8a14649601%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449135/ChatGPTImageOct8202601_01_02AM.png",
-          "alt": "Korean Crossline Geometric Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F461a9f883d0e0b08b84095d11dc8bdc8db0e8092610c3da4164aff8a14649601%2Fmain.webp",
+          "alt": "Korean Crossline Geometric Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449135/ChatGPTImageOct8202601_01_02AM.png"
         }
       ],
       "active": true,
@@ -3523,11 +3587,12 @@
         "Gold Plated finish"
       ],
       "badge": "30% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449091/ChatGPTImageOct8202601_04_02AM.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff47795a3595bcc00b6f416a43d7443fc84c49fc8320919d511d8ed31776aef0b%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449091/ChatGPTImageOct8202601_04_02AM.png",
-          "alt": "Korean Sculpted Loop Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2Ff47795a3595bcc00b6f416a43d7443fc84c49fc8320919d511d8ed31776aef0b%2Fmain.webp",
+          "alt": "Korean Sculpted Loop Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449091/ChatGPTImageOct8202601_04_02AM.png"
         }
       ],
       "active": true,
@@ -3562,11 +3627,12 @@
         "Gold Plated finish"
       ],
       "badge": "35% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449075/ElegantHeartRingCelebrationAd.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F77d8d76b9b4901d66d55a37621830db011c64be028e48637dfcdfd29c562e344%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449075/ElegantHeartRingCelebrationAd.png",
-          "alt": "Korean Heartline Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F77d8d76b9b4901d66d55a37621830db011c64be028e48637dfcdfd29c562e344%2Fmain.webp",
+          "alt": "Korean Heartline Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449075/ElegantHeartRingCelebrationAd.png"
         }
       ],
       "active": true,
@@ -3601,11 +3667,12 @@
         "Silver Plated finish"
       ],
       "badge": "44% OFF",
-      "imageUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449011/RomanticCelebrationRingAdvertisement.png",
+      "imageUrl": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F02b74390c7c30045e8fc6068c56c4101dde64e4f937712648d5d7bd19193ca4d%2Fmain.webp",
       "images": [
         {
-          "url": "https://upload.meeshosupplyassets.com/cataloging/1791406449011/RomanticCelebrationRingAdvertisement.png",
-          "alt": "Korean Bypass Adjustable Ring"
+          "url": "/api/catalog/image?key=catalog%2Frehost%2Fmeesho%2F02b74390c7c30045e8fc6068c56c4101dde64e4f937712648d5d7bd19193ca4d%2Fmain.webp",
+          "alt": "Korean Bypass Adjustable Ring",
+          "fallbackUrl": "https://upload.meeshosupplyassets.com/cataloging/1791406449011/RomanticCelebrationRingAdvertisement.png"
         }
       ],
       "active": true,
