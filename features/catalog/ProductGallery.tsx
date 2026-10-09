@@ -64,7 +64,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
                   backgroundImage: `url("${catalogSpriteImage(image.url)!.url}")`,
                   backgroundPosition: catalogSpriteImage(image.url)!.backgroundPosition
                 }}
-              /> : <SafeCatalogImage src={catalogImageVariant(image.url, "thumb")} alt={image.alt || product.name} loading={index === 0 ? "eager" : "lazy"} />}
+              /> : <SafeCatalogImage src={catalogImageVariant(image.url, "thumb")} fallbackSrc={image.fallbackUrl} alt={image.alt || product.name} loading={index === 0 ? "eager" : "lazy"} />}
             </button>
           ))}
         </div>
