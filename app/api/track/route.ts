@@ -23,10 +23,12 @@ export async function POST(request: Request) {
 
 
     let shippingCourierName: string | null = null
+    let estimatedDeliveryDate: string | null = null
     if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && !["cancelled", "delivered", "issue_reported", "refund_or_replacement_resolved"].includes(order.status)) {
       try {
         const live = await getShipwayTracking(order.shippingTrackingNumber)
         shippingCourierName = live?.courierName || null
+        estimatedDeliveryDate = live?.estimatedDeliveryDate || null
         const remote = live?.shipmentStatus?.toUpperCase() || ""
         const preDispatch = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status)
         const pickedUpOrMoving = ["PKP", "INT", "UND", "DEX", "DRE", "CRTA", "CNA", "ODA", "SMD", "OTH"].includes(remote)
@@ -89,6 +91,7 @@ export async function POST(request: Request) {
         packingVideoUrl,
         shippingTrackingNumber: order.shippingTrackingNumber,
         shippingCourierName,
+        estimatedDeliveryDate,
         customerApprovedAt: order.customerApprovedAt,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt
