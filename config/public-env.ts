@@ -5,5 +5,6 @@ export const publicEnv = {
   upiId: process.env.NEXT_PUBLIC_CELEBRATION_UPI_ID?.trim() || "",
   upiName: process.env.NEXT_PUBLIC_CELEBRATION_UPI_NAME?.trim() || "",
   supportEmail: process.env.NEXT_PUBLIC_CELEBRATION_SUPPORT_EMAIL?.trim() || "",
+  ga4MeasurementId: process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim() || "",
   siteIndexable: siteIndexableValue ? siteIndexableValue === "true" : process.env.NODE_ENV === "production"
 } as const
