@@ -9,6 +9,7 @@ import type { CheckoutData } from "../builder/types"
 import { routes } from "../../config/routes"
 import { validateCheckoutDetails, validatePaymentReference } from "../builder/validation"
 import type { CartItem } from "../cart/cart"
+import { trackGa4Purchase, type Ga4Purchase } from "../analytics/ga4"
 
 export type SubmitArgs = {
   selectedNames: string[]
@@ -50,6 +51,7 @@ type PaymentResult = {
   campaignTitle?: string | null
   paymentStatus?: string
   status?: string
+  analyticsPurchase?: Ga4Purchase
   checkout?: PaymentCheckout
 }
 
@@ -105,6 +107,10 @@ function loadScript(src: string) {
     }, { once: true })
     document.head.appendChild(script)
   })
+}
+
+function recordPaidPurchase(result: PaymentResult | null | undefined) {
+  if (result?.paid && result.analyticsPurchase) trackGa4Purchase(result.analyticsPurchase)
 }
 
 function createdFromResult(result: PaymentResult): CreatedOrder | null {
@@ -362,6 +368,7 @@ export function useOrderSubmit() {
         throw new Error(paymentError(started.error))
       }
       if (started.paid) {
+        recordPaidPurchase(started)
         const completed = createdFromResult(started)
         if (!completed) throw new Error(paymentError())
         setPaymentState("paid")
@@ -378,6 +385,7 @@ export function useOrderSubmit() {
         applyUnpaidState(result)
         return null
       }
+      recordPaidPurchase(result)
       const completed = createdFromResult(result)
       if (!completed) throw new Error(paymentError())
       setPaymentState("paid")
@@ -406,6 +414,7 @@ export function useOrderSubmit() {
         return null
       }
       if (result.paid) {
+        recordPaidPurchase(result)
         const completed = createdFromResult(result)
         if (!completed) throw new Error(paymentError())
         setPaymentState("paid")
