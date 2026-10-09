@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { defaultCatalog, tierById, visibleTiers, type CatalogConfig } from "../../lib/domain/catalog"
 import { storeContent } from "../../lib/domain/content"
 import type { CheckoutData } from "./types"
-import { validateCheckoutFields, type CheckoutFieldErrors } from "./validation"
+import { todayForDateInput, validateCheckoutFields, type CheckoutFieldErrors } from "./validation"
 
 const BUILDER_DRAFT_KEY = "celebration:hamper-draft:v1"
 const BUILDER_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -26,7 +26,7 @@ function draftCheckout(value: unknown): Partial<CheckoutData> {
   for (const key of DRAFT_FIELDS) {
     if (typeof source[key] === "string" && (source[key] as string).length <= 600) result[key] = source[key] as string
   }
-  if (result.requiredDate && result.requiredDate < new Date().toLocaleDateString("en-CA")) result.requiredDate = ""
+  if (result.requiredDate && result.requiredDate < todayForDateInput()) result.requiredDate = ""
   return result
 }
 
