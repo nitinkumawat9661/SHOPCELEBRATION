@@ -29,7 +29,7 @@ export function ProductSection({ products, categories, allCategoryId, category, 
             <div className="productReveal" key={product.id}>
               <article className="product">
                 <div className="prodTop">
-                  {product.imageUrl ? <SafeCatalogImage className="catalogProductImage" src={catalogImageVariant(product.imageUrl, "thumb")} alt={product.name} /> : <SafeCatalogImage className="catalogProductImage" src="" alt={product.name} />}
+                  {primaryProductImage(product) ? <SafeCatalogImage className="catalogProductImage" src={catalogImageVariant(primaryProductImage(product)!.url, "thumb")} fallbackSrc={primaryProductImage(product)?.fallbackUrl} alt={product.name} /> : <SafeCatalogImage className="catalogProductImage" src="" alt={product.name} />}
                   <div className="cat">{product.category}</div>
                 </div>
                 <h3>{product.name}</h3><p>{product.note}</p><div className="productUnlock">{uiContent.products.from} {formatMoney(product.minTier)}</div>
