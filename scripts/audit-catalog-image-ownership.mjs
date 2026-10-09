@@ -17,6 +17,9 @@ import { GetObjectCommand, HeadObjectCommand, S3Client } from "@aws-sdk/client-s
 
 const APPLY = process.argv.includes("--apply")
 const seed = JSON.parse(await readFile(new URL("../content/catalog.json", import.meta.url), "utf8"))
+const manifest = JSON.parse(await readFile(new URL("../content/catalog-image-source-map.json", import.meta.url), "utf8"))
+const originalBySku = new Map(Object.entries(manifest.products || {}))
+const originalOwner = new Map()
 const owns = (url) => typeof url === "string" && /^https:\/\/upload\.meeshosupplyassets\.com\//.test(url)
 const digest = (url) => createHash("sha256").update(url).digest("hex")
 const mainKey = (url) => `catalog/rehost/meesho/${digest(url)}/main.webp`
@@ -46,6 +49,16 @@ function ownerIndex(products) {
   return { byId, byUrl }
 }
 const seedIndex = ownerIndex(seed.products || [])
+for (const [id, entry] of originalBySku) {
+  const seedProduct = seedIndex.byId.get(id)
+  if (!seedProduct || !owns(entry.sourceUrl) || mainKey(entry.sourceUrl) !== entry.mainKey ||
+      !allImages(seedProduct).includes(`/api/catalog/image?key=${encodeURIComponent(entry.mainKey)}`) ||
+      !seedProduct.images?.some((img) => img.url === `/api/catalog/image?key=${encodeURIComponent(entry.mainKey)}` && img.fallbackUrl === entry.sourceUrl)) {
+    throw new Error(`GATE_1_MANIFEST_SKU_PROVENANCE_INVALID:${id}`)
+  }
+  if (originalOwner.has(entry.sourceUrl) && originalOwner.get(entry.sourceUrl) !== id) throw new Error("GATE_1_SHARED_ORIGINAL_SOURCE")
+  originalOwner.set(entry.sourceUrl, id)
+}
 console.log(`Gate 1/4: seed has ${seedIndex.byId.size} unique SKUs, no cross-SKU image reuse.`)
 
 const dbUrl = process.env.DATABASE_URL?.trim()
@@ -75,7 +88,7 @@ try {
     const existingIndex = ownerIndex(payload.products || [])
     console.log(`Gate 1/4: ${label} ${existingIndex.byId.size} unique SKUs, no image URL shared by different SKUs.`)
     for (const product of payload.products || []) {
-      const expected = seedIndex.byId.get(product.id)
+      const expected = originalBySku.get(product.id)
       for (const url of allImages(product)) {
         const key = catalogR2Key(url)
         if (!key) {
@@ -83,11 +96,11 @@ try {
           continue
         }
         // Gate 2: the R2 photo must hash to an ORIGINAL image for THIS SKU.
-        const source = expected && allImages(expected).find((candidate) => owns(candidate) && mainKey(candidate) === key)
+        const source = expected?.sourceUrl && mainKey(expected.sourceUrl) === key ? expected.sourceUrl : null
         if (!source) {
           throw new Error(`GATE_2_SOURCE_SKU_MISMATCH:${label}:${product.id}`)
         }
-        if (seedIndex.byUrl.get(source) !== product.id) {
+        if (originalOwner.get(source) !== product.id) {
           throw new Error(`GATE_2_SOURCE_OWNERSHIP_MISMATCH:${label}:${product.id}`)
         }
         neededSources.add(source)
@@ -102,7 +115,7 @@ try {
         if (!image.fallbackUrl) continue
         const key = catalogR2Key(image.url)
         if (!key || !owns(image.fallbackUrl) || mainKey(image.fallbackUrl) !== key ||
-            seedIndex.byUrl.get(image.fallbackUrl) !== product.id) {
+            originalOwner.get(image.fallbackUrl) !== product.id) {
           throw new Error(`GATE_3_INVALID_FALLBACK:${label}:${product.id}`)
         }
       }
@@ -137,7 +150,7 @@ try {
       if (!body.Body) throw new Error("GATE_4_EMPTY_IMAGE")
       const bytes = await body.Body.transformToByteArray()
       const fileHash = createHash("sha256").update(bytes).digest("hex")
-      const owner = seedIndex.byUrl.get(source)
+      const owner = originalOwner.get(source)
       const previous = photoHashes.get(fileHash)
       if (previous && previous !== owner) throw new Error(`GATE_4_DUPLICATE_PHOTO_BETWEEN_SKUS:${previous}:${owner}`)
       photoHashes.set(fileHash, owner)
@@ -153,12 +166,12 @@ try {
       const next = structuredClone(payload)
       let added = 0
       for (const product of next.products || []) {
-        const seedProduct = seedIndex.byId.get(product.id)
-        if (!seedProduct) continue
+        const seedPhoto = originalBySku.get(product.id)
+        if (!seedPhoto) continue
         const fallbackFor = (url) => {
           const key = catalogR2Key(url)
           if (!key) return undefined
-          return allImages(seedProduct).find((x) => owns(x) && mainKey(x) === key && seedIndex.byUrl.get(x) === product.id)
+          return seedPhoto && mainKey(seedPhoto.sourceUrl) === key && originalOwner.get(seedPhoto.sourceUrl) === product.id ? seedPhoto.sourceUrl : undefined
         }
         const hero = product.imageUrl
         if (!product.images?.length && fallbackFor(hero)) {
