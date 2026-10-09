@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises"
 
 const raw = await readFile(new URL("../content/catalog.json", import.meta.url), "utf8")
 const products = JSON.parse(raw).products
+const sourceMap = JSON.parse(await readFile(new URL("../content/catalog-image-source-map.json", import.meta.url), "utf8")).products
 const seenProductIds = new Set(), bySource = new Map()
 let meesho = 0
 for (const product of products) {
@@ -37,4 +38,6 @@ for (const view of rendering) {
 const safe = await readFile(new URL("../features/catalog/SafeCatalogImage.tsx", import.meta.url), "utf8")
 assert(safe.includes("sourceKey"), "Image fallback must reset when product image changes")
 assert(safe.includes("celebration-product-placeholder.svg"), "Final branded fallback missing")
-console.log(`Four-source checks passed: ${products.length} SKUs, ${meesho} unique original Meesho image URLs, strict source-SHA validation and fallback isolation.`)
+assert.equal(meesho, 0, "First-party image URL priority must be applied to the seed")
+assert.equal(Object.keys(sourceMap).length, 67, "Missing the 67 original per-SKU image sources")
+console.log(`Four-source checks passed: ${products.length} SKUs, 67 original Meesho backups, strict source-SHA validation and fallback isolation.`)
