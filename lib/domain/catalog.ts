@@ -118,8 +118,9 @@ export function catalogSpriteImage(url: string) {
 export function productDiscountPercent(product: GiftProduct) {
   const sale = product.salePricePaise
   const mrp = product.retail?.mrpPaise
-  if (!Number.isSafeInteger(sale) || !Number.isSafeInteger(mrp) ||
-      sale! <= 0 || mrp! <= sale!) return null
+  if (typeof sale !== "number" || typeof mrp !== "number" ||
+      !Number.isSafeInteger(sale) || !Number.isSafeInteger(mrp) ||
+      sale <= 0 || mrp <= sale) return null
   return Math.round((mrp - sale) * 100 / mrp)
 }
 
