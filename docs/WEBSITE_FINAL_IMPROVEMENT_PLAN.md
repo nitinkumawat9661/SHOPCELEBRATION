@@ -51,7 +51,7 @@
 
 - [x] Done — `/about` पर नया Our Story पेज बनाया; मौजूदा header/footer से जुड़ा, sitemap में शामिल।
 - [x] Done — पेज का title **Our Story** और canonical `/about` है।
-- [x] Done — Celebration की Sikar, Rajasthan से शुरुआत वाली पूरी स्वीकृत हिंदी कहानी, brand line और tagline का भाव तथा तथ्य बिना बदले शामिल किए।
+- [x] Done — Celebration की Sikar, Rajasthan वाली कहानी का अर्थ और तथ्य सुरक्षित; मालिक के 2026-10-10 निर्देश पर `/about` की customer-facing कॉपी अंग्रेज़ी में बदली, जबकि नीचे मूल हिंदी को reference के लिए रखा।
 
 ### हीरो सेक्शन (स्वीकृत कॉपी)
 
@@ -82,7 +82,7 @@ Celebration Sikar, Rajasthan से शुरू हुआ।
 
 - [x] Done — **Explore our collection** (`/jewelry`) और **Build a hamper** (`/#budgets`) सही destinations पर जोड़े।
 
-**Section 4 verification:** `scripts/test-our-story.mjs` में approved story, 3 cards, Team Celebration note, CTA routes, SEO metadata और responsive styles के regression checks शामिल हैं। Site पर कोई काल्पनिक founder नाम, customer testimonial या तस्वीर नहीं जोड़ी गई।
+**Section 4 verification:** `scripts/test-our-story.mjs` में English page copy, original Hindi reference, 3 cards, Team Celebration note, CTA routes, SEO metadata, language और responsive styles के regression checks शामिल हैं। Site पर कोई काल्पनिक founder नाम, customer testimonial या तस्वीर नहीं जोड़ी गई।
 
 ---
 

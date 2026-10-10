@@ -20,17 +20,17 @@ const promises = [
   {
     number: "01",
     title: "Thoughtful over expensive",
-    description: "एक अच्छा उपहार उसकी कीमत से नहीं, उसके पीछे की सोच से याद रहता है।"
+    description: "A meaningful gift is remembered for the thought behind it, not its price."
   },
   {
     number: "02",
     title: "Made to feel personal",
-    description: "हर रिश्ता अलग है। इसलिए आपके बजट और उस खास व्यक्ति की पसंद की जगह भी होनी चाहिए।"
+    description: "Every relationship is different. A gift should feel right for the person and your budget."
   },
   {
     number: "03",
     title: "Clear & honest process",
-    description: "बिना बनावटी वादों के—चुनने से लेकर ऑर्डर तक, बात साफ और सीधी।"
+    description: "No exaggerated promises. Just a clear, straightforward experience, from choosing a gift to placing your order."
   }
 ] as const
 
@@ -54,17 +54,17 @@ export default function OurStoryPage() {
         </div>
       </header>
 
-      <section className="ourStoryNarrative" aria-label="The Celebration story" lang="hi">
+      <section className="ourStoryNarrative" aria-label="The Celebration story">
         <div className="wrap ourStoryNarrativeLayout">
           <div className="ourStoryMarginNote" aria-hidden="true"><span>01 / OUR BEGINNING</span><i /></div>
           <div className="ourStoryProse">
-            <p className="ourStoryOpening">हमने Celebration की शुरुआत एक साधारण विचार से की थी —</p>
-            <p>कि उपहार सिर्फ एक चीज़ नहीं होता। वो एक भावना होती है।<br />एक छोटी सी सरप्राइज, जो किसी के चेहरे पर मुस्कान ला दे।</p>
+            <p className="ourStoryOpening">We started Celebration with one simple thought:</p>
+            <p>A gift is more than an object. It is a feeling.<br />A little surprise that puts a smile on someone's face.</p>
             <div className="ourStoryDivider" aria-hidden="true"><span>✧</span></div>
-            <p>Celebration Sikar, Rajasthan से शुरू हुआ।</p>
-            <p>हमने देखा कि लोग अच्छे उपहार देना चाहते हैं, लेकिन या तो बहुत महँगे विकल्प मिलते हैं, या फिर सस्ते लेकिन बेजान से लगने वाले।<br />हमने बीच का रास्ता चुना — सुंदर, किफायती, और दिल से बनाया हुआ।</p>
-            <p>हम एंटी-टार्निश ज्वेलरी देते हैं क्योंकि हम चाहते हैं कि वो उपहार लंबे समय तक वैसा ही सुंदर रहे।<br />हम कस्टम गिफ्ट हैम्पर्स बनाते हैं क्योंकि हर रिश्ता अलग होता है, और हर बजट अलग होता है।</p>
-            <p className="ourStoryClosing">हमारा वादा सिर्फ प्रोडक्ट बेचने का नहीं है।<br /><strong>हमारा वादा है — थोड़ी सी सोच, बहुत सारा प्यार।</strong></p>
+            <p>Celebration began in Sikar, Rajasthan.</p>
+            <p>We noticed how difficult it could be to find the right gift. Some options were too expensive, while others were affordable but felt impersonal.<br />We wanted a middle ground: something lovely, affordable, and chosen with heart.</p>
+            <p>We offer anti-tarnish jewelry because we want a gift to keep looking beautiful for longer.<br />We create custom gift hampers because every relationship is different, and so is every budget.</p>
+            <p className="ourStoryClosing">Our promise goes beyond selling products.<br /><strong>It is about a little thought and a lot of love.</strong></p>
           </div>
         </div>
       </section>
@@ -77,7 +77,7 @@ export default function OurStoryPage() {
               <article className="ourStoryValue" key={promise.number}>
                 <span className="ourStoryValueNumber" aria-hidden="true">{promise.number}</span>
                 <h3>{promise.title}</h3>
-                <p lang="hi">{promise.description}</p>
+                <p>{promise.description}</p>
               </article>
             ))}
           </div>
@@ -88,14 +88,14 @@ export default function OurStoryPage() {
         <div className="wrap ourStoryNoteInner">
           <span className="ourStoryEyebrow">A NOTE FROM US</span>
           <h2 id="our-story-note-title">The person behind every order matters.</h2>
-          <blockquote lang="hi">“हर ऑर्डर के पीछे एक असली व्यक्ति होता है जिसे हम खुश करना चाहते हैं। यही हमारी असली प्रेरणा है।”</blockquote>
+          <blockquote>“Behind every order is a real person we hope to make happy. That is what inspires us.”</blockquote>
           <p>— Team Celebration</p>
         </div>
       </section>
 
       <section className="ourStoryExplore" aria-labelledby="our-story-explore-title">
         <div className="wrap ourStoryExploreInner">
-          <div><span className="ourStoryEyebrow">A LITTLE SURPRISE GOES A LONG WAY</span><h2 id="our-story-explore-title">किसी की मुस्कान का हिस्सा बनिए।</h2></div>
+          <div><span className="ourStoryEyebrow">A LITTLE SURPRISE GOES A LONG WAY</span><h2 id="our-story-explore-title">Be part of someone's smile.</h2></div>
           <div className="ourStoryActions">
             <Link className="ourStoryPrimaryAction" href="/jewelry">Explore our collection <span aria-hidden="true">↗</span></Link>
             <Link className="ourStorySecondaryAction" href="/#budgets">Build a hamper <span aria-hidden="true">→</span></Link>

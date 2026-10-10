@@ -25,7 +25,7 @@
 .ourStoryMarginNote{align-self:start;display:flex;align-items:center;gap:14px;white-space:nowrap;padding-top:13px}
 .ourStoryMarginNote span{font:700 10px/1.5 var(--font-sans);letter-spacing:.15em;color:#9c6e55}
 .ourStoryMarginNote i{height:1px;max-width:100px;width:100%;background:#d4baa5}
-.ourStoryProse{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",var(--font-sans);font-size:clamp(16px,1.6vw,20px);line-height:1.93;letter-spacing:0;color:#573831}
+.ourStoryProse{font-family:var(--font-sans);font-size:clamp(16px,1.6vw,20px);line-height:1.78;letter-spacing:0;color:#573831}
 .ourStoryProse p{margin:0 0 30px;text-wrap:pretty}
 .ourStoryProse p.ourStoryOpening{font-size:clamp(22px,2.6vw,33px);line-height:1.65;color:#581d2b;font-weight:600;max-width:750px;margin-bottom:25px}
 .ourStoryDivider{display:flex;align-items:center;gap:14px;color:#ab8059;padding-block:5px 30px}
@@ -40,15 +40,15 @@
 .ourStoryValue:nth-child(2){margin-top:38px}.ourStoryValue:nth-child(3){margin-top:11px}
 .ourStoryValueNumber{display:block;font-size:11px;color:#9c6c53;letter-spacing:.1em;margin-bottom:clamp(20px,3vw,38px)}
 .ourStoryValue h3{font:400 clamp(23px,2.55vw,36px)/1.18 var(--font-display);letter-spacing:-.035em;margin:0 0 14px;color:#5b2730;max-width:330px}
-.ourStoryValue p{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",var(--font-sans);line-height:1.8;font-size:clamp(13px,1.2vw,15px);color:#6f514b;max-width:345px;margin:0}
+.ourStoryValue p{font-family:var(--font-sans);line-height:1.7;font-size:clamp(13px,1.2vw,15px);color:#6f514b;max-width:345px;margin:0}
 .ourStoryNote{background:#fffbf6;padding-block:clamp(80px,10vw,154px)}
 .ourStoryNoteInner{max-width:1060px!important;text-align:center}
 .ourStoryNote h2{font:400 clamp(34px,4.8vw,61px)/1.14 var(--font-display);letter-spacing:-.045em;margin:22px auto 27px;color:#572231;max-width:850px}
-.ourStoryNote blockquote{font:500 clamp(17px,2vw,24px)/1.9 "Noto Sans Devanagari","Nirmala UI","Mangal",var(--font-sans);color:#614740;max-width:840px;margin:0 auto 18px}
+.ourStoryNote blockquote{font:500 clamp(17px,2vw,24px)/1.7 var(--font-sans);color:#614740;max-width:840px;margin:0 auto 18px}
 .ourStoryNoteInner>p{font-size:12px;color:#8f5548;letter-spacing:.05em;font-weight:700;margin:0}
 .ourStoryExplore{background:#f1e4d5;padding-block:clamp(57px,7vw,96px)}
 .ourStoryExploreInner{display:flex;justify-content:space-between;align-items:center;gap:38px}
-.ourStoryExplore h2{font:600 clamp(26px,3.4vw,47px)/1.48 "Noto Sans Devanagari","Nirmala UI","Mangal",var(--font-sans);max-width:700px;margin:10px 0 0;color:#592c2d;letter-spacing:0}
+.ourStoryExplore h2{font:400 clamp(30px,3.4vw,47px)/1.2 var(--font-display);max-width:700px;margin:10px 0 0;color:#592c2d;letter-spacing:0}
 .ourStoryActions{display:flex;flex-direction:column;align-items:stretch;gap:11px;min-width:min(100%,265px)}
 .ourStoryActions a{display:inline-flex;align-items:center;justify-content:space-between;gap:24px;text-decoration:none;min-height:48px;border-radius:6px;padding:14px 18px;font-size:12px;font-weight:700;transition:background-color .2s ease,transform .2s ease}
 .ourStoryPrimaryAction{color:#fff7ef;background:#772638;border:1px solid #772638}
@@ -73,7 +73,7 @@
  .ourStoryHeroMark{top:23%;right:-115px;width:280px}
  .ourStoryHeroFoot{font-size:10px;padding-bottom:17px}
  .ourStoryNarrative{padding-block:62px 72px}
- .ourStoryProse{font-size:16px;line-height:1.88}
+ .ourStoryProse{font-size:16px;line-height:1.75}
  .ourStoryProse p{margin-bottom:26px}
  .ourStoryValues{padding-block:66px 79px}
  .ourStoryValuesGrid{grid-template-columns:1fr;gap:23px}
