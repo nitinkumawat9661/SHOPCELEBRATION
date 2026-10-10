@@ -43,7 +43,9 @@ async function eligibleDeliveredOrder(accountId: string, productId: string) {
   const result = await query<EligibilityRow>(
     `SELECT o.id, o.city
        FROM orders o
+       JOIN customer_accounts a ON a.id=o.customer_account_id
       WHERE o.customer_account_id = $1
+        AND a.status='active' AND a.phone_verified_at IS NOT NULL
         AND o.order_type = 'individual'
         AND o.status = 'delivered'
         AND o.payment_status IN ('paid','verified')
