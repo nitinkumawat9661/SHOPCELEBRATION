@@ -42,15 +42,15 @@ export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommende
                 <div className="size">{item.size}</div>
                 <div className="price">{formatMoney(item.price)}</div>
                 <div className="name">{item.name}</div>
-                <div className="note">Curated for your occasion</div>
+                <div className="note">Price for the complete hamper</div>
                 <span className="celebrationTierCta"><span>{hasChosenTier && selectedTierId === item.id ? "Selected" : "Choose this hamper"}</span><span className="celebrationTierArrow" aria-hidden="true">→</span></span>
               </button>
             )
           })}
         </div>
         <div className="budgetDecisionHint">
-          <div><b>Not sure which one to choose?</b><span>Pick the budget that feels right. Celebration curates the products and presentation inside the hamper.</span></div>
-          <a className="secondary" href="#custom-request">Build around my budget</a>
+          <div><b>Working with a different budget?</b><span>Tell us your amount and the occasion. We’ll review the request before you place an order.</span></div>
+          <a className="secondary" href="#custom-request">Request a custom budget</a>
         </div>
       </div>
     </section>
