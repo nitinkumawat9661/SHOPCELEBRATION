@@ -5,6 +5,7 @@ import { supportWhatsappUrl } from "../../lib/domain/support"
 import type { StoreSettings } from "../../lib/server/store-settings"
 import { StoreIcon } from "./StoreIcon"
 import { CartLink } from "../cart/AddToCart"
+import { HeaderScrollBehavior } from "./HeaderScrollBehavior"
 
 export function StorefrontHeader({ settings, onCreate, showAccount = true, searchQuery = "" }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean; searchQuery?: string }) {
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
@@ -29,6 +30,7 @@ export function StorefrontHeader({ settings, onCreate, showAccount = true, searc
         <a href="/#budgets">Hampers</a><Link href="/jewelry" prefetch={false}>Jewelry</Link><Link href="/jewelry?view=all" prefetch={false}>All Gifts</Link><a href="/#occasions">Occasions</a><a href="/#budgets">Budget</a><a href="/#trust">Why Celebration</a>
       </nav>
     </header>
+    <HeaderScrollBehavior />
     <a className="celebrationSupport" href={supportUrl} target="_blank" rel="noreferrer" aria-label="Chat with Celebration on WhatsApp"><span aria-hidden="true">♡</span> Need a hand?</a>
   </>
 }
