@@ -1,0 +1,292 @@
+/* Section 7: editorial direction for Celebration.
+   Warm paper, burgundy and champagne remain the approved brand palette.
+   Only presentation is changed; do not restyle administrative or checkout flows. */
+.celebrationHome,.collectionPage,.ourStoryPage{
+  --editorial-ink:#3e2522;
+  --editorial-muted:#735a4d;
+  --editorial-rule:#e2cebd;
+  --editorial-paper:#fffaf3;
+  --editorial-serif:var(--font-shopping-display),Georgia,serif;
+  --editorial-sans:var(--font-shopping-sans),Arial,sans-serif;
+  font-family:var(--editorial-sans);
+}
+
+/* Let Bodoni Moda own display moments; keep Inter readable for decisions. */
+.celebrationHome :is(.celebrationSectionHead h2,.celebrationEdit h2,.celebrationOccasions h2,.cta h2),
+.collectionPage :is(.collectionHero h1,.collectionHeading h2,.collectionDetailInfo h1),
+.ourStoryPage :is(.ourStoryHero h1,.ourStorySectionHeading h2,.ourStoryNote h2){
+  font-family:var(--editorial-serif);
+  font-weight:400;
+  text-wrap:balance;
+}
+.celebrationHome .celebrationEyebrow{
+  font-family:var(--editorial-sans);
+  font-weight:700;
+  line-height:1.55;
+  letter-spacing:.105em;
+}
+.celebrationHome .celebrationSectionHead h2{
+  line-height:1.16;
+  letter-spacing:-.027em;
+}
+.celebrationHome .celebrationSectionHead>a,
+.collectionPage .collectionHeroCta{
+  text-underline-offset:5px;
+}
+.celebrationHome .celebrationHeader .celebrationBrand>span{
+  font-family:var(--editorial-serif);
+  letter-spacing:-.035em;
+}
+
+/* A photographic hero should feel like an editorial cover, not a generic card. */
+.celebrationHome .celebrationHero::before{
+  background:linear-gradient(90deg,rgba(28,14,15,.84),rgba(39,20,20,.65) 41%,rgba(28,14,15,.11) 78%);
+}
+.celebrationHome .celebrationHero h1{
+  font-family:var(--editorial-serif);
+  font-size:clamp(56px,5.7vw,84px);
+  line-height:1.015;
+  letter-spacing:-.041em;
+  text-wrap:balance;
+  margin:20px 0 17px;
+}
+.celebrationHome .celebrationHero p{
+  max-width:36ch;
+  font-family:var(--editorial-sans);
+  line-height:1.75;
+  font-size:clamp(13px,1.3vw,16px);
+  color:#fff5e9;
+  text-wrap:pretty;
+}
+.celebrationHome .celebrationHeroFoot{
+  font-size:12px;
+  letter-spacing:.005em;
+  color:#f8e3cd;
+}
+.celebrationHome .celebrationButton{
+  border-radius:7px;
+  box-shadow:0 4px 14px rgba(25,7,12,.16);
+  font-weight:650;
+}
+.celebrationHome .celebrationButton.light{
+  border-radius:7px 12px 7px 12px;
+  box-shadow:none;
+}
+
+/* Vary section rhythm without disturbing the builder anchors or layout grid. */
+.celebrationHome .celebrationCategories{
+  padding-block:clamp(48px,6vw,84px) clamp(26px,3.5vw,46px);
+}
+.celebrationHome .celebrationFeatured{
+  padding-block:clamp(22px,3vw,42px) clamp(62px,7vw,96px);
+}
+.celebrationHome .celebrationEdits{
+  gap:clamp(14px,2.8vw,35px);
+  margin-bottom:clamp(24px,4.6vw,62px);
+}
+.celebrationHome .celebrationEdits .jewelryEdit{
+  border-radius:10px 26px 10px 10px;
+}
+.celebrationHome .celebrationEdits .giftingEdit{
+  border-radius:24px 10px 10px 10px;
+}
+.celebrationHome .celebrationEdit::after{
+  background:linear-gradient(90deg,rgba(38,20,19,.84),rgba(48,27,24,.28) 79%,transparent);
+}
+.celebrationHome .giftingEdit::after{
+  background:linear-gradient(90deg,rgba(255,250,239,.65),rgba(255,250,239,.29));
+}
+.celebrationHome .celebrationBudgets{
+  padding-block:clamp(40px,5vw,66px) clamp(54px,6vw,82px);
+}
+.celebrationHome .celebrationBudgets .tier{
+  border-radius:14px 20px 13px 18px;
+  box-shadow:0 4px 15px rgba(65,33,23,.075);
+}
+.celebrationHome .celebrationBudgets .tier:nth-child(3n+2):not(.active){
+  background:linear-gradient(145deg,#fffcf6,#f6e9df);
+  border-color:#dfcabf;
+  box-shadow:0 2px 10px rgba(65,33,23,.055);
+}
+.celebrationHome .celebrationBudgets .tier:nth-child(3n+3):not(.active){
+  border-radius:19px 12px 20px 12px;
+  background:linear-gradient(165deg,#fffdf9,#f4eadd);
+}
+.celebrationHome .celebrationBudgets .tier.active{
+  box-shadow:0 8px 22px rgba(103,29,40,.13);
+}
+.celebrationHome .celebrationOccasions{
+  padding-block:clamp(54px,6.5vw,90px);
+}
+.celebrationHome .promiseSec{
+  padding-block:clamp(36px,5.4vw,70px);
+}
+.celebrationHome .promiseGrid article{
+  box-shadow:none;
+  border-color:#dccab7;
+}
+.celebrationHome .promiseGrid article:nth-child(even){
+  background:#fdf7ef;
+  border-radius:9px 19px 9px 19px;
+}
+.celebrationHome .customRequestSection{
+  padding-block:clamp(40px,5vw,70px);
+}
+.celebrationHome .ctaSec{
+  padding-block:clamp(46px,6vw,88px);
+}
+.celebrationHome .cta{
+  border-radius:12px 26px 12px 12px;
+  box-shadow:0 8px 22px rgba(60,29,23,.11);
+}
+.celebrationHome .cta p{
+  max-width:45ch;
+  line-height:1.75;
+}
+
+/* Product cards should look curated, never reorder or alter an SKU/image. */
+.collectionPage .collectionGrid .catalogCard,
+.celebrationHome .collectionGrid .catalogCard{
+  border-color:var(--editorial-rule);
+  background:#fffcf7;
+  box-shadow:0 2px 9px rgba(60,37,31,.055);
+  border-radius:10px 13px 10px 10px;
+}
+.collectionPage .collectionGrid .catalogCard:nth-child(3n+2),
+.celebrationHome .collectionGrid .catalogCard:nth-child(3n+2){
+  border-radius:13px 10px 13px 10px;
+  box-shadow:0 1px 5px rgba(60,37,31,.055);
+}
+.collectionPage .collectionGrid .catalogCard:nth-child(3n+3),
+.celebrationHome .collectionGrid .catalogCard:nth-child(3n+3){
+  border-radius:10px 10px 15px 10px;
+  border-color:#d6bfae;
+}
+.collectionPage .collectionGrid .catalogCardInfo,
+.celebrationHome .collectionGrid .catalogCardInfo{
+  padding-bottom:12px;
+}
+.collectionPage .collectionGrid .catalogCard h3,
+.celebrationHome .collectionGrid .catalogCard h3{
+  font-family:var(--editorial-sans);
+  font-weight:650;
+  line-height:1.43;
+}
+.collectionPage .collectionGrid .catalogCardPrice strong,
+.celebrationHome .collectionGrid .catalogCardPrice strong{
+  letter-spacing:-.025em;
+}
+.collectionPage .collectionGrid .catalogCardBadge--new,
+.collectionPage .collectionGrid .catalogCardBadge--bestseller{
+  box-shadow:none;
+}
+.collectionPage .collectionGrid .catalogCardBadge--discount,
+.collectionPage .collectionGrid .catalogCardBadge--limited{
+  box-shadow:0 2px 5px rgba(55,23,32,.065);
+}
+
+/* Jewelry collection page: calm type, light vignette, generous result rhythm. */
+.collectionPage .collectionHeroShade{
+  background:linear-gradient(90deg,rgba(40,24,25,.84),rgba(48,28,27,.50) 46%,rgba(38,25,26,.08) 82%);
+}
+.collectionPage .collectionHero h1{
+  line-height:1.1;
+  letter-spacing:-.035em;
+  max-width:15ch;
+}
+.collectionPage .collectionHero p{
+  max-width:43ch;
+  line-height:1.75;
+}
+.collectionPage .collectionSection{
+  padding-block:clamp(40px,5vw,70px) clamp(50px,6vw,80px);
+}
+.collectionPage .collectionDetailInfo h1{
+  line-height:1.14;
+  letter-spacing:-.03em;
+}
+.collectionPage .collectionDetailAbout p{
+  font-size:13px;
+  line-height:1.8;
+  max-width:65ch;
+  color:var(--editorial-muted);
+}
+.collectionPage .collectionNote{
+  border-radius:10px 20px 10px 10px;
+  box-shadow:none;
+}
+.collectionPage .collectionApply{
+  border-radius:6px;
+  box-shadow:0 3px 10px rgba(89,24,34,.11);
+}
+
+/* The narrative needs its own pace; do not imitate an identical three-card grid. */
+.ourStoryPage .ourStoryProse{
+  max-width:66ch;
+  line-height:1.81;
+  color:#4b3834;
+}
+.ourStoryPage .ourStoryOpening{
+  font-family:var(--editorial-serif);
+  font-weight:500!important;
+  letter-spacing:-.02em;
+}
+.ourStoryPage .ourStoryValues{
+  background:#f3e9e0;
+}
+.ourStoryPage .ourStoryValue{
+  border-color:#a88172;
+}
+.ourStoryPage .ourStoryValue:nth-child(2){margin-top:51px}
+.ourStoryPage .ourStoryValue:nth-child(3){margin-top:17px}
+.ourStoryPage .ourStoryNote{
+  background:linear-gradient(120deg,#fffbf6,#f9f1e8);
+}
+.ourStoryPage .ourStoryNote blockquote{
+  font-family:var(--editorial-serif);
+  font-size:clamp(21px,2.2vw,28px);
+  line-height:1.55;
+}
+.ourStoryPage .ourStoryPrimaryAction{
+  border-radius:5px;
+}
+.ourStoryPage .ourStorySecondaryAction{
+  border-radius:5px 12px 5px 12px;
+}
+
+@media (max-width:700px){
+  .celebrationHome .celebrationHero::before{
+    background:linear-gradient(180deg,rgba(23,13,16,.85),rgba(29,16,16,.62) 54%,rgba(23,13,16,.10) 86%);
+  }
+  .celebrationHome .celebrationHero h1{
+    font-size:clamp(43px,11.3vw,58px);
+    line-height:1.04;
+    margin-block:17px;
+  }
+  .celebrationHome .celebrationHero p{font-size:13px;max-width:32ch}
+  .celebrationHome .celebrationCategories{padding-block:40px 25px}
+  .celebrationHome .celebrationFeatured{padding-block:22px 52px}
+  .celebrationHome .celebrationEdits{margin-bottom:30px}
+  .celebrationHome .celebrationBudgets{padding-block:38px 51px}
+  .celebrationHome .celebrationOccasions{padding-block:45px}
+  .celebrationHome .ctaSec{padding-block:42px 57px}
+  .collectionPage .collectionHero h1{max-width:14ch;font-size:clamp(35px,9vw,48px)}
+  .collectionPage .collectionHero p{font-size:13px;max-width:32ch}
+  .collectionPage .collectionSection{padding-block:32px 51px}
+  .collectionPage .collectionDetailAbout p{font-size:13px}
+  .ourStoryPage .ourStoryProse{font-size:16px;line-height:1.76}
+  .ourStoryPage .ourStoryValue:nth-child(2),.ourStoryPage .ourStoryValue:nth-child(3){margin-top:0}
+  .ourStoryPage .ourStoryNote blockquote{font-size:22px}
+}
+@media (hover:hover) and (pointer:fine){
+  .collectionPage .collectionGrid .catalogCard:hover,
+  .celebrationHome .collectionGrid .catalogCard:hover{
+    box-shadow:0 8px 22px rgba(71,30,31,.095);
+    border-color:#cbaaa0;
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationButton,
+  .collectionPage .collectionGrid .catalogCard,
+  .celebrationHome .collectionGrid .catalogCard{transition:none}
+}
