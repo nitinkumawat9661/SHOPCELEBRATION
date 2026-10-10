@@ -13,14 +13,14 @@ export function Hero({ tiers }: { tiers: Tier[] }) {
     </picture>
     <div className="wrap celebrationHeroInner">
       <div className="celebrationHeroCopy">
-        <span className="celebrationEyebrow">A little thought. A lot of love.</span>
-        <h1 id="gift-hero-title">Gifts that<br />speak from<br />the <em>heart.</em></h1>
-        <p>Jewelry for everyday plans. Hampers for birthdays and big days.<br />Choose something that feels right for them.</p>
+        <span className="celebrationEyebrow">JEWELRY / CUSTOM HAMPERS</span>
+        <h1 id="gift-hero-title">Jewelry to wear.<br />Hampers to <em>give.</em></h1>
+        <p>Browse necklaces, rings and bracelets. For a custom hamper, start with a budget and tell us the occasion.</p>
         <div className="celebrationHeroActions"><a className="celebrationButton" href="#budgets">Shop Hampers <StoreIcon name="arrow" size={17} /></a><Link className="celebrationButton light" href="/jewelry" prefetch={false}>Explore Jewelry</Link></div>
         {minPrice !== null && <small className="celebrationHeroFoot">Custom hampers from {formatMoney(minPrice)}.</small>}
       </div>
     </div>
-    <div className="celebrationHeroNote" aria-hidden="true">Make every occasion<br /><em>a Celebration</em></div>
+    <div className="celebrationHeroNote" aria-hidden="true">Celebration<br /><em>Gifts &amp; Jewelry</em></div>
     <small className="celebrationImageCaption">Gifting inspiration · hamper contents vary</small>
   </section>
 }
