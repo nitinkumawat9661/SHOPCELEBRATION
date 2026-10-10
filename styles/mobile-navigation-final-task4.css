@@ -1,0 +1,223 @@
+/* Final Polish Task 4 — mobile navigation without partial tabs.
+ *
+ * The previous overflow-x:auto navigation could show clipped portions of
+ * "Budget" ("Budg") at the viewport edge. On phones, show all six actual
+ * links at once in a compact responsive grid instead. No JS, drawer or
+ * horizontal nav scroll is needed; keyboard and touch users see every link.
+ */
+@media(max-width:700px){
+  .celebrationHeader{
+    max-width:100%;
+  }
+  .celebrationHeader .celebrationHeaderTop{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    min-width:0;
+    max-width:100%;
+    column-gap:8px;
+    row-gap:8px;
+    padding-top:8px!important;
+    padding-bottom:8px!important;
+    box-sizing:border-box;
+  }
+  .celebrationHeader .celebrationBrand{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-width:0;
+    max-width:100%;
+    width:auto;
+    overflow-wrap:anywhere;
+  }
+  .celebrationHeader .celebrationBrand>span{
+    display:block;
+    max-width:100%;
+    font-size:clamp(21px,6vw,27px);
+    line-height:1.04;
+    letter-spacing:-.045em;
+    white-space:normal;
+  }
+  .celebrationHeader .celebrationBrand small{
+    max-width:100%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    font-size:clamp(8px,2.3vw,9px);
+    line-height:1.35;
+  }
+  .celebrationHeader .celebrationHeaderActions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:nowrap;
+    flex:0 0 auto;
+    gap:2px;
+    min-width:0;
+  }
+  .celebrationHeader .celebrationIconLink{
+    display:inline-flex;
+    position:relative;
+    justify-content:center;
+    align-items:center;
+    box-sizing:border-box;
+    flex:0 0 44px;
+    width:44px;
+    min-width:44px;
+    min-height:44px;
+    height:44px;
+    padding:3px;
+    line-height:1;
+    touch-action:manipulation;
+  }
+  .celebrationHeader .celebrationIconLink svg{
+    display:block;
+    flex:0 0 36px;
+    width:36px;
+    height:36px;
+    padding:7px;
+    margin:0;
+    box-sizing:border-box;
+  }
+  .celebrationHeader .celebrationCartLink .cartCount{
+    top:0;
+    right:0;
+    z-index:2;
+    pointer-events:none;
+  }
+  .celebrationHeader .celebrationSearch{
+    grid-column:1/-1;
+    grid-row:2;
+    display:flex;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    margin:0;
+    box-sizing:border-box;
+  }
+  .celebrationHeader .celebrationSearch input[type=search]{
+    display:block;
+    flex:1 1 auto;
+    width:100%;
+    min-width:0;
+    min-height:48px;
+    font-size:16px; /* iOS Safari: no auto-zoom on focus. */
+    line-height:1.4;
+    padding:11px 52px 11px 15px;
+    box-sizing:border-box;
+  }
+  .celebrationHeader .celebrationSearch button{
+    display:grid;
+    place-items:center;
+    width:48px;
+    min-width:48px;
+    height:48px;
+    min-height:48px;
+    right:0;
+    top:0;
+    touch-action:manipulation;
+  }
+
+  .celebrationHeader .celebrationNav{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    align-items:stretch;
+    justify-items:stretch;
+    justify-content:center;
+    gap:3px;
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    padding-block:5px 7px;
+    min-height:0;
+    overflow:visible;
+    overscroll-behavior:contain;
+    scroll-snap-type:none;
+    scroll-padding-inline:0;
+    white-space:normal;
+  }
+  .celebrationHeader .celebrationNav a{
+    box-sizing:border-box;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-width:0;
+    width:100%;
+    min-height:44px;
+    padding:6px 3px;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    overflow-wrap:normal;
+    word-break:normal;
+    hyphens:none;
+    text-align:center;
+    font-size:clamp(10px,1.5vw,12px);
+    line-height:1.3;
+    letter-spacing:0;
+    scroll-snap-align:none;
+    touch-action:manipulation;
+  }
+  .celebrationHeader .celebrationNav a::after{
+    bottom:0;
+    right:3px;
+    left:3px;
+  }
+  .celebrationHeader .celebrationNav a:focus-visible,
+  .celebrationHeader .celebrationIconLink:focus-visible,
+  .celebrationHeader .celebrationSearch :is(input,button):focus-visible{
+    outline:3px solid #b87936;
+    outline-offset:2px;
+    border-radius:5px;
+  }
+  /* The header is taller when links occupy two rows; anchors must remain
+     visible below it on Home, Jewelry and account flows. */
+  .celebrationHome :is(#trust,#builder,#custom-request,#budgets,#occasions),
+  .collectionPage #collection{
+    scroll-margin-top:235px;
+  }
+}
+@media(max-width:540px){
+  .celebrationHeader .celebrationNav{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:2px 6px;
+    padding-top:3px;
+    padding-bottom:6px;
+  }
+  .celebrationHeader .celebrationNav a{
+    min-height:44px;
+    font-size:clamp(11px,2.6vw,12px);
+    line-height:1.27;
+    padding:6px 2px;
+  }
+}
+@media(max-width:360px){
+  .celebrationHeader .celebrationHeaderTop{
+    column-gap:4px;
+    row-gap:7px;
+    padding-inline:14px;
+  }
+  .celebrationHeader .celebrationBrand>span{
+    font-size:21px;
+  }
+  .celebrationHeader .celebrationBrand small{
+    font-size:8px;
+  }
+  .celebrationHeader .celebrationHeaderActions{
+    gap:0;
+  }
+  .celebrationHeader .celebrationNav{
+    padding-inline:14px;
+    gap:2px 4px;
+  }
+  .celebrationHeader .celebrationNav a{
+    font-size:11px;
+    min-height:44px;
+    line-height:1.3;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHeader .celebrationNav a,
+  .celebrationHeader .celebrationIconLink{
+    transition:none;
+  }
+}
