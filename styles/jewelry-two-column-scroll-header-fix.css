@@ -1,0 +1,124 @@
+/* Jewelry storefront mobile fixes — maintain two actual items per row.
+ * Scoped to the collection page: the homepage grid is intentionally unchanged.
+ * Never hide price, SKU name or add-to-cart to force compactness. */
+@media(max-width:700px){
+  .collectionPage .collectionHero{
+    min-height:162px;
+    max-height:none;
+  }
+  .collectionPage .collectionHeroContent{
+    padding-block:20px!important;
+  }
+  .collectionPage .collectionHero h1{
+    max-width:21ch;
+    font-size:clamp(24px,5.9vw,31px);
+    line-height:1.15;
+    margin:7px 0 5px;
+  }
+  .collectionPage .collectionHero p{
+    max-width:42ch;
+    font-size:11px;
+    line-height:1.5;
+  }
+  .collectionPage .collectionHeroCta{margin-top:9px;min-height:36px;font-size:11px}
+  .collectionPage .collectionSection .collectionGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-auto-flow:row;
+    align-items:stretch;
+    column-gap:9px;
+    row-gap:13px;
+    width:100%;
+    min-width:0;
+  }
+  .collectionPage .collectionSection .collectionGrid>.catalogCard{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    margin:0;
+    box-sizing:border-box;
+  }
+  .collectionPage .collectionGrid .catalogCardVisual{
+    aspect-ratio:1/1.02;
+    height:auto;
+    min-width:0;
+  }
+  .collectionPage .collectionGrid .catalogCardInfo{
+    min-width:0;
+    padding:10px 9px 9px;
+  }
+  .collectionPage .collectionGrid .catalogCard h3{
+    font-size:12px;
+    line-height:1.37;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    text-overflow:clip;
+  }
+  .collectionPage .collectionGrid .catalogCardPrice{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:3px;
+  }
+  .collectionPage .collectionGrid .catalogCardPrice strong{font-size:15px}
+  .collectionPage .collectionGrid .catalogCard>.cartAddControl button{
+    min-height:44px;
+    width:100%;
+  }
+  .collectionPage .collectionContainer{min-width:0}
+  .collectionPage .collectionSection{overflow-x:clip}
+
+  /* The large 3×2 navigation/search header collapses when browsing down
+   * the page. It reappears on upward scrolling or on keyboard focus. */
+  .celebrationHeader .celebrationNav{
+    max-height:150px;
+    transition:max-height .2s ease,opacity .2s ease,padding .2s ease;
+  }
+  .celebrationHeader .celebrationSearch{
+    max-height:60px;
+    transition:max-height .2s ease,opacity .2s ease;
+  }
+  .celebrationHeader[data-compact-nav="true"] .celebrationNav{
+    max-height:0;
+    min-height:0;
+    padding-top:0;
+    padding-bottom:0;
+    border:0;
+    margin-block:0;
+    opacity:0;
+    visibility:hidden;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .celebrationHeader[data-compact-nav="true"] .celebrationSearch{
+    max-height:0;
+    min-height:0;
+    height:0;
+    margin:0;
+    padding:0;
+    border:0;
+    opacity:0;
+    visibility:hidden;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .celebrationHeader[data-compact-nav="true"] .celebrationHeaderTop{
+    row-gap:0;
+    padding-block:5px!important;
+  }
+  .celebrationHeader[data-compact-nav="true"] .celebrationBrand>span{
+    font-size:clamp(20px,5vw,24px);
+  }
+  .celebrationHeader[data-compact-nav="true"] .celebrationBrand small{display:none}
+  .collectionPage #collection{scroll-margin-top:140px}
+}
+@media(max-width:360px){
+  .collectionPage .collectionSection .collectionGrid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:7px;row-gap:11px}
+  .collectionPage .collectionGrid .catalogCardInfo{padding:9px 7px 7px}
+  .collectionPage .collectionGrid .catalogCard h3{font-size:11px}
+  .collectionPage .collectionGrid .catalogCardPrice strong{font-size:14px}
+  .collectionPage .collectionHero{min-height:150px}
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHeader .celebrationNav,.celebrationHeader .celebrationSearch{transition:none}
+}
