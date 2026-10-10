@@ -69,11 +69,13 @@
 
 ## 6. Honest social proof
 
-- [ ] Pending — Inspect existing order-statistic eligibility and moderation rules. A “recently purchased” message can appear **only from verifiable completed/paid customer records**, with privacy-safe aggregation and no customer-identifying details.
-- [ ] Pending — Show modest real homepage proof only if supporting order counts or verified purchase events exist. If no genuine data exists, display no fabricated counters, reviews or urgency.
-- [ ] Pending — Confirm product reviews are gated by actual order + delivery and moderation; only genuine eligible reviews become public.
-- [ ] Pending — Keep a clear **“Be the first to review”** empty state where there are no verified published reviews.
-- [ ] Pending — Test manipulated requests, unsupported testimonials, no data, one real review, and authorized/unauthorized review publishing.
+- [x] Done (source review and code safeguards) — existing paid non-cancelled order counts were insufficient for delivered proof; now aggregate only paid AND delivered real hamper orders with >=20 total, >=5 tier, >=20% share, valid active tier and no personal details. No artificial "recently purchased" message is introduced.
+- [ ] Code complete; live visual/data QA pending — homepage shows one quiet cohort percentage only with proven delivered-and-paid active-tier evidence, otherwise no social proof. No fake ratings, order ticker or invented activity. Actual eligible production order counts are unknown.
+- [x] Done (source + code access protection, live DB QA pending) — review listing, admin approve, public photo and eligibility now recheck matching paid+delivered individual SKU order and active phone-verified account. Public listing also requires admin-approved row with moderation timestamp; original consent and pending-before-approval enforced.
+- [x] Done (source/code + automated test) — preserve `Be the first to review this product` only after a successful empty public query; a failed DB request displays `Customer reviews are temporarily unavailable` instead of a misleading no-reviews claim.
+- [ ] Automated checks passed; live integration/phone QA pending — source and test code covers tampered/unverified order, wrong SKU, paid+delivered constraints, consent, admin-only moderation, photo authorization, empty vs failed query, 20+/5+/20% cohorts. Staged DB integration and real-device screens still required.
+
+**Task 6 progress (2026-10-10):** Full [source/security audit, evidence thresholds, code changes and pending integration matrix](./REAL_SOCIAL_PROOF_TASK6.md). Automated code checks green in PR #91 run 38034996603. **No live sales/review records were inferred, seeded or modified.** Keep PR staged and defer all deployment to final release.
 
 **Acceptance:** Every public claim can be traced to genuine, permissible data; empty state remains honest.
 
