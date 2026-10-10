@@ -36,10 +36,12 @@
 
 ## 3. Dynamic and truthful badges/discounts
 
-- [ ] Pending — Audit the current badge resolver, source fields and “Save ₹XX” labels; compute real savings only from valid displayed MRP and sale price (no arbitrary discount claims).
-- [ ] Pending — Show a contextual mix of **Bestseller / New / Limited / verified discount / no badge**, driven solely by **provable product data** (real sales, genuine publish date, low stock, actual price gap). **Never assign labels randomly to create variety.**
-- [ ] Pending — Use small, distinct badge styling/positioning per badge type; keep text legible and product visible.
-- [ ] Pending — Test missing data, zero/negative savings, sold out, 1–3 stock, badge combinations and responsive truncation.
+- [x] Done (source audit + code) — audited 89 legacy badge strings, including 65 old 25%-off labels; compute discounts only from safe positive integer MRP/sale price, keep genuine MRP displayed, suppress uniform `Save ₹XX` copy.
+- [x] Done (evidence-gated code; live actual badge mix pending) — server queries paid+delivered recent order records for category-leading Bestseller, published catalog revisions for actual New, live stock + operator intent for Limited, valid price gap for discount; otherwise no badge. Current database evidence has not been examined, so do not promise every badge type will display.
+- [ ] Code complete; mobile visual QA pending — added restrained type-specific colors, readable wraps and safe badge placement below card photos, with concise product detail badges.
+- [ ] Automated cases coded; PR CI and device QA pending — expanded individual-sale test plus new verified-badge mapper regression, including unverified admin claims, stale/future publication, category rank, stock/savings, and 320–700px wrapping.
+
+**Task 3 progress (2026-10-10):** [Evidence model, verified SQL inputs, pricing design and QA limitations](./VERIFIED_BADGE_SYSTEM_TASK3.md). New source: `lib/server/product-badge-evidence.ts`; upgraded resolver, product price logic, shopper pages, typed transient evidence, badge CSS and CI tests. No invented New/Bestseller values, no changes to catalog prices or product images. **Follow owner's batching rule:** keep PR #91 unmerged; no deployment before all tasks are complete.
 
 **Acceptance:** Badge appearance is varied because the evidence varies, and unsupported labels are absent.
 
