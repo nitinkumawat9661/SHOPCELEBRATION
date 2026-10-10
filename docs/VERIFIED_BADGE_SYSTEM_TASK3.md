@@ -38,5 +38,5 @@ The **Bestseller/New evidence is added in server rendering only**, cached for 12
 
 - `scripts/test-verified-catalog-badges.mjs` exercises the **actual TypeScript evidence mapper** for leader vs non-leader, minimum genuine paid orders, baseline vs new publication, expired/future timestamps, inactive/non-retail SKU and malformed signal values. It also checks the SQL conditions and public entry points.
 - `scripts/test-individual-catalog.mjs` now verifies that unverified operator `New`/`Bestseller` claims cannot appear, admin-supplied badge evidence is stripped, and old 25% savings copy is suppressed.
-- `npm run audit` and `npm run typecheck` must pass in PR #91 CI. Real-device badge visual QA and live DB evidence distribution remain **pending**.
+- **PR #91 CI SUCCESS:** GitHub Actions run `38033173093` passed `npm run audit` and `npm run typecheck`. Real-device badge visual QA and actual live DB evidence distribution remain **pending**.
 - **NO PRODUCTION DEPLOY:** Per owner's request, all task changes remain on the **unmerged** `feat/final-polish-task2-media-cards-20261010` branch (PR #91). Continue Task 4+ on that branch and deploy **once at the end**, after testing.
