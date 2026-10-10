@@ -8,6 +8,7 @@ export function SiteFooter() {
       <div className="wrap footerin">
         <div><div className="logo">{storeContent.brand.name}</div><div className="tag">{storeContent.brand.tagline}</div></div>
         <div className="footerLinks">
+          <Link href={routes.about}>Our Story</Link>
           <Link href={routes.policies}>{uiContent.footer.policy}</Link>
           <Link href={routes.terms}>Terms & Legal</Link>
           <Link href={routes.privacy}>Privacy Policy</Link><Link href={routes.claim}>Raise a claim</Link><Link href="/compare">Compare stores</Link><Link href={routes.compliance}>Fair Shopping Review</Link>
