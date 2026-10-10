@@ -10,7 +10,7 @@ export function HomeCatalog({ catalog }: { catalog: CatalogConfig }) {
   const photographed = products.filter((item) => item.imageUrl).slice(0, 4)
   return <>
     <section className="celebrationCategories wrap" id="products">
-      <div className="celebrationSectionHead"><div><span className="celebrationEyebrow">Little things. Lasting memories.</span><h2>Shop by category</h2></div><Link href="/jewelry?view=all" prefetch={false}>Explore all <StoreIcon name="arrow" size={17} /></Link></div>
+      <div className="celebrationSectionHead"><div><span className="celebrationEyebrow">Find something to wear or give.</span><h2>Shop by category</h2></div><Link href="/jewelry?view=all" prefetch={false}>Explore all <StoreIcon name="arrow" size={17} /></Link></div>
       <div className="celebrationCategoryRail">
         {categories.map((category, index) => {
           const photo = products.find((product) => product.category === category.id && product.imageUrl)
@@ -21,10 +21,10 @@ export function HomeCatalog({ catalog }: { catalog: CatalogConfig }) {
         })}
       </div>
     </section>
-    {photographed.length > 0 && <section className="celebrationFeatured wrap"><div className="celebrationSectionHead"><div><span className="celebrationEyebrow">From our gift collection</span><h2>Something they'll love</h2></div><Link href="/jewelry?view=all" prefetch={false}>View all <StoreIcon name="arrow" size={17} /></Link></div><div className="collectionGrid">{photographed.map((product) => <CatalogCard key={product.id} product={product} />)}</div></section>}
+    {photographed.length > 0 && <section className="celebrationFeatured wrap"><div className="celebrationSectionHead"><div><span className="celebrationEyebrow">A few pieces from the collection</span><h2>A good place to start</h2></div><Link href="/jewelry?view=all" prefetch={false}>View all <StoreIcon name="arrow" size={17} /></Link></div><div className="collectionGrid">{photographed.map((product) => <CatalogCard key={product.id} product={product} />)}</div></section>}
     <div className="celebrationEdits wrap">
-      <Link className="celebrationEdit jewelryEdit" href="/jewelry" prefetch={false}><picture><source media="(max-width:640px)" srcSet="/images/campaign/jewelry-800.webp" /><Image src="/images/campaign/jewelry-1600.webp" alt="" width={1600} height={900} unoptimized loading="lazy" /></picture><div><span className="celebrationEyebrow">Small details. Big feelings.</span><h2>A little<br /><em>everyday magic.</em></h2><span className="celebrationEditLink">Explore jewelry <StoreIcon name="arrow" size={18} /></span></div></Link>
-      <a className="celebrationEdit giftingEdit" href="#budgets"><picture><source media="(max-width:640px)" srcSet="/images/campaign/occasion-800.webp" /><Image src="/images/campaign/occasion-1600.webp" alt="" width={1600} height={900} unoptimized loading="lazy" /></picture><div><span className="celebrationEyebrow">Wrapped in thoughtfulness</span><h2>The joy is<br /><em>in the giving.</em></h2><span className="celebrationEditLink">Find your hamper <StoreIcon name="arrow" size={18} /></span></div></a>
+      <Link className="celebrationEdit jewelryEdit" href="/jewelry" prefetch={false}><picture><source media="(max-width:640px)" srcSet="/images/campaign/jewelry-800.webp" /><Image src="/images/campaign/jewelry-1600.webp" alt="" width={1600} height={900} unoptimized loading="lazy" /></picture><div><span className="celebrationEyebrow">Jewelry for any day</span><h2>Wear it<br /><em>your way.</em></h2><span className="celebrationEditLink">Explore jewelry <StoreIcon name="arrow" size={18} /></span></div></Link>
+      <a className="celebrationEdit giftingEdit" href="#budgets"><picture><source media="(max-width:640px)" srcSet="/images/campaign/occasion-800.webp" /><Image src="/images/campaign/occasion-1600.webp" alt="" width={1600} height={900} unoptimized loading="lazy" /></picture><div><span className="celebrationEyebrow">Build a gift hamper</span><h2>Choose a budget.<br /><em>Make it personal.</em></h2><span className="celebrationEditLink">Find your hamper <StoreIcon name="arrow" size={18} /></span></div></a>
     </div>
   </>
 }

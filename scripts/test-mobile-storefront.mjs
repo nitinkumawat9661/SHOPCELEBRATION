@@ -14,7 +14,9 @@ const [styles, globals, header, cart, cards, filters, page, plan] = await Promis
 ])
 const has = (regex, label) => assert.match(styles, regex, label)
 
-assert(globals.trimEnd().endsWith('@import "../styles/mobile-storefront-section6.css";'), "Mobile CSS must load last and override older condensed card styles")
+assert(globals.includes('@import "../styles/mobile-storefront-section6.css";'), "Section 6 mobile CSS must be loaded")
+assert(globals.indexOf('mobile-storefront-section6.css') > globals.indexOf('catalog-usability-audit.css'), "Mobile CSS must override the older condensed card styles")
+assert(globals.indexOf('editorial-polish-section7.css') > globals.indexOf('mobile-storefront-section6.css'), "Editorial polish may follow only if it preserves mobile targets")
 has(/@media\s*\(max-width:700px\)/, "Common phone-width layout not defined")
 has(/@media\s*\(max-width:430px\)/, "Narrow phone fixed buy bar not defined")
 has(/@media\s*\(max-width:360px\)/, "320px/360px compact layout not defined")

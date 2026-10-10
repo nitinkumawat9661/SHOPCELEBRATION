@@ -128,27 +128,29 @@ Celebration Sikar, Rajasthan से शुरू हुआ।
 
 ### फॉन्ट
 
-- [ ] Pending — हेडिंग्स के लिए कैरेक्टर वाला एलिगेंट सेरिफ़ फॉन्ट / मौजूदा Bodoni जैसी फ़ील का बेहतर उपयोग।
-- [ ] Pending — बॉडी टेक्स्ट के लिए साफ और आराम से पढ़ा जाने वाला सैंस-सेरिफ़।
-- [ ] Pending — हर जगह एक जैसी line-height/letter-spacing के बजाय प्राकृतिक वैरायटी।
+- [x] Done (code) — existing bundled Bodoni Moda को hero, headings, product titles और Our Story editorial highlights में अधिक सोच-समझकर इस्तेमाल किया।
+- [x] Done (code) — existing local Inter को shopping decisions, prices, CTA copy और body content में readable line-height के साथ रखा।
+- [x] Done (code) — headings, introductory text, editorial quotations और shopping descriptions की line-height तथा letter-spacing अलग-अलग जरूरत के मुताबिक की।
 
 ### स्पेसिंग और लेआउट
 
-- [ ] Pending — सेक्शन की दूरी थोड़ा अनइवन और ह्यूमन बनाओ।
-- [ ] Pending — बहुत परफ़ेक्ट ग्रिड और एक जैसे कार्ड्स से बचो।
-- [ ] Pending — कुछ सेक्शन में अधिक white space, कुछ में थोड़ा टाइट लेआउट।
+- [x] Done (code) — homepage categories, featured products, edits, budgets, occasions और CTA में section rhythm अलग रखा।
+- [x] Done (code) — card corner/edge/border treatments और budget card surfaces में restrained variation; SKU का क्रम या imagery नहीं बदली।
+- [x] Done (code) — featured collection व categories के बीच white space, budget section और about narrative spacing को अलग rhythm दिया।
 
 ### कलर और विज़ुअल
 
-- [ ] Pending — बहुत ज्यादा समान opacity और shadows कम करो।
-- [ ] Pending — उचित इमेज ग्रेडिएंट/शैडो से हल्का रियल फ़ील दो।
-- [ ] Pending — बटन और बैज स्टाइल में उचित वैरायटी रखो।
+- [x] Done (code) — catalog, budget तथा promise cards के repeated shadows को restrained contrast और borders से बदला।
+- [x] Done (code) — hero/collection photography के ऊपर readable vignette और natural shadow treatment; actual product image files या URLs नहीं बदले।
+- [x] Done (code) — primary/secondary CTA geometry और existing truth-based product badges का subtle visual differentiation सुरक्षित रखा।
 
 ### कॉपीराइटिंग
 
-- [ ] Pending — “perfect”, “beautiful”, “thoughtful” जैसे शब्दों का दोहराव कम करो।
-- [ ] Pending — वाक्य छोटे और स्वाभाविक रखो।
-- [ ] Pending — AI-जैसी फ्लोरी भाषा कम करो।
+- [x] Done (targeted) — prominent hero, category, featured products, benefits, collection और search copy में repetitive phrases घटाए। Whole-site editorial sweep अलग pending है।
+- [x] Done (targeted) — इन प्रमुख public sections के marketing sentences छोटे और ग्राहक-केंद्रित किए; product descriptions/legal policy claims नहीं बदले।
+- [x] Done (targeted) — generic slogans की जगह specific shop/hamper language। सभी pages का पूर्ण human visual/copy QA अभी pending है।
+
+**Section 7 verification (2026-10-10):** `styles/editorial-polish-section7.css` और `scripts/test-editorial-polish.mjs` जोड़े। Hero, home collection, store benefits, search, product listing, story layout और accessible mobile treatment पर scoped changes हुए; audit/typecheck को CI में verify करना है। **Manual desktop/mobile visual and whole-site copy QA Pending** है, इसलिए पूरे site को visually perfect घोषित नहीं किया गया। Catalog images, product ownership, prices, stock, reviews, checkout, orders, shipping और return policy को untouched रखा गया।
 
 ---
 
