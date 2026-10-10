@@ -45,6 +45,12 @@ export type GiftProduct = {
   description?: string
   highlights?: string[]
   badge?: string
+  /** Server-derived, transient badge evidence; never part of an admin catalog save. */
+  badgeSignals?: {
+    bestsellerOrders?: number
+    firstPublishedAt?: string
+    firstRevisionVersion?: number
+  }
   icon?: string
   imageUrl?: string
   images?: ProductImage[]
