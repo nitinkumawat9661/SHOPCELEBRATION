@@ -62,7 +62,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const [{ id }, catalog, settings] = await Promise.all([params, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
   const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
   const product = storefrontCatalog?.products.find((item) => item.id === id && item.active !== false)
-  const reviews = product ? await approvedProductReviews(product.id).catch((error) => { console.error("product-reviews-public", error); return [] }) : []
+  const reviewsResult = product
+    ? await approvedProductReviews(product.id)
+      .then((items) => ({ items, unavailable: false }))
+      .catch((error) => { console.error("product-reviews-public", error); return { items: [], unavailable: true } })
+    : { items: [], unavailable: false }
   const listed = product ? isIndividualListing(product) : false
   const individual = product ? isIndividuallySellable(product) : false
   const soldOut = Boolean(product && listed && !individual)
@@ -154,7 +158,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
         </div></section>
         {individual && <div className="mobileMarketplaceBuyBar" aria-label="Quick purchase controls"><div><small>{product.name}</small><b>{formatMoney(product.salePricePaise! / 100)}</b></div><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} /><AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} buyNow /></div>}
-        <ProductReviews productId={product.id} reviews={reviews} />
+        <ProductReviews productId={product.id} reviews={reviewsResult.items} reviewsUnavailable={reviewsResult.unavailable} />
         {related.length > 0 && <section className="collectionRelated"><div className="wrap collectionContainer"><div className="collectionHeading"><div><span className="collectionEyebrow">Keep the inspiration going</span><h2>More thoughtful details</h2></div><Link href={collectionUrl}>View collection →</Link></div><div className="collectionGrid">{related.map((item) => <CatalogCard product={item} key={item.id} />)}</div></div></section>}
       </>}
       <SiteFooter />
