@@ -30,10 +30,10 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
       <main id="main-content">
         <Hero tiers={tiers} />
         <div className="celebrationBenefits wrap" aria-label="The Celebration promise">
-          <div><StoreIcon name="box" /><span><b>Beautifully packed</b><small>Made to feel personal</small></span></div>
+          <div><StoreIcon name="box" /><span><b>Packed with care</b><small>Details that matter</small></span></div>
           <div><StoreIcon name="video" /><span><b>See it before dispatch</b><small>Your hamper, on video</small></span></div>
           <div><StoreIcon name="shield" /><span><b>Clear payment</b><small>Verified confirmation</small></span></div>
-          <div><StoreIcon name="track" /><span><b>Follow every moment</b><small>Track your order online</small></span></div>
+          <div><StoreIcon name="track" /><span><b>Track your order</b><small>See updates online</small></span></div>
         </div>
         <HomeCatalog catalog={initialCatalog} />
         <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={initialSocialProof} />
