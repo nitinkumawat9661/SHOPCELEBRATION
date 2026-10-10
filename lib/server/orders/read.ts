@@ -65,6 +65,7 @@ export async function getTierPopularity(): Promise<TierPopularity | null> {
        SELECT tier_name, count(*)::int AS order_count
        FROM orders
        WHERE status <> 'cancelled' AND order_type = 'hamper'
+         AND payment_status IN ('paid', 'verified', 'success')
        GROUP BY tier_name
      ), totals AS (
        SELECT coalesce(sum(order_count), 0)::int AS total_orders FROM tier_counts

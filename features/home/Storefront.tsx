@@ -35,6 +35,12 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
           <div><StoreIcon name="shield" /><span><b>Clear payment</b><small>Verified confirmation</small></span></div>
           <div><StoreIcon name="track" /><span><b>Track your order</b><small>See updates online</small></span></div>
         </div>
+        {initialSocialProof && initialSocialProof.totalOrders >= 20 && initialSocialProof.orderCount >= 5 && initialSocialProof.sharePercent >= 20 && (
+          <div className="celebrationRealProof wrap" aria-label="Verified hamper order insight">
+            <span>From confirmed hamper orders</span>
+            <p>{initialSocialProof.sharePercent}% of {initialSocialProof.totalOrders} paid Celebration hamper orders chose the {initialSocialProof.tierName} budget.</p>
+          </div>
+        )}
         <HomeCatalog catalog={initialCatalog} />
         <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={initialSocialProof} />
       </main>

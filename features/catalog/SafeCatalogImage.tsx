@@ -33,6 +33,8 @@ export function SafeCatalogImage({ src, fallbackSrc, alt, className, loading = "
     sizes={original ? sizes : undefined}
     alt={currentSrc === CATALOG_IMAGE_FALLBACK ? `${alt} — image unavailable` : alt}
     className={className}
+    width={800}
+    height={800}
     loading={loading}
     decoding="async"
     fetchPriority={fetchPriority}

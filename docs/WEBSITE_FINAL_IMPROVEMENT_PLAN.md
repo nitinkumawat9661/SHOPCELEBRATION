@@ -156,12 +156,14 @@ Celebration Sikar, Rajasthan से शुरू हुआ।
 
 ## 8. बाकी जरूरी सुधार
 
-- [ ] Pending — लागू होने पर प्रोडक्ट पेज पर साइज गाइड / मेजरमेंट जोड़ो।
-- [ ] Pending — FAQ पेज को शिपिंग, गारंटी, रिटर्न, पैकिंग वीडियो और एंटी-टार्निश सवालों के साथ मजबूत करो।
-- [ ] Pending — फुटर को अधिक उपयोगी बनाओ।
-- [ ] Pending — होमपेज पर हल्का सोशल प्रूफ़ जोड़ो, केवल जब असली डेटा उपलब्ध हो।
-- [ ] Pending — पूरे साइट पर इमेज lazy loading, WebP और बेसिक परफ़ॉर्मेंस चेक करो।
-- [ ] Pending — “Powered by AI” या जेनरिक प्लेसहोल्डर टेक्स्ट कहीं न बचे।
+- [x] Done (available data) — jewelry pages पर fit section: verified adjustable hints, exact mm/cm अभी उपलब्ध नहीं; customer को sizing FAQ से guidance। Physical measurements pending।
+- [x] Done — `/faq` page में shipping, estimates, returns, coverage, sizing, care, video, tracking, refunds के answers official policy के अनुसार; sitemap/footer से linked।
+- [x] Done — footer की Shop, Help & orders, Information navigation में FAQ, tracking, account, claim, jewelry, hampers और सभी existing legal links रखे।
+- [x] Done — real paid/verified, non-cancelled hamper orders का insight तभी दिखे जब minimum real-order evidence मिले (20+ orders, dominant tier 5+, share 20%+). कोई invented counters/reviews नहीं।
+- [ ] Partially done — existing lazy catalog cards, priority hero/main gallery, campaign WebPs, 67 SKU WebP variants का code audit और stable image width/height; **22 existing PNG-to-WebP + real mobile Lighthouse QA pending**।
+- [x] Done (static scan) — customer-facing TSX/primary content JSON में AI credits, Lorem ipsum और fake/sample testimonial placeholder string को CI audit से रोकना। Live browser visual review pending।
+
+**Section 8 verification:** `scripts/test-final-storefront.mjs` checks FAQ/policy consistency, sizing accuracy, genuine paid-only social proof, footer links, source image loading/WebP assets and customer-surface placeholder terms. Product identity, exact original images, catalog prices, inventory, customer reviews, checkout and order paths are unchanged. **Real product measurements, 22 original PNG optimizations, actual Lighthouse/network performance and visual-device QA remain pending.**
 
 ---
 
