@@ -22,7 +22,9 @@ try {
   assert(data.products.length >= 89, "The catalog should include the existing jewelry listings")
   for (const product of data.products) {
     const advice = stylingAdviceForProduct(product)
-    assert.equal(advice.heading, "How to Style", `Every SKU needs styling guidance: ${product.id}`)
+    assert(["How to Style", "Gift ideas"].includes(advice.heading), `Each SKU needs accurate styling/gifting guidance: ${product.id}`)
+    assert(["set","necklace","earrings","ring","wristwear","gift"].includes(advice.categoryKind), `Every SKU requires an explicit safe advice kind: ${product.id}`)
+    assert(![advice.intro, ...advice.ideas, ...advice.care].some(line => /stainless steel|gold plated|silver plated|waterproof|hypoallergenic|6 months|adjustable fit|jd stone/i.test(line)), `Unverified physical composition in style advice: ${product.id}`)
     assert(advice.intro.length > 25, `Missing intro: ${product.id}`)
     assert(advice.ideas.length >= 3, `Missing style examples: ${product.id}`)
     assert(advice.care.length >= 2, `Missing care guidance: ${product.id}`)
@@ -41,6 +43,27 @@ try {
   const gift = fixture("Custom Gifts", "Teddy gift box")
   assert(gift.ideas.some((idea) => idea.includes("hamper")), "Gift-only item needs gifting ideas")
   assert(!gift.care.some((tip) => tip.includes("perfume")), "Do not tell gift-only customers to care for jewelry")
+  assert.equal(gift.heading, "Gift ideas", "Do not call a teddy or hamper a wearable jewelry item")
+  assert.equal(fixture("Designer Hair Accessories", "Necklace-shaped gift bag").categoryKind, "gift", "Confirmed gift-only category overrides tempting title keywords")
+  assert.equal(fixture("Unknown", "Gold Ring Gift Box").categoryKind, "gift", "Unknown nonempty category must not claim jewelry fit")
+  assert.equal(fixture("", "Simple Pendant").categoryKind, "necklace", "Allow safe name fallback only when the category is absent")
+  assert.equal(fixture("Necklace + Earrings Sets").categoryKind, "set")
+  assert.equal(fixture("Trending Necklaces").categoryKind, "necklace")
+  assert.equal(fixture("Gold-Plated Bangles & Bracelets").categoryKind, "wristwear")
+  assert.equal(fixture("Adjustable Rings").categoryKind, "ring")
+  assert.equal(fixture("Stud Earrings").categoryKind, "earrings")
+  const categoryKinds = {
+    "Necklace + Earrings Sets":"set",
+    "Premium Anti-Tarnish Necklaces":"necklace",
+    "Trending Necklaces":"necklace",
+    "Gold-Plated Bangles & Bracelets":"wristwear",
+    "Adjustable Rings":"ring"
+  }
+  for(const item of data.products){
+    assert.equal(stylingAdviceForProduct(item).categoryKind,categoryKinds[item.category],
+      `Audit every actual SKU category (fail on new category until reviewed): ${item.id} ${item.category}`)
+  }
+
   assert.equal(fixture("", "Simple Pendant").heading, "How to Style", "Fall back to a product title when category is unavailable")
 
   const [page, component, styles, globals, plan, packageJson] = await Promise.all([
