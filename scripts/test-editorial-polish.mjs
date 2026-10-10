@@ -15,7 +15,9 @@ const [styles, globalCss, hero, homeCatalog, storefront, collection, header, mob
   read("app/layout.tsx")
 ])
 
-assert(globalCss.trimEnd().endsWith('@import "../styles/editorial-polish-section7.css";'), "Load editorial overrides after prior storefront design layers")
+assert(globalCss.includes('@import "../styles/editorial-polish-section7.css";'), "Editorial CSS must remain loaded")
+assert(globalCss.indexOf("editorial-polish-section7.css") > globalCss.indexOf("mobile-storefront-section6.css"), "Keep Section 6 mobile safeguards before editorial overrides")
+assert(globalCss.indexOf("faq-and-final-polish.css") > globalCss.indexOf("editorial-polish-section7.css"), "Section 8 may follow, without removing editorial styles")
 assert(globalCss.indexOf("mobile-storefront-section6.css") < globalCss.indexOf("editorial-polish-section7.css"), "Maintain the full mobile fixes before the final editorial cascade")
 assert(layout.includes("bodoni-moda-latin.woff2") && layout.includes("inter-latin.woff2"), "Use the existing locally bundled display and body fonts")
 assert(styles.includes("var(--font-shopping-display)") && styles.includes("var(--font-shopping-sans)"), "Editorial design should retain the site's own serif/sans font pairing")
