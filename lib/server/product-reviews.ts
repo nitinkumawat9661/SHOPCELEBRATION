@@ -16,10 +16,19 @@ type ReviewRow = {
 
 export async function approvedProductReviews(productId: string): Promise<PublicProductReview[]> {
   const result = await query<ReviewRow>(
-    `SELECT id::text, reviewer_name, reviewer_city, rating, review_text, photo_key, submitted_at
-       FROM product_reviews
-      WHERE product_id = $1 AND status = 'approved'
-      ORDER BY submitted_at DESC LIMIT 60`, [productId]
+    `SELECT r.id::text, r.reviewer_name, r.reviewer_city, r.rating, r.review_text, r.photo_key, r.submitted_at
+       FROM product_reviews r
+       JOIN orders o ON o.id = r.order_id AND o.customer_account_id = r.customer_account_id
+       JOIN customer_accounts a ON a.id = r.customer_account_id
+      WHERE r.product_id = $1 AND r.status = 'approved' AND r.reviewed_at IS NOT NULL
+        AND a.status = 'active' AND a.phone_verified_at IS NOT NULL
+        AND o.order_type = 'individual' AND o.status = 'delivered'
+        AND o.payment_status IN ('paid','verified')
+        AND EXISTS (
+          SELECT 1 FROM jsonb_array_elements(o.line_items) AS item
+          WHERE item->>'productId' = r.product_id
+        )
+      ORDER BY r.submitted_at DESC LIMIT 60`, [productId]
   )
   return result.rows.map((r) => ({
     id: r.id, reviewerName: r.reviewer_name, reviewerCity: r.reviewer_city,
@@ -154,8 +163,21 @@ export async function listAdminReviews(): Promise<AdminReview[]> {
 export async function moderateReview(id: string, status: "approved" | "rejected") {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) throw new ProductReviewError("INVALID_REVIEW_ID", 400)
   const result = await query<{ id: string }>(
-    `UPDATE product_reviews SET status=$2,reviewed_at=now()
-     WHERE id=$1::uuid AND status='pending' RETURNING id::text`, [id, status]
+    `UPDATE product_reviews r SET status=$2,reviewed_at=now()
+     WHERE r.id=$1::uuid AND r.status='pending'
+       AND ($2 = 'rejected' OR EXISTS (
+         SELECT 1 FROM orders o
+         JOIN customer_accounts a ON a.id = r.customer_account_id
+         WHERE o.id = r.order_id AND o.customer_account_id = r.customer_account_id
+           AND a.status = 'active' AND a.phone_verified_at IS NOT NULL
+           AND o.order_type = 'individual' AND o.status = 'delivered'
+           AND o.payment_status IN ('paid','verified')
+           AND EXISTS (
+             SELECT 1 FROM jsonb_array_elements(o.line_items) item
+             WHERE item->>'productId' = r.product_id
+           )
+       ))
+     RETURNING r.id::text`, [id, status]
   )
   if (!result.rows[0]) throw new ProductReviewError("REVIEW_ALREADY_REVIEWED", 409)
   return { id, status }
@@ -163,7 +185,24 @@ export async function moderateReview(id: string, status: "approved" | "rejected"
 
 export async function approvedOrAdminPhotoKey(id: string, isAdmin: boolean) {
   const result = await query<{ photo_key: string | null }>(
-    `SELECT photo_key FROM product_reviews WHERE id=$1::uuid AND (status='approved' OR $2::boolean)`,
+    `SELECT r.photo_key FROM product_reviews r
+     WHERE r.id=$1::uuid AND (
+       $2::boolean OR (
+         r.status='approved' AND r.reviewed_at IS NOT NULL
+         AND EXISTS (
+           SELECT 1 FROM orders o
+           JOIN customer_accounts a ON a.id=r.customer_account_id
+           WHERE o.id=r.order_id AND o.customer_account_id=r.customer_account_id
+             AND a.status='active' AND a.phone_verified_at IS NOT NULL
+             AND o.order_type='individual' AND o.status='delivered'
+             AND o.payment_status IN ('paid','verified')
+             AND EXISTS (
+               SELECT 1 FROM jsonb_array_elements(o.line_items) item
+               WHERE item->>'productId'=r.product_id
+             )
+         )
+       )
+     )`,
     [id, isAdmin]
   )
   return result.rows[0]?.photo_key || null
