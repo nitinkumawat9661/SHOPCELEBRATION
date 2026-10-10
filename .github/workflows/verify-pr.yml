@@ -28,3 +28,5 @@ jobs:
           npm audit --omit=dev
           npm run audit
           npm run typecheck
+          # Build the exact combined branch before touching the VPS.
+          NEXT_PUBLIC_SITE_INDEXABLE=false npm run build
