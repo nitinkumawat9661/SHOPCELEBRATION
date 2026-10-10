@@ -5,6 +5,7 @@ import { CatalogCard } from "../../../features/catalog/CatalogCard"
 import { SeoJsonLd } from "../../../features/seo/SeoJsonLd"
 import { ProductGallery } from "../../../features/catalog/ProductGallery"
 import { ProductReviews } from "../../../features/catalog/ProductReviews"
+import { ProductHowToStyle } from "../../../features/catalog/ProductHowToStyle"
 import { approvedProductReviews } from "../../../lib/server/product-reviews"
 import { AddToCart } from "../../../features/cart/AddToCart"
 import { ProductViewAnalytics } from "../../../features/analytics/ProductViewAnalytics"
@@ -144,6 +145,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </dl>
             </section>}
             <div className="collectionDetailPromise"><span aria-hidden="true">♡</span><div><b>{individual ? "A little something, just for them" : "A thoughtful part of your hamper"}</b><p>{individual ? "Choose your quantity in the cart, add delivery details and pay securely online." : "Share your occasion and budget. Our team curates the gifts inside your hamper."}</p></div></div>
+            <ProductHowToStyle product={product} />
             <div className="collectionDetailAbout"><h2>Product details</h2><p>{product.description || (individual ? "This gift is available individually and within eligible hampers. For a curated gift set, share your occasion and budget with our team." : "This gift is currently available within our curated hampers. The final selection is curated for your occasion.")}</p><Link href="/policies">Delivery & order policies <span aria-hidden="true">→</span></Link>{individual && <Link href="/#budgets">Explore our curated hampers →</Link>}</div>
           </div>
         </div></section>

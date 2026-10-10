@@ -88,9 +88,9 @@ Celebration Sikar, Rajasthan से शुरू हुआ।
 
 ## 5. How to Style / How to Wear सेक्शन (प्रोडक्ट पेज पर)
 
-- [ ] Pending — हर प्रोडक्ट पेज पर **How to Style** सेक्शन जोड़ो।
-- [ ] Pending — कॉपी हल्की, दोस्ताना, मददगार हो; बहुत फ़ॉर्मल या AI जैसी न लगे।
-- [ ] Pending — प्रोडक्ट के हिसाब से नीचे वाले उदाहरण की शैली अपनाओ।
+- [x] Done — product details पर **How to Style** जोड़ा; categories के अनुसार अलग tips और non-jewelry gifts के लिए appropriate fallback।
+- [x] Done — customer-facing English guidance सरल और वास्तविक रखी; कोई मनगढ़ंत material या product feature नहीं।
+- [x] Done — neckline, ring, wristwear, earrings और matching necklace + earrings sets के लिए अलग style और care tips।
 
 ### How to Style — उदाहरण कॉपी
 
@@ -106,7 +106,9 @@ Celebration Sikar, Rajasthan से शुरू हुआ।
 - सोते समय और नहाते समय उतारकर रखें।
 - लंबे समय तक चमक बनाए रखने के लिए सूखी जगह पर रखें।
 
-- [ ] Pending — नेकलेस + इयररिंग्स सेट पर यह लाइन जोड़ो: “सेट को एक साथ पहनने से लुक पूरा और मैचिंग लगता है। अलग-अलग भी ट्राय कर सकते हैं।”
+- [x] Done — necklace + earrings sets पर साथ पहनने और अलग-अलग पहनने की guidance English में शामिल है।
+
+**Section 5 verification:** All default catalog items receive category-aware styling advice, care tips and a responsive single-column mobile layout. `scripts/test-product-styling.mjs` is part of the CI audit. Product catalog, media, pricing, reviews, checkout, stock and shipping remain unchanged.
 
 ---
 

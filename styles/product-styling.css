@@ -1,0 +1,14 @@
+/* Product-specific guidance, kept separate from the store's global layouts. */
+.productStyling{margin-top:29px;padding:25px clamp(16px,2.5vw,30px) 28px;background:#fff8f0;border:1px solid #e9d6c5;border-left:3px solid #a0656c;border-radius:0 13px 13px 0;color:#55372f}
+.productStylingEyebrow{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#9c6a59}
+.productStyling h2{font:400 clamp(27px,2.6vw,36px)/1.15 var(--font-display);color:#612f3b;margin:9px 0 12px;letter-spacing:-.025em}
+.productStylingIntro{font-size:12px;line-height:1.75;color:#765b4c;margin:0 0 22px;max-width:520px}
+.productStylingLayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:clamp(18px,2.4vw,32px)}
+.productStylingLayout>div{min-width:0}
+.productStylingLayout h3{font-size:12px;line-height:1.45;font-weight:700;color:#683a3d;margin:0 0 12px}
+.productStylingLayout ul{display:grid;gap:12px;list-style:none;margin:0;padding:0}
+.productStylingLayout li{position:relative;padding-left:16px;font-size:12px;line-height:1.7;color:#6e5147;overflow-wrap:break-word}
+.productStylingLayout li:before{content:"";position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:#b7826b}
+.productStylingCare{border-left:1px solid #e8d7c7;padding-left:clamp(16px,2vw,26px)}
+.productStylingPairing{font-size:12px;line-height:1.75;color:#6e3943;background:#f4e6df;border-radius:8px;padding:12px 13px;margin:19px 0 0}
+@media(max-width:750px){.productStyling{margin-top:22px;padding:21px 18px 24px}.productStylingLayout{grid-template-columns:1fr;gap:21px}.productStylingCare{padding-left:0;padding-top:19px;border-left:0;border-top:1px solid #e8d7c7}.productStylingLayout li{font-size:12px;line-height:1.7}}
