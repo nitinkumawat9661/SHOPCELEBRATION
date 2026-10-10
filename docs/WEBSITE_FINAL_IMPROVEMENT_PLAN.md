@@ -114,11 +114,13 @@ Celebration Sikar, Rajasthan से शुरू हुआ।
 
 ## 6. मोबाइल अनुभव को पूरी तरह ठीक करो
 
-- [ ] Pending — मोबाइल पर नेविगेशन, सर्च, कार्ट आइकन और प्रोडक्ट कार्ड ध्यान से चेक करो।
-- [ ] Pending — जरूरत के अनुसार स्पेसिंग बढ़ाओ।
-- [ ] Pending — मोबाइल के हिसाब से फ़ॉन्ट साइज़ एडजस्ट करो।
-- [ ] Pending — टेक्स्ट कटना और बटन एक-दूसरे से चिपकना बंद करो।
-- [ ] Pending — टच टारगेट कम-से-कम 44px रखो।
+- [x] Done (code + automated verification) — मोबाइल navigation, search, cart icon, product-card CSS audit और fixes लागू; असली phone browser का visual/manual QA अलग pending है।
+- [x] Done — मोबाइल header, filters, product cards और fixed buy bar की spacing सुधारी।
+- [x] Done — search text (iOS zoom avoidance), filter labels, long product names, card prices और buy buttons mobile-readable किए।
+- [x] Done — mobile product names/category/price को hard line clipping से निकाला; 360px और नीचे product grid single-column; narrow-screen buy bar में controls अलग row में रखे।
+- [x] Done (covered controls) — mobile header icons/nav/search, catalog add/quantity, filter reset/close, gallery arrows, cart quantity/remove के touch targets minimum 44px रखे।
+
+**Section 6 verification:** `styles/mobile-storefront-section6.css` global stylesheet के आखिर में loaded है ताकि पुरानी compact-card media rules को सही precedence मिले। `scripts/test-mobile-storefront.mjs` CSS import, key layout/touch assertions और markup structure की regression checks करता है। CI audit/typecheck के बाद भी physical Android/iOS browser का visual QA (320, 360, 375, 390, 430px; keyboard/search, sticky cart और filter overlay) **Pending** है, इसलिए production visual-perfect claim नहीं है। कोई product identity, images, prices, payment, order या shipping flow नहीं बदला।
 
 ---
 
