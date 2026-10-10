@@ -47,10 +47,12 @@
 
 ## 4. Mobile navigation and header usability
 
-- [ ] Pending — Reproduce cut-off labels (e.g. **“Budget” → “Budg”**) on real phone widths and identify CSS overflow, text clipping, max-width and scrollbar issues.
-- [ ] Pending — Ensure the entire navigation remains readable and reachable (visible fully or horizontally scrollable), without truncated words or inaccessible last links.
-- [ ] Pending — Polish search, account and cart alignment, spacing, badges, iOS input behavior and keyboard focus on mobile.
-- [ ] Pending — Check mobile widths **320, 360, 375, 390, 430px**; test swipe navigation, keyboard focus, cart state and no unintended horizontal page overflow.
+- [ ] Source mechanism identified; handset reproduction pending — existing mobile `overflow-x:auto` / `white-space:nowrap` could show half a tab at viewport edge, making `Budget` appear `Budg`. Exact phone/browser DevTools proof not yet collected.
+- [ ] Code fixed; visual QA pending — replace horizontally clipped nav with all-six-visible grid (3×2 at <=540px; one row at 541–700px), complete wrapping link labels and 44px touch targets. All links/anchors unchanged.
+- [ ] Code fixed; device QA pending — brand/action sizing, 44×44px icons, cart badge, full-width 48px search, iOS 16px text to avoid zoom, focus-visible outlines and anchor scroll offset; behavior awaits real Safari/Chrome touch tests.
+- [ ] Automated CSS/source tests created; real-device QA pending — 320/360/375/390/430 widths, focus, search/cart interactions, landscape and body overflow to be verified with actual browser. No navigation swipe needed now that all six items are directly visible.
+
+**Task 4 progress (2026-10-10):** `styles/mobile-navigation-final-task4.css` added last in stylesheet cascade; `scripts/test-final-mobile-navigation.mjs` added to standard audit. [Detailed QA matrix and remaining browser verification](./MOBILE_NAVIGATION_QA_TASK4.md). **PR #91 remains unmerged: no incremental production deployment.**
 
 **Acceptance:** All navigation options remain accessible; header controls are clear and tappable without overlap.
 
