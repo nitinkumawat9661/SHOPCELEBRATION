@@ -6,6 +6,7 @@ import { productBadge, productSavingLabel } from "../../lib/domain/catalog-badge
 import { AddToCart } from "../cart/AddToCart"
 import { formatMoney } from "../../lib/domain/money"
 import { SafeCatalogImage } from "./SafeCatalogImage"
+import { catalogCardTreatment } from "../../lib/domain/catalog-card-presentation"
 
 export function CatalogProductImage({ product, priority = false }: { product: GiftProduct; priority?: boolean }) {
   const primary = primaryProductImage(product)
@@ -39,11 +40,13 @@ export function CatalogCard({ product }: { product: GiftProduct }) {
   const badge = productBadge(product)
   const savings = productSavingLabel(product)
   const mrpPaise = listed ? product.retail?.mrpPaise : undefined
+  const treatment = catalogCardTreatment(product)
   return (
-    <article className="catalogCard">
+    <article className={`catalogCard catalogCard--${treatment}`}>
       <Link href={`/jewelry/${encodeURIComponent(product.id)}`} className="catalogCardLink" prefetch={false}>
-        <div className="catalogCardVisual"><CatalogProductImage product={product} />{badge && <span className={`catalogCardBadge catalogCardBadge--${badge.kind}`}>{badge.label}</span>}<span className="catalogCardArrow" aria-hidden="true">→</span></div>
+        <div className="catalogCardVisual"><div className="catalogCardMedia"><CatalogProductImage product={product} /></div><span className="catalogCardArrow" aria-hidden="true">→</span></div>
         <div className="catalogCardInfo">
+          {badge && <span className={`catalogCardBadge catalogCardBadgeInline catalogCardBadge--${badge.kind}`}>{badge.label}</span>}
           <span className="catalogCardCategory">{product.category}</span>
           <h3>{product.name}</h3>
           {product.note && <p>{product.note}</p>}
