@@ -18,6 +18,7 @@ import { formatMoney } from "../../../lib/domain/money"
 import { isIndividualListing, isIndividuallySellable, primaryProductImage } from "../../../lib/domain/catalog"
 import { productSavingLabel } from "../../../lib/domain/catalog-badges"
 import { getCatalogConfig } from "../../../lib/server/catalog"
+import { withVerifiedStorefrontBadges } from "../../../lib/server/product-badge-evidence"
 import { defaultStoreSettings, getStoreSettings } from "../../../lib/server/store-settings"
 
 export const dynamic = "force-dynamic"
@@ -59,7 +60,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const [{ id }, catalog, settings] = await Promise.all([params, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
-  const product = catalog?.catalog.products.find((item) => item.id === id && item.active !== false)
+  const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
+  const product = storefrontCatalog?.products.find((item) => item.id === id && item.active !== false)
   const reviews = product ? await approvedProductReviews(product.id).catch((error) => { console.error("product-reviews-public", error); return [] }) : []
   const listed = product ? isIndividualListing(product) : false
   const individual = product ? isIndividuallySellable(product) : false
@@ -68,7 +70,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const mrpPaise = product && listed ? product.retail?.mrpPaise : undefined
   if (catalog && !product) notFound()
   const collectionUrl = product && isJewelryProduct(product) ? "/jewelry" : "/jewelry?view=all"
-  const related = catalog?.catalog.products.filter((item) => item.active !== false && item.id !== id && item.category === product?.category).slice(0, 4) || []
+  const related = storefrontCatalog?.products.filter((item) => item.active !== false && item.id !== id && item.category === product?.category).slice(0, 4) || []
   const image = product ? primaryProductImage(product)?.url : undefined
   const productUrl = product ? `${siteUrl}/jewelry/${encodeURIComponent(product.id)}` : ""
   const structuredData = product ? [
