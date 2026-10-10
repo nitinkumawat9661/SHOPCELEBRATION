@@ -81,35 +81,35 @@
 
 ## 7. Improve “How to Style”
 
-- [ ] Pending — Review the existing category resolver and copy for **Necklace / Necklace + Earrings Set / Ring / Bangle or Bracelet / Earring** and gift-only products.
-- [ ] Pending — Replace generic phrasing with practical English outfit/pairing suggestions tailored to the confirmed category and known properties; explain wearing matching sets together or separately.
-- [ ] Pending — Keep care tips brief, practical and non-duplicated; avoid unsupported composition, finish, stones, guarantees or fit claims.
-- [ ] Pending — Verify every actual SKU is mapped to the correct category instructions; unknown items get truthful neutral guidance rather than a wrong category.
+- [x] Done (catalog & logic audit) — reviewed all 89 actual SKUs in five seed categories (15 necklace+earring sets, 50 necklaces, 12 wristwear, 12 rings); also implemented synthetic standalone-earring and unknown/gift cases.
+- [x] Done (tested source implementation) — specific outfit/neckline pairing and optional set together/separately guidance; `ProductHowToStyle` says `Gift ideas` rather than jewelry styling for unknown or gift-only categories.
+- [x] Done (source audit/tested) — three concise care/storage tips for jewelry, two for gifts, none claiming metals, finishes, dimensions, gem composition or additional warranty.
+- [x] Done (seed source mapping; live products need recheck) — `test-product-styling.mjs` checks actual expected advice kind for all 89 seed SKUs; known category always overrides ambiguous names, missing category gets safe name-only fallback and unknown kinds get neutral gift wording.
 
-**Acceptance:** Specific, readable styling advice with accurate product identity and no invented attributes.
+**Task 7 progress:** [Release-readiness audit, category mapping and source tests](./FINAL_POLISH_RELEASE_READINESS.md). Code and 89 seed mappings completed; any new live-only category must pass the safe resolver review.\n\n**Acceptance:** Specific, readable styling advice with accurate product identity and no invented attributes.
 
 ## 8. Final professional finish
 
-- [ ] Pending — Refine display/body typography using the current locally hosted fonts: meaningful variations in line-height, letter-spacing, scale and hierarchy.
-- [ ] Pending — Reduce mechanical repetition in card borders, grids, shadows and layouts; create restrained editorial variety while preserving consistent commerce UX.
-- [ ] Pending — Refine buttons, verified badges, metadata, hover/focus and micro-elements without introducing fake decorative proof or noisy visual effects.
-- [ ] Pending — Perform mobile spacing, 44px-or-larger touch-target, fixed buy bar, gallery gestures, scrolling, cart and filter overlay polish.
-- [ ] Pending — Audit all customer-visible pages for AI credit, template filler, stock testimonial artwork and unfinished placeholder copy. Keep legitimate “image unavailable”/empty-data states.
-- [ ] Pending — Perform a human visual review at desktop and mobile: avoid declaring the site “premium” or “AI-feel-free” from tests alone.
+- [x] Done (code/tested; visual check pending) — final customer-only CSS uses already bundled Bodoni Moda/Inter, with restrained category/section type hierarchy and readable line height.
+- [x] Done (code/tested; photography audit pending) — Task 2 clean/paper/folio frames and Task 5 editorial 1.07/0.93 campaigns with consistent interactive catalog semantics, unchanged SKU ordering and photos.
+- [x] Done (code/tested) — restrained commerce controls, badge legibility, 3px accessible keyboard focus, gallery count, 44px controls, reduced-motion preferences; no invented ratings or animated popularity counts.
+- [ ] Implementation complete, real-device QA pending — mobile buy bar safe-area padding, 44/48px controls, gallery 55px horizontal swipes excluding vertical scroll, ArrowLeft/ArrowRight, filter trap/Escape/body scroll guard. Mobile touch scenarios still need real browser screenshots.
+- [ ] Source-code audit passed, image-photo inspection pending — existing TSX/JSON scan bans AI credits, Lorem Ipsum, dummy testimonials and unfinished fillers; Task 8 removes leftover detail/listing slogans. Third-party/composite baked-in artwork needs visual inspection of original bytes.
+- [ ] Pending independent device/visual sign-off — source/CI cannot substitute for inspection of actual layout, embedded product photos, and network behavior.
 
-**Acceptance:** A cohesive, accessible premium storefront without obvious template repetition or unsupported content.
+**Task 8 progress:** [Final release-readiness report](./FINAL_POLISH_RELEASE_READINESS.md). Added gallery swipe+keyboard controls, mobile fixed-buy-bar safe area, final styling/copy and accessibility checks. **Human visual acceptance still pending; do not claim universal AI-feel removal.**\n\n**Acceptance:** A cohesive, accessible premium storefront without obvious template repetition or unsupported content.
 
 ## 9. Tests, release verification and evidence
 
-- [ ] Pending — Keep existing checks passing: `test-product-styling`, `test-our-story`, `test-mobile-storefront`, `test-editorial-polish` and **image ownership**.
-- [ ] Pending — Add targeted regression tests for image loading/fallback, gallery transitions, badge evidence, navigation labels and any changed copy.
-- [ ] Pending — Run **`npm run audit`** and **`npm run typecheck`** after each meaningful implementation PR, plus dependency checks currently required by CI.
+- [x] Done (CI audit) — product styling, story, mobile, editorial, exact-SKU ownership and dry-run image audit included in `npm run audit`; PR #91 CI passed current implementation checkpoint.
+- [x] Done (source+logic regressions) — image candidate builder, photo provenance, proven badge/order/review evidence, menu labels, human copy, 89 SKU style mapping, gallery gesture safeguards and final release finish are all covered.
+- [x] Done (GitHub PR CI) — existing verification workflow runs `npm ci`, `npm audit --omit=dev`, `npm run audit`, and `npm run typecheck` for each staging push; last final-head CI success must be confirmed separately before merging.
 - [ ] Pending — Manually verify the **image loading/fallback** and **full mobile navigation** using a browser/device with real network inspection and failure simulation; record screen sizes, evidence and unresolved limitations.
 - [ ] Pending — Review screenshot/mobile/desktop differences, major accessibility failures, image loading and relevant performance metrics before production claim.
 - [ ] Pending — Merge only when CI passes; verify production deployment status separately and avoid claiming a live fix until deployment succeeds.
-- [ ] Pending — Report each major milestone concisely with changed files, tests, PR and remaining blockers.
+- [x] Done (milestone records) — each Task 1–8 has linked report and source paths; [combined release-readiness/known limitations](./FINAL_POLISH_RELEASE_READINESS.md) covers Tasks 7–9 with PR #91, CI, blocked visual/photo checks and deployment prerequisites.
 
-**Acceptance:** Green CI plus truthful, documented manual/browser verification for critical behaviors.
+**Task 9 progress:** [Final test and acceptance matrix](./FINAL_POLISH_RELEASE_READINESS.md). Automated tests and documented source checks in place; real device/CDN/photo/DB and screenshot acceptance remain incomplete. **No merge/deployment until release decision and CI pass.**\n\n**Acceptance:** Green CI plus truthful, documented manual/browser verification for critical behaviors.
 
 ---
 
@@ -117,12 +117,12 @@
 
 **Order:** Create this document first → **1. image loading reliability** → **2. image/card variety** → **3. truthful badges** → **4. mobile navigation** → **5. homepage copy** → **6. real proof** → **7. styling guidance** → **8. finish** → **9. full verification**. Run relevant checks for each section as you progress.
 
-- [ ] Pending — Maintain these checkboxes as the authoritative status tracker; mark specific tasks complete only when actually verified.
-- [ ] Pending — Preserve the existing Next.js architecture, routes and API contracts unless the numbered task demonstrably requires a safe change.
-- [ ] Pending — **Never change a product's name, photo, material, price, stock, order, return rights or commercial guarantee based on a guess.** No cross-SKU photo or title swaps; same-product re-verification before any media substitution.
-- [ ] Pending — Never create fake reviews, fake orders, fake delivery urgency, unverified Bestseller/New or fabricated product angles.
-- [ ] Pending — Prefer small, reversible, reviewable PRs; run tests and check deploys; keep unfinished photo collection/device QA flagged honestly.
+- [x] Done (ongoing) — checklist kept authoritative with distinct code/CI and unverified phone/media/DB statuses, no false universal completion claims.
+- [x] Done (code review) — no product ID, catalog source URL, price, stock, payment/order route or shipping contract modified; customer presentation and verifiable review permissions remain compatible.
+- [x] Done (source/provenance guard) — all 89 SKU source image mappings retained, 67 original fallback hashes tested, zero guessed changes to materials, selling prices, stock, warranty, physical photo or order/return rights.
+- [x] Done (tests and code) — verified delivered/paid/approved review gates, no synthetic order count or fabricated testimonial, no spurious New/Bestseller and no invented alternate angles.
+- [x] Done (reviewability) — staged and CI-tested commits in one PR by owner's no-repeated-deploy request. One final release only; missing photo/device QA remains explicitly flagged.
 
 ## Progress notes
 
-_No implementation tasks have been marked completed in this plan yet. Add date, evidence, changed paths, tests, PR and deployment status after each verified section._
+**2026-10-10:** Tasks 1–9 now have implementation and independent code-test coverage, with partial manual/photo/environment QA explicitly left pending. Tasks 2–9 are combined on **PR #91**, unmerged to avoid separate deployments. See [release-readiness evidence and blocker matrix](./FINAL_POLISH_RELEASE_READINESS.md).
