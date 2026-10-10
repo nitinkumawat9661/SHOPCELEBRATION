@@ -58,10 +58,12 @@
 
 ## 5. Homepage copy and visual rhythm
 
-- [ ] Pending — Audit visible English homepage copy for repetition of **“thoughtful”, “little”, “heart”, “feel right”, “a lot of love”** and similar filler.
-- [ ] Pending — Rewrite hero, category, featured, hamper, section CTA and benefit copy into specific, short, natural language; retain actual brand positioning and the chosen tagline.
-- [ ] Pending — Adjust section rhythm with purpose (some breathing room, some tighter transitions) without shifting shopping anchors, harming readability or creating inconsistent mobile spacing.
-- [ ] Pending — Compare before/after homepage appearance on mobile and desktop for credibility and shopping clarity.
+- [x] Done (source/copy audit) — reviewed the hero, benefit tiles, featured cards, campaigns, hamper budgets, occasions, promise and request copy; replaced repeated emotional formulas with specific product/ordering language. Brand tagline preserved.
+- [x] Done (implementation) — updated hero, category/featured, shop/hamper panels, budgets, occasions, custom request, process benefits, promise and final CTA. Preserved the official “Mharo Surprise, Thari Smile” tagline, real pricing and routes.
+- [ ] Code complete; visual QA pending — scoped `homepage-human-rhythm-task5.css` adds measured spacing variations, restrained asymmetric desktop campaign proportions and stacked mobile layout without moving anchors or touching checkout.
+- [ ] Pending physical QA — compare staged pre/post screenshots at 320, 360, 375, 390, 430, 768, 1024, 1440px, test hero/title wrapping, 44px CTA touch targets and section rhythm before claiming final quality.
+
+**Task 5 progress (2026-10-10):** [Copy audit, exact updated sections, design rationale and manual-QA matrix](./HOMEPAGE_COPY_AND_RHYTHM_TASK5.md). Implementation spans `Hero.tsx`, `HomeCatalog.tsx`, `Storefront.tsx`, `BudgetSection.tsx`, `OccasionRail.tsx`, `CustomRequestSection.tsx`, `lib/domain/content.ts`, `content/store.json`, CSS and targeted audit checks. Changes are **only in PR #91 staging branch**; keep deployment batched until the end.
 
 **Acceptance:** Concrete, human English copy; no repetitive slogan loop or arbitrary layout randomness.
 
