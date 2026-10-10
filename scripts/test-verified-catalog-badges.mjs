@@ -102,6 +102,7 @@ assert(listing.includes("withVerifiedStorefrontBadges("), "Collection must load 
 assert(detail.includes("withVerifiedStorefrontBadges("), "Detail and related products must load verified badge data")
 for(const category of ["--sold-out","--bestseller","--new","--limited","--discount"])assert(css.includes("catalogCardBadge"+category), `No distinct UI for ${category}`)
 assert(css.includes("@media(max-width:700px)") && css.includes("overflow-wrap:anywhere"), "Badges must remain readable on small phones")
-assert(globals.trimEnd().endsWith('@import "../styles/verified-catalog-badges.css";'), "Verified badge CSS must load after earlier card styling")
+assert(globals.includes('@import "../styles/verified-catalog-badges.css";') && globals.indexOf("verified-catalog-badges.css") > globals.indexOf("product-card-natural-presentation.css"), "Verified badge CSS must load after earlier card styling")
+assert(globals.indexOf("mobile-navigation-final-task4.css") > globals.indexOf("verified-catalog-badges.css"), "Later scoped mobile navigation must not displace verified badges")
 assert(plan.includes("## 3. Dynamic and truthful badges/discounts"), "Keep locked Task 3 document intact")
 console.log("Task 3 verified badges: live DB evidence SQL, sales/category thresholds, publish-date guard, MRP comparison, legacy Save suppression, mobile UI and admin tampering protections passed.")
