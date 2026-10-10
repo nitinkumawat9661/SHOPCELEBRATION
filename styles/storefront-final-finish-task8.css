@@ -1,0 +1,133 @@
+/* Task 8 — final storefront details. Scoped to customer pages; never hide SKU
+ * information or touch administration, payment or inventory logic. */
+.celebrationHome,.collectionPage,.ourStoryPage{
+  --finish-border:#e2d3c5;
+  --finish-focus:#995631;
+  -webkit-font-smoothing:antialiased;
+}
+.celebrationHome :is(.celebrationSectionHead h2,.celebrationEdit h2,.celebrationOccasions h2,.cta h2),
+.collectionPage :is(.collectionHero h1,.collectionHeading h2,.collectionDetailInfo h1),
+.ourStoryPage :is(.ourStoryHero h1,.ourStorySectionHeading h2){
+  font-family:var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.028em;
+  line-height:1.16;
+  text-wrap:balance;
+}
+.celebrationHome :is(.celebrationSectionHead p,.celebrationBudgets p,.promiseSec p),
+.collectionPage :is(.collectionDetailAbout p,.collectionNote p,.collectionHero p){
+  line-height:1.7;
+  text-wrap:pretty;
+}
+.celebrationHome :is(a,button,[role="button"]):focus-visible,
+.collectionPage :is(a,button,input,textarea,select,[role="button"],[tabindex="0"]):focus-visible{
+  outline:3px solid var(--finish-focus);
+  outline-offset:3px;
+}
+.collectionPage .marketplaceGalleryStage:focus-visible{border-radius:11px}
+.collectionPage .marketplaceGalleryStage{
+  min-width:0;
+  touch-action:pan-y;
+  overscroll-behavior:contain;
+}
+.collectionPage .marketplaceGalleryArrow{
+  box-sizing:border-box;
+  min-width:44px;
+  min-height:44px;
+  border-radius:50%;
+}
+.collectionPage .marketplaceGalleryThumbs button{
+  box-sizing:border-box;
+  min-width:48px;
+  min-height:48px;
+}
+.collectionPage .marketplaceGalleryCount{
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.02em;
+}
+.collectionPage .collectionDetailAbout a{gap:9px}
+.collectionPage .productStyling{
+  border-color:var(--finish-border);
+  border-left-color:#aa8180;
+  padding-block:clamp(20px,2.6vw,29px);
+}
+.collectionPage .productStyling h2{
+  font-family:var(--font-shopping-display),Georgia,serif;
+  line-height:1.2;
+}
+.collectionPage .productStylingIntro{
+  font-size:13px;
+  line-height:1.7;
+}
+.collectionPage .productStylingLayout li{line-height:1.65}
+.collectionPage .collectionGrid .catalogCard h3,
+.celebrationHome .collectionGrid .catalogCard h3{
+  line-height:1.44;
+  overflow-wrap:anywhere;
+}
+.collectionPage .collectionGrid .catalogCardCategory,
+.celebrationHome .collectionGrid .catalogCardCategory{
+  font-size:10px;
+  line-height:1.45;
+  letter-spacing:.04em;
+  display:block;
+}
+.collectionPage .collectionGrid .catalogCard>.cartAddControl button,
+.celebrationHome .collectionGrid .catalogCard>.cartAddControl button{
+  min-height:44px;
+  touch-action:manipulation;
+}
+.collectionPage .marketplaceFilterBar button,
+.collectionPage .marketplaceFilterReset,
+.collectionPage .marketplaceFilterSheetHead>button{min-height:44px}
+.collectionPage .marketplaceFilterOptions button{min-height:48px}
+.collectionPage .marketplaceFilterSheet{
+  max-width:100%;
+  overscroll-behavior:contain;
+}
+.collectionPage .collectionRelated .collectionHeading h2{line-height:1.14}
+@media(max-width:700px){
+  .collectionPage .marketplaceGalleryStage{touch-action:pan-y}
+  .collectionPage .marketplaceGalleryArrow{min-width:44px;min-height:44px}
+  .collectionPage .collectionDetailAbout a{min-height:44px}
+  .collectionPage .collectionGrid .catalogCard h3{font-size:clamp(12px,3.4vw,15px)}
+  .collectionPage .collectionGrid .catalogCard p{font-size:11px}
+  .collectionPage .mobileMarketplaceBuyBar{
+    box-sizing:border-box;
+    max-width:100%;
+    padding-bottom:max(11px,env(safe-area-inset-bottom,0px));
+    backdrop-filter:blur(12px);
+  }
+  .collectionPage .mobileMarketplaceBuyBar .cartAddControl button{
+    min-height:46px;
+    touch-action:manipulation;
+  }
+  .collectionPage .mobileMarketplaceBuyBar .catalogInlineQuantity button{
+    min-width:44px;
+    min-height:44px;
+  }
+  .collectionPage:has(.mobileMarketplaceBuyBar){
+    padding-bottom:max(168px,calc(150px + env(safe-area-inset-bottom,0px)));
+  }
+  .collectionPage .marketplaceFilterSheet{
+    max-height:min(82dvh,720px);
+    padding-bottom:max(20px,env(safe-area-inset-bottom,0px));
+  }
+}
+@media(max-width:360px){
+  .collectionPage .mobileMarketplaceBuyBar{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px 8px;
+  }
+  .collectionPage .collectionGrid .catalogCardInfo{padding:11px 10px}
+  .collectionPage .collectionGrid .catalogCard>.cartAddControl{padding:0 10px 12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .collectionPage .marketplaceGalleryStage *,
+  .celebrationHome .celebrationButton,
+  .collectionPage .collectionGrid .catalogCard,
+  .celebrationHome .collectionGrid .catalogCard{
+    scroll-behavior:auto;
+    transition:none;
+    animation:none;
+  }
+}
