@@ -15,9 +15,9 @@ export function Hero({ tiers }: { tiers: Tier[] }) {
       <div className="celebrationHeroCopy">
         <span className="celebrationEyebrow">A little thought. A lot of love.</span>
         <h1 id="gift-hero-title">Gifts that<br />speak from<br />the <em>heart.</em></h1>
-        <p>Thoughtful hampers. Beautiful little details.<br />For every person, and every kind of love.</p>
+        <p>Jewelry for everyday plans. Hampers for birthdays and big days.<br />Choose something that feels right for them.</p>
         <div className="celebrationHeroActions"><a className="celebrationButton" href="#budgets">Shop Hampers <StoreIcon name="arrow" size={17} /></a><Link className="celebrationButton light" href="/jewelry" prefetch={false}>Explore Jewelry</Link></div>
-        {minPrice !== null && <small className="celebrationHeroFoot">Made personal. From {formatMoney(minPrice)}.</small>}
+        {minPrice !== null && <small className="celebrationHeroFoot">Custom hampers from {formatMoney(minPrice)}.</small>}
       </div>
     </div>
     <div className="celebrationHeroNote" aria-hidden="true">Make every occasion<br /><em>a Celebration</em></div>
