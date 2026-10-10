@@ -12,11 +12,13 @@ export function CatalogProductImage({ product, priority = false }: { product: Gi
   if (primary) {
     const sprite = catalogSpriteImage(primary.url)
     if (sprite) {
-      return <div
+      return <SafeCatalogImage
         className="catalogPhoto catalogSpritePhoto"
-        role="img"
-        aria-label={primary.alt || product.name}
-        style={{ backgroundImage: `url("${sprite.url}")`, backgroundPosition: sprite.backgroundPosition }}
+        src={sprite.url}
+        fallbackSrc={primary.fallbackUrl}
+        objectPosition={sprite.backgroundPosition}
+        alt={primary.alt || product.name}
+        loading={priority ? "eager" : "lazy"}
       />
     }
     return <SafeCatalogImage
