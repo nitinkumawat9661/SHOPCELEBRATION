@@ -45,7 +45,7 @@ try {
   assert(migration.includes("UNIQUE (customer_account_id, product_id)"), "One review per verified purchaser per product")
 
   const service = await readFile(join(root, "lib/server/product-reviews.ts"), "utf8")
-  for (const term of ["customer_account_id", "status = 'delivered'", "payment_status IN ('paid','verified')", "item->>'productId'", "phone_verified_at IS NOT NULL", "'pending'", "status = 'approved'"]) {
+  for (const term of ["customer_account_id", "status = 'delivered'", "payment_status IN ('paid','verified')", "item->>'productId'", "phone_verified_at IS NOT NULL", "'pending'", "r.status = 'approved'"]) {
     assert(service.includes(term) || service.includes(term.replaceAll(" = ", "=")), `Missing verified reviewer condition: ${term}`)
   }
   const routes = ["app/api/reviews/[productId]/route.ts", "app/api/admin/reviews/route.ts", "app/api/reviews/photo/[id]/route.ts"]
@@ -56,6 +56,11 @@ try {
   assert(source[2].includes("approvedOrAdminPhotoKey"), "Only approved customer photos can be viewed by the public")
   const product = await readFile(join(root, "features/catalog/ProductReviews.tsx"), "utf8")
   assert(product.includes("Be the first to review this product"), "Honest empty-state text required")
+  assert(product.includes("reviewsUnavailable"), "A failed review query must not falsely claim zero published reviews")
+  assert(service.includes("r.reviewed_at IS NOT NULL"), "Public reviews require actual admin moderation timestamp")
+  assert(service.includes("JOIN orders o ON o.id = r.order_id") && service.includes("item->>'productId' = r.product_id"), "Public reviews must still match an actual delivered ordered SKU")
+  assert(service.includes("$2 = 'rejected' OR EXISTS"), "Admin cannot approve a review without a qualifying delivery")
+  assert(source[1].includes("enforceSameOrigin(request)") && source[1].includes("isAdminRequest()"), "Only privileged admins may moderate reviews")
   console.log("Real review tests passed: verified delivered orders, customer consent, moderation, private photos, no fake seeds.")
 } finally {
   await rm(output, { recursive: true, force: true })
