@@ -49,9 +49,9 @@
 
 ## 4. About Us / Our Story पेज — दिए गए कंटेंट के साथ
 
-- [ ] Pending — नया पेज /about या /our-story बनाओ।
-- [ ] Pending — पेज का टाइटल **Our Story** रखो।
-- [ ] Pending — नीचे दिए गए कंटेंट को लगभग इसी रूप में इस्तेमाल करो। केवल भाषा पॉलिश कर सकते हो; भावना और तथ्य नहीं बदलने हैं।
+- [x] Done — `/about` पर नया Our Story पेज बनाया; मौजूदा header/footer से जुड़ा, sitemap में शामिल।
+- [x] Done — पेज का title **Our Story** और canonical `/about` है।
+- [x] Done — Celebration की Sikar, Rajasthan से शुरुआत वाली पूरी स्वीकृत हिंदी कहानी, brand line और tagline का भाव तथा तथ्य बिना बदले शामिल किए।
 
 ### हीरो सेक्शन (स्वीकृत कॉपी)
 
@@ -74,13 +74,15 @@ Celebration Sikar, Rajasthan से शुरू हुआ।
 हमारा वादा सिर्फ प्रोडक्ट बेचने का नहीं है।  
 हमारा वादा है — थोड़ी सी सोच, बहुत सारा प्यार।
 
-- [ ] Pending — नीचे तीन छोटे कार्ड जोड़ो: **Thoughtful over expensive**, **Made to feel personal**, **Clear & honest process**।
-- [ ] Pending — असली फाउंडर का नाम उपलब्ध न होने पर नीचे दिया गया Team Celebration नोट इस्तेमाल करो।
+- [x] Done — तीन छोटे premium editorial value cards: **Thoughtful over expensive**, **Made to feel personal**, **Clear & honest process**।
+- [x] Done — founder नाम invent नहीं किया; स्वीकृत **— Team Celebration** नोट हूबहू शामिल है।
 
 > “हर ऑर्डर के पीछे एक असली व्यक्ति होता है जिसे हम खुश करना चाहते हैं। यही हमारी असली प्रेरणा है।”  
 > — Team Celebration
 
-- [ ] Pending — पेज के अंत में सॉफ्ट CTA: **Explore our collection** और **Build a hamper**।
+- [x] Done — **Explore our collection** (`/jewelry`) और **Build a hamper** (`/#budgets`) सही destinations पर जोड़े।
+
+**Section 4 verification:** `scripts/test-our-story.mjs` में approved story, 3 cards, Team Celebration note, CTA routes, SEO metadata और responsive styles के regression checks शामिल हैं। Site पर कोई काल्पनिक founder नाम, customer testimonial या तस्वीर नहीं जोड़ी गई।
 
 ---
 
