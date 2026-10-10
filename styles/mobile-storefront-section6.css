@@ -1,0 +1,309 @@
+/* Celebration Section 6: mobile usability.
+   Applied last to reconcile earlier conflicting compact-card media rules.
+   Desktop styling and catalog/order behavior are intentionally unchanged. */
+@media (max-width:700px) {
+  .celebrationHeader .celebrationHeaderTop {
+    grid-template-columns:minmax(0,1fr) auto;
+    column-gap:8px;
+    row-gap:9px;
+    padding-block:10px!important;
+  }
+  .celebrationHeader .celebrationBrand {
+    min-width:0;
+    width:auto;
+    max-width:100%;
+  }
+  .celebrationHeader .celebrationBrand>span {
+    font-size:clamp(24px,6.8vw,30px);
+    line-height:1.05;
+    white-space:nowrap;
+  }
+  .celebrationHeader .celebrationBrand small {
+    font-size:9px;
+    line-height:1.4;
+    white-space:normal;
+  }
+  .celebrationHeader .celebrationHeaderActions {
+    flex-shrink:0;
+    min-width:0;
+    gap:2px;
+  }
+  .celebrationHeader .celebrationIconLink {
+    position:relative;
+    box-sizing:border-box;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    flex:0 0 44px;
+    width:44px;
+    min-width:44px;
+    min-height:44px;
+    padding:4px;
+    touch-action:manipulation;
+  }
+  .celebrationHeader .celebrationIconLink svg {
+    box-sizing:border-box;
+    flex-shrink:0;
+    width:36px;
+    height:36px;
+  }
+  .celebrationHeader .celebrationCartLink .cartCount {
+    top:0;
+    right:0;
+  }
+  .celebrationHeader .celebrationSearch {
+    grid-column:1/-1;
+    grid-row:2;
+    width:100%;
+    min-width:0;
+    margin-top:0;
+  }
+  .celebrationHeader .celebrationSearch input[type=search] {
+    min-height:48px;
+    padding:11px 54px 11px 16px;
+    font-size:16px; /* Prevent automatic Safari input zoom. */
+    line-height:1.4;
+  }
+  .celebrationHeader .celebrationSearch button {
+    width:48px;
+    min-width:48px;
+    min-height:48px;
+    touch-action:manipulation;
+  }
+  .celebrationHeader .celebrationNav {
+    display:flex;
+    justify-content:flex-start;
+    gap:10px;
+    min-height:48px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x proximity;
+    scroll-padding-inline:16px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
+    scrollbar-color:#ddc5b5 transparent;
+    padding-inline:16px;
+  }
+  .celebrationHeader .celebrationNav::-webkit-scrollbar {display:block;height:3px}
+  .celebrationHeader .celebrationNav::-webkit-scrollbar-thumb {background:#ddc5b5;border-radius:3px}
+  .celebrationHeader .celebrationNav a {
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    scroll-snap-align:start;
+    min-height:44px;
+    padding:8px 9px;
+    font-size:12px;
+    line-height:1.4;
+  }
+
+  /* Filters: legible labels, reliable dialog controls and no tiny reset target. */
+  .collectionPage .marketplaceFilterBar {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    overflow:hidden;
+  }
+  .collectionPage .marketplaceFilterBar>button:not(.marketplaceFilterClear) {
+    min-width:0;
+    min-height:52px;
+    padding:8px 6px;
+  }
+  .collectionPage .marketplaceFilterBar>button>span:nth-child(2) {min-width:0}
+  .collectionPage .marketplaceFilterBar b {font-size:12px;line-height:1.35}
+  .collectionPage .marketplaceFilterBar small {
+    display:block;
+    max-width:100%;
+    min-width:0;
+    font-size:10px;
+    line-height:1.35;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .collectionPage .marketplaceFilterClear {min-height:44px!important;font-size:11px!important}
+  .collectionPage .marketplaceFilterSheet {max-height:min(85dvh,700px);overscroll-behavior:contain}
+  .collectionPage .marketplaceFilterSheetHead>button {
+    flex:0 0 44px;
+    width:44px;
+    height:44px;
+    min-height:44px;
+  }
+  .collectionPage .marketplaceFilterOptions>button {min-height:48px}
+  .collectionPage .collectionSearchFeedback a {min-height:44px}
+
+  /* Products: do not hide category or truncate the product identity on phones.
+     Reflow long names and prices rather than shrinking them to 8-10px. */
+  .collectionPage .collectionGrid {gap:14px 12px}
+  .collectionPage .collectionGrid .catalogCardInfo {padding:12px 10px 9px}
+  .collectionPage .collectionGrid .catalogCardCategory {
+    display:block;
+    font-size:10px;
+    line-height:1.45;
+    letter-spacing:.035em;
+    overflow-wrap:anywhere;
+    margin-bottom:6px;
+  }
+  .collectionPage .collectionGrid .catalogCard h3 {
+    display:block;
+    font-size:13px;
+    line-height:1.4;
+    min-height:0;
+    overflow:visible;
+    overflow-wrap:anywhere;
+    -webkit-line-clamp:unset;
+  }
+  .collectionPage .collectionGrid .catalogCard p {
+    display:block;
+    min-height:0;
+    overflow:visible;
+    font-size:11px;
+    line-height:1.5;
+    -webkit-line-clamp:unset;
+  }
+  .collectionPage .collectionGrid .catalogGuarantee {
+    display:block;
+    font-size:10px;
+    line-height:1.45;
+    overflow:visible;
+    white-space:normal;
+    text-overflow:clip;
+  }
+  .collectionPage .collectionGrid .catalogLegalHint {
+    display:block;
+    font-size:9px;
+    line-height:1.5;
+  }
+  .collectionPage .collectionGrid .catalogCardPrice {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:4px;
+    margin-top:10px;
+    padding-top:10px;
+  }
+  .collectionPage .collectionGrid .catalogCardPrice>span:first-child {
+    display:block;
+    font-size:10px;
+    line-height:1.4;
+  }
+  .collectionPage .collectionGrid .catalogCardPrice strong {
+    font-size:17px;
+    line-height:1.25;
+    overflow-wrap:anywhere;
+  }
+  .collectionPage .collectionGrid .catalogCardPrice small {
+    font-size:10px;
+    line-height:1.4;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .collectionPage .collectionGrid .catalogCard>.cartAddControl {
+    min-width:0;
+    padding:0 10px 12px;
+  }
+  .collectionPage .collectionGrid .catalogCard .cartAddControl button {
+    box-sizing:border-box;
+    min-height:44px;
+    padding:9px 6px;
+    font-size:11px;
+    line-height:1.25;
+    touch-action:manipulation;
+  }
+  .collectionPage .collectionGrid .catalogInlineQuantity {
+    grid-template-columns:minmax(44px,1fr) minmax(0,.7fr) minmax(44px,1fr);
+    min-height:44px;
+  }
+  .collectionPage .collectionGrid .catalogInlineQuantity button,
+  .collectionPage .collectionGrid .catalogInlineQuantity output {
+    min-height:44px;
+    min-width:0;
+    font-size:14px;
+  }
+  .collectionPage .collectionGrid .cartAddedLabel {
+    font-size:10px;
+    line-height:1.5;
+    overflow-wrap:anywhere;
+  }
+  .collectionPage .collectionGrid .cartAddedLabel a {
+    display:inline-flex;
+    align-items:center;
+    min-height:44px;
+  }
+
+  /* Detail, cart and gallery interactions. */
+  .collectionPage .marketplaceGalleryArrow {
+    min-width:44px;
+    min-height:44px;
+    touch-action:manipulation;
+  }
+  .collectionPage .marketplaceGalleryThumbs button {
+    min-width:48px;
+    min-height:48px;
+  }
+  .collectionPage .collectionDetailActions .collectionDetailBack {min-height:44px}
+  .cartPage .cartQuantity button,.cartPage .cartRemove {
+    min-width:44px;
+    min-height:44px;
+    touch-action:manipulation;
+  }
+  /* Floating WhatsApp control cannot cover the fixed detail-page buy actions. */
+  .collectionPage:has(.mobileMarketplaceBuyBar) .celebrationSupport {display:none}
+}
+
+@media (max-width:430px) {
+  /* One short price row + two full-width purchasing controls. A 3-column
+     buy bar leaves too little width for 44px quantity +/- on narrow devices. */
+  .collectionPage .mobileMarketplaceBuyBar {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px 9px;
+    padding:8px max(10px,env(safe-area-inset-right))
+      calc(8px + env(safe-area-inset-bottom))
+      max(10px,env(safe-area-inset-left));
+  }
+  .collectionPage .mobileMarketplaceBuyBar>div:first-child {
+    grid-column:1/-1;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+  .collectionPage .mobileMarketplaceBuyBar>div:first-child small {
+    display:block;
+    min-width:0;
+    flex:1;
+    font-size:11px;
+    line-height:1.4;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .collectionPage .mobileMarketplaceBuyBar>div:first-child b {
+    flex-shrink:0;
+    font-size:15px;
+  }
+  .collectionPage .mobileMarketplaceBuyBar .cartAddControl button {
+    min-height:48px;
+    font-size:12px;
+  }
+  .collectionPage .mobileMarketplaceBuyBar .catalogInlineQuantity {
+    grid-template-columns:44px minmax(0,1fr) 44px;
+    min-height:48px;
+  }
+  .collectionPage .mobileMarketplaceBuyBar .catalogInlineQuantity button,
+  .collectionPage .mobileMarketplaceBuyBar .catalogInlineQuantity output {
+    min-height:48px;
+    font-size:14px;
+  }
+  .collectionPage:has(.mobileMarketplaceBuyBar) {padding-bottom:150px}
+}
+
+@media (max-width:360px) {
+  /* A single readable card is better than two 125px-wide cards with tiny CTAs. */
+  .collectionPage .collectionGrid {grid-template-columns:minmax(0,1fr);gap:16px}
+  .collectionPage .collectionGrid .catalogCardVisual {aspect-ratio:1.14/1}
+  .collectionPage .collectionGrid .catalogCardInfo {padding:14px 14px 10px}
+  .collectionPage .collectionGrid .catalogCard h3 {font-size:15px;line-height:1.4}
+  .collectionPage .collectionGrid .catalogCard>.cartAddControl {padding:0 14px 14px}
+  .celebrationHeader .celebrationBrand>span {font-size:24px}
+  .celebrationHeader .celebrationBrand small {font-size:8px}
+}
