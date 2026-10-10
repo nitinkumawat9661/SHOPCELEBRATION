@@ -32,7 +32,7 @@ assert(homeCatalog.includes('href="#budgets"') && homeCatalog.includes('href="/j
 assert(homeCatalog.includes("Take a closer look") && homeCatalog.includes("Browse pieces"), "Category/featured CTA copy should sound natural")
 assert(homeCatalog.includes("loading=\"lazy\"") && homeCatalog.includes('CatalogProductImage product={photo}'), "Keep below-the-fold image strategy and same-SKU imagery")
 assert(storefront.includes("Where a video is provided") && storefront.includes("Payment confirmation"), "Benefits must not promise a universal packing video")
-assert(storefront.includes("initialSocialProof && initialSocialProof.totalOrders >= 20"), "Do not invent or loosen verified social proof")
+assert(storefront.includes("isPublicHamperOrderProof(initialSocialProof, tiers)") && storefront.includes("visibleProof &&"), "Do not invent or loosen verified social proof")
 assert(store.trustStrip.includes("🎥 Hamper packing video where available"), "Header copy must align with policy availability")
 const videoCard = store.promiseCards.find(x => x.title === "Hamper packing preview")
 assert(videoCard && videoCard.body.includes("When a packing video is provided"), "Trust card must avoid unconditional delivery promises")
