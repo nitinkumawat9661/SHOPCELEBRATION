@@ -24,11 +24,13 @@
 
 ## 2. Product cards and photography — remove template-like repetition (SECOND)
 
-- [ ] Pending — Audit existing photos for repeated “model + brand + icons + A Little Sparkle” composite layouts; inventory authentic available shots by **SKU and viewpoint**.
-- [ ] Pending — Make primary catalog thumbnails more natural and varied: use **verified** clean product-only, on-model and lifestyle shots when provided; choose the best real primary image per SKU without changing identity. Avoid repeating the same heavy embedded artwork across cards.
-- [ ] Pending — Do **not** digitally remove product characteristics, infer unseen stones/finishes/packaging or manufacture alternative views. If the only supplied image is a composite, preserve correctness and flag that SKU for a real-asset replacement.
-- [ ] Pending — Add restrained UI variation (subtle badge alignment, crop treatment according to aspect ratio, desktop hover) without covering jewelry, breaking responsive grids, distorting photos or impairing accessibility.
+- [ ] Partially audited — source inventory completed for all 89 SKUs (`docs/PRODUCT_IMAGE_ASSET_INVENTORY_TASK2.csv`): 22 first-party PNG + 67 R2, exactly one catalog photo per SKU; **visual inspection of embedded composite artwork and actual viewpoint still pending**, no false classifications.
+- [ ] Partially implemented — cards now use restrained visual media framing and full-image contain; genuinely different clean/on-model/lifestyle photos are **not present as separately verified same-SKU assets in the seed**. Photo replacement remains pending authentic asset review; no fabricated angles or semantic claims.
+- [x] Done (code/source safeguards) — no product image pixels, photo links, names, inventory, descriptions, guarantees or source ownership modified. All 89 photos flagged for visual classification and authentic same-SKU asset collection; potentially shared rendered bytes for 030/031 remain on hold.
+- [ ] Implementation complete; manual QA pending — three deterministic, subtle card-frame variants (`clean`, `paper`, `folio`), truthful badges moved below photographs, `object-fit:contain` to avoid cropping, restrained hover and responsive 320–430px styling; requires screenshot/device sign-off.
 - [ ] Pending — Review product cards at 320/360/390px and desktop; compare card thumbnail to detail-page photo and title for every affected SKU.
+
+**Task 2 progress (2026-10-10):** [Photo inventory and current limitations](./PRODUCT_IMAGE_PRESENTATION_AUDIT_TASK2.md) and [89-SKU CSV](./PRODUCT_IMAGE_ASSET_INVENTORY_TASK2.csv) added. Code updated in `CatalogCard.tsx`, `lib/domain/catalog-card-presentation.ts`, `styles/product-card-natural-presentation.css` and `scripts/test-product-card-presentation.mjs`. **Not visually verified:** photo composition/model vs product-only shots, 320/360/390 desktop screenshots, or the duplicate image pair. **Owner-requested deployment policy:** do not merge/deploy each task; accumulate tested work on the feature branch for one final release.
 
 **Acceptance:** A varied, credible collection presentation from actual owned images, with no identity mismatch or repetitive decorative overlay introduced by the site.
 
