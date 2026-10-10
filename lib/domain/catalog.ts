@@ -45,6 +45,12 @@ export type GiftProduct = {
   description?: string
   highlights?: string[]
   badge?: string
+  /** Server-derived, transient badge evidence; never part of an admin catalog save. */
+  badgeSignals?: {
+    bestsellerOrders?: number
+    firstPublishedAt?: string
+    firstRevisionVersion?: number
+  }
   icon?: string
   imageUrl?: string
   images?: ProductImage[]
@@ -112,7 +118,9 @@ export function catalogSpriteImage(url: string) {
 export function productDiscountPercent(product: GiftProduct) {
   const sale = product.salePricePaise
   const mrp = product.retail?.mrpPaise
-  if (typeof sale !== "number" || typeof mrp !== "number" || mrp <= sale || mrp <= 0) return null
+  if (typeof sale !== "number" || typeof mrp !== "number" ||
+      !Number.isSafeInteger(sale) || !Number.isSafeInteger(mrp) ||
+      sale <= 0 || mrp <= sale) return null
   return Math.round((mrp - sale) * 100 / mrp)
 }
 

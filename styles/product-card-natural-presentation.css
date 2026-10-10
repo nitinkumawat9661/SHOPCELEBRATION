@@ -1,0 +1,186 @@
+/* Final polish / Task 2 — quiet, product-first catalog cards.
+ * Visual framing varies by stable SKU presentation only. The original
+ * exact-SKU photograph is always shown in full; no logos/icons are injected. */
+.collectionPage .collectionGrid .catalogCard,
+.celebrationHome .collectionGrid .catalogCard{
+  overflow:hidden;
+  border-color:#e7d8c9;
+  background:#fffcf8;
+  transition:border-color .22s ease,box-shadow .22s ease,transform .22s ease;
+}
+
+.collectionPage .collectionGrid .catalogCardVisual,
+.celebrationHome .collectionGrid .catalogCardVisual{
+  box-sizing:border-box;
+  display:block;
+  aspect-ratio:1/1.06;
+  padding:9px;
+  overflow:hidden;
+  background:#f4eee8;
+}
+
+.collectionPage .collectionGrid .catalogCardMedia,
+.celebrationHome .collectionGrid .catalogCardMedia{
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  box-sizing:border-box;
+  position:relative;
+  overflow:hidden;
+  border:1px solid #e5d9cb;
+  border-radius:5px;
+  background:#fffcf7;
+}
+
+.collectionPage .collectionGrid .catalogCardMedia .safeCatalogImageFrame,
+.celebrationHome .collectionGrid .catalogCardMedia .safeCatalogImageFrame{
+  background:transparent;
+  width:100%;
+  height:100%;
+}
+
+/* Critical: embedded composite/branding content is baked into the supplied
+ * images. The site does not crop into it or remove/alter product details. */
+.collectionPage .collectionGrid .catalogCardMedia .safeCatalogImageFrame>img,
+.celebrationHome .collectionGrid .catalogCardMedia .safeCatalogImageFrame>img{
+  object-fit:contain;
+  object-position:center;
+  transform:none;
+}
+
+/* Individual media mounting, not a manufactured alternative image. */
+.collectionPage .collectionGrid .catalogCard--clean .catalogCardVisual,
+.celebrationHome .collectionGrid .catalogCard--clean .catalogCardVisual{
+  padding:0;
+  background:#fdfaf5;
+}
+.collectionPage .collectionGrid .catalogCard--clean .catalogCardMedia,
+.celebrationHome .collectionGrid .catalogCard--clean .catalogCardMedia{
+  border:0;
+  border-radius:0;
+}
+.collectionPage .collectionGrid .catalogCard--paper .catalogCardVisual,
+.celebrationHome .collectionGrid .catalogCard--paper .catalogCardVisual{
+  background:#f3e9dd;
+  padding:8px;
+}
+.collectionPage .collectionGrid .catalogCard--paper .catalogCardMedia,
+.celebrationHome .collectionGrid .catalogCard--paper .catalogCardMedia{
+  border-color:#dbc7b6;
+  border-radius:7px 4px 7px 4px;
+}
+.collectionPage .collectionGrid .catalogCard--folio .catalogCardVisual,
+.celebrationHome .collectionGrid .catalogCard--folio .catalogCardVisual{
+  background:#f9f4ec;
+  padding:10px 12px 13px;
+}
+.collectionPage .collectionGrid .catalogCard--folio .catalogCardMedia,
+.celebrationHome .collectionGrid .catalogCard--folio .catalogCardMedia{
+  border-color:#e8ddd1;
+  border-radius:2px;
+}
+
+/* Status badges sit below the photograph. This avoids covering jewelry and
+ * keeps sold-out / low-stock or discount facts readable without fake ribbons. */
+.collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline,
+.celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline{
+  position:static;
+  inset:auto;
+  z-index:auto;
+  display:inline-flex;
+  align-items:center;
+  margin:0 0 8px;
+  padding:5px 8px;
+  max-width:100%;
+  width:fit-content;
+  font-size:10px;
+  line-height:1.2;
+  font-weight:750;
+  text-transform:none;
+  letter-spacing:0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  box-shadow:none;
+}
+.collectionPage .collectionGrid .catalogCard--folio .catalogCardInfo .catalogCardBadgeInline,
+.celebrationHome .collectionGrid .catalogCard--folio .catalogCardInfo .catalogCardBadgeInline{
+  margin-left:auto;
+  display:flex;
+  width:max-content;
+}
+.collectionPage .collectionGrid .catalogCard--paper .catalogCardInfo .catalogCardBadgeInline,
+.celebrationHome .collectionGrid .catalogCard--paper .catalogCardInfo .catalogCardBadgeInline{
+  border-radius:3px 8px 3px 8px;
+}
+
+.collectionPage .collectionGrid .catalogCardCategory,
+.celebrationHome .collectionGrid .catalogCardCategory{
+  color:#806257;
+  letter-spacing:.035em;
+}
+.collectionPage .collectionGrid .catalogCard h3,
+.celebrationHome .collectionGrid .catalogCard h3{
+  color:#45302d;
+  text-wrap:pretty;
+}
+.collectionPage .collectionGrid .catalogCardPrice,
+.celebrationHome .collectionGrid .catalogCardPrice{
+  border-color:#ebdfd3;
+}
+.collectionPage .collectionGrid .catalogCard--paper,
+.celebrationHome .collectionGrid .catalogCard--paper{
+  border-color:#e3d0c0;
+  box-shadow:0 2px 7px rgba(60,32,20,.045);
+}
+.collectionPage .collectionGrid .catalogCard--folio,
+.celebrationHome .collectionGrid .catalogCard--folio{
+  border-color:#e9dfd4;
+  box-shadow:0 1px 8px rgba(60,32,20,.045);
+}
+
+@media(hover:hover) and (pointer:fine){
+  .collectionPage .collectionGrid .catalogCard:hover,
+  .celebrationHome .collectionGrid .catalogCard:hover{
+    border-color:#d5b6aa;
+    box-shadow:0 9px 20px rgba(70,41,30,.10);
+    transform:translateY(-2px);
+  }
+  .collectionPage .collectionGrid .catalogCard:hover .catalogCardMedia .catalogPhoto>img,
+  .celebrationHome .collectionGrid .catalogCard:hover .catalogCardMedia .catalogPhoto>img{
+    transform:none;
+  }
+  .collectionPage .collectionGrid .catalogCard:hover .catalogPhoto,
+  .celebrationHome .collectionGrid .catalogCard:hover .catalogPhoto{
+    transform:none;
+  }
+}
+@media(max-width:700px){
+  .collectionPage .collectionGrid .catalogCardVisual,
+  .celebrationHome .collectionGrid .catalogCardVisual{
+    aspect-ratio:1/1.03;
+    padding:6px;
+  }
+  .collectionPage .collectionGrid .catalogCard--folio .catalogCardVisual,
+  .celebrationHome .collectionGrid .catalogCard--folio .catalogCardVisual{
+    padding:7px 8px 9px;
+  }
+  .collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline,
+  .celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline{
+    font-size:10px;
+    line-height:1.3;
+    margin-bottom:6px;
+    padding:4px 7px;
+  }
+}
+@media(max-width:360px){
+  /* Preserve Section 6's readable single-column layout on 320px phones. */
+  .collectionPage .collectionGrid .catalogCardVisual{aspect-ratio:1.14/1}
+}
+@media(prefers-reduced-motion:reduce){
+  .collectionPage .collectionGrid .catalogCard,
+  .celebrationHome .collectionGrid .catalogCard{
+    transition:none;
+    transform:none;
+  }
+}

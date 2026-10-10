@@ -5,6 +5,7 @@ import { routes } from "../config/routes"
 import { Storefront } from "../features/home/Storefront"
 import { defaultCatalog } from "../lib/domain/catalog"
 import { getCatalogConfig } from "../lib/server/catalog"
+import { withVerifiedStorefrontBadges } from "../lib/server/product-badge-evidence"
 import { getTierPopularity } from "../lib/server/orders"
 import { defaultStoreSettings, getStoreSettings } from "../lib/server/store-settings"
 
@@ -60,7 +61,9 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
     getCachedStoreSettings().catch(() => null)
   ])
 
-  const catalog = catalogResult?.catalog || defaultCatalog
+  const catalog = catalogResult?.catalog
+    ? await withVerifiedStorefrontBadges(catalogResult.catalog)
+    : defaultCatalog
   const socialProof = proofResult || null
   const settings = settingsResult?.settings || defaultStoreSettings
 

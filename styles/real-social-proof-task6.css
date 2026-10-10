@@ -1,0 +1,38 @@
+/* Task 6: a deliberately quiet, data-derived proof note.
+   Server-rendered only for a large enough cohort of paid DELIVERED hampers.
+   No fake ratings, animated counters, customer identities or urgency. */
+.celebrationHome .celebrationRealProof{
+  box-sizing:border-box;
+  margin-block:clamp(18px,2.2vw,30px) clamp(7px,1.3vw,20px);
+  padding-block:clamp(13px,1.4vw,19px);
+  padding-inline:clamp(16px,2vw,29px);
+  border-left:3px solid #b18c75;
+  background:#fcf5ed;
+  color:#5f4136;
+}
+.celebrationHome .celebrationRealProof>span{
+  display:block;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.5;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#76564a;
+}
+.celebrationHome .celebrationRealProof>p{
+  margin:6px 0 0;
+  max-width:64ch;
+  font-size:clamp(12px,1vw,14px);
+  line-height:1.65;
+  color:#4f382f;
+  overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+  .celebrationHome .celebrationRealProof{
+    margin-block:16px 5px;
+    padding:12px 14px;
+    border-left-width:2px;
+  }
+  .celebrationHome .celebrationRealProof>span{font-size:10px}
+  .celebrationHome .celebrationRealProof>p{font-size:12px;line-height:1.55}
+}

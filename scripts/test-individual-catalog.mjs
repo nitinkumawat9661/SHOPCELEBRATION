@@ -30,12 +30,17 @@ try {
   // price savings are still disclosed, and all status claims are conditional.
   const badgeFixture = { id: "badge-fixture", active: true, sellIndividually: true, salePricePaise: 15000, retail: { mrpPaise: 20000 }, stockAvailable: 8, badge: "25% OFF" }
   assert.equal(productBadge(badgeFixture), null, "Do not show uniform 25%-off badges")
-  assert.equal(productSavingLabel(badgeFixture), "Save ₹50", "Show accurate rupee savings")
+  assert.equal(productSavingLabel(badgeFixture), null, "Do not repeat the old uniform 25% Save line")
+  assert.equal(productSavingLabel({ ...badgeFixture, retail: { mrpPaise: 30000 } }), "Save ₹150", "Genuine varied savings must be exact")
   assert.deepEqual(productBadge({ ...badgeFixture, retail: { mrpPaise: 30000 }, badge: "25% OFF" }), { kind: "discount", label: "50% OFF" })
   assert.equal(productBadge({ ...badgeFixture, retail: { mrpPaise: 30000 }, badge: "30% OFF" })?.label, "50% OFF", "Badge percentage must come from price, not legacy text")
   assert.equal(productBadge({ ...badgeFixture, badge: "" }), null, "Some products must have no badges")
-  assert.deepEqual(productBadge({ ...badgeFixture, badge: "New" }), { kind: "new", label: "New" })
-  assert.deepEqual(productBadge({ ...badgeFixture, badge: "Bestseller" }), { kind: "bestseller", label: "Bestseller" })
+  assert.equal(productBadge({ ...badgeFixture, badge: "New" }), null, "An editable New label is not publish-date evidence")
+  assert.deepEqual(productBadge({ ...badgeFixture, badge: "New", badgeSignals: { firstPublishedAt: new Date().toISOString(), firstRevisionVersion: 2 } }), { kind: "new", label: "New" })
+  assert.equal(productBadge({ ...badgeFixture, badgeSignals: { firstPublishedAt: "2020-01-01T00:00:00.000Z", firstRevisionVersion: 2 } }), null, "Expired publication cannot be New")
+  assert.equal(productBadge({ ...badgeFixture, badge: "Bestseller" }), null, "An editable Bestseller label is not real-order evidence")
+  assert.deepEqual(productBadge({ ...badgeFixture, badgeSignals: { bestsellerOrders: 5 } }), { kind: "bestseller", label: "Bestseller" })
+  assert.equal(productBadge({ ...badgeFixture, badgeSignals: { bestsellerOrders: 4 } }), null, "Four orders do not prove bestseller qualification")
   assert.equal(productBadge({ ...badgeFixture, badge: "Limited" }), null, "Do not invent limited stock")
   assert.deepEqual(productBadge({ ...badgeFixture, badge: "Limited", stockAvailable: 2 }), { kind: "limited", label: "Limited · 2 left" })
   assert.deepEqual(productBadge({ ...badgeFixture, badge: "Limited", stockAvailable: 0 }), { kind: "sold-out", label: "Sold out" })
@@ -62,6 +67,13 @@ try {
     badge: undefined
   }
   const withProduct = (patch) => ({ ...defaultCatalog, products: [{ ...baseFixtureProduct, ...patch }] })
+  const tamperedBadge = normalizeCatalogConfig(withProduct({
+    badge: "Bestseller", badgeSignals: { bestsellerOrders: 99999 },
+    sellIndividually: true, salePricePaise: 15000
+  })).products[0]
+  assert.equal(tamperedBadge.badgeSignals, undefined, "Admin payload must not fabricate verified badge evidence")
+  assert.equal(productBadge(tamperedBadge), null, "Unverified admin label never becomes Bestseller")
+
   const enabled = normalizeCatalogConfig(withProduct({ sellIndividually: true, salePricePaise: 1929 })).products[0]
   assert.equal(enabled.salePricePaise, 1929)
   assert.equal(isIndividuallySellable(enabled), true)

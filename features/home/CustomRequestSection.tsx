@@ -50,9 +50,9 @@ export function CustomRequestSection() {
     <section className="customRequestSection" id="custom-request">
       <div className="wrap">
         <div className="centerHead">
-          <div className="kicker">YOUR BUDGET • YOUR STYLE</div>
-          <h2>Have a budget in mind? We’ll help you build around it.</h2>
-          <p>Tell us the occasion, budget and the kind of gifts you want. We’ll suggest a mix that feels right before you decide.</p>
+          <div className="kicker">CUSTOM HAMPER REQUESTS</div>
+          <h2>Tell us what you have in mind.</h2>
+          <p>Share your budget, occasion and any gift preferences. We’ll review the details and get back to you.</p>
         </div>
         <form className="customRequestCard" onSubmit={submit}>
           <div className="customRequestGrid">
@@ -60,7 +60,7 @@ export function CustomRequestSection() {
             <label>Mobile / WhatsApp <b className="requiredMark">*</b><input required inputMode="numeric" minLength={10} maxLength={13} value={phone} onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))} autoComplete="tel" /></label>
             <label>Your budget (₹) <b className="requiredMark">*</b><input required type="number" min={0} max={1000000} step={1} value={budget} onChange={(event) => setBudget(event.target.value)} /></label>
           </div>
-          <label>What should the hamper feel like? <b className="requiredMark">*</b><textarea required minLength={10} maxLength={1200} rows={5} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Example: ₹1200, birthday, blue theme, chocolates + mug + photo item, no perfume." /></label>
+          <label>Gift preferences or instructions <b className="requiredMark">*</b><textarea required minLength={10} maxLength={1200} rows={5} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Example: ₹1200, birthday, blue theme, chocolates + mug + photo item, no perfume." /></label>
           <div className="customRequestFooter">
             <span className="tiny">We’ll confirm the final mix, price and delivery before you commit.</span>
             <div className="customRequestActions"><a className="secondary" href={supportWhatsappUrl("Hi Celebration, I need help building a hamper within my budget.", settings.whatsapp)} target="_blank" rel="noreferrer">Ask on WhatsApp</a><button className="primary" disabled={busy}>{busy ? "Sending…" : "Get a suggestion"}</button></div>

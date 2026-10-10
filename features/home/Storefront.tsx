@@ -1,4 +1,5 @@
 import type { CatalogConfig } from "../../lib/domain/catalog"
+import { isPublicHamperOrderProof } from "../../lib/domain/real-social-proof"
 import type { StoreSettings } from "../../lib/server/store-settings"
 import { StorefrontHeader } from "../shell/StorefrontHeader"
 import { TrustStrip } from "../shell/TrustStrip"
@@ -22,6 +23,7 @@ type StorefrontProps = {
 
 export function Storefront({ initialCatalog, initialSocialProof = null, initialSettings }: StorefrontProps) {
   const tiers = initialCatalog.tiers.filter((item) => item.active !== false)
+  const visibleProof = isPublicHamperOrderProof(initialSocialProof, tiers) ? initialSocialProof : null
 
   return (
     <div className="celebrationHome">
@@ -29,20 +31,20 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
         <StorefrontHeader settings={initialSettings} />
       <main id="main-content">
         <Hero tiers={tiers} />
-        <div className="celebrationBenefits wrap" aria-label="The Celebration promise">
-          <div><StoreIcon name="box" /><span><b>Packed with care</b><small>Details that matter</small></span></div>
-          <div><StoreIcon name="video" /><span><b>See it before dispatch</b><small>Your hamper, on video</small></span></div>
-          <div><StoreIcon name="shield" /><span><b>Clear payment</b><small>Verified confirmation</small></span></div>
-          <div><StoreIcon name="track" /><span><b>Track your order</b><small>See updates online</small></span></div>
+        <div className="celebrationBenefits wrap" aria-label="Shopping at Celebration">
+          <div><StoreIcon name="box" /><span><b>Prepared for dispatch</b><small>Order updates as we pack</small></span></div>
+          <div><StoreIcon name="video" /><span><b>Hamper packing preview</b><small>Where a video is provided</small></span></div>
+          <div><StoreIcon name="shield" /><span><b>Payment confirmation</b><small>Check your order status</small></span></div>
+          <div><StoreIcon name="track" /><span><b>Track your order</b><small>Updates and courier details</small></span></div>
         </div>
-        {initialSocialProof && initialSocialProof.totalOrders >= 20 && initialSocialProof.orderCount >= 5 && initialSocialProof.sharePercent >= 20 && (
+        {visibleProof && (
           <div className="celebrationRealProof wrap" aria-label="Verified hamper order insight">
-            <span>From confirmed hamper orders</span>
-            <p>{initialSocialProof.sharePercent}% of {initialSocialProof.totalOrders} paid Celebration hamper orders chose the {initialSocialProof.tierName} budget.</p>
+            <span>From paid, delivered hamper orders</span>
+            <p>{visibleProof.sharePercent}% of {visibleProof.totalOrders} paid and delivered hampers used the {visibleProof.tierName} budget.</p>
           </div>
         )}
         <HomeCatalog catalog={initialCatalog} />
-        <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={initialSocialProof} />
+        <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={visibleProof} />
       </main>
     </div>
   )

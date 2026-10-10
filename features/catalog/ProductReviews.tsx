@@ -11,7 +11,7 @@ type Eligibility = {
   reviewStatus?: string | null
 }
 
-export function ProductReviews({ productId, reviews }: { productId: string; reviews: PublicProductReview[] }) {
+export function ProductReviews({ productId, reviews, reviewsUnavailable = false }: { productId: string; reviews: PublicProductReview[]; reviewsUnavailable?: boolean }) {
   const [eligibility, setEligibility] = useState<Eligibility | null>(null)
   const [rating, setRating] = useState(5)
   const [body, setBody] = useState("")
@@ -63,12 +63,14 @@ export function ProductReviews({ productId, reviews }: { productId: string; revi
     <div className="wrap">
       <div className="productReviewsHead"><div>
         <p className="collectionEyebrow">Customer experiences</p>
-        <h2 id="product-reviews-title">Reviews from real customers</h2>
+        <h2 id="product-reviews-title">Customer reviews</h2>
         <p>Only feedback from verified delivered orders is published here.</p>
       </div>{total > 0 && <div className="productReviewsSummary"><strong>{average} <span aria-hidden="true">★</span></strong><small>{total} verified {total === 1 ? "review" : "reviews"}</small></div>}</div>
-      {total === 0
-        ? <div className="productReviewsEmpty"><p>Be the first to review this product</p><span>No customer reviews have been published yet.</span></div>
-        : <div className="productReviewsList">{reviews.map((review) => <article className="productReview" key={review.id}>
+      {reviewsUnavailable
+        ? <div className="productReviewsEmpty" role="status"><p>Customer reviews are temporarily unavailable</p><span>Please check again later.</span></div>
+        : total === 0
+          ? <div className="productReviewsEmpty"><p>Be the first to review this product</p><span>No verified customer reviews have been published yet.</span></div>
+          : <div className="productReviewsList">{reviews.map((review) => <article className="productReview" key={review.id}>
             <div className="productReviewTop"><strong>{review.reviewerName}</strong><span>{review.reviewerCity}</span><span className="productReviewVerified">Verified purchase</span></div>
             <div className="productReviewRating" aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
             <p>{review.text}</p>

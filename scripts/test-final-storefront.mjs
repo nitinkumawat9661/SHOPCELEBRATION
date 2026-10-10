@@ -53,10 +53,10 @@ assert(products.length >= 89, "Unexpected product removal")
 assert(products.some((x) => x.category === "Adjustable Rings") && products.some((x) => /bangles/i.test(x.category)), "Ring and bangle fit guidance must remain meaningful")
 assert(products.every((x) => !/\b(?:cm|mm|inch|inches)\b/i.test(x.retail?.netQuantity || "")), "Numeric product size information needs review before the generic copy is changed")
 
-assert(home.includes("initialSocialProof && initialSocialProof.totalOrders >= 20") && home.includes("initialSocialProof.orderCount >= 5"), "Social proof must be absent when there are too few real orders")
-assert(home.includes("paid Celebration hamper orders"), "Label real orders accurately")
+assert(home.includes("isPublicHamperOrderProof(initialSocialProof, tiers)") && home.includes("{visibleProof && ("), "Only validated, sufficiently large real delivered-order cohorts may render public proof")
+assert(home.includes("paid and delivered hampers"), "Label proven delivery and payment accurately")
 assert(orders.includes("payment_status IN ('paid', 'verified', 'success')"), "Do not count unverified payment attempts as social proof")
-assert(orders.includes("status <> 'cancelled'"), "Do not count cancelled orders as social proof")
+assert(orders.includes("status = 'delivered'"), "Only delivered, not merely non-cancelled, hamper orders may count")
 
 // Initial images are correctly eager, other images lazy, with fixed dimensions
 // and first-party 3-size WebP variants; unknown live 22 PNGs remain separate QA.

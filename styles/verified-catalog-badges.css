@@ -1,0 +1,73 @@
+/* Task 3: truth-backed, quiet commerce badges. No arbitrary urgency or
+ * simulated popularity. All claims are resolved by productBadge() in JS. */
+.collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline,
+.celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline{
+  max-width:100%;
+  width:fit-content;
+  font-size:10px;
+  line-height:1.35;
+  padding:5px 8px;
+  white-space:normal;
+  word-break:normal;
+  overflow-wrap:anywhere;
+  align-self:flex-start;
+  border-width:1px;
+  border-style:solid;
+  box-shadow:none;
+}
+.collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--sold-out,
+.celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--sold-out{
+  color:#624846;background:#f2e9e2;border-color:#d8c6bd;border-radius:4px;
+}
+.collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--bestseller,
+.celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--bestseller{
+  background:#edf4ee;color:#36654b;border-color:#b7d5c0;border-radius:8px 3px 8px 3px;
+}
+.collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--new,
+.celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--new{
+  background:#fbf2e3;color:#77552e;border-color:#e2ccaa;border-radius:3px 8px 3px 8px;
+}
+.collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--limited,
+.celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--limited{
+  background:#f4edf4;color:#75446f;border-color:#dec8db;border-radius:4px 4px 9px 4px;
+}
+.collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--discount,
+.celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline.catalogCardBadge--discount{
+  background:#fff2ec;color:#964d32;border-color:#e7c0b0;border-radius:3px 7px 3px 7px;
+}
+/* Detail photo labels remain a small overlay; do not hide the subject. */
+.collectionPage .marketplaceProductBadge{
+  width:max-content;
+  max-width:calc(100% - 24px);
+  padding:6px 9px;
+  font-size:10px;
+  line-height:1.3;
+  box-shadow:0 1px 6px rgba(57,25,31,.09);
+}
+.collectionPage .marketplaceProductBadge--sold-out{
+  background:#554a4a;color:#fff;border-color:#554a4a;
+}
+.collectionPage .catalogCardPrice small,
+.celebrationHome .catalogCardPrice small{
+  display:block;
+  font-size:10px;
+  line-height:1.5;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  color:#80665e;
+}
+@media(max-width:700px){
+  .collectionPage .collectionGrid .catalogCardInfo .catalogCardBadgeInline,
+  .celebrationHome .collectionGrid .catalogCardInfo .catalogCardBadgeInline{
+    font-size:10px;
+    line-height:1.4;
+    padding:5px 7px;
+    max-width:100%;
+    margin-bottom:7px;
+  }
+  .collectionPage .marketplaceProductBadge{
+    padding:5px 7px;
+    font-size:10px;
+    max-width:calc(100% - 20px);
+  }
+}

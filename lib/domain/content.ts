@@ -17,22 +17,22 @@ const customerUi = {
     primary: "Build your hamper →",
     secondaryPrefix: "Starting at",
     stats: ["Your budget", "Their favourites", "Made personal"],
-    showcaseSubline: "Thoughtful • Personal • Made for them",
+    showcaseSubline: "Jewelry • Gift hampers • Your choice",
     customFeelValue: "Personal"
   },
   budgets: {
     ...ui.budgets,
     kicker: "CHOOSE YOUR BUDGET",
-    title: "Pick a budget that feels right.",
-    body: "Every price is the complete hamper budget — not just the box. Choose one and we’ll show what fits beautifully inside.",
+    title: "Choose your hamper budget.",
+    body: "Each price covers the complete hamper, not just the box. Choose a budget to continue with the order details.",
     choices: "items",
     points: "mix limit"
   },
   products: {
     ...ui.products,
     kicker: "PICK WHAT THEY’LL LOVE",
-    title: "Make it feel like them.",
-    body: "Choose from the gifts available in your budget. If something needs a higher budget, we’ll show that clearly.",
+    title: "See what fits your budget.",
+    body: "Gift options depend on your budget and availability. Items outside your budget are marked clearly.",
     from: "From"
   },
   builder: {
@@ -114,14 +114,14 @@ const customerUi = {
   promise: {
     ...ui.promise,
     kicker: "WHY CELEBRATION",
-    title: "More confidence at every step.",
-    body: "Clear pricing, packing video for custom hampers before dispatch, order tracking and support when you need it."
+    title: "From payment to delivery.",
+    body: "Review the total before payment, see packing updates where available, and follow your order online."
   },
   cta: {
     ...ui.cta,
-    title: "Ready to make someone smile?",
-    body: "Pick a budget and share their occasion. We’ll turn it into a hamper that feels made for them.",
-    button: "Build my hamper"
+    title: "Have a hamper in mind?",
+    body: "Choose a budget, add the occasion and delivery details, and review the order before payment.",
+    button: "Start a hamper"
   },
   footer: {
     ...ui.footer,

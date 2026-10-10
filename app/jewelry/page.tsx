@@ -6,6 +6,7 @@ import { StorefrontHeader } from "../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../features/shell/TrustStrip"
 import { primaryProductImage } from "../../lib/domain/catalog"
 import { getCatalogConfig } from "../../lib/server/catalog"
+import { withVerifiedStorefrontBadges } from "../../lib/server/product-badge-evidence"
 import { defaultStoreSettings, getStoreSettings } from "../../lib/server/store-settings"
 
 export const dynamic = "force-dynamic"
@@ -34,7 +35,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 export default async function JewelryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [params, catalog, settings] = await Promise.all([searchParams, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
   const value = (key: string) => (typeof params[key] === "string" ? params[key] : "").slice(0, 100)
-  const products = catalog?.catalog.products.filter((product) => product.active !== false) || []
+  const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
+  const products = storefrontCatalog?.products.filter((product) => product.active !== false) || []
   const itemList = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -61,7 +63,7 @@ export default async function JewelryPage({ searchParams }: { searchParams: Prom
     <SeoJsonLd data={itemList} />
     <TrustStrip />
     <StorefrontHeader settings={settings?.settings || defaultStoreSettings} searchQuery={value("q")} />
-    <CatalogCollection products={catalog?.catalog.products || []} available={Boolean(catalog)} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} />
+    <CatalogCollection products={storefrontCatalog?.products || []} available={Boolean(catalog)} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} />
     <SiteFooter />
   </main>
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState, type TouchEvent, type KeyboardEvent } from "react"
 import { catalogImageVariant, catalogSpriteImage, productImages, type GiftProduct } from "../../lib/domain/catalog"
 import { SafeCatalogImage } from "./SafeCatalogImage"
 import { productBadge } from "../../lib/domain/catalog-badges"
@@ -8,6 +8,7 @@ import { productBadge } from "../../lib/domain/catalog-badges"
 export function ProductGallery({ product }: { product: GiftProduct }) {
   const images = useMemo(() => productImages(product), [product])
   const [selection, setSelection] = useState({ productId: product.id, index: 0 })
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
   // A client-side product switch must not keep the previous product's thumbnail
   // selection or reuse a pending image/failure event from the previous SKU.
   const active = selection.productId === product.id && selection.index < images.length ? selection.index : 0
@@ -24,6 +25,25 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
     }))
   }
 
+  function startSwipe(event: TouchEvent<HTMLDivElement>) {
+    if (images.length < 2 || event.touches.length !== 1) return
+    touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY }
+  }
+  function endSwipe(event: TouchEvent<HTMLDivElement>) {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!start || images.length < 2 || event.changedTouches.length !== 1) return
+    const dx = event.changedTouches[0].clientX - start.x
+    const dy = event.changedTouches[0].clientY - start.y
+    // A vertical page scroll must never change a product photo.
+    if (Math.abs(dx) >= 55 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1)
+  }
+  function galleryKey(event: KeyboardEvent<HTMLDivElement>) {
+    if (images.length < 2 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return
+    event.preventDefault()
+    step(event.key === "ArrowRight" ? 1 : -1)
+  }
+
   if (!current) {
     return (
       <div className="marketplaceGallery marketplaceGalleryEmpty" role="img" aria-label={`${product.name} image not added`}>
@@ -38,7 +58,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
 
   return (
     <div className="marketplaceGallery">
-      <div className="marketplaceGalleryStage">
+      <div className="marketplaceGalleryStage" role="group" aria-label="Product photo gallery" tabIndex={images.length > 1 ? 0 : undefined} onKeyDown={galleryKey} onTouchStart={startSwipe} onTouchEnd={endSwipe} onTouchCancel={() => { touchStart.current = null }}>
         <SafeCatalogImage
           key={`${product.id}:${current.url}`}
           className={currentSprite ? "marketplaceGallerySprite" : "marketplaceGalleryPhoto"}

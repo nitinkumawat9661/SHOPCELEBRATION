@@ -21,7 +21,7 @@
     "✓ Secure online payment",
     "🎁 Individual gifts + custom hampers",
     "✨ 6-month anti-tarnish guarantee on marked jewelry",
-    "🎥 Packing video for custom hampers",
+    "🎥 Hamper packing video where available",
     "📦 Track every order online",
     "🛡️ Clear issue-protection process"
   ],
@@ -55,12 +55,12 @@
     {
       "icon": "💳",
       "title": "Clear payment",
-      "body": "Online payments are confirmed for you. If a manual UPI option is shown, enter the payment number shown in your UPI app."
+      "body": "Review the final amount before you pay. You can check the confirmation status from your order."
     },
     {
       "icon": "🎥",
-      "title": "See it before dispatch",
-      "body": "You’ll get a packing video of the finished hamper before it is sent."
+      "title": "Hamper packing preview",
+      "body": "When a packing video is provided, you can review the finished hamper before dispatch."
     },
     {
       "icon": "🛡️",
@@ -70,7 +70,7 @@
     {
       "icon": "📦",
       "title": "Track your order",
-      "body": "Every order gets a Celebration ID so progress and shipping details stay easy to follow."
+      "body": "Use your Celebration order ID to check progress and available courier details."
     }
   ],
   "checkout": {
