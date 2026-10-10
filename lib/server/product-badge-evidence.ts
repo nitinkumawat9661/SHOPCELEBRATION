@@ -1,5 +1,3 @@
-import "server-only"
-
 import { unstable_cache } from "next/cache"
 import type { CatalogConfig, GiftProduct } from "../domain/catalog"
 import { query } from "./db"
