@@ -1,0 +1,167 @@
+/* Compact, stable real-photo category navigation. Not product/listing cards. */
+.celebrationHome .celebrationCategories {
+  padding-top:clamp(24px,3.1vw,41px);
+  padding-bottom:clamp(8px,1.2vw,15px);
+  overflow-anchor:none;
+}
+.celebrationHome .celebrationCategories .celebrationSectionHead {
+  margin-bottom:7px;
+}
+.celebrationHome .celebrationCategories .celebrationSectionHead h2 {
+  margin-top:5px;
+  font-size:clamp(26px,2.5vw,34px);
+  line-height:1.13;
+}
+.celebrationHome .celebrationCategorySwipeHint {
+  margin-bottom:7px;
+  font-size:10px;
+}
+.celebrationHome .celebrationCategoryRail {
+  gap:clamp(10px,1.4vw,16px);
+  padding:2px 2px 9px;
+  align-items:start;
+  scroll-behavior:auto;
+}
+.celebrationHome .celebrationCategory {
+  flex:0 0 clamp(98px,9.4vw,122px);
+  transition:none;
+}
+.celebrationHome .celebrationCategory:where(:hover,:focus-visible) {
+  transform:none;
+}
+.celebrationHome .celebrationCategoryArt {
+  padding:4px;
+  border-color:#e8d7ce;
+  box-shadow:0 3px 12px rgba(91,40,49,.06),inset 0 0 0 2px #fff9f5;
+  transition:none;
+}
+.celebrationHome .celebrationCategory:is(:hover,:focus-visible) .celebrationCategoryArt {
+  border-color:#ae8a91;
+  box-shadow:0 3px 12px rgba(91,40,49,.08);
+}
+.celebrationHome .celebrationCategoryArt::after {
+  inset:4px;
+  border-color:rgba(255,255,255,.48);
+}
+.celebrationHome .celebrationCategory>b {
+  min-height:0;
+  margin:7px 0 0;
+  color:#512d37;
+  font-size:11.5px;
+  line-height:1.32;
+  letter-spacing:-.01em;
+  font-weight:650;
+  text-wrap:balance;
+}
+.celebrationHome .celebrationCategory>.celebrationCategorySub {
+  display:none;
+}
+/* All seven thumbnails are genuine editorial photography, never stock SKUs.
+   The immediately painted background prevents an empty or flickering frame. */
+.celebrationHome .celebrationCategoryEditorialPhoto {
+  position:relative;
+  display:block;
+  width:100%;
+  height:100%;
+  aspect-ratio:1;
+  overflow:hidden;
+  border-radius:50%;
+  background:linear-gradient(150deg,#fff8f4,#ead6d1);
+}
+.celebrationHome .celebrationCategoryEditorialPhoto>img {
+  display:block;
+  position:absolute;
+  inset:0;
+  box-sizing:border-box;
+  width:100%;
+  height:100%;
+  padding:0;
+  margin:0;
+  border-radius:50%;
+  object-fit:cover;
+  object-position:center;
+  opacity:1;
+  animation:none;
+  transform:none;
+  transition:none;
+}
+.celebrationHome .celebrationCategoryPhotoFallback {
+  display:grid;
+  place-items:center;
+  position:absolute;
+  inset:0;
+  color:#845460;
+  font-family:var(--font-shopping-display),Georgia,serif;
+  font-size:32px;
+  font-weight:500;
+}
+.celebrationHome .celebrationCategoryArt .catalogPhoto.safeCatalogImageFrame {
+  border-radius:50%;
+}
+/* The prior navbar height-collapse produces a layout shift on Chrome Android.
+   Home scrolls as a regular document; collection pages keep their own logic. */
+@media(max-width:700px) {
+  .celebrationHome .celebrationHeader {
+    position:relative;
+    top:auto;
+    box-shadow:none;
+  }
+  .celebrationHome .celebrationCategories {
+    padding-top:22px;
+    padding-bottom:8px;
+  }
+  .celebrationHome .celebrationCategories .celebrationSectionHead {
+    gap:8px;
+    margin-bottom:5px;
+  }
+  .celebrationHome .celebrationCategories .celebrationSectionHead h2{
+    font-size:clamp(24px,6.7vw,30px);
+  }
+  .celebrationHome .celebrationCategorySwipeHint {
+    margin-bottom:4px;
+    line-height:1.1;
+  }
+  .celebrationHome .celebrationCategoryRail {
+    gap:10px;
+    padding-top:3px;
+    padding-bottom:8px;
+    scroll-snap-type:x proximity;
+  }
+  .celebrationHome .celebrationCategory {
+    flex:0 0 clamp(87px,27vw,104px);
+  }
+  .celebrationHome .celebrationCategoryArt {
+    padding:3px;
+  }
+  .celebrationHome .celebrationCategory>b {
+    font-size:10.5px;
+    margin-top:7px;
+    line-height:1.29;
+  }
+  /* Stop costly continuously repainted effects, without hiding any content. */
+  .celebrationHome :is(#budgets,#builder,#custom-request)::before{
+    animation:none;
+    transform:none;
+    will-change:auto;
+  }
+  .celebrationHome .heroVisual,
+  .celebrationHome .heroShapeWaves,
+  .celebrationHome .heroRefresh .heroShapeWaves{
+    animation:none;
+    will-change:auto;
+  }
+  .celebrationHome :is(.catalogCard,.celebrationEdit,.celebrationCategoryArt) img{
+    -webkit-user-drag:none;
+  }
+}
+@media(max-width:360px) {
+  .celebrationHome .celebrationCategory {
+    flex-basis:85px;
+  }
+  .celebrationHome .celebrationCategories .celebrationSectionHead h2 {
+    font-size:23px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationCategoryEditorialPhoto>img {animation:none;transition:none}
+}
