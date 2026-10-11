@@ -12,6 +12,9 @@ const [script,catRaw,sql,media,styles,home,imports,card]=await Promise.all([
   "app/globals.css",
   "features/catalog/CatalogCard.tsx"
 ].map(read))
+const v3ReleaseSeed=await read("scripts/generate-celebration-circle-art-v3.mjs")
+assert(v3ReleaseSeed.includes("category-v3%2F") && v3ReleaseSeed.includes("category-v4%2F"),
+  "Legacy v3 seeder must accept all seven already-upgraded v4 records during future releases")
 const products=new Map(JSON.parse(catRaw).products.map(p=>[p.id,p]))
 const entries=[...script.matchAll(/\{id:"([^"]+)",slug:"([^"]+)",sku:"([^"]+)",roi:\[([^\]]+)\]/g)]
 assert.equal(entries.length,7,"All seven category circles need a source ROI")
