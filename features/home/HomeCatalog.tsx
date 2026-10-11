@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { categoriesForCatalog, isIndividuallySellable, primaryProductImage, visibleProducts, type CatalogConfig } from "../../lib/domain/catalog"
+import { categoriesForCatalog, isIndividuallySellable, primaryProductImage, visibleProducts, type GiftProduct, type CatalogConfig } from "../../lib/domain/catalog"
 import { CatalogCard, CatalogProductImage } from "../catalog/CatalogCard"
 import { StoreIcon } from "../shell/StoreIcon"
 import { CategoryEditorialPhoto } from "./CategoryEditorialPhoto"
@@ -17,7 +17,7 @@ export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogC
   const selectedIds = new Set<string>()
   const selected = featuredOrder.map((category) =>
     products.find((item) => item.category === category && !!primaryProductImage(item) && isIndividuallySellable(item))
-  ).filter((item) => {
+  ).filter((item): item is GiftProduct => {
     if (!item || selectedIds.has(item.id)) return false
     selectedIds.add(item.id)
     return true
