@@ -33,7 +33,7 @@ assert(script.includes("roundMask()")&&script.includes('blend:"dest-in"'),"Nativ
 assert(script.includes('alpha(0,0)>8')&&script.includes("alpha(320,320)<245"),"Validate true circle pixels")
 assert(script.includes('await db.query("BEGIN")')&&script.includes('await db.query("COMMIT")')&&script.includes("ROLLBACK"),
   "Seven category image references must change atomically")
-assert(sql.includes("category-v4%2F")&&media.includes("category-v[1234]"),"V4 R2 pointers must be accepted")
+assert(sql.includes("category-v4%2F")&&media.includes("category-v[12345]"),"V4 R2 pointers must be accepted")
 assert(styles.includes("display:flex") && styles.includes("flex-wrap:nowrap") &&
        styles.includes("overflow-x:auto") && styles.includes("scroll-snap-type:x proximity"),
   "Restore the previous single-row horizontal featured product carousel")
