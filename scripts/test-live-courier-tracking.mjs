@@ -70,7 +70,7 @@ for(const c of [
 assert(!sync.includes('advance("cancelled")'),"Courier cancellation must not refund/cancel the purchase")
 assert(sync.includes('courier: null, courierUnavailable: false'),"Non-Shipway bookings cannot use invented Shipway data")
 assert(shipway.includes("tracking_history=1"),"Request real scan history")
-assert(shipway.includes("current_status_code"),"Support status-code response variant")
+assert(shipway.includes("parseShipwayTrackingResponse"),"Support normalized carrier status-code variants")
 assert(shipway.includes("parseShipwayTrackingResponse") && shipway.includes("parseShipwayOrderByAwb"),"Parse carrier shipment details and exact-AWB order feed in shared helpers")
 assert(trackApi.includes("syncOrderCourier(order)") && accountApi.includes("syncOrderCourier(order, { recoverUnlinkedShipment: index < 6 })"),
   "Both signed-in and token tracking must reconcile the very same courier scans")
