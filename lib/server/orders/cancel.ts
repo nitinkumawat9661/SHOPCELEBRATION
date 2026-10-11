@@ -75,6 +75,15 @@ export function cancelCustomerOrder(publicIdValue: string, customerAccountId: st
         if (SHIPWAY_ALREADY_DISPATCHED.has(remoteStatus)) {
           return { ok: false as const, code: "ORDER_ALREADY_SHIPPED" }
         }
+        // Shipway's public tracking page can be ahead of the booking API.
+        // An unknown, stale or metadata-only "Exchange" response cannot
+        // authorize cancelling a parcel which may already be out for delivery.
+        const confirmedPrePickup = ["SCH", "OFP"].includes(remoteStatus) &&
+          Boolean(live?.scans.some(scan => scan.occurredAt &&
+            /pickup requested|pickup scheduled|out for pickup|shipment booked|data received/i.test(scan.status)))
+        if (!confirmedPrePickup) {
+          return { ok: false as const, code: "SHIPWAY_CANCELLATION_UNAVAILABLE" }
+        }
         await cancelShipwayShipment(order.shipping_tracking_number)
         shipwayCancelled = true
       } catch (error) {
