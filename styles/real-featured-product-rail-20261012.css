@@ -1,0 +1,55 @@
+/* Next homepage step: distinct real purchasable jewellery in a compact
+   swipeable edit. Catalog/checkout product cards remain unchanged. */
+.celebrationHome .celebrationFeatured {
+  padding-top:clamp(19px,2.8vw,35px);
+  padding-bottom:clamp(42px,4.6vw,69px);
+}
+.celebrationHome .celebrationFeatured .celebrationSectionHead {
+  margin-bottom:clamp(14px,1.8vw,20px);
+}
+.celebrationHome .celebrationFeatured .collectionGrid {
+  display:flex;
+  flex-wrap:nowrap;
+  grid-template-columns:none;
+  align-items:stretch;
+  gap:clamp(12px,1.5vw,20px);
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:3px 2px 14px;
+  scroll-snap-type:x proximity;
+  scrollbar-width:thin;
+  scrollbar-color:#c8aeb0 transparent;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.celebrationHome .celebrationFeatured .collectionGrid>.catalogCard {
+  box-sizing:border-box;
+  flex:0 0 clamp(213px,23vw,290px);
+  width:auto;
+  min-width:0;
+  margin:0;
+  scroll-snap-align:start;
+}
+@media(max-width:700px) {
+  .celebrationHome .celebrationFeatured {
+    padding-top:16px;
+    padding-bottom:38px;
+  }
+  .celebrationHome .celebrationFeatured .collectionGrid {
+    gap:12px;
+    padding-bottom:9px;
+    scrollbar-width:none;
+  }
+  .celebrationHome .celebrationFeatured .collectionGrid::-webkit-scrollbar {
+    display:none;
+  }
+  .celebrationHome .celebrationFeatured .collectionGrid>.catalogCard {
+    flex-basis:clamp(208px,64vw,245px);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationFeatured .collectionGrid{
+    scroll-behavior:auto;
+  }
+}
