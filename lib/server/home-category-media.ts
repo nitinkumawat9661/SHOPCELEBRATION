@@ -1,6 +1,6 @@
 import { query } from "./db"
 
-/** R2-hosted real photos curated for navigation, never SKU product images. */
+/** R2 category images; v2 is a collage of exactly mapped Celebration product photos. */
 type CategoryMediaRow = { category_id: string; image_url: string }
 
 export async function getHomeCategoryMedia(): Promise<Record<string, string>> {
