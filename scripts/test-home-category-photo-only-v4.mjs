@@ -24,7 +24,7 @@ for(const [,category,slug,sku,region]of entries){
     `A crop should isolate the photo, not copy a full advertising poster: ${slug}`)
 }
 assert(script.includes(".extract({left,top,width,height})"),"Actual image ROI must be cropped before circular presentation")
-assert(script.includes("catalog/rehost/meesho")&&script.includes("public"),"Use real first-party product images")
+assert(script.includes("GetObjectCommand")&&script.includes("shopcelebration.in")&&script.includes("public"),"Use real first-party product images")
 assert(script.includes("roundMask()")&&script.includes('blend:"dest-in"'),"Native circle with transparent poster-free exterior")
 assert(script.includes('alpha(0,0)>8')&&script.includes("alpha(320,320)<245"),"Validate true circle pixels")
 assert(script.includes('await db.query("BEGIN")')&&script.includes('await db.query("COMMIT")')&&script.includes("ROLLBACK"),
