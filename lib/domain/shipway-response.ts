@@ -32,7 +32,7 @@ const statusAliases: Record<string,string> = {
   "PICKED":"PKP","PICKED UP":"PKP","PICKUP DONE":"PKP","PICKUP COMPLETE":"PKP",
   "IN TRANSIT":"INT","SHIPPED":"INT","OUT FOR DELIVERY":"OOD",
   "ARRIVING TODAY":"OOD","DELIVERED":"DEL","PICKUP NOT DONE":"PKF",
-  "PICKUP FAILED":"PKF","PICKUP CANCELLED":"PCAN",
+  "PICKUP FAILED":"PKF","PICKUP NOT DONE":"PKF","PICKUP CANCELLED":"PCAN",
   "DELIVERY ATTEMPTED":"UND","UNDELIVERED":"UND",
   "RTO":"RTO","RETURN TO ORIGIN":"RTO","RETURNING TO SENDER":"RTO",
   "RTO DELIVERED":"RTD","CANCELLED":"CAN","ON HOLD":"ONH"
@@ -112,6 +112,7 @@ export function parseShipwayTrackingResponse(raw: unknown, expectedAwb: string):
   const latest = [...scans].filter(scan => scan.occurredAt)
     .sort((a,b) => Date.parse(String(b.occurredAt).replace(" ","T")) - Date.parse(String(a.occurredAt).replace(" ","T")))[0]
   if (latest) code = promotedShipwayStatus(code, normalizeShipwayStatus(latest.status))
+  code = promotedShipwayStatus(code,normalizeShipwayStatus(payload.new_shipment_status ?? shipment.new_shipment_status))
   if (!code) code = normalizeShipwayStatus(shipment.current_status ?? payload.current_status)
   const currentStatus = clean(shipment.current_status ?? payload.current_status, 120)
   const courierName = clean(shipment.courier_name ?? payload.courier_name ?? payload.carrier, 90) || null
