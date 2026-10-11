@@ -10,6 +10,8 @@ import { supportWhatsappUrl } from "../../lib/domain/support"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import { notifyUx } from "../ux/UxMessenger"
 import { CustomerAuthPanel } from "./CustomerAuthPanel"
+import { CourierJourney } from "../tracking/CourierJourney"
+import type { CourierPublicStatus } from "../../lib/domain/courier-tracking"
 import { DefaultAddressPanel } from "./DefaultAddressPanel"
 import { useCustomerAccount } from "./useCustomerAccount"
 
@@ -31,6 +33,8 @@ type DashboardOrder = {
   packingVideoUrl: string | null
   shippingTrackingNumber: string | null
   estimatedDeliveryDate: string | null
+  courier?: CourierPublicStatus | null
+  courierUnavailable?: boolean
   customerApprovedAt: string | null
   createdAt: string
   updatedAt: string
@@ -110,7 +114,23 @@ export function CustomerAccountPage() {
     }
   }, [accountState.account])
 
-  useEffect(() => { if (accountState.account) loadOrders() }, [accountState.account, loadOrders])
+  useEffect(() => {
+    if (!accountState.account) return
+    void loadOrders()
+    // A courier can update an order without user action. Refresh the account
+    // while it is visible; do not pretend a timed UI transition is a scan.
+    const interval = window.setInterval(() => {
+      if (!document.hidden && navigator.onLine) void loadOrders()
+    }, 60000)
+    const onFocus = () => { if (!document.hidden && navigator.onLine) void loadOrders() }
+    document.addEventListener("visibilitychange", onFocus)
+    window.addEventListener("online", onFocus)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener("visibilitychange", onFocus)
+      window.removeEventListener("online", onFocus)
+    }
+  }, [accountState.account, loadOrders])
 
   async function approvePacking(order: DashboardOrder) {
     if (!approvalConsent[order.publicId]) return
@@ -286,6 +306,8 @@ export function CustomerAccountPage() {
               </details>
 
               {!individual && order.productNames.length > 0 && <div className="customerOrderProducts"><span>Selected gifts</span><p>{order.productNames.join(" • ")}</p></div>}
+
+              {order.shippingTrackingNumber && <CourierJourney courier={order.courier || null} unavailable={order.courierUnavailable || false} compact />}
 
               <div className="customerOrderUpdates">
                 {!individual && <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>}
