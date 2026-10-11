@@ -134,6 +134,8 @@ jobs:
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/create-clean-photo-category-circles-v4.mjs\")"' _ "$NEW_RELEASE"
           echo "Building focused original-product jewellery photos for category circles"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/create-jewellery-detail-category-circles-v5.mjs\")"' _ "$NEW_RELEASE"
+          echo "Installing six owner-uploaded exact category artworks as seven permanent R2 WebPs"
+          run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/install-owner-category-art-v6.mjs\")"' _ "$NEW_RELEASE"
 
           start_release() {
             local release="$1"
