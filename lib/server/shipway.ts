@@ -400,7 +400,7 @@ export async function getShipwayTracking(awb: string): Promise<ShipwayTracking |
   const statusText = String(current.current_status ?? tracking.current_status ?? first.current_status ?? "").trim()
 
   const clean = (value: unknown, max = 160) => typeof value === "string"
-    ? value.replace(/[\\x00-\\x1F\\x7F]/g, " ").replace(/\\s+/g, " ").trim().slice(0, max)
+    ? value.replace(/[\x00-\x1F\x7F]/g, " ").replace(/\s+/g, " ").trim().slice(0, max)
     : ""
   const scanEntries = Array.isArray(tracking.tracking_history) ? tracking.tracking_history
     : Array.isArray(tracking.shipment_history) ? tracking.shipment_history
