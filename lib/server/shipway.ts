@@ -384,6 +384,35 @@ export async function bookShipwayShipment(order: OrderRecord, packed: {
   return { awb, carrierId, labelUrl: httpsUrl(awbResponse.shipping_url) }
 }
 
+/**
+ * Recover a pre-existing shipment booked from Shipway outside the website.
+ * Shipway's authenticated GET Orders endpoint documents the "orderid"
+ * query field (not "order_id"). The response MUST explicitly carry the same
+ * exact merchant order id and a single valid AWB. No fuzzy name/phone match.
+ */
+export function exactShipwayAwbForOrder(raw: unknown, merchantOrderId: string): string | null {
+  if (!/^[A-Za-z0-9_-]{4,100}$/.test(merchantOrderId)) return null
+  const candidates = new Set<string>()
+  for (const row of objectList(raw)) {
+    const id = row.order_id ?? row.orderid ?? row.orderId
+    if (typeof id !== "string" || id.trim() !== merchantOrderId) continue
+    const nested = row.awb_response && typeof row.awb_response === "object" && !Array.isArray(row.awb_response)
+      ? row.awb_response as Record<string, unknown> : {}
+    const awb = row.awb_number ?? row.tracking_number ?? row.order_tracking_number ??
+      row.awb ?? row.AWB ?? row.waybill ?? nested.AWB
+    if (typeof awb !== "string" && typeof awb !== "number") continue
+    const number = String(awb).trim()
+    if (/^[A-Za-z0-9._-]{4,120}$/.test(number)) candidates.add(number)
+  }
+  return candidates.size === 1 ? [...candidates][0] : null
+}
+
+export async function findExistingShipwayAwbByOrderId(merchantOrderId: string): Promise<string | null> {
+  if (!/^[A-Za-z0-9_-]{4,100}$/.test(merchantOrderId)) return null
+  const raw = await request(`/api/getorders?orderid=${encodeURIComponent(merchantOrderId)}`, { method: "GET" })
+  return exactShipwayAwbForOrder(raw, merchantOrderId)
+}
+
 export async function getShipwayTracking(awb: string): Promise<ShipwayTracking | null> {
   if (!/^[A-Za-z0-9._-]{4,120}$/.test(awb)) return null
   const raw = await request(`/api/tracking?awb_numbers=${encodeURIComponent(awb)}&tracking_history=1`, { method: "GET" })
