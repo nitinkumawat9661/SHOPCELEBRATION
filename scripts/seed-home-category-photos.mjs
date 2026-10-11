@@ -14,8 +14,8 @@ const PHOTOS = [
   { id: "Necklace + Earrings Sets", photo: "photo-1758995115857-2de1eb6283d0", source: "https://unsplash.com/photos/gold-necklace-and-earrings-displayed-on-white-stands-LA0edB8tqC0", by: "Zayed Ahmed Zadu", slug: "necklace-earring-sets" },
   { id: "Trending Necklaces", photo: "photo-1569397288884-4d43d6738fbd", source: "https://unsplash.com/photos/gold-colored-pendant-necklace-y2ErhoE92KA", by: "Alex Azabache", slug: "trending-necklaces" },
   { id: "Gold-Plated Bangles & Bracelets", photo: "photo-1758995119744-6454f091303f", source: "https://unsplash.com/photos/several-gold-bangles-displayed-on-a-stand-HQgfLYqIkBA", by: "Zayed Ahmed Zadu", slug: "bangles-bracelets" },
-  { id: "Adjustable Rings", photo: "photo-1492714485642-dd6df6baafa2", source: "https://unsplash.com/photos/gold-colored-rings-BN0HcaBdPug", by: "Mel", slug: "adjustable-rings" },
-  { id: "__all__", photo: "photo-1769116416641-e714b71851e8", source: "https://unsplash.com/photos/jewelry-box-filled-with-necklaces-rings-and-earrings-R5Cgy-aAIxc", by: "Nellie Adamyan", slug: "all-jewellery" },
+  { id: "Adjustable Rings", photo: "photo-1562249003-f713a2af1096", source: "https://unsplash.com/photos/gold-colored-ring-close-up-photography-47uULlB3rrE", by: "Luigi Pozzoli", slug: "adjustable-rings" },
+  { id: "__all__", photo: "photo-1769116416517-594639a769a7", source: "https://unsplash.com/photos/a-pink-jewelry-box-filled-with-necklaces-and-rings-seoE76N3fSg", by: "Nellie Adamyan", slug: "all-jewellery" },
   { id: "__hamper__", photo: "photo-1764385827352-78c20131fd47", source: "https://unsplash.com/photos/gift-box-with-ribbon-card-and-confetti-IsOQu4nML-Y", by: "Jess Bailey", slug: "custom-hampers" }
 ]
 
