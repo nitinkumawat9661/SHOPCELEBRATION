@@ -147,6 +147,7 @@ try{
     if(row.rowCount!==1)throw new Error(`Category row missing: ${item.slug}`)
     const old=row.rows[0].image_url
     const url=`/api/catalog/image?key=${encodeURIComponent(key)}`
+    if(old.includes("category-v6%2F")) { console.log(`Owner-approved v6 media preserved: ${item.slug}`); continue }
     if(old!==url&&!old.includes("category-v4%2F"))
       throw new Error(`Owner-edited category image protected: ${item.slug}`)
     if(!await verified(key)){
