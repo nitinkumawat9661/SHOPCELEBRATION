@@ -1,0 +1,53 @@
+/* Real courier scan journey — merchant order stages remain separate. */
+.courierJourney{
+  margin:22px 0;
+  padding:clamp(15px,2.3vw,24px);
+  background:#fdf8f2;
+  border:1px solid #e8d7c7;
+  border-radius:15px;
+  color:#50392e;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.courierJourneyHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.courierJourneyEyebrow{display:block;font-size:10px;letter-spacing:.13em;font-weight:750;color:#916a52}
+.courierJourneyHead h3{font-size:clamp(17px,2vw,21px);line-height:1.25;margin:6px 0;color:#442b29}
+.courierJourneyHead p{font-size:12px;line-height:1.6;margin:4px 0 0;max-width:65ch}
+.courierCarrier{display:inline-block;padding:7px 9px;background:#f3e8dd;border:1px solid #e2cdbb;border-radius:7px;font-size:11px}
+.courierMilestones{list-style:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:0;margin:22px 0 16px;gap:4px}
+.courierMilestones li{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-width:0;color:#856f63;font-size:10px;line-height:1.35}
+.courierMilestones li:before{content:"";position:absolute;top:11px;right:calc(50% + 12px);left:calc(-50% + 12px);height:2px;background:#ded0c4}
+.courierMilestones li:first-child:before{display:none}
+.courierMilestones li.reached:before{background:#8f6a50}
+.courierDot{width:24px;height:24px;display:grid;place-items:center;border-radius:50%;border:2px solid #d1bba8;background:#fbf5ee;color:#fff;font-size:13px;font-weight:700;z-index:1}
+.courierMilestones li.reached .courierDot{background:#8f6a50;border-color:#8f6a50}
+.courierMilestones li[aria-current="step"] .courierDot{outline:3px solid #e6cbb1;outline-offset:2px}
+.courierLastScan,.courierEstimate,.courierUnavailable,.courierException{font-size:12px;line-height:1.55;margin:11px 0;color:#513e36}
+.courierUnavailable{color:#83542b}
+.courierException{padding:10px 12px;background:#fff1e6;border-left:3px solid #d48d4f}
+.courierExternal{display:inline-flex;align-items:center;gap:8px;padding:10px 0;min-height:44px;text-decoration:underline;text-underline-offset:4px;color:#76412e}
+.courierHistory{margin-top:14px;border-top:1px solid #eadacf;padding-top:12px}
+.courierHistory summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:700;font-size:12px}
+.courierHistory ol{padding:0 0 0 20px;margin:10px 0}
+.courierHistory li{padding:8px 6px 11px;line-height:1.45;border-bottom:1px solid #eee4dc;font-size:11px}
+.courierHistory li :is(strong,span,time,small){display:block}
+.courierHistory li :is(span,time,small){margin-top:3px;color:#766156}
+.courierJourneyDisclaimer{display:block;font-size:10px;line-height:1.5;margin-top:12px;color:#7c6a61}
+.trackingLiveRefresh{display:flex;align-items:center;justify-content:space-between;gap:13px;margin:14px 0 0;font-size:11px;color:#715f56}
+.trackingLiveRefresh button{min-height:44px}
+.courierJourneyCompact{margin:13px 0;padding:15px}
+@media(max-width:700px){
+  .courierJourneyHead{flex-wrap:wrap;gap:9px}
+  .courierMilestones{gap:1px;margin-top:20px}
+  .courierMilestones li{font-size:9px}
+  .courierDot{width:22px;height:22px}
+  .courierMilestones li:before{top:10px}
+  .courierJourney{padding:14px 10px}
+  .trackingLiveRefresh{flex-wrap:wrap}
+}
+@media(max-width:360px){
+  .courierMilestones li{font-size:8px;letter-spacing:-.02em}
+}
+@media(prefers-reduced-motion:reduce){
+  .courierJourney *{transition:none;animation:none}
+}
