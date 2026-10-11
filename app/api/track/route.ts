@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { validation } from "../../../config/validation"
-import { findOrderByTrackingToken, updateOrderStatus } from "../../../lib/server/orders"
-import { getShipwayTracking } from "../../../lib/server/shipway"
+import { findOrderByTrackingToken } from "../../../lib/server/orders"
+import { syncOrderCourier } from "../../../lib/server/orders/courier-sync"
 import { createPackingVideoViewUrl } from "../../../lib/server/r2"
 import { consumeRequestRateLimit } from "../../../lib/server/rate-limit"
 import { enforceSameOrigin, readJsonBody, RequestSecurityError } from "../../../lib/security/request"
@@ -22,49 +22,10 @@ export async function POST(request: Request) {
     if (!order) return NextResponse.json({ ok: false, error: "ORDER_NOT_FOUND" }, { status: 404 })
 
 
-    let shippingCourierName: string | null = null
-    let estimatedDeliveryDate: string | null = null
-    if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && !["cancelled", "delivered", "issue_reported", "refund_or_replacement_resolved"].includes(order.status)) {
-      try {
-        const live = await getShipwayTracking(order.shippingTrackingNumber)
-        shippingCourierName = live?.courierName || null
-        estimatedDeliveryDate = live?.estimatedDeliveryDate || null
-        const remote = live?.shipmentStatus?.toUpperCase() || ""
-        const preDispatch = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status)
-        const pickedUpOrMoving = ["PKP", "INT", "UND", "DEX", "DRE", "CRTA", "CNA", "ODA", "SMD", "OTH"].includes(remote)
-
-        if ((remote === "CAN" || remote === "PCAN") && preDispatch) {
-          await updateOrderStatus(order.publicId, "cancelled")
-          order = await findOrderByTrackingToken(token) || order
-        } else if (pickedUpOrMoving && preDispatch) {
-          const moved = await updateOrderStatus(order.publicId, "shipped")
-          if (moved.ok) order = await findOrderByTrackingToken(token) || order
-        } else if (remote === "OOD" || remote === "OFD") {
-          if (preDispatch) {
-            const moved = await updateOrderStatus(order.publicId, "shipped")
-            if (moved.ok) order = await findOrderByTrackingToken(token) || order
-          }
-          if (order.status === "shipped") {
-            await updateOrderStatus(order.publicId, "out_for_delivery")
-            order = await findOrderByTrackingToken(token) || order
-          }
-        } else if (remote === "DEL") {
-          if (preDispatch) {
-            const moved = await updateOrderStatus(order.publicId, "shipped")
-            if (moved.ok) order = await findOrderByTrackingToken(token) || order
-          }
-          if (order.status === "shipped") {
-            await updateOrderStatus(order.publicId, "out_for_delivery")
-            order = await findOrderByTrackingToken(token) || order
-          }
-          if (order.status === "out_for_delivery") {
-            await updateOrderStatus(order.publicId, "delivered")
-            order = await findOrderByTrackingToken(token) || order
-          }
-        }
-      } catch (error) {
-        console.error("shipway-tracking-sync", error)
-      }
+    const sync = await syncOrderCourier(order)
+    if (sync.status !== order.status) {
+      // Refresh the persisted timeline and delivered_at issue-report window.
+      order = await findOrderByTrackingToken(token) || order
     }
 
     let packingVideoUrl: string | null = null
@@ -90,13 +51,15 @@ export async function POST(request: Request) {
         receiverName: order.receiverName,
         packingVideoUrl,
         shippingTrackingNumber: order.shippingTrackingNumber,
-        shippingCourierName,
-        estimatedDeliveryDate,
+        shippingCourierName: sync.courier?.courierName || null,
+        estimatedDeliveryDate: sync.courier?.estimatedDeliveryDate || null,
+        courier: sync.courier,
+        courierUnavailable: sync.courierUnavailable,
         customerApprovedAt: order.customerApprovedAt,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt
       }
-    })
+    }, { headers: { "Cache-Control": "private, no-store" } })
   } catch (error) {
     if (error instanceof RequestSecurityError) return NextResponse.json({ ok: false, error: error.code }, { status: error.status })
     console.error("track-order", error)
