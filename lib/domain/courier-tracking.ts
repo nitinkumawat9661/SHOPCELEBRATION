@@ -71,7 +71,7 @@ export function displayCourierStatus(
   trackingNumber: string | null,
   checkedAt = new Date().toISOString()
 ): CourierPublicStatus | null {
-  if (!trackingNumber || orderStatus === "cancelled") return null
+  if (!trackingNumber || orderStatus === "cancelled" || !live) return null
   const code = (live?.shipmentStatus || "").trim().toUpperCase()
   // Do not replace order progress with a less advanced stale provider scan.
   const syncedStage: CourierStage | null =
@@ -83,7 +83,7 @@ export function displayCourierStatus(
     ? carrierStage
     : syncedStage === "delivered" ? "delivered"
     : syncedStage === "out_for_delivery" && carrierStage !== "delivered" ? "out_for_delivery"
-    : syncedStage === "picked_up" && (!carrierStage || carrierStage === "pickup_requested") ? "picked_up"
+    : syncedStage === "picked_up" && !carrierStage ? "picked_up"
     : carrierStage || syncedStage || "pickup_requested"
 
   const descriptions: Record<CourierStage, { label: string; description: string }> = {
