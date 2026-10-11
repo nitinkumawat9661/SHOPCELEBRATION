@@ -145,6 +145,12 @@ try{
     if(row.rowCount!==1)throw new Error(`Category row missing: ${item.slug}`)
     const old=row.rows[0].image_url
     const url=`/api/catalog/image?key=${encodeURIComponent(key)}`
+    // Preserve subsequent owner-requested jewellery-only v5 crop.
+    // This legacy initializer is rerun on each production deployment.
+    if (old.includes("category-v5%2F")) {
+      console.log(`Later v5 photo maintained: ${item.slug}`)
+      continue
+    }
     if(old!==url&&!old.includes("category-v3%2F"))
       throw new Error(`Owner-edited category image protected: ${item.slug}`)
     if(!await verified(key)){
