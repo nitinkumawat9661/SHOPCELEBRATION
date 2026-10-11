@@ -10,12 +10,18 @@ export function CourierJourney({ courier, unavailable = false, compact = false }
   const issue = courier?.stage === "exception" || courier?.stage === "returning"
   const currentLocation = courier?.lastLocation
   const deliveryToday = courier?.code === "OOD" || courier?.code === "OFD"
+  const unconfirmedBookingFeed = courier?.stage === "pickup_requested" &&
+    !courier.scans.some(scan => scan.occurredAt &&
+      /pickup requested|pickup scheduled|out for pickup|shipment booked|data received/i.test(scan.status))
   return <section className={`courierJourney ${compact ? "courierJourneyCompact" : ""}`} aria-label="Live courier journey">
     <div className="courierJourneyHead">
       <div>
         <span className="courierJourneyEyebrow">COURIER UPDATES</span>
-        <h3>{courier ? (deliveryToday ? "Arriving today (expected)" : courier.label) : "Tracking temporarily unavailable"}</h3>
-        <p>{courier?.description || "Live tracking could not be loaded. Your saved order status is still available."}</p>
+        <h3>{courier ? (deliveryToday ? "Arriving today (expected)" :
+          unconfirmedBookingFeed ? "Awaiting latest courier scans" : courier.label) : "Tracking temporarily unavailable"}</h3>
+        <p>{unconfirmedBookingFeed
+          ? "The API has not supplied confirmed pickup scans. Shipway's tracking page may have a more recent update."
+          : courier?.description || "Live tracking could not be loaded. Your saved order status is still available."}</p>
       </div>
       {courier?.courierName && <span className="courierCarrier">{courier.courierName}</span>}
     </div>
