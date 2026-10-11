@@ -62,6 +62,10 @@ assert(accountApi.includes('recoverUnlinkedShipment: index < 6'),
 assert(trackApi.includes('sync.trackingNumber !== order.shippingTrackingNumber') &&
   trackApi.includes('shippingTrackingNumber: sync.trackingNumber'),
   "Token-based tracking should re-read the newly attached AWB")
+assert(accountApi.includes("item.shippingTrackingNumber !== orders[index].shippingTrackingNumber") &&
+  accountApi.includes("const latest = await listCustomerOrders(account.id)") &&
+  accountApi.includes("item.updatedAt = times.get(item.publicId) || item.updatedAt"),
+  "Customer last-update time must reflect actual DB timestamp after new AWB/status")
 assert(accountSource.includes("createdAt: row.created_at.toISOString()"),
   "Order age is grounded in actual DB order creation time")
 assert(accountUi.includes("No verified courier AWB is linked yet."),
