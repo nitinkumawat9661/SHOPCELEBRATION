@@ -28,7 +28,7 @@ export function HomeCatalog({ catalog }: { catalog: CatalogConfig }) {
               {photo ? <CatalogProductImage product={photo} /> : <span className="celebrationCategoryGlyph" aria-hidden="true">{category.label.slice(0, 1)}</span>}
             </div>
             <b>{category.label}</b>
-            <span className="celebrationCategorySub">Discover pieces <StoreIcon name="arrow" size={13} /></span>
+            <span className="celebrationCategorySub">Browse pieces <StoreIcon name="arrow" size={13} /></span>
           </Link>
         })}
         <Link className="celebrationCategory celebrationCategory--all" href="/jewelry?view=all" prefetch={false}>
