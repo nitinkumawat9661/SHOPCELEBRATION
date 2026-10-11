@@ -57,19 +57,21 @@ export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommende
           {tiers.map((item) => {
             const badge = tierBadge(item, recommendedTierId, socialProof)
             return (
-              <button type="button" key={item.id} className={`tier ${hasChosenTier && selectedTierId === item.id ? "active" : ""}`} aria-pressed={hasChosenTier && selectedTierId === item.id} onClick={() => onSelect(item.id)}>
+              <button type="button" key={item.id} className={`tier celebrationHamperCard ${hasChosenTier && selectedTierId === item.id ? "active" : ""}`} aria-pressed={hasChosenTier && selectedTierId === item.id} onClick={() => onSelect(item.id)}>
                 <div className="celebrationTierMeta">
                   <span className="celebrationTierEyebrow">MAKE IT PERSONAL</span>
                   {badge && <span className="badge">{badge}</span>}
                 </div>
-                <div className="price">{formatMoney(item.price)}</div>
-                <div className="name">{item.name}</div>
+                <div className="celebrationTierMain">
+                  <span className="price">{formatMoney(item.price)}</span>
+                  <span className="name">{item.name}</span>
+                </div>
                 <div className="celebrationTierDetails">
                   <span className="size">{item.size}</span>
                   <span className="celebrationTierDivider" aria-hidden="true" />
                   <span>Up to {item.maxChoices} {item.maxChoices === 1 ? "choice" : "choices"}</span>
                 </div>
-                <div className="note">Price for the complete hamper</div>
+                <span className="note">Price for the complete hamper</span>
                 <span className="celebrationTierCta"><span>{hasChosenTier && selectedTierId === item.id ? "Selected" : "Choose this hamper"}</span><span className="celebrationTierArrow" aria-hidden="true">→</span></span>
               </button>
             )
