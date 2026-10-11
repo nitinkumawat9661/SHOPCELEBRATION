@@ -26,6 +26,12 @@ assert(code.includes('alpha(0,0)>8')&&code.includes('alpha(320,320)<250'),"Relea
 assert(code.includes('category-v3/')&&sql.includes('category-v3%2F'),"Use new immutable media, preserving old release assets")
 assert(css.includes("object-fit:contain")&&css.includes("border-radius:50%"),"Whole product must fit round card")
 assert(media.includes("category-v[123]"),"Home must resolve v3 URLs")
-// .github/workflows is deliberately excluded from VPS source archives.\n// Assert its presence when available during GitHub PR CI only.\nconst workflow=await read(".github/workflows/deploy-production.yml").catch(error=>{\n  if(error?.code==="ENOENT") return null\n  throw error\n})\nif(workflow!==null) assert(workflow.includes("generate-celebration-circle-art-v3.mjs"),"Deployment must create images before switching release")
+// .github/workflows is deliberately excluded from VPS source archives.
+// Assert its presence when available during GitHub PR CI only.
+const workflow=await read(".github/workflows/deploy-production.yml").catch(error=>{
+  if(error?.code==="ENOENT") return null
+  throw error
+})
+if(workflow!==null) assert(workflow.includes("generate-celebration-circle-art-v3.mjs"),"Deployment must create images before switching release")
 assert(!code.includes('photoPanel')&&!code.includes('matteSvg'),"Reject previous square card montage generator")
 console.log("Category v3 source checks passed: 7 exact Celebration SKUs, 1 product per circular card, centered contained photos with feathered mask, versioned R2/DB publication and corner alpha checks.")
