@@ -38,7 +38,7 @@ assert(script.includes('alpha(0,0)>8')&&script.includes('alpha(320,320)<245'),
   "Verify transparent edges and visible center before writing an object")
 assert(script.includes('await db.query("BEGIN")')&&script.includes('await db.query("COMMIT")')&&script.includes("ROLLBACK"),
   "Publish all seven photos atomically after R2 checks")
-assert(db.includes("category-v5%2F")&&media.includes("category-v[12345]"),
+assert(db.includes("category-v5%2F")&&media.includes("category-v[123456]"),
   "Updated database and loader must accept the new version")
 assert(v3.includes("category-v5%2F")&&v4.includes('old.includes("category-v5%2F")'),
   "All legacy seeding scripts must be safe after future version upgrades")
