@@ -19,16 +19,17 @@ type StorefrontProps = {
   initialCatalog: CatalogConfig
   initialSocialProof?: TierSocialProof | null
   initialSettings: StoreSettings
+  initialCategoryMedia: Record<string, string>
 }
 
-export function Storefront({ initialCatalog, initialSocialProof = null, initialSettings }: StorefrontProps) {
+export function Storefront({ initialCatalog, initialSocialProof = null, initialSettings, initialCategoryMedia }: StorefrontProps) {
   const tiers = initialCatalog.tiers.filter((item) => item.active !== false)
   const visibleProof = isPublicHamperOrderProof(initialSocialProof, tiers) ? initialSocialProof : null
 
   return (
     <div className="celebrationHome">
         <TrustStrip />
-        <StorefrontHeader settings={initialSettings} />
+        <StorefrontHeader settings={initialSettings} stableOnHome />
       <main id="main-content">
         <Hero tiers={tiers} />
         <div className="celebrationBenefits wrap" aria-label="Shopping at Celebration">
@@ -43,7 +44,7 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
             <p>{visibleProof.sharePercent}% of {visibleProof.totalOrders} paid and delivered hampers used the {visibleProof.tierName} budget.</p>
           </div>
         )}
-        <HomeCatalog catalog={initialCatalog} />
+        <HomeCatalog catalog={initialCatalog} categoryMedia={initialCategoryMedia} />
         <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={visibleProof} />
       </main>
     </div>
