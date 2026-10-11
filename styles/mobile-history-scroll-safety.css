@@ -1,0 +1,25 @@
+/* Stabilize Android Chrome page navigation and sticky-header scrolling.
+ * Horizontal swipes on a product photo should never become a browser
+ * back/forward overscroll gesture. Inner category rails remain scrollable.
+ */
+html,body{
+  overscroll-behavior-x:none;
+}
+@media(max-width:700px){
+  .celebrationHeader{
+    overflow-anchor:none;
+  }
+  .collectionPage .marketplaceGalleryStage{
+    touch-action:pan-y;
+    overscroll-behavior-x:contain;
+  }
+  .collectionPage .marketplaceGalleryStage img,
+  .collectionPage .catalogCardVisual img,
+  .celebrationHome .catalogCardVisual img{
+    -webkit-user-drag:none;
+    user-select:none;
+  }
+}
+/* No scroll-snap, transforms, or body overflow lock: regular vertical page
+ * scrolling, the browser's accessibility controls, and deliberate links stay
+ * available. Native OS back gestures are outside web-page control. */
