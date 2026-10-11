@@ -10,6 +10,7 @@ import { TrustStrip } from "../shell/TrustStrip"
 import { SiteFooter } from "../shell/SiteFooter"
 import { notifyUx, scrollToUxTarget } from "../ux/UxMessenger"
 import { TrackingTimeline } from "./TrackingTimeline"
+import { CourierJourney } from "./CourierJourney"
 import { IssueForm } from "./IssueForm"
 import { PackingApprovalCard } from "./PackingApprovalCard"
 import { TrackingLookup } from "./TrackingLookup"
@@ -107,6 +108,11 @@ export function TrackingPage() {
             </div>
             {tracked.error && <div className="errorBox" role="alert">{tracked.error}</div>}
             <TrackingTimeline status={order.status} orderType={order.orderType} />
+            {order.shippingTrackingNumber && <div className="trackingLiveRefresh">
+              <div>{tracked.lastRefreshedAt ? `Last checked ${tracked.lastRefreshedAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}` : "Courier updates refresh while this page is open"}</div>
+              <button className="secondary" type="button" disabled={tracked.refreshing} onClick={() => void tracked.refresh()}>{tracked.refreshing ? "Checking…" : "Refresh tracking"}</button>
+            </div>}
+            <CourierJourney courier={order.courier || null} unavailable={order.courierUnavailable || false} />
             {order.orderType === "hamper" && <PackingApprovalCard
               status={order.status}
               packingVideoUrl={order.packingVideoUrl}
