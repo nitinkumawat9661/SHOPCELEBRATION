@@ -16,12 +16,12 @@ export function CategoryEditorialPhoto({ src, label, eager = false }: {
       {!failed && (
         <img
           src={src}
-          width={352}
-          height={352}
+          width={640}
+          height={640}
           loading={eager ? "eager" : "lazy"}
           fetchPriority={eager ? "high" : "auto"}
           decoding="async"
-          alt={`Editorial photo for ${label}; browse actual products inside`}
+          alt={`Celebration product photography for ${label}; explore actual items`}
           onError={() => setBrokenSource(src)}
         />
       )}
