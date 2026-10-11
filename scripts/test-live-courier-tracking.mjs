@@ -82,7 +82,7 @@ assert(hook.includes("60000") && hook.includes("visibilitychange") && hook.inclu
 assert(accountPage.includes("60000") && accountPage.includes("visibilitychange"),"Account orders must poll for live updates")
 assert(trackPage.includes("<CourierJourney") && accountPage.includes("<CourierJourney"),"Both UIs render shipment stages")
 assert(journey.includes("Courier scan history") && journey.includes("Arriving today (expected)") &&
-  journey.includes("not continuous GPS") && journey.includes("Pickup requested"),
+  journey.includes("not continuous GPS") && src.includes('label: "Pickup requested"'),
   "Show truthful ETA/scan details and no claimed continuous GPS")
 assert(css.includes("@media(max-width:700px)") && css.includes(".courierMilestones"),
   "Real courier journey must adapt to mobile widths")
