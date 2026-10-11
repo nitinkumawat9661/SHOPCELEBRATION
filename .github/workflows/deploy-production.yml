@@ -128,6 +128,8 @@ jobs:
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/seed-home-category-photos.mjs\")"' _ "$NEW_RELEASE"
           echo "Creating authentic Celebration category art from verified exact-SKU photos"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/generate-celebration-category-art.mjs\")"' _ "$NEW_RELEASE"
+          echo "Building and validating circle-native real-product category images"
+          run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/generate-celebration-circle-art-v3.mjs\")"' _ "$NEW_RELEASE"
 
           start_release() {
             local release="$1"
