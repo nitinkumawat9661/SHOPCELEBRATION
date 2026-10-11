@@ -1,0 +1,287 @@
+/* Screenshot-driven cleanup: stop giant mobile featured posters/card overflow.
+   Category round images are now real close crops; featured sale-card images keep
+   the COMPLETE original same-SKU artwork and stay uncropped. */
+.celebrationHome .celebrationCategories .celebrationCategoryArt,
+.celebrationHome .celebrationCategoryArt--editorial {
+  border:1px solid #e4c9c2;
+  box-shadow:0 2px 9px rgba(93,52,60,.07);
+  background:#f9ede9;
+}
+.celebrationHome .celebrationCategories .celebrationCategoryArt::after{
+  content:none;
+  display:none;
+}
+.celebrationHome .celebrationCategoryEditorialPhoto>img{
+  object-fit:cover;
+  width:100%;
+  height:100%;
+  object-position:center;
+  border-radius:50%;
+  transform:none;
+  transition:none;
+}
+.celebrationHome .celebrationCategories .celebrationCategory>b{
+  font-size:clamp(10px,1.1vw,12px);
+  font-weight:650;
+  line-height:1.32;
+  letter-spacing:-.018em;
+  color:#593540;
+  text-wrap:balance;
+}
+.celebrationHome .celebrationFeatured{
+  padding-top:clamp(16px,2.1vw,27px);
+  padding-bottom:clamp(27px,3.8vw,48px);
+}
+.celebrationHome .celebrationFeatured .celebrationSectionHead{
+  gap:14px;
+  align-items:end;
+  margin-bottom:18px;
+}
+.celebrationHome .celebrationFeatured .celebrationSectionHead h2{
+  font-size:clamp(29px,2.8vw,38px);
+  line-height:1.14;
+  text-wrap:balance;
+}
+.celebrationHome .celebrationFeatured .collectionGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:clamp(12px,1.5vw,19px);
+  width:100%;
+  max-width:100%;
+  overflow:visible;
+  padding:0;
+  scroll-snap-type:none;
+  box-sizing:border-box;
+  align-items:stretch;
+}
+.celebrationHome .celebrationFeatured .collectionGrid>.catalogCard{
+  box-sizing:border-box;
+  display:flex;
+  flex:none;
+  flex-direction:column;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  scroll-snap-align:unset;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(75,35,45,.055);
+  background:#fffdfb;
+}
+.celebrationHome .celebrationFeatured .catalogCardLink{
+  flex:1 1 auto;
+  width:100%;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  text-decoration:none;
+}
+.celebrationHome .celebrationFeatured .catalogCardVisual,
+.celebrationHome .celebrationFeatured .catalogCard--clean .catalogCardVisual,
+.celebrationHome .celebrationFeatured .catalogCard--paper .catalogCardVisual,
+.celebrationHome .celebrationFeatured .catalogCard--folio .catalogCardVisual{
+  display:block;
+  position:relative;
+  box-sizing:border-box;
+  aspect-ratio:1/1;
+  width:100%;
+  height:auto;
+  min-height:0;
+  flex:0 0 auto;
+  padding:5px;
+  background:#fffaf6;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia,
+.celebrationHome .celebrationFeatured .catalogCard--clean .catalogCardMedia,
+.celebrationHome .celebrationFeatured .catalogCard--paper .catalogCardMedia,
+.celebrationHome .celebrationFeatured .catalogCard--folio .catalogCardMedia{
+  position:relative;
+  display:block;
+  box-sizing:border-box;
+  height:100%;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+  border:0;
+  border-radius:7px;
+  background:#fffdfb;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia .safeCatalogImageFrame{
+  display:block;
+  width:100%;
+  height:100%;
+  background:#fffdfb;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia .safeCatalogImageFrame>img{
+  object-fit:contain;
+  object-position:center;
+  transform:none;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia .safeCatalogImageFrame.catalogSpritePhoto>img{
+  object-fit:cover;
+}
+.celebrationHome .celebrationFeatured .catalogCardInfo{
+  box-sizing:border-box;
+  width:100%;
+  padding:11px 12px 12px;
+  flex:1 1 auto;
+}
+.celebrationHome .celebrationFeatured .catalogCardInfo .catalogCardBadgeInline{
+  font-size:9px;
+  padding:4px 7px;
+  line-height:1.2;
+  margin-bottom:6px;
+}
+.celebrationHome .celebrationFeatured .catalogCardCategory{
+  font-size:9px;
+  line-height:1.4;
+}
+.celebrationHome .celebrationFeatured .catalogCard h3{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  overflow:hidden;
+  min-height:0;
+  max-height:3em;
+  margin:0;
+  font-size:13px;
+  line-height:1.42;
+  font-weight:650;
+  color:#51343b;
+}
+.celebrationHome .celebrationFeatured .catalogCardPrice{
+  margin-top:9px;
+  padding-top:9px;
+  gap:4px 6px;
+}
+.celebrationHome .celebrationFeatured .catalogCardPrice strong{
+  font-size:17px;
+  line-height:1.15;
+}
+.celebrationHome .celebrationFeatured .catalogCard>.cartAddControl{
+  position:relative;
+  z-index:2;
+  box-sizing:border-box;
+  width:100%;
+  margin-top:0;
+  padding:0 12px 12px;
+}
+.celebrationHome .celebrationFeatured .catalogCard .cartAddControl button{
+  box-sizing:border-box;
+  min-height:44px;
+  font-size:11px;
+  border-radius:9px;
+}
+@media(max-width:950px){
+  .celebrationHome .celebrationFeatured .collectionGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:700px){
+  .celebrationHome .celebrationFeatured{
+    padding-block:19px 32px;
+  }
+  .celebrationHome .celebrationFeatured .celebrationSectionHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:15px;
+  }
+  .celebrationHome .celebrationFeatured .celebrationSectionHead h2{
+    font-size:clamp(26px,7vw,32px);
+    line-height:1.18;
+    max-width:12ch;
+  }
+  .celebrationHome .celebrationFeatured .celebrationSectionHead>a{
+    font-size:11px;
+    gap:5px;
+    min-height:44px;
+    white-space:nowrap;
+  }
+  .celebrationHome .celebrationFeatured .collectionGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:11px 9px;
+    overflow:visible;
+    padding:0;
+    margin:0;
+  }
+  .celebrationHome .celebrationFeatured .collectionGrid>.catalogCard{
+    flex:none;
+    width:100%;
+    min-width:0;
+    height:auto;
+    align-self:stretch;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardVisual,
+  .celebrationHome .celebrationFeatured .catalogCard--clean .catalogCardVisual,
+  .celebrationHome .celebrationFeatured .catalogCard--paper .catalogCardVisual,
+  .celebrationHome .celebrationFeatured .catalogCard--folio .catalogCardVisual{
+    aspect-ratio:1/1.02;
+    padding:4px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardInfo{
+    padding:10px 9px 9px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardCategory{
+    display:block;
+    font-size:8px;
+    letter-spacing:.035em;
+    margin-bottom:5px;
+    overflow-wrap:anywhere;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard h3{
+    font-size:11.5px;
+    line-height:1.4;
+    max-height:2.8em;
+    min-height:0;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard p,
+  .celebrationHome .celebrationFeatured .catalogLegalHint{
+    display:none;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    padding-top:8px;
+    margin-top:9px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice>span:first-child{
+    display:none;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice strong{
+    font-size:15px;
+    white-space:nowrap;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice small{
+    font-size:9px;
+    white-space:normal;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard>.cartAddControl{
+    padding:0 9px 9px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard .cartAddControl button{
+    min-height:44px;
+    width:100%;
+    padding:9px 5px;
+    font-size:10px;
+  }
+}
+@media(max-width:360px){
+  .celebrationHome .celebrationFeatured .collectionGrid{gap:8px}
+  .celebrationHome .celebrationFeatured .catalogCardInfo{padding-inline:7px}
+  .celebrationHome .celebrationFeatured .catalogCard>.cartAddControl{padding-inline:7px}
+  .celebrationHome .celebrationFeatured .catalogCard h3{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationFeatured .catalogCard{
+    transition:none;
+    transform:none;
+  }
+}
