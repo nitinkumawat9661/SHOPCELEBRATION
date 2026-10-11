@@ -57,7 +57,5 @@
 @import "../styles/storefront-final-finish-task8.css";
 @import "../styles/courier-journey.css";
 @import "../styles/mobile-history-scroll-safety.css";
-@import "../styles/jewelry-two-column-scroll-header-fix.css";
-
-/* Homepage category discovery: deliberately last to win older grid rules. */
 @import "../styles/home-category-swipe-20261012.css";
+@import "../styles/jewelry-two-column-scroll-header-fix.css";
