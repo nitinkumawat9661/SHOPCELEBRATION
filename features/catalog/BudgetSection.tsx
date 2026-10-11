@@ -31,7 +31,7 @@ export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommende
     if (!rail) return
     const card = rail.querySelector<HTMLElement>(".tier")
     const distance = card ? card.getBoundingClientRect().width + 16 : rail.clientWidth * 0.75
-    rail.scrollBy({ left: direction * Math.max(distance, 120), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })
+    rail.scrollBy({ left: direction * Math.max(distance, 120), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
   }
 
   return (
