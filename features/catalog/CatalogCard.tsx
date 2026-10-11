@@ -8,7 +8,7 @@ import { formatMoney } from "../../lib/domain/money"
 import { SafeCatalogImage } from "./SafeCatalogImage"
 import { catalogCardTreatment } from "../../lib/domain/catalog-card-presentation"
 
-export function CatalogProductImage({ product, priority = false }: { product: GiftProduct; priority?: boolean }) {
+export function CatalogProductImage({ product, priority = false, imageVariant = "thumb" }: { product: GiftProduct; priority?: boolean; imageVariant?: "thumb" | "main" }) {
   const primary = primaryProductImage(product)
   if (primary) {
     const sprite = catalogSpriteImage(primary.url)
@@ -24,7 +24,7 @@ export function CatalogProductImage({ product, priority = false }: { product: Gi
     }
     return <SafeCatalogImage
       className="catalogPhoto"
-      src={catalogImageVariant(primary.url, "thumb")}
+      src={catalogImageVariant(primary.url, imageVariant)}
       fallbackSrc={primary.fallbackUrl}
       alt={primary.alt || product.name}
       loading={priority ? "eager" : "lazy"}
@@ -33,7 +33,7 @@ export function CatalogProductImage({ product, priority = false }: { product: Gi
   return <SafeCatalogImage className="catalogPhoto" src="" alt={product.name} />
 }
 
-export function CatalogCard({ product }: { product: GiftProduct }) {
+export function CatalogCard({ product, imageVariant = "thumb" }: { product: GiftProduct; imageVariant?: "thumb" | "main" }) {
   const listed = isIndividualListing(product)
   const individual = isIndividuallySellable(product)
   const soldOut = listed && !individual
@@ -44,7 +44,7 @@ export function CatalogCard({ product }: { product: GiftProduct }) {
   return (
     <article className={`catalogCard catalogCard--${treatment}`}>
       <Link href={`/jewelry/${encodeURIComponent(product.id)}`} className="catalogCardLink" prefetch={false}>
-        <div className="catalogCardVisual"><div className="catalogCardMedia"><CatalogProductImage product={product} /></div><span className="catalogCardArrow" aria-hidden="true">→</span></div>
+        <div className="catalogCardVisual"><div className="catalogCardMedia"><CatalogProductImage product={product} imageVariant={imageVariant} /></div><span className="catalogCardArrow" aria-hidden="true">→</span></div>
         <div className="catalogCardInfo">
           {badge && <span className={`catalogCardBadge catalogCardBadgeInline catalogCardBadge--${badge.kind}`}>{badge.label}</span>}
           <span className="catalogCardCategory">{product.category}</span>
