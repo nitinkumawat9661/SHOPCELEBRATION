@@ -1,5 +1,6 @@
 import { requireEnv } from "../../config/env"
 import type { OrderRecord } from "./orders/types"
+import { parseShipwayTrackingResponse, parseShipwayOrderByAwb, promotedShipwayStatus } from "../domain/shipway-response"
 
 const SHIPWAY_BASE = "https://app.shipway.com"
 
@@ -415,59 +416,44 @@ export async function findExistingShipwayAwbByOrderId(merchantOrderId: string): 
 
 export async function getShipwayTracking(awb: string): Promise<ShipwayTracking | null> {
   if (!/^[A-Za-z0-9._-]{4,120}$/.test(awb)) return null
+  // Shipment scan history is the source of truth, not booking status.
   const raw = await request(`/api/tracking?awb_numbers=${encodeURIComponent(awb)}&tracking_history=1`, { method: "GET" })
-  // The shipping service has returned both array and object wrappers.
-  const root = Array.isArray(raw) ? raw[0] : raw
-  if (!root || typeof root !== "object") return null
-  const first = root as Record<string, unknown>
-  const trackingRaw = first.tracking_details ?? first.response ?? first.data
-  const tracking = trackingRaw && typeof trackingRaw === "object" && !Array.isArray(trackingRaw)
-    ? trackingRaw as Record<string, unknown> : first
-  const details = Array.isArray(tracking.shipment_details) ? tracking.shipment_details : []
-  const current = details[0] && typeof details[0] === "object" ? details[0] as Record<string, unknown> : {}
-  const code = String(tracking.shipment_status ?? tracking.current_status_code ?? first.shipment_status ?? first.current_status_code ?? "").trim().toUpperCase()
-  const statusText = String(current.current_status ?? tracking.current_status ?? first.current_status ?? "").trim()
+  const primary = parseShipwayTrackingResponse(raw, awb)
 
-  const clean = (value: unknown, max = 160) => typeof value === "string"
-    ? value.replace(/[\x00-\x1F\x7F]/g, " ").replace(/\s+/g, " ").trim().slice(0, max)
-    : ""
-  const scanEntries = Array.isArray(tracking.tracking_history) ? tracking.tracking_history
-    : Array.isArray(tracking.shipment_history) ? tracking.shipment_history
-    : Array.isArray(tracking.shipment_details) ? tracking.shipment_details
-    : []
-  const scans = scanEntries.slice(0, 20).flatMap((entry): ShipwayTracking["scans"] => {
-    if (!entry || typeof entry !== "object") return []
-    const row = entry as Record<string, unknown>
-    const status = clean(row.status ?? row.current_status ?? row.status_detail ?? row.description, 100)
-    const location = clean(row.location ?? row.current_location ?? row.city ?? row.hub, 85)
-    const dateRaw = clean(row.timestamp ?? row.time ?? row.date ?? row.status_date, 55)
-    const details = clean(row.remarks ?? row.status_detail ?? row.description, 150)
-    if (!status && !details) return []
-    return [{
-      status: status || details,
-      location: location || null,
-      occurredAt: dateRaw || null,
-      details: details && details !== status ? details : null
-    }]
-  })
-  let estimatedDeliveryDate = estimatedDeliveryDateFrom(raw)
-  if (!estimatedDeliveryDate) {
+  // Shipway's public buyer page can receive updates before /api/tracking
+  // reflects them. Check the independent authenticated order-list status when
+  // the primary result remains SCH/OFP/NFI or has no genuine dated scans.
+  let fallback: ReturnType<typeof parseShipwayOrderByAwb> = null
+  let orderRaw: unknown = null
+  const primaryStatus = primary?.shipmentStatus || ""
+  const staleBooking = !primaryStatus || ["SCH","OFP","NFI","NFIDS"].includes(primaryStatus) ||
+    (!primary?.scans.length && primaryStatus !== "DEL")
+  if (staleBooking || !estimatedDeliveryDateFrom(raw)) {
     try {
-      const orderRaw = await request(`/api/getorders?awb_number=${encodeURIComponent(awb)}`, { method: "GET" })
-      estimatedDeliveryDate = estimatedDeliveryDateFrom(orderRaw)
+      orderRaw = await request(`/api/getorders?awb_number=${encodeURIComponent(awb)}`, { method: "GET" })
+      // Only records explicitly matching THIS AWB may update the displayed
+      // order; never use an unrelated order or an "Exchange" order type.
+      fallback = parseShipwayOrderByAwb(orderRaw, awb)
     } catch (error) {
-      console.warn("shipway-edd-fallback", error instanceof Error ? error.message : "unknown")
+      console.warn("shipway-order-status-fallback", error instanceof Error ? error.message : "unknown")
     }
   }
+  if (!primary && !fallback) return null
+  const promoted = promotedShipwayStatus(primaryStatus, fallback?.shipmentStatus || "")
+  // If no verifiable scan/status exists, do not manufacture a pickup scan.
+  const scans = primary?.scans || []
+  const currentStatus = promoted !== primaryStatus && fallback?.currentStatus
+    ? fallback.currentStatus : primary?.currentStatus || fallback?.currentStatus || ""
   return {
-    shipmentStatus: code,
-    currentStatus: statusText.slice(0, 120),
-    courierName: clean(current.courier_name ?? tracking.courier_name ?? tracking.carrier, 90) || null,
-    trackUrl: httpsUrl(tracking.track_url ?? first.track_url),
-    estimatedDeliveryDate,
+    shipmentStatus: promoted,
+    currentStatus: currentStatus.slice(0,120),
+    courierName: primary?.courierName || fallback?.courierName || null,
+    trackUrl: primary?.trackUrl || null,
+    estimatedDeliveryDate: estimatedDeliveryDateFrom(raw) || (orderRaw ? estimatedDeliveryDateFrom(orderRaw) : null),
     scans
   }
 }
+
 
 function shipwayCancelAccepted(raw: unknown) {
   const rows = objectList(raw)
