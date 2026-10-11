@@ -73,8 +73,11 @@ assert(card.includes('catalogCardTreatment(product)'), "Cards must derive visual
 for (const label of ["paper", "clean", "folio"]) {
   assert(styling.includes(`catalogCard--${label}`), `Missing CSS treatment: ${label}`)
 }
-assert(card.includes('<div className="catalogCardMedia"><CatalogProductImage product={product} /></div>'),
-  "Render precisely this SKU's own photo, never a generated thumbnail")
+assert(card.includes('<div className="catalogCardMedia"><CatalogProductImage product={product} imageVariant={imageVariant} /></div>'),
+  "Product card uses its own exact SKU photo at the requested resolution")
+assert(card.includes('imageVariant = "thumb"') && card.includes('catalogImageVariant(primary.url, imageVariant)'),
+  "Listings retain exact-SKU thumb default; featured homepage may request exact-SKU main")
+
 assert(card.includes("productBadge(product)") && card.includes("productSavingLabel(product)"),
   "Keep evidence-driven badges and valid price savings")
 assert(card.includes('catalogCardBadgeInline'), "Position badge outside image; keep actual badge content")

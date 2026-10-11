@@ -1,0 +1,263 @@
+/* Celebration homepage Phase 1: shop by occasion.
+ * Eight real live choices, direct-to-builder. No background collage behind
+ * labels, fake stories or motion-heavy overlays. */
+.celebrationHome .celebrationOccasions.celebrationOccasions--refined{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  box-sizing:border-box;
+  border-block:1px solid #e8d5d1;
+  padding-block:clamp(36px,4.8vw,65px);
+  background:#f9f1ec;
+  background-image:linear-gradient(115deg,#fffaf6 0%,#f5e7e2 58%,#f8efe9 100%);
+  color:#613545;
+  text-align:left;
+}
+.celebrationHome .celebrationOccasions--refined::before{
+  position:absolute;
+  top:-150px;
+  left:-180px;
+  width:380px;
+  height:380px;
+  content:"";
+  border-radius:50%;
+  border:1px solid rgba(127,66,77,.1);
+  box-shadow:none;
+  opacity:.5;
+  pointer-events:none;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionLayout{
+  display:grid;
+  grid-template-columns:minmax(0,.91fr) minmax(0,1.09fr);
+  align-items:center;
+  gap:clamp(30px,5.7vw,90px);
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionIntro,
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionBrowse{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionIntro .celebrationEyebrow{
+  display:inline-block;
+  font-size:10px;
+  font-weight:650;
+  letter-spacing:.12em;
+  color:#a17274;
+}
+.celebrationHome .celebrationOccasions--refined h2{
+  margin:15px 0 14px;
+  max-width:15ch;
+  color:#633245;
+  font:500 clamp(34px,3.7vw,48px)/1.12 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.03em;
+  text-wrap:balance;
+}
+.celebrationHome .celebrationOccasions--refined h2 em{
+  color:#955568;
+  font-style:italic;
+  font-weight:400;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionIntro p{
+  max-width:35ch;
+  margin:0;
+  font-size:13px;
+  line-height:1.65;
+  color:#785f5e;
+  text-wrap:pretty;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionIntroRule{
+  display:block;
+  width:65px;
+  height:1px;
+  margin-top:22px;
+  background:#cba9a2;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionBrowseMeta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0 0 11px;
+  color:#785d60;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.025em;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionSwipePrompt{
+  display:none;
+  font-size:10px;
+  font-weight:500;
+  color:#98777b;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionRail{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:11px;
+  max-width:none;
+  width:100%;
+  margin:0;
+  padding:0;
+  justify-content:stretch;
+  overflow:visible;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip{
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex:none;
+  min-height:60px;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding:11px 12px 11px 16px;
+  border:1px solid #e5d0cb;
+  border-radius:10px;
+  background:#fffcf9;
+  box-shadow:0 2px 7px rgba(74,39,45,.035);
+  color:#683d48;
+  cursor:pointer;
+  text-align:left;
+  white-space:normal;
+  transform:none;
+  transition:border-color .16s ease,background-color .16s ease;
+  -webkit-tap-highlight-color:rgba(126,53,75,.1);
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip:hover{
+  transform:none;
+  border-color:#bd98a0;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip.active{
+  border-color:#813b52;
+  background:#7c3950;
+  box-shadow:none;
+  color:white;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip:focus-visible{
+  outline:2px solid #763447;
+  outline-offset:3px;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionName{
+  display:block;
+  flex:1 1 auto;
+  min-width:0;
+  max-width:none;
+  margin:0;
+  font-size:clamp(12px,1.1vw,14px);
+  line-height:1.4;
+  font-weight:650;
+  text-align:left;
+  letter-spacing:0;
+  overflow-wrap:break-word;
+  word-break:normal;
+  white-space:normal;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionArrow{
+  display:grid;
+  flex:0 0 27px;
+  place-items:center;
+  width:27px;
+  height:27px;
+  min-width:27px;
+  margin:0 0 0 9px;
+  border:1px solid #eadbd8;
+  border-radius:50%;
+  color:#93566c;
+  background:#fcf5f1;
+  font-size:15px;
+  font-weight:500;
+  line-height:1;
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip.active .celebrationOccasionArrow{
+  border-color:rgba(255,255,255,.36);
+  color:white;
+  background:rgba(255,255,255,.10);
+}
+.celebrationHome .celebrationOccasions--refined .celebrationOccasionFootnote{
+  margin:12px 0 0;
+  color:#9b7c7d;
+  font-size:11px;
+  line-height:1.55;
+  text-align:left;
+}
+@media(max-width:850px){
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionLayout{
+    grid-template-columns:minmax(0,1fr);
+    gap:23px;
+  }
+  .celebrationHome .celebrationOccasions--refined h2{
+    max-width:none;
+    font-size:clamp(32px,5vw,40px);
+  }
+  .celebrationHome .celebrationOccasions--refined h2 br{
+    display:none;
+  }
+}
+@media(max-width:700px){
+  .celebrationHome .celebrationOccasions.celebrationOccasions--refined{
+    padding-block:28px 30px;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionLayout{
+    gap:19px;
+  }
+  .celebrationHome .celebrationOccasions--refined h2{
+    margin:10px 0;
+    font-size:clamp(29px,7.5vw,37px);
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionIntro p{
+    font-size:12px;
+    max-width:38ch;
+    line-height:1.6;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionIntroRule{
+    display:none;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionBrowseMeta{
+    margin-bottom:8px;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionSwipePrompt{
+    display:inline;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionRail{
+    display:flex;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    grid-template-columns:none;
+    align-items:stretch;
+    gap:9px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x proximity;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    max-width:none;
+    padding:4px 2px 10px;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionRail::-webkit-scrollbar{display:none}
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip{
+    flex:0 0 clamp(155px,48vw,185px);
+    width:auto;
+    min-width:0;
+    min-height:55px;
+    scroll-snap-align:start;
+    border-radius:9px;
+    padding:10px 10px 10px 13px;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionName{
+    font-size:12px;
+  }
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionFootnote{
+    font-size:10px;
+    margin-top:5px;
+  }
+}
+@media(max-width:360px){
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip{
+    flex-basis:151px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationOccasions--refined .celebrationOccasionRail .chip{transition:none}
+}
