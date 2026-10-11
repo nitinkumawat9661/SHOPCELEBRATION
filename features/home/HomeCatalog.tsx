@@ -5,16 +5,6 @@ import { CatalogCard, CatalogProductImage } from "../catalog/CatalogCard"
 import { StoreIcon } from "../shell/StoreIcon"
 import { CategoryEditorialPhoto } from "./CategoryEditorialPhoto"
 
-// Navigation-only titles fit neatly below small round photos. Category
-// filters, exact product titles and inventory retain the original IDs/names.
-const CATEGORY_NAV_TITLES: Record<string,string> = {
-  "Premium Anti-Tarnish Necklaces": "Premium Necklaces",
-  "Necklace + Earrings Sets": "Jewellery Sets",
-  "Trending Necklaces": "Trending Necklaces",
-  "Gold-Plated Bangles & Bracelets": "Bangles & Bracelets",
-  "Adjustable Rings": "Adjustable Rings"
-}
-
 export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogConfig; categoryMedia?: Record<string, string> }) {
   const products = visibleProducts(catalog)
   const categories = categoriesForCatalog(catalog).filter((item) => item.id !== catalog.settings.allCategory.id)
@@ -51,12 +41,11 @@ export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogC
           // Do not substitute a different SKU when media is missing.
           const photo = products.find((product) => product.category === category.id && primaryProductImage(product))
           const editorial = categoryMedia[category.id]
-          const title = CATEGORY_NAV_TITLES[category.id] || category.label
           return <Link className="celebrationCategory" href={`/jewelry?view=all&category=${encodeURIComponent(category.id)}`} key={category.id} prefetch={false}>
             <div className="celebrationCategoryArt">
-              {editorial ? <CategoryEditorialPhoto src={editorial} label={title} eager={index < 3} /> : photo ? <CatalogProductImage product={photo} /> : <span className="celebrationCategoryGlyph" aria-hidden="true">{category.label.slice(0, 1)}</span>}
+              {editorial ? <CategoryEditorialPhoto src={editorial} label={category.label} eager={index < 3} /> : photo ? <CatalogProductImage product={photo} /> : <span className="celebrationCategoryGlyph" aria-hidden="true">{category.label.slice(0, 1)}</span>}
             </div>
-            <b>{title}</b>
+            <b>{category.label}</b>
             <span className="celebrationCategorySub">Browse pieces <StoreIcon name="arrow" size={13} /></span>
           </Link>
         })}
