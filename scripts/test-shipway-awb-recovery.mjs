@@ -68,8 +68,8 @@ assert(accountApi.includes("item.shippingTrackingNumber !== orders[index].shippi
   "Customer last-update time must reflect actual DB timestamp after new AWB/status")
 assert(accountSource.includes("createdAt: row.created_at.toISOString()"),
   "Order age is grounded in actual DB order creation time")
-assert(accountUi.includes("No verified courier AWB is linked yet."),
-  "Customer messaging must not assert that pickup has yet to happen")
+assert(accountUi.includes("orderStatus={order.status}") && !accountUi.includes("Courier booked, awaiting pickup"),
+  "Compact customer progress must not assert pickup occurred before live courier scan confirmation")
 assert(fulfillment.includes('const shouldMarkShipped = metadata.markShipped === true'),
   "Entering an AWB or booking a courier must not automatically mark the parcel shipped")
 assert(fulfillment.includes('markShipped: false'),

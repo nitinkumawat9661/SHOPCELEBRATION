@@ -51,3 +51,99 @@
 @media(prefers-reduced-motion:reduce){
   .courierJourney *{transition:none;animation:none}
 }
+
+/* My Account: a single compact delivery card, like the approved five-circle
+ * layout. Detailed scan history remains available on the standalone /track
+ * page but is deliberately absent from the customer dashboard. */
+.customerOrderCard .courierJourneyCompact{
+  margin:19px 0 16px;
+  padding:19px 16px 17px;
+  background:#fdf8f2;
+  border:1px solid #e6d4c4;
+  border-radius:17px;
+  box-shadow:none;
+}
+.customerOrderCard .courierCompactHead{
+  min-width:0;
+}
+.customerOrderCard .courierCompactHead .courierJourneyEyebrow{
+  font-size:10px;
+  line-height:1.5;
+  letter-spacing:.13em;
+  color:#84654f;
+}
+.customerOrderCard .courierCompactHead h3{
+  margin:5px 0 0;
+  color:#56372e;
+  font-size:clamp(17px,4.65vw,23px);
+  font-weight:700;
+  line-height:1.23;
+  letter-spacing:-.025em;
+  text-wrap:balance;
+}
+.customerOrderCard .courierMilestonesCompact{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:2px;
+  margin:24px 0 0;
+  padding:0;
+}
+.customerOrderCard .courierMilestonesCompact li{
+  min-width:0;
+  gap:8px;
+  font-size:clamp(9px,2.35vw,11px);
+  font-weight:500;
+  line-height:1.32;
+  overflow-wrap:normal;
+  color:#836e60;
+}
+.customerOrderCard .courierMilestonesCompact li.reached{
+  color:#644838;
+}
+.customerOrderCard .courierMilestonesCompact .courierDot{
+  width:30px;
+  height:30px;
+  border:2px solid #d6c2af;
+  background:#fffaf5;
+  box-sizing:border-box;
+  font-size:14px;
+  line-height:1;
+}
+.customerOrderCard .courierMilestonesCompact li.reached .courierDot{
+  background:#8d6954;
+  border-color:#8d6954;
+}
+.customerOrderCard .courierMilestonesCompact li:before{
+  top:14px;
+  left:calc(-50% + 16px);
+  right:calc(50% + 16px);
+  height:2px;
+}
+.customerOrderCard .courierMilestonesCompact li[aria-current="step"] .courierDot{
+  outline:3px solid #ead0b7;
+  outline-offset:2px;
+}
+.customerOrderCard .courierCompactAlert{
+  margin:11px 0 0;
+  color:#79523a;
+  font-size:11px;
+  line-height:1.55;
+}
+@media(max-width:380px){
+  .customerOrderCard .courierJourneyCompact{
+    padding:16px 10px 15px;
+  }
+  .customerOrderCard .courierMilestonesCompact li{
+    font-size:9px;
+    gap:8px;
+    letter-spacing:-.015em;
+  }
+  .customerOrderCard .courierMilestonesCompact .courierDot{
+    width:26px;
+    height:26px;
+  }
+  .customerOrderCard .courierMilestonesCompact li:before{
+    top:12px;
+    left:calc(-50% + 14px);
+    right:calc(50% + 14px);
+  }
+}

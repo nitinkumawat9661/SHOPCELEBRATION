@@ -83,7 +83,7 @@ assert(cancel.includes("confirmedPrePickup") && cancel.includes("SHIPWAY_CANCELL
   "Never cancel a potentially out-for-delivery order on stale or unknown provider status")
 assert(account.includes('unconfirmedBookingFeed')===false && journey.includes("unconfirmedBookingFeed"),
   "Stale API needs a customer-visible caution")
-assert(account.includes('order.courier?.stage === "out_for_delivery"'),"Use actual live status not canCancel to label shipping")
+assert(journey.includes('courier.code === "OOD"') && journey.includes('courier.code === "OFD"') && account.includes("orderStatus={order.status}"),"Compact My Account status must use real courier OFD/OOD codes and current order status")
 assert(account.includes('order.courier.scans.some('),"Hide unsafe cancellation buttons when courier scans missing")
 assert(orders.includes("syncOrderCourier(order"),"Customer dashboard must retain courier sync")
 console.log("Shipway divergent feeds passed: actual 5-scan OFD, stale SCH metadata-only Exchange, exact-AWB /getorders promotion, cancelled/stale order safety and customer UI.")
