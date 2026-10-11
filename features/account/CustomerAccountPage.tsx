@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { routes } from "../../config/routes"
 import { formatMoney } from "../../lib/domain/catalog"
 import type { OrderLineItem } from "../../lib/domain/order"
-import { customerPaymentStatusLabel, customerTimeline, orderStatusLabels, type OrderStatus } from "../../lib/domain/order-status"
+import { customerPaymentStatusLabel, orderStatusLabels, type OrderStatus } from "../../lib/domain/order-status"
 import { supportWhatsappUrl } from "../../lib/domain/support"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import { notifyUx } from "../ux/UxMessenger"
@@ -38,21 +38,6 @@ type DashboardOrder = {
   customerApprovedAt: string | null
   createdAt: string
   updatedAt: string
-}
-
-function formatDeliveryDate(value: string | null | undefined) {
-  if (!value) return ""
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (!match) return value
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
-  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(date)
-}
-
-function progressIndex(status: OrderStatus) {
-  const index = customerTimeline.indexOf(status)
-  if (index >= 0) return index
-  if (status === "issue_reported" || status === "refund_or_replacement_resolved") return customerTimeline.length - 1
-  return 0
 }
 
 function friendlyOrderError(code: string) {
@@ -198,15 +183,6 @@ export function CustomerAccountPage() {
     else notifyUx({ title: "Couldn’t log out", body: "Please check your connection and try again.", tone: "error" })
   }
 
-  async function copyTracking(number: string) {
-    try {
-      await navigator.clipboard.writeText(number)
-      notifyUx({ title: "Tracking number copied ✓", body: number, tone: "success" })
-    } catch {
-      notifyUx({ title: "Couldn’t copy", body: `Tracking number: ${number}`, tone: "error" })
-    }
-  }
-
   const stats = useMemo(() => ({
     total: orders.length,
     active: orders.filter((order) => !["delivered", "refund_or_replacement_resolved", "cancelled"].includes(order.status)).length,
@@ -263,9 +239,7 @@ export function CustomerAccountPage() {
       <div className="customerOrderList">
         {orders.map((order) => {
           const individual = order.orderType === "individual"
-          const orderTimeline = individual ? customerTimeline.filter((status) => !["packing_video_ready", "customer_approved"].includes(status)) : customerTimeline
           const cancelled = order.status === "cancelled"
-          const currentIndex = cancelled ? -1 : orderTimeline.indexOf(order.status) >= 0 ? orderTimeline.indexOf(order.status) : order.status === "delivered" ? orderTimeline.length - 1 : 0
           const supportMessage = `Hi Celebration, I need help with order ${order.publicId}.`
           const approvalReady = !individual && order.status === "packing_video_ready" && Boolean(order.packingVideoUrl)
           const canCancel = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status) &&
@@ -292,33 +266,23 @@ export function CustomerAccountPage() {
 
               <div className="checkoutProgressNote"><span>→</span><span><b>What’s next:</b> {nextUpdateText(order.status)}</span></div>
 
-              <div className="customerProgressDesktop">
-                <div className={`customerProgress ${cancelled ? "cancelled" : ""}`} aria-label="Order progress">
-                  {cancelled
-                    ? <div className="current cancelledStep"><i>×</i><span>Cancelled</span></div>
-                    : orderTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
-                </div>
-              </div>
-              <details className={`customerProgressMobile ${cancelled ? "cancelled" : ""}`}>
-                <summary><span>Tracking timeline</span><b>{cancelled ? "Cancelled" : orderStatusLabels[order.status]}</b></summary>
-                <div className={`customerProgress ${cancelled ? "cancelled" : ""}`} aria-label="Order progress">
-                  {cancelled
-                    ? <div className="current cancelledStep"><i>×</i><span>Cancelled</span></div>
-                    : orderTimeline.map((status, index) => <div className={index < currentIndex ? "done" : index === currentIndex ? "current" : ""} key={status}><i>{index <= currentIndex ? "✓" : ""}</i><span>{orderStatusLabels[status]}</span></div>)}
-                </div>
-              </details>
-
               {!individual && order.productNames.length > 0 && <div className="customerOrderProducts"><span>Selected gifts</span><p>{order.productNames.join(" • ")}</p></div>}
 
-              {order.shippingTrackingNumber && <CourierJourney courier={order.courier || null} unavailable={order.courierUnavailable || false} compact />}
+              {!cancelled && <CourierJourney
+                courier={order.courier || null}
+                unavailable={order.courierUnavailable || false}
+                compact
+                orderStatus={order.status}
+              />}
 
-              <div className="customerOrderUpdates">
-                {!individual && <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>}
-                <div className="customerUpdateCard"><span>Shipping</span>{order.status === "cancelled" ? <b>{order.shippingTrackingNumber ? `Shipment cancelled • ${order.shippingTrackingNumber}` : "Shipment cancelled"}</b> : order.shippingTrackingNumber ? <><b>{order.courier?.stage === "out_for_delivery" ? "Out for delivery" :
-                    order.courier?.stage === "in_transit" ? "In transit" :
-                    order.courier?.stage === "picked_up" ? "Picked up" :
-                    order.courier?.stage === "delivered" ? "Delivered" : "Courier tracking"} • {order.shippingTrackingNumber}</b><small className="customerEta">{order.estimatedDeliveryDate ? <>Estimated delivery: <strong>{formatDeliveryDate(order.estimatedDeliveryDate)}</strong></> : "Estimated delivery will update after courier routing."}</small><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>No verified courier AWB is linked yet. If you received a tracking SMS, contact support with the AWB and Celebration order ID.</b>}</div>
-              </div>
+              {!individual && <div className="customerOrderUpdates">
+                <div className="customerUpdateCard">
+                  <span>Packing video</span>
+                  {order.packingVideoUrl
+                    ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a>
+                    : <b>Available after packing</b>}
+                </div>
+              </div>}
 
               {approvalReady && <div className="customerPackingApproval"><div><b>Your {individual ? "order" : "hamper"} is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this {individual ? "order" : "hamper"} for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}
 
