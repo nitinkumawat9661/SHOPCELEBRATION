@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
 
     const sync = await syncOrderCourier(order)
-    if (sync.status !== order.status) {
+    if (sync.status !== order.status || sync.trackingNumber !== order.shippingTrackingNumber) {
       // Refresh the persisted timeline and delivered_at issue-report window.
       order = await findOrderByTrackingToken(token) || order
     }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         paymentStatus: order.paymentStatus,
         receiverName: order.receiverName,
         packingVideoUrl,
-        shippingTrackingNumber: order.shippingTrackingNumber,
+        shippingTrackingNumber: sync.trackingNumber,
         shippingCourierName: sync.courier?.courierName || null,
         estimatedDeliveryDate: sync.courier?.estimatedDeliveryDate || null,
         courier: sync.courier,
