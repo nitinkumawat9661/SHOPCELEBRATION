@@ -30,7 +30,7 @@ async function setShippingDetailsWithClient(
   }
 
   const shippedStatus = workflowActionTarget("shipped")
-  const shouldMarkShipped = metadata.markShipped !== false
+  const shouldMarkShipped = metadata.markShipped === true
   const nextStatus = shouldMarkShipped && ((order.order_type === "individual" && order.status === "preparing") || order.status === "customer_approved") ? shippedStatus : order.status
 
   await client.query(
