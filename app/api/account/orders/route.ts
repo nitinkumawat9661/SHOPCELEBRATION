@@ -17,9 +17,9 @@ export async function GET() {
 
     const [orders, catalogResult] = await Promise.all([listCustomerOrders(account.id), getCatalogConfig()])
 
-    const hydrated = await Promise.all(orders.map(async (order) => {
+    const hydrated = await Promise.all(orders.map(async (order, index) => {
       let packingVideoUrl: string | null = null
-      const sync = await syncOrderCourier(order)
+      const sync = await syncOrderCourier(order, { recoverUnlinkedShipment: index < 6 })
       if (order.packingVideoKey) {
         try {
           packingVideoUrl = await createPackingVideoViewUrl(order.packingVideoKey)
@@ -42,7 +42,7 @@ export async function GET() {
         paymentStatus: order.paymentStatus,
         receiverName: order.receiverName,
         packingVideoUrl,
-        shippingTrackingNumber: order.shippingTrackingNumber,
+        shippingTrackingNumber: sync.trackingNumber,
         estimatedDeliveryDate: sync.courier?.estimatedDeliveryDate || null,
         customerApprovedAt: order.customerApprovedAt,
         createdAt: order.createdAt,
