@@ -268,7 +268,10 @@ export function CustomerAccountPage() {
           const currentIndex = cancelled ? -1 : orderTimeline.indexOf(order.status) >= 0 ? orderTimeline.indexOf(order.status) : order.status === "delivered" ? orderTimeline.length - 1 : 0
           const supportMessage = `Hi Celebration, I need help with order ${order.publicId}.`
           const approvalReady = !individual && order.status === "packing_video_ready" && Boolean(order.packingVideoUrl)
-          const canCancel = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status)
+          const canCancel = ["payment_verification_pending", "payment_verified", "preparing", "packing_video_ready", "customer_approved"].includes(order.status) &&
+            (!order.shippingTrackingNumber || (order.courier?.stage === "pickup_requested" &&
+              order.courier.scans.some(scan => scan.occurredAt &&
+                /pickup requested|pickup scheduled|out for pickup|shipment booked|data received/i.test(scan.status))))
           return (
             <article className="customerOrderCard" key={order.publicId}>
               <header className="customerOrderHead">
@@ -311,7 +314,10 @@ export function CustomerAccountPage() {
 
               <div className="customerOrderUpdates">
                 {!individual && <div className="customerUpdateCard"><span>Packing video</span>{order.packingVideoUrl ? <a href={order.packingVideoUrl} target="_blank" rel="noreferrer">Watch video</a> : <b>Available after packing</b>}</div>}
-                <div className="customerUpdateCard"><span>Shipping</span>{order.status === "cancelled" ? <b>{order.shippingTrackingNumber ? `Shipment cancelled • ${order.shippingTrackingNumber}` : "Shipment cancelled"}</b> : order.shippingTrackingNumber ? <><b>{canCancel ? "Courier booked, awaiting pickup" : "Tracking"} • {order.shippingTrackingNumber}</b><small className="customerEta">{order.estimatedDeliveryDate ? <>Estimated delivery: <strong>{formatDeliveryDate(order.estimatedDeliveryDate)}</strong></> : "Estimated delivery will update after courier routing."}</small><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>No verified courier AWB is linked yet. If you received a tracking SMS, contact support with the AWB and Celebration order ID.</b>}</div>
+                <div className="customerUpdateCard"><span>Shipping</span>{order.status === "cancelled" ? <b>{order.shippingTrackingNumber ? `Shipment cancelled • ${order.shippingTrackingNumber}` : "Shipment cancelled"}</b> : order.shippingTrackingNumber ? <><b>{order.courier?.stage === "out_for_delivery" ? "Out for delivery" :
+                    order.courier?.stage === "in_transit" ? "In transit" :
+                    order.courier?.stage === "picked_up" ? "Picked up" :
+                    order.courier?.stage === "delivered" ? "Delivered" : "Courier tracking"} • {order.shippingTrackingNumber}</b><small className="customerEta">{order.estimatedDeliveryDate ? <>Estimated delivery: <strong>{formatDeliveryDate(order.estimatedDeliveryDate)}</strong></> : "Estimated delivery will update after courier routing."}</small><div className="shippingActions"><button className="secondary" type="button" onClick={() => copyTracking(order.shippingTrackingNumber!)}>Copy tracking</button></div></> : <b>No verified courier AWB is linked yet. If you received a tracking SMS, contact support with the AWB and Celebration order ID.</b>}</div>
               </div>
 
               {approvalReady && <div className="customerPackingApproval"><div><b>Your {individual ? "order" : "hamper"} is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this {individual ? "order" : "hamper"} for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}
