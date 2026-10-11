@@ -42,7 +42,7 @@ export function CatalogCard({ product, imageVariant = "thumb" }: { product: Gift
   const mrpPaise = listed ? product.retail?.mrpPaise : undefined
   const treatment = catalogCardTreatment(product)
   return (
-    <article className={`catalogCard catalogCard--${treatment}`}>
+    <article className={`catalogCard catalogCard--${treatment}${imageVariant === "main" && product.id === "celebration-ring-001" ? " catalogCard--featuredPortraitRing" : ""}`}>
       <Link href={`/jewelry/${encodeURIComponent(product.id)}`} className="catalogCardLink" prefetch={false}>
         <div className="catalogCardVisual"><div className="catalogCardMedia"><CatalogProductImage product={product} imageVariant={imageVariant} /></div><span className="catalogCardArrow" aria-hidden="true">→</span></div>
         <div className="catalogCardInfo">

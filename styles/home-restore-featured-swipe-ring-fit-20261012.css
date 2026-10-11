@@ -1,0 +1,47 @@
+/* Targeted mobile screenshot fix; do not redesign product cards.
+ * The first real ring listing uses a portrait marketing photograph.
+ * In a square image frame object-fit:contain painted large WHITE bars.
+ * Crop the PHOTO (not the jewelry source file) at display time so the
+ * hand + ring and magnified ring inset fill the existing presentation.
+ * All other exact-SKU images keep object-fit:contain and are untouched. */
+.celebrationHome .celebrationFeatured
+.catalogCard--featuredPortraitRing .catalogCardMedia
+.safeCatalogImageFrame>img:not([style]){
+  object-fit:cover;
+  object-position:50% 47%;
+  background-color:#f2e2d8;
+}
+.celebrationHome .celebrationFeatured
+.catalogCard--featuredPortraitRing .catalogCardMedia
+.safeCatalogImageFrame{
+  background-color:#f2e2d8;
+}
+/* Restore the original horizontal rounded product cards, rather than
+ * the two-column grid introduced in the previous release. */
+.celebrationHome .celebrationFeatured .collectionGrid{
+  display:flex;
+  flex-wrap:nowrap;
+  grid-template-columns:none;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x proximity;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.celebrationHome .celebrationFeatured .collectionGrid>.catalogCard{
+  flex:0 0 clamp(235px,23vw,294px);
+  min-width:0;
+  width:auto;
+  scroll-snap-align:start;
+  border-radius:13px;
+}
+@media(max-width:700px){
+  .celebrationHome .celebrationFeatured .collectionGrid>.catalogCard{
+    flex-basis:clamp(218px,68vw,252px);
+  }
+}
+@media(max-width:360px){
+  .celebrationHome .celebrationFeatured .collectionGrid>.catalogCard{
+    flex-basis:216px;
+  }
+}
