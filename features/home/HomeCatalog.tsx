@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { categoriesForCatalog, primaryProductImage, visibleProducts, type CatalogConfig } from "../../lib/domain/catalog"
+import { categoriesForCatalog, isIndividuallySellable, primaryProductImage, visibleProducts, type GiftProduct, type CatalogConfig } from "../../lib/domain/catalog"
 import { CatalogCard, CatalogProductImage } from "../catalog/CatalogCard"
 import { StoreIcon } from "../shell/StoreIcon"
 import { CategoryEditorialPhoto } from "./CategoryEditorialPhoto"
@@ -8,7 +8,23 @@ import { CategoryEditorialPhoto } from "./CategoryEditorialPhoto"
 export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogConfig; categoryMedia?: Record<string, string> }) {
   const products = visibleProducts(catalog)
   const categories = categoriesForCatalog(catalog).filter((item) => item.id !== catalog.settings.allCategory.id)
-  const photographed = products.filter((item) => item.imageUrl).slice(0, 4)
+  // Feature a real purchasable item from several collections instead of four
+  // near-identical items from the first necklace category. Never fake badges.
+  const featuredOrder = [
+    "Adjustable Rings", "Trending Necklaces",
+    "Gold-Plated Bangles & Bracelets", "Necklace + Earrings Sets"
+  ]
+  const selectedIds = new Set<string>()
+  const selected = featuredOrder.map((category) =>
+    products.find((item) => item.category === category && !!primaryProductImage(item) && isIndividuallySellable(item))
+  ).filter((item): item is GiftProduct => {
+    if (!item || selectedIds.has(item.id)) return false
+    selectedIds.add(item.id)
+    return true
+  })
+  const photographed = [...selected, ...products.filter((item) =>
+    !selectedIds.has(item.id) && !!primaryProductImage(item) && isIndividuallySellable(item)
+  )].slice(0, 4)
   return <>
     <section className="celebrationCategories wrap" id="products">
       <div className="celebrationSectionHead">
