@@ -21,6 +21,7 @@ export type ShipwayTracking = {
   courierName: string | null
   trackUrl: string | null
   estimatedDeliveryDate: string | null
+  scans: { status: string; location: string | null; occurredAt: string | null; details: string | null }[]
 }
 
 export type ShipwayRateQuote = {
@@ -385,14 +386,41 @@ export async function bookShipwayShipment(order: OrderRecord, packed: {
 
 export async function getShipwayTracking(awb: string): Promise<ShipwayTracking | null> {
   if (!/^[A-Za-z0-9._-]{4,120}$/.test(awb)) return null
-  const raw = await request(`/api/tracking?awb_numbers=${encodeURIComponent(awb)}&tracking_history=0`, { method: "GET" })
-  if (!Array.isArray(raw) || !raw.length) return null
-  const first = raw[0] && typeof raw[0] === "object" ? raw[0] as Record<string, unknown> : {}
-  const trackingRaw = first.tracking_details
-  const tracking = trackingRaw && typeof trackingRaw === "object" ? trackingRaw as Record<string, unknown> : {}
-  const shipmentStatus = String(tracking.shipment_status ?? "").trim().toUpperCase()
+  const raw = await request(`/api/tracking?awb_numbers=${encodeURIComponent(awb)}&tracking_history=1`, { method: "GET" })
+  // The shipping service has returned both array and object wrappers.
+  const root = Array.isArray(raw) ? raw[0] : raw
+  if (!root || typeof root !== "object") return null
+  const first = root as Record<string, unknown>
+  const trackingRaw = first.tracking_details ?? first.response ?? first.data
+  const tracking = trackingRaw && typeof trackingRaw === "object" && !Array.isArray(trackingRaw)
+    ? trackingRaw as Record<string, unknown> : first
   const details = Array.isArray(tracking.shipment_details) ? tracking.shipment_details : []
   const current = details[0] && typeof details[0] === "object" ? details[0] as Record<string, unknown> : {}
+  const code = String(tracking.shipment_status ?? tracking.current_status_code ?? first.shipment_status ?? first.current_status_code ?? "").trim().toUpperCase()
+  const statusText = String(current.current_status ?? tracking.current_status ?? first.current_status ?? "").trim()
+
+  const clean = (value: unknown, max = 160) => typeof value === "string"
+    ? value.replace(/[\\x00-\\x1F\\x7F]/g, " ").replace(/\\s+/g, " ").trim().slice(0, max)
+    : ""
+  const scanEntries = Array.isArray(tracking.tracking_history) ? tracking.tracking_history
+    : Array.isArray(tracking.shipment_history) ? tracking.shipment_history
+    : Array.isArray(tracking.shipment_details) ? tracking.shipment_details
+    : []
+  const scans = scanEntries.slice(0, 20).flatMap((entry): ShipwayTracking["scans"] => {
+    if (!entry || typeof entry !== "object") return []
+    const row = entry as Record<string, unknown>
+    const status = clean(row.status ?? row.current_status ?? row.status_detail ?? row.description, 100)
+    const location = clean(row.location ?? row.current_location ?? row.city ?? row.hub, 85)
+    const dateRaw = clean(row.timestamp ?? row.time ?? row.date ?? row.status_date, 55)
+    const details = clean(row.remarks ?? row.status_detail ?? row.description, 150)
+    if (!status && !details) return []
+    return [{
+      status: status || details,
+      location: location || null,
+      occurredAt: dateRaw || null,
+      details: details && details !== status ? details : null
+    }]
+  })
   let estimatedDeliveryDate = estimatedDeliveryDateFrom(raw)
   if (!estimatedDeliveryDate) {
     try {
@@ -403,14 +431,14 @@ export async function getShipwayTracking(awb: string): Promise<ShipwayTracking |
     }
   }
   return {
-    shipmentStatus,
-    currentStatus: String(current.current_status ?? "").trim(),
-    courierName: typeof current.courier_name === "string" && current.courier_name.trim() ? current.courier_name.trim() : null,
-    trackUrl: httpsUrl(tracking.track_url),
-    estimatedDeliveryDate
+    shipmentStatus: code,
+    currentStatus: statusText.slice(0, 120),
+    courierName: clean(current.courier_name ?? tracking.courier_name ?? tracking.carrier, 90) || null,
+    trackUrl: httpsUrl(tracking.track_url ?? first.track_url),
+    estimatedDeliveryDate,
+    scans
   }
 }
-
 
 function shipwayCancelAccepted(raw: unknown) {
   const rows = objectList(raw)
