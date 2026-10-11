@@ -3,8 +3,9 @@ import Image from "next/image"
 import { categoriesForCatalog, primaryProductImage, visibleProducts, type CatalogConfig } from "../../lib/domain/catalog"
 import { CatalogCard, CatalogProductImage } from "../catalog/CatalogCard"
 import { StoreIcon } from "../shell/StoreIcon"
+import { CategoryEditorialPhoto } from "./CategoryEditorialPhoto"
 
-export function HomeCatalog({ catalog }: { catalog: CatalogConfig }) {
+export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogConfig; categoryMedia?: Record<string, string> }) {
   const products = visibleProducts(catalog)
   const categories = categoriesForCatalog(catalog).filter((item) => item.id !== catalog.settings.allCategory.id)
   const photographed = products.filter((item) => item.imageUrl).slice(0, 4)
@@ -19,13 +20,14 @@ export function HomeCatalog({ catalog }: { catalog: CatalogConfig }) {
       </div>
       <p className="celebrationCategorySwipeHint" aria-hidden="true">Swipe to explore <span>→</span></p>
       <div className="celebrationCategoryRail" role="region" tabIndex={0} aria-label="Swipe or scroll through Celebration shopping categories">
-        {categories.map((category) => {
+        {categories.map((category, index) => {
           // Keep each category photograph owned by a real product in that category.
           // Do not substitute a different SKU when media is missing.
           const photo = products.find((product) => product.category === category.id && primaryProductImage(product))
+          const editorial = categoryMedia[category.id]
           return <Link className="celebrationCategory" href={`/jewelry?view=all&category=${encodeURIComponent(category.id)}`} key={category.id} prefetch={false}>
             <div className="celebrationCategoryArt">
-              {photo ? <CatalogProductImage product={photo} /> : <span className="celebrationCategoryGlyph" aria-hidden="true">{category.label.slice(0, 1)}</span>}
+              {editorial ? <CategoryEditorialPhoto src={editorial} label={category.label} eager={index < 3} /> : photo ? <CatalogProductImage product={photo} /> : <span className="celebrationCategoryGlyph" aria-hidden="true">{category.label.slice(0, 1)}</span>}
             </div>
             <b>{category.label}</b>
             <span className="celebrationCategorySub">Browse pieces <StoreIcon name="arrow" size={13} /></span>
@@ -33,14 +35,14 @@ export function HomeCatalog({ catalog }: { catalog: CatalogConfig }) {
         })}
         <Link className="celebrationCategory celebrationCategory--all" href="/jewelry?view=all" prefetch={false}>
           <div className="celebrationCategoryArt celebrationCategoryArt--editorial">
-            <span className="celebrationCategoryGlyph" aria-hidden="true">✦</span>
+            {categoryMedia.__all__ ? <CategoryEditorialPhoto src={categoryMedia.__all__} label="All Jewellery" /> : <span className="celebrationCategoryGlyph" aria-hidden="true">✦</span>}
           </div>
           <b>All Jewellery</b>
           <span className="celebrationCategorySub">Shop the edit <StoreIcon name="arrow" size={13} /></span>
         </Link>
         <a className="celebrationCategory celebrationCategory--hamper" href="#budgets">
           <div className="celebrationCategoryArt celebrationCategoryArt--editorial">
-            <StoreIcon name="gift" size={45} />
+            {categoryMedia.__hamper__ ? <CategoryEditorialPhoto src={categoryMedia.__hamper__} label="Custom Hampers" /> : <StoreIcon name="gift" size={45} />}
           </div>
           <b>Custom Hampers</b>
           <span className="celebrationCategorySub">Create yours <StoreIcon name="arrow" size={13} /></span>
