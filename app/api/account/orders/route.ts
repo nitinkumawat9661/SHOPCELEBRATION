@@ -4,7 +4,7 @@ import { findCustomerAccountById, listCustomerOrders } from "../../../../lib/ser
 import { getCatalogConfig } from "../../../../lib/server/catalog"
 import { productById } from "../../../../lib/domain/catalog"
 import { createPackingVideoViewUrl } from "../../../../lib/server/r2"
-import { getShipwayTracking } from "../../../../lib/server/shipway"
+import { syncOrderCourier } from "../../../../lib/server/orders/courier-sync"
 
 export const dynamic = "force-dynamic"
 
@@ -19,14 +19,7 @@ export async function GET() {
 
     const hydrated = await Promise.all(orders.map(async (order) => {
       let packingVideoUrl: string | null = null
-      let estimatedDeliveryDate: string | null = null
-      if (order.shippingProvider === "Shipway" && order.shippingTrackingNumber && !["cancelled", "delivered", "issue_reported", "refund_or_replacement_resolved"].includes(order.status)) {
-        try {
-          estimatedDeliveryDate = (await getShipwayTracking(order.shippingTrackingNumber))?.estimatedDeliveryDate || null
-        } catch (error) {
-          console.error("customer-order-edd", error)
-        }
-      }
+      const sync = await syncOrderCourier(order)
       if (order.packingVideoKey) {
         try {
           packingVideoUrl = await createPackingVideoViewUrl(order.packingVideoKey)
@@ -43,12 +36,14 @@ export async function GET() {
         productNames: order.selectedProductNames.length ? order.selectedProductNames : order.selectedProductIds.map((id) => productById(catalogResult.catalog, id)?.name || "Gift item"),
         requiredDate: order.requiredDate,
         occasion: order.occasion,
-        status: order.status,
+        status: sync.status,
+        courier: sync.courier,
+        courierUnavailable: sync.courierUnavailable,
         paymentStatus: order.paymentStatus,
         receiverName: order.receiverName,
         packingVideoUrl,
         shippingTrackingNumber: order.shippingTrackingNumber,
-        estimatedDeliveryDate,
+        estimatedDeliveryDate: sync.courier?.estimatedDeliveryDate || null,
         customerApprovedAt: order.customerApprovedAt,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt
