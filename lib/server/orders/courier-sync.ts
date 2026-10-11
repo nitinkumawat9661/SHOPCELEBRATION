@@ -1,6 +1,8 @@
 import { courierProgressStatus, displayCourierStatus, type CourierPublicStatus } from "../../domain/courier-tracking"
 import type { OrderStatus } from "../../domain/order-status"
-import { getShipwayTracking } from "../shipway"
+import { getShipwayTracking, findExistingShipwayAwbByOrderId } from "../shipway"
+import { unstable_cache } from "next/cache"
+import { attachVerifiedShipwayAwb } from "./recover-shipment"
 import { updateOrderStatus } from "./status"
 
 export type CourierEligibleOrder = {
@@ -10,13 +12,25 @@ export type CourierEligibleOrder = {
   paymentStatus: string
   shippingProvider: string | null
   shippingTrackingNumber: string | null
+  createdAt?: string
 }
 
 export type CourierSyncResult = {
   status: OrderStatus
   courier: CourierPublicStatus | null
   courierUnavailable: boolean
+  trackingNumber: string | null
+  recoveryAttempted: boolean
 }
+
+// Cache negative Shipway order lookups briefly to avoid calling the carrier on
+// every account refresh. The authenticated lookup returns only the AWB.
+// Next caches each exact merchant order id separately.
+const cachedShipwayOrderAwb = unstable_cache(
+  async (publicId: string) => findExistingShipwayAwbByOrderId(publicId),
+  ["celebration-shipway-exact-order-recovery-v1"],
+  { revalidate: 120 }
+)
 
 /**
  * The same courier reconciliation is used by token tracking and by the signed-in
@@ -24,17 +38,54 @@ export type CourierSyncResult = {
  * cancels/refunds a paid order because the shipping leg failed, or treats an
  * estimated delivery date as a Delivered scan.
  */
-export async function syncOrderCourier(order: CourierEligibleOrder): Promise<CourierSyncResult> {
-  if (order.status === "cancelled" || !order.shippingTrackingNumber ||
-      order.shippingProvider?.trim().toLowerCase() !== "shipway") {
-    return { status: order.status, courier: null, courierUnavailable: false }
+export async function syncOrderCourier(
+  order: CourierEligibleOrder,
+  options: { recoverUnlinkedShipment?: boolean } = {}
+): Promise<CourierSyncResult> {
+  let trackingNumber = order.shippingTrackingNumber
+  let provider = order.shippingProvider
+  let recoveryAttempted = false
+  const isPaid = ["paid","verified","success"].includes(order.paymentStatus.trim().toLowerCase())
+  const createdAt = order.createdAt ? new Date(order.createdAt).getTime() : NaN
+  const recent = Number.isFinite(createdAt) && createdAt <= Date.now() &&
+    Date.now() - createdAt <= 45 * 24 * 60 * 60 * 1000
+  const recoverableStatus = order.orderType === "individual"
+    ? ["preparing","shipped","out_for_delivery"].includes(order.status)
+    : ["customer_approved","shipped","out_for_delivery"].includes(order.status)
+
+  if (!trackingNumber && isPaid && recent && recoverableStatus &&
+      (!provider || provider.trim().toLowerCase() === "shipway") &&
+      options.recoverUnlinkedShipment !== false) {
+    recoveryAttempted = true
+    try {
+      const confirmedAwb = await cachedShipwayOrderAwb(order.publicId)
+      if (confirmedAwb && await attachVerifiedShipwayAwb(order.publicId, confirmedAwb)) {
+        trackingNumber = confirmedAwb
+        provider = "Shipway"
+      }
+    } catch (error) {
+      // Missing carrier credentials or a temporary carrier failure should
+      // never hide a legitimate paid order or mutate its current status.
+      console.error("shipway-exact-order-recovery", {
+        orderId: order.publicId,
+        code: error instanceof Error ? error.message : "RECOVERY_UNAVAILABLE"
+      })
+    }
+  }
+
+  if (order.status === "cancelled" || !trackingNumber ||
+      provider?.trim().toLowerCase() !== "shipway") {
+    return {
+      status: order.status, courier: null, courierUnavailable: false,
+      trackingNumber, recoveryAttempted
+    }
   }
 
   let live: Awaited<ReturnType<typeof getShipwayTracking>> = null
   let courierUnavailable = false
   if (!["delivered", "issue_reported", "refund_or_replacement_resolved"].includes(order.status)) {
     try {
-      live = await getShipwayTracking(order.shippingTrackingNumber)
+      live = await getShipwayTracking(trackingNumber)
       courierUnavailable = !live
     } catch (error) {
       courierUnavailable = true
@@ -47,7 +98,6 @@ export async function syncOrderCourier(order: CourierEligibleOrder): Promise<Cou
 
   let status = order.status
   const carrierProgress = courierProgressStatus(live?.shipmentStatus || "")
-  const isPaid = ["paid", "verified", "success"].includes(order.paymentStatus.trim().toLowerCase())
   const dispatchAllowed = isPaid && (order.orderType === "individual" ? status === "preparing" : status === "customer_approved")
   const advance = async (next: "shipped" | "out_for_delivery" | "delivered") => {
     const result = await updateOrderStatus(order.publicId, next)
@@ -72,7 +122,9 @@ export async function syncOrderCourier(order: CourierEligibleOrder): Promise<Cou
 
   return {
     status,
-    courier: displayCourierStatus(live, status, order.shippingTrackingNumber),
+    courier: displayCourierStatus(live, status, trackingNumber),
+    trackingNumber,
+    recoveryAttempted,
     courierUnavailable
   }
 }
