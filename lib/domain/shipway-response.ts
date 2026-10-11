@@ -21,8 +21,10 @@ const clean = (value: unknown, limit = 160): string =>
   typeof value === "string" || typeof value === "number"
     ? String(value).replace(/[\x00-\x1F\x7F]/g, " ").replace(/\s+/g, " ").trim().slice(0, limit)
     : ""
-const awbFrom = (row: Row): string =>
-  clean(row.awb ?? row.AWB ?? row.awb_number ?? row.order_tracking_number ?? row.tracking_number ?? row.waybill, 120)
+const awbFrom = (row: Row): string => {
+  const wrapped = asRow(row.awb_response)
+  return clean(row.awb ?? row.AWB ?? row.awb_number ?? row.order_tracking_number ?? row.tracking_number ?? row.waybill ?? wrapped?.AWB, 120)
+}
 
 const statusAliases: Record<string,string> = {
   "ORDER PLACED":"SCH","DATA RECEIVED":"SCH","PICKUP REQUESTED":"SCH",
@@ -141,10 +143,10 @@ export function parseShipwayOrderByAwb(raw: unknown, expectedAwb: string): Parti
   let status = ""
   for (const row of matches) {
     status = promotedShipwayStatus(status,normalizeShipwayStatus(
-      row.new_shipment_status ?? row.shipment_status ?? row.current_status_code))
+      row.new_shipment_status ?? row.shipment_status ?? row.shipment_status_code ?? row.current_status_code ?? row.tracking_status))
   }
   const record = matches.find(row => normalizeShipwayStatus(
-    row.new_shipment_status ?? row.shipment_status ?? row.current_status_code)) || matches[0]
+    row.new_shipment_status ?? row.shipment_status ?? row.shipment_status_code ?? row.current_status_code ?? row.tracking_status)) || matches[0]
   return {
     shipmentStatus: status,
     currentStatus: clean(record.current_status ?? record.shipment_status,120),
