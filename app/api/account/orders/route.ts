@@ -49,6 +49,16 @@ export async function GET() {
         updatedAt: order.updatedAt
       }
     }))
+    // Order status/AWB may have been persisted during carrier reconciliation.
+    // Re-read the actual database timestamps rather than showing the stale
+    // "Last update" from the initial pre-sync snapshot.
+    if (hydrated.some((item, index) =>
+      item.status !== orders[index].status ||
+      item.shippingTrackingNumber !== orders[index].shippingTrackingNumber)) {
+      const latest = await listCustomerOrders(account.id)
+      const times = new Map(latest.map(item => [item.publicId, item.updatedAt]))
+      for (const item of hydrated) item.updatedAt = times.get(item.publicId) || item.updatedAt
+    }
     return NextResponse.json({ ok: true, orders: hydrated }, { headers: { "Cache-Control": "no-store" } })
   } catch (error) {
     console.error("customer-orders", error)
