@@ -42,8 +42,8 @@ assert(db.includes("category-v5%2F")&&media.includes("category-v[12345]"),
   "Updated database and loader must accept the new version")
 assert(v3.includes("category-v5%2F")&&v4.includes('old.includes("category-v5%2F")'),
   "All legacy seeding scripts must be safe after future version upgrades")
-assert(home.includes("CATEGORY_NAV_TITLES")&&home.includes("<b>{title}</b>"),
-  "Round category navigation should use compact labels")
+assert(home.includes("<b>{category.label}</b>") && home.includes("categoriesForCatalog(catalog)"),
+  "Do not change original real category labels, only category photographs")
 assert(home.includes("encodeURIComponent(category.id)"),
   "Category links must use the untouched original catalog ID")
 assert(css.includes("border-radius:50%")&&css.includes("overflow-x:auto")&&
