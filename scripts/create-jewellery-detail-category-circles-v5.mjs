@@ -109,7 +109,7 @@ async function compose(item){
   const left=Math.round(meta.width*x),top=Math.round(meta.height*y)
   const width=Math.min(meta.width-left,Math.round(meta.width*w))
   const height=Math.min(meta.height-top,Math.round(meta.height*h))
-  if(width<170||height<170)throw new Error(`Cropped merchandise region too small: ${item.slug}`)
+  if(width<120||height<120)throw new Error(`Cropped merchandise region too small: ${item.slug}`)
   // Strictly a region from the same PHOTO — the poster header/footer is left
   // out. No AI inpainting or re-drawing of necklace/ring/bangle geometry.
   const focused=await sharp(rawPhoto).rotate().extract({left,top,width,height})
