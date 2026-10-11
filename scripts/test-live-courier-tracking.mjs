@@ -71,7 +71,7 @@ assert(!sync.includes('advance("cancelled")'),"Courier cancellation must not ref
 assert(sync.includes('courier: null, courierUnavailable: false'),"Non-Shipway bookings cannot use invented Shipway data")
 assert(shipway.includes("tracking_history=1"),"Request real scan history")
 assert(shipway.includes("current_status_code"),"Support status-code response variant")
-assert(shipway.includes("shipment_details"),"Support carrier response shape")
+assert(shipway.includes("parseShipwayTrackingResponse") && shipway.includes("parseShipwayOrderByAwb"),"Parse carrier shipment details and exact-AWB order feed in shared helpers")
 assert(trackApi.includes("syncOrderCourier(order)") && accountApi.includes("syncOrderCourier(order, { recoverUnlinkedShipment: index < 6 })"),
   "Both signed-in and token tracking must reconcile the very same courier scans")
 assert(trackApi.includes('Cache-Control": "private, no-store"'),"Token results must not be cached")
