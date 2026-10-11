@@ -147,7 +147,7 @@ try{
     const url=`/api/catalog/image?key=${encodeURIComponent(key)}`
     // Preserve subsequent owner-requested jewellery-only v5 crop.
     // This legacy initializer is rerun on each production deployment.
-    if (old.includes("category-v5%2F")) {
+    if (old.includes("category-v5%2F") || old.includes("category-v6%2F")) {
       console.log(`Later v5 photo maintained: ${item.slug}`)
       continue
     }
