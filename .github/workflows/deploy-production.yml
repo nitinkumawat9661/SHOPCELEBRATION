@@ -124,6 +124,8 @@ jobs:
           run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run typecheck && npm run build' _ "$NEW_RELEASE"
           echo "Applying idempotent database migrations"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/migrate.mjs\")"' _ "$NEW_RELEASE"
+          echo "Preparing self-hosted real category photos before activating release"
+          run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/seed-home-category-photos.mjs\")"' _ "$NEW_RELEASE"
 
           start_release() {
             local release="$1"

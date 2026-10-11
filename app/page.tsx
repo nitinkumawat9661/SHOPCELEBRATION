@@ -5,6 +5,7 @@ import { routes } from "../config/routes"
 import { Storefront } from "../features/home/Storefront"
 import { defaultCatalog } from "../lib/domain/catalog"
 import { getCatalogConfig } from "../lib/server/catalog"
+import { getHomeCategoryMedia } from "../lib/server/home-category-media"
 import { withVerifiedStorefrontBadges } from "../lib/server/product-badge-evidence"
 import { getTierPopularity } from "../lib/server/orders"
 import { defaultStoreSettings, getStoreSettings } from "../lib/server/store-settings"
@@ -55,10 +56,11 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
     redirect(`${routes.paymentReturn}?provider_order_id=${encodeURIComponent(providerOrderId)}`)
   }
 
-  const [catalogResult, proofResult, settingsResult] = await Promise.all([
+  const [catalogResult, proofResult, settingsResult, categoryMedia] = await Promise.all([
     getCatalogConfig().catch(() => null),
     getCachedTierPopularity().catch(() => null),
-    getCachedStoreSettings().catch(() => null)
+    getCachedStoreSettings().catch(() => null),
+    getHomeCategoryMedia().catch(() => ({}))
   ])
 
   const catalog = catalogResult?.catalog
@@ -67,5 +69,5 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
   const socialProof = proofResult || null
   const settings = settingsResult?.settings || defaultStoreSettings
 
-  return <Storefront initialCatalog={catalog} initialSocialProof={socialProof} initialSettings={settings} />
+  return <Storefront initialCatalog={catalog} initialSocialProof={socialProof} initialSettings={settings} initialCategoryMedia={categoryMedia} />
 }
