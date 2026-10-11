@@ -9,7 +9,7 @@ export async function getHomeCategoryMedia(): Promise<Record<string, string>> {
   )
   const items: Record<string, string> = {}
   for (const row of result.rows) {
-    if (!row.category_id || !/^\/api\/catalog\/image\?key=catalog\/editorial\/category-v[123]\/[a-z-]+\.webp$/.test(decodeURIComponent(row.image_url))) continue
+    if (!row.category_id || !/^\/api\/catalog\/image\?key=catalog\/editorial\/category-v[1234]\/[a-z-]+\.webp$/.test(decodeURIComponent(row.image_url))) continue
     items[row.category_id] = row.image_url
   }
   return items
