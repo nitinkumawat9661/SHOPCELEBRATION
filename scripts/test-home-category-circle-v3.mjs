@@ -25,7 +25,7 @@ assert(code.includes('circle cx="320" cy="320" r="314"'),"Full size native circu
 assert(code.includes('alpha(0,0)>8')&&code.includes('alpha(320,320)<250'),"Release must actually validate transparent image corners")
 assert(code.includes('category-v3/')&&sql.includes('category-v3%2F'),"Use new immutable media, preserving old release assets")
 assert(css.includes("object-fit:contain")&&css.includes("border-radius:50%"),"Whole product must fit round card")
-assert(media.includes("category-v[1234]"),"Home must resolve v3 URLs")
+assert(media.includes("category-v[12345]"),"Home must resolve v3 URLs")
 // .github/workflows is deliberately excluded from VPS source archives.
 // Assert its presence when available during GitHub PR CI only.
 const workflow=await read(".github/workflows/deploy-production.yml").catch(error=>{
