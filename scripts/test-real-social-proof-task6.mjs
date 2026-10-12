@@ -19,7 +19,7 @@ const [proofSrc, orderSource, storefront, unusedRail, reviews, reviewUI, detail,
   "features/catalog/BudgetSection.tsx",
   "styles/real-social-proof-task6.css",
   "app/globals.css",
-  "docs/FINAL_POLISH_AND_AI_FEEL_REMOVAL.md"
+  "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md"
 ].map(read))
 
 const js = ts.transpileModule(proofSrc, { compilerOptions: {
@@ -107,6 +107,6 @@ assert(css.includes(".celebrationHome .celebrationRealProof") && css.includes("@
 assert(!css.includes("@keyframes") && !css.includes("animation:"), "No fake live-count social proof motion")
 assert(globals.includes('@import "../styles/real-social-proof-task6.css";'),
   "Task 6 CSS must be imported into storefront")
-assert(plan.includes("## 6. Honest social proof"), "Follow user's locked Task 6 checklist")
+assert(plan.includes("Genuine verified reviews/media") && plan.includes("real catalogue"), "Follow user's approved actual-data and no-fake-proof rules")
 
 console.log("Task 6 verified-proof checks passed: executed 14 real cohort guard cases, only paid+delivered 20+/5+ counts, active tiers, no fabricated review ticker, verified SKU/phone/order with admin moderation, honest no-data and database-outage states.")
