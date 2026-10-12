@@ -32,6 +32,8 @@ async function device(width,account) {
   return route.fulfill(json({ok:false},405))
  })
  await context.route("**/api/**",async route=>{
+  const path=new URL(route.request().url()).pathname
+  if(path==="/api/account/me"||path==="/api/account/wishlist")return route.fallback()
   if(["GET","HEAD"].includes(route.request().method()))return route.continue()
   return route.abort("blockedbyclient")
  })
