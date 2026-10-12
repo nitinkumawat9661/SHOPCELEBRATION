@@ -1,6 +1,6 @@
 import { query } from "./db"
 
-/** R2 category images; v3 has properly circular artwork using original catalog product photos. */
+/** R2 category images; v7 is the owner-supplied final round-category artwork. */
 type CategoryMediaRow = { category_id: string; image_url: string }
 
 export async function getHomeCategoryMedia(): Promise<Record<string, string>> {
@@ -9,7 +9,7 @@ export async function getHomeCategoryMedia(): Promise<Record<string, string>> {
   )
   const items: Record<string, string> = {}
   for (const row of result.rows) {
-    if (!row.category_id || !/^\/api\/catalog\/image\?key=catalog\/editorial\/category-v[123456]\/[a-z-]+\.webp$/.test(decodeURIComponent(row.image_url))) continue
+    if (!row.category_id || !/^\/api\/catalog\/image\?key=catalog\/editorial\/category-v[1234567]\/[a-z-]+\.webp$/.test(decodeURIComponent(row.image_url))) continue
     items[row.category_id] = row.image_url
   }
   return items
