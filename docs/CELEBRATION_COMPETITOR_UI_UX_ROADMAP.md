@@ -22,8 +22,9 @@
 **Original desktop concept:** editorial hero with two shopping entry points, category shortcuts and up to four jewellery products per row; 1240px maximal container as the proposed design target.
 
 **Current source/deployment assessment (2026-10-12):**
-- **Implemented, visual acceptance pending:** Header/search/cart/account, jewellery+hamper hero, compact category rail, seven approved owner-supplied R2 category images, four genuine mixed-SKU featured product cards displayed as the owner's preferred rounded horizontal swipe cards, occasion rail, premium budget selection and the existing trust/footer/navigation.
-- **Implemented, with a different visual presentation than the draft:** the homepage features a compact horizontal **featured product carousel**, not necessarily the prototype's two-column viewport grid. Do **not** change these approved rounded cards merely to match the earlier mockup.
+- **Implemented, visual acceptance pending:** Header/search/cart/account, jewellery+hamper hero, compact category rail, seven currently installed owner-supplied R2 category images, four genuine mixed-SKU featured product cards, occasion rail, premium budget selection and the existing trust/footer/navigation.
+- **Owner's updated final decision (2026-10-12):** **Do not keep the previously requested horizontal-swipe featured cards.** Follow the **original proposed competitor design** for “Take a closer look” / jewellery discovery: **two product cards side by side on phones and four in a row on desktop**, a regular wrapping grid rather than swipe navigation. Keep each product's real image/name/price/cart and make changes only to this featured area.
+- **Important deferred task — LAST STEP OF PHASE 1:** The owner explicitly requested that **the existing seven “Shop by Category” round-card images be replaced at the very end of Phase 1**, not during the featured-grid change or the intervening header/mobile/desktop QA. Until that final Phase 1 image task, **keep the current round shape, category links and images untouched**. At the last step obtain/use the owner's desired correct category-wise artwork, verify each category assignment visually, then update only those images. Do not silently recycle old poster crops.
 - **Not shipped due to absent real catalogue inventory:** dedicated standalone-earrings category cards or **Ready-Made Hampers** cards/listings. Never invent them.
 - **Remaining:** physical-device and desktop screenshots against approved design, genuine products and labels, responsive alignment and navigation; confirm actual header/scroll behavior rather than assuming the prototype was reproduced pixel-perfectly.
 
@@ -59,7 +60,7 @@
 
 ## Recommended remaining sequence, confined to this plan
 
-1. **Phase 1 acceptance:** Mobile and desktop visual QA of existing homepage, *without* redesigning approved category/featured cards. Record issues and fix only verified defects.
+1. **Phase 1 acceptance:** Use the owner's **original proposed 2-column phone / 4-column desktop featured grid** (NOT swipe). Verify mobile header/scroll behavior, remaining homepage navigation, mobile and desktop layout with actual screenshots. Fix only verified defects and preserve product/cart logic. **LAST task before Phase 1 sign-off: replace the seven Shop by Category circle images category-wise** after the owner approves the new photos; do not change them early.
 2. **Phase 2 completion:** Working wishlist; pre-checkout pincode delivery estimate backed by actual service data; clearer buy-now path if desired; photo/gallery/product-card QA. Respect privacy and existing cart/checkout.
 3. **Phase 3 specification decision:** Owner chooses curated-only vs curated **and** customer-selected hampers. Add honest item selection/live summary only for real stock and supported fulfilment.
 4. **Ready-made catalog** only after owner supplies source images, contents, actual inventory and pricing; then create distinct entry point.
@@ -72,7 +73,8 @@
 | Priority | Pattern | Evidence/guard |
 |---|---|---|
 | P0 | Exact product ID, name and image | Same-SKU photos only |
-| P1 | Compact homepage, category navigation | User-approved round category photos |
+| P1 | Compact homepage and jewellery grid | 2 columns on mobile, 4 on desktop; no featured swipe |
+| P1 (Phase 1 last) | Category circle image replacement | Deferred by owner until after all other Phase 1 work |
 | P1 | Consistent jewellery listing cards, sorting, wishlist | Functional, not decorative |
 | P1 | Product-page pincode ETA | Actual serviceability and achievable delivery dates |
 | P2 | Separate ready-made/custom hamper entry | Real catalogue only |
