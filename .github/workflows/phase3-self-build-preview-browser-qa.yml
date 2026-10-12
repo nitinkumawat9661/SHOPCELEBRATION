@@ -60,6 +60,7 @@ jobs:
           export PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=celebration_preview_test PGUSER=postgres PGPASSWORD=preview_only_db_pass
           psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts(id text PRIMARY KEY); CREATE TABLE orders(id text PRIMARY KEY);'
           psql -v ON_ERROR_STOP=1 -f db/migrations/034_admin_passkeys.sql
+          psql -v ON_ERROR_STOP=1 -c "INSERT INTO admin_passkeys (credential_id,user_handle,public_key_jwk) VALUES ('isolated-browser-qa','isolated-user','{}'::jsonb);"
           psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/049_self_build_category_only_no_sku_mapping.sql
