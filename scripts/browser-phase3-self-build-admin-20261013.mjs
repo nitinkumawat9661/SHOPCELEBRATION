@@ -63,6 +63,8 @@ try{
       const dirty=await page.locator(".sbAdminDirty").count()
       check(width+" drafts remain unpublished",dirty===1)
       await page.locator(".sbAdminHeadingActions .sbAdminPublish").click()
+      await page.locator(".sbAdminAlert").waitFor({timeout:15000})
+      console.log("ADMIN_SAVE_RESULT "+width+" "+JSON.stringify({notice:await page.locator(".sbAdminAlert").innerText(),error:await page.locator(".sbAdminAlert--error").count()}))
       await page.locator(".sbAdminAlert--good").waitFor({timeout:15000})
       check(width+" save published",await page.getByText(/settings saved as version/).count()===1)
       const live=await page.evaluate(async()=> {
