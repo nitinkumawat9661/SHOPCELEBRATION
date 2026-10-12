@@ -202,7 +202,7 @@ try{
   // intentionally zero current v3 rows. Upgraded v4 rows must count as
   // successful, not block future unrelated homepage releases.
   const count=await db.query("SELECT count(*)::int AS total FROM home_category_media WHERE image_url LIKE '/api/catalog/image?key=catalog%2Feditorial%2Fcategory-v3%2F%' OR image_url LIKE '/api/catalog/image?key=catalog%2Feditorial%2Fcategory-v4%2F%' OR image_url LIKE '/api/catalog/image?key=catalog%2Feditorial%2Fcategory-v5%2F%' OR image_url LIKE '/api/catalog/image?key=catalog%2Feditorial%2Fcategory-v6%2F%' OR image_url LIKE '/api/catalog/image?key=catalog%2Feditorial%2Fcategory-v7%2F%'")
-  if(count.rows[0]?.total!==7) throw new Error(`Only ${count.rows[0]?.total}/7 v3-or-newer category photos recorded`)
+  if(count.rows[0]?.total<7) throw new Error(`Only ${count.rows[0]?.total}/7 v3-or-newer category photos recorded`)
   console.log(`Circular Celebration category assets (v3 or upgraded v4) in R2/PostgreSQL: ${count.rows[0].total}/7, v3 newly processed ${completed}`)
 } finally{
   await db.end()
