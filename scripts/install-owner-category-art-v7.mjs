@@ -45,3 +45,22 @@ async function prepare(mediaId){
  if(webp.length<12000||webp.length>700000)throw Error("Invalid transformed WebP size")
  return webp
 }
+await db.connect()
+try{
+ const rows=await db.query("SELECT category_id,image_url FROM home_category_media WHERE category_id=ANY($1::text[])",[entries.map(e=>e[0])])
+ const previous=new Map(rows.rows.map(r=>[r.category_id,r.image_url]))
+ if(entries.some(([id])=>id!=="Earrings"&&!previous.has(id)))
+  throw Error("Missing existing category mapping")
+ for(const [id,slug] of entries){
+  const old=previous.get(id)
+  if(old && old!==imageUrl(slug) && !/category-v[1-6](?:%2F|\/)/i.test(old))
+   throw Error("Conflicting newer image for "+id)
+ }
+ for(const [id,slug,mediaId] of entries){
+  if(!await valid(slug)){
+   const bytes=await prepare(mediaId)
+   await r2.send(new PutObjectCommand({Bucket:bucket,Key:path(slug),Body:bytes,
+    ContentLength:bytes.length,ContentType:"image/webp",CacheControl:"public,max-age=31536000,immutable"}))
+  }
+  if(!await valid(slug))throw Error("Could not persist "+id)
+ }
