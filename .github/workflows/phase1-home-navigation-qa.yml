@@ -1,0 +1,49 @@
+name: Celebration Phase 1 Homepage Navigation QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/phase1-home-navigation-qa.yml"
+      - "scripts/audit-phase1-home-navigation-20261012.mjs"
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Celebration Production"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  homepage-navigation:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Check out navigation audit
+        uses: actions/checkout@v5
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Prepare installed Chrome
+        run: |
+          set -euo pipefail
+          npm ci
+          npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Verify genuine homepage clicks and safe builder navigation
+        env:
+          BASE_URL: https://shopcelebration.in/
+        run: |
+          set -euo pipefail
+          node scripts/audit-phase1-home-navigation-20261012.mjs
+      - name: Preserve browser navigation report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-home-navigation-${{ github.run_id }}
+          path: artifacts/phase1-home-navigation/
+          if-no-files-found: warn
+          retention-days: 14
