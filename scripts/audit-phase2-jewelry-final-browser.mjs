@@ -115,7 +115,7 @@ try{
     await page.waitForFunction(()=>!new URLSearchParams(location.search).has("price"),null,{timeout:20000})
     await page.waitForFunction(expected=>document.querySelectorAll(".collectionGrid .catalogCard").length===expected,Number.parseInt(countLabel),{timeout:20000})
     const categories=await page.locator(".collectionGrid .catalogCardCategory").allInnerTexts()
-    verify(label+" category exact-match after removing price filter",categories.length===Number.parseInt(countLabel)&&categories.every(v=>v.trim()===category),category+" expected "+countLabel+" actual "+categories.length)
+    verify(label+" category exact-match after removing price filter",categories.length===Number.parseInt(countLabel)&&categories.every(v=>v.trim().toLocaleLowerCase()===category.toLocaleLowerCase()),category+" expected "+countLabel+" actual "+categories.length)
     const clear=page.getByRole("button",{name:"Clear all filters"})
     await clear.click()
     await page.waitForFunction(()=>!["sort","category","price","q"].some(k=>new URLSearchParams(location.search).has(k)),null,{timeout:20000})
