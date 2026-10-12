@@ -10,7 +10,7 @@ const [styles, globals, header, cart, cards, filters, page, plan] = await Promis
   read("features/catalog/CatalogCard.tsx"),
   read("features/catalog/JewelryMarketplaceFilters.tsx"),
   read("app/jewelry/[id]/page.tsx"),
-  read("docs/WEBSITE_FINAL_IMPROVEMENT_PLAN.md")
+  read("docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md")
 ])
 const has = (regex, label) => assert.match(styles, regex, label)
 
@@ -49,7 +49,7 @@ has(/\.collectionPage \.mobileMarketplaceBuyBar>div:first-child\s*\{[^}]*grid-co
 has(/\.collectionPage \.mobileMarketplaceBuyBar \.catalogInlineQuantity\s*\{[^}]*grid-template-columns:44px minmax\(0,1fr\) 44px;/s, "Fixed buy bar +/- cannot shrink below 44px")
 has(/\.collectionPage:has\(\.mobileMarketplaceBuyBar\) \.celebrationSupport\s*\{display:none\}/s, "Do not cover purchase buttons with WhatsApp support")
 assert(page.includes("mobileMarketplaceBuyBar"), "Fixed mobile buy bar is expected on individual product pages")
-assert(plan.includes("## 6. मोबाइल अनुभव") && plan.includes("visual/manual QA"), "Plan must record Section 6 and pending manual visual checks")
+assert(plan.includes("## Phase 1 — Homepage Redesign") && plan.includes("physical-device and desktop screenshots"), "Approved homepage plan must retain mobile visual acceptance")
 
 // Catch accidental partial edits before the CSS reaches production.
 assert.equal((styles.match(/\{/g) || []).length, (styles.match(/\}/g) || []).length, "Unbalanced CSS blocks")
