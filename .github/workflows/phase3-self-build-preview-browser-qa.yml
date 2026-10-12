@@ -82,7 +82,11 @@ jobs:
           done
           if [ "$READY" -ne 1 ]; then cat artifacts/phase3-self-build/server.log; exit 1; fi
           node scripts/browser-phase3-self-build-preview-20261013.mjs
-          node scripts/browser-phase3-self-build-admin-20261013.mjs
+          if ! node scripts/browser-phase3-self-build-admin-20261013.mjs; then
+            echo 'Isolated server errors (do not use against production):'
+            tail -n 140 artifacts/phase3-self-build/server.log
+            exit 1
+          fi
       - name: Save design screenshots and QA report
         if: always()
         uses: actions/upload-artifact@v4
