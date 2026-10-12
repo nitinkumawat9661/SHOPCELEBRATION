@@ -273,6 +273,21 @@ export function AdminSelfBuildManager() {
     if (!option || !window.confirm(`Remove "${option.label}"? It will be deleted from configuration when Published.`)) return
     edit(s => ({ ...s, options: s.options.filter(x => x.id !== id) }))
   }
+  function renderBranch(category: SelfBuildCategory) {
+    const siblings = categories.filter(c => c.parentId === category.parentId)
+    const children = sortByOrder(categories.filter(c => c.parentId === category.id))
+    return <div key={category.id} className="sbAdminGroup">
+      <CategoryRow category={category} siblings={siblings} allCategories={categories}
+        options={options.filter(o => o.categoryId === category.id)} busy={busy}
+        patch={changes => patchCategory(category.id, changes)}
+        moveCategory={delta => moveCategory(category.id, delta)}
+        patchOption={patchOption} addOption={() => addOption(category.id)}
+        removeOption={removeOption} moveOption={moveOption}
+        removeCategory={() => removeCategory(category.id)} />
+      {children.length > 0 && <div className="sbAdminChildGrid">{children.map(renderBranch)}</div>}
+    </div>
+  }
+
   async function publish() {
     if (!state || !dirty || busy) return
     setBusy(true);setNotice(null)
@@ -335,21 +350,7 @@ export function AdminSelfBuildManager() {
         </div>
         <div className="sbAdminTree">
           <div className="sbAdminSectionCaption"><span>01 / CATEGORY HIERARCHY</span><p>Reorder, rename and activate categories. Folders can contain subcategories. Each size belongs to its parent category.</p></div>
-          {topLevel.map(c => {
-            const siblings = categories.filter(x => x.parentId === null)
-            const children = sortByOrder(categories.filter(x => x.parentId === c.id))
-            return <div key={c.id} className="sbAdminGroup">
-              <CategoryRow category={c} siblings={siblings} allCategories={categories} options={options.filter(o => o.categoryId === c.id)} busy={busy}
-                patch={changes => patchCategory(c.id, changes)} moveCategory={delta => moveCategory(c.id, delta)}
-                patchOption={patchOption} addOption={() => addOption(c.id)} removeOption={removeOption}
-                moveOption={moveOption} removeCategory={() => removeCategory(c.id)} />
-              {children.length > 0 && <div className="sbAdminChildGrid">{children.map(child => <CategoryRow key={child.id} category={child}
-                siblings={children} allCategories={categories} options={options.filter(o => o.categoryId === child.id)} busy={busy}
-                patch={changes => patchCategory(child.id, changes)} moveCategory={delta => moveCategory(child.id, delta)}
-                patchOption={patchOption} addOption={() => addOption(child.id)} removeOption={removeOption}
-                moveOption={moveOption} removeCategory={() => removeCategory(child.id)} />)}</div>}
-            </div>
-          })}
+          {topLevel.map(renderBranch)}
           {!topLevel.length && <p className="sbAdminEmpty">No top-level categories. Add one above.</p>}
         </div>
       </>}
