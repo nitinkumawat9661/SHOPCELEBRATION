@@ -1,6 +1,7 @@
 import { requireEnv } from "../../config/env"
 import type { OrderRecord } from "./orders/types"
 import { parseShipwayTrackingResponse, parseShipwayOrderByAwb, promotedShipwayStatus } from "../domain/shipway-response"
+import { carrierEstimateFromRate } from "../domain/shipway-eta"
 
 const SHIPWAY_BASE = "https://app.shipway.com"
 
@@ -31,6 +32,9 @@ export type ShipwayRateQuote = {
   shippingPaise: number
   chargeRupees: number
   billedWeightKg: number | null
+  /** Optional verified provider-supplied fields; never inferred from rates or zones. */
+  estimatedDeliveryDate: string | null
+  estimatedTransitDays: number | null
 }
 
 function authHeader() {
@@ -169,6 +173,7 @@ function rateOptions(raw: unknown) {
       carrierId: String(Math.trunc(carrierId)),
       charge,
       billedWeightKg: billedWeight,
+      ...carrierEstimateFromRate(row),
       name: typeof row.courier_name === "string"
         ? row.courier_name.trim()
         : typeof row.courier === "string"
@@ -238,7 +243,9 @@ export async function quoteShipwayShipping(input: {
     carrierName: selected.name,
     shippingPaise: Math.round(selected.charge * 100),
     chargeRupees: selected.charge,
-    billedWeightKg: selected.billedWeightKg
+    billedWeightKg: selected.billedWeightKg,
+    estimatedDeliveryDate: selected.estimatedDeliveryDate,
+    estimatedTransitDays: selected.estimatedTransitDays
   }
 }
 
