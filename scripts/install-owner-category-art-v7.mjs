@@ -76,3 +76,16 @@ try{
        [...fields,id,previous.get(id)])
      if(updated.rowCount!==1)throw Error("Concurrent media modification for "+id)
     }else{
+     if(id!=="Earrings")throw Error("Unexpected extra category")
+     const added=await db.query("INSERT INTO home_category_media (category_id,image_url,source_page,photographer,license_name,width,height) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING",[id,...fields])
+     if(added.rowCount!==1)throw Error("Concurrent Earrings mapping insertion")
+    }
+   }
+   await db.query("COMMIT")
+  }catch(e){await db.query("ROLLBACK");throw e}
+ }
+ console.log("Eight owner-supplied round category images verified in R2 and PostgreSQL (8/8)")
+}finally{
+ await db.end()
+ r2.destroy()
+}
