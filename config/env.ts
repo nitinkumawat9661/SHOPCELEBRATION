@@ -35,6 +35,7 @@ export const env = {
   telegramBotToken: read("TELEGRAM_BOT_TOKEN"),
   telegramAdminChatId: read("TELEGRAM_ADMIN_CHAT_ID"),
   telegramWebhookSecret: read("TELEGRAM_WEBHOOK_SECRET"),
+  telegramCourierPollSecret: read("TELEGRAM_COURIER_POLL_SECRET"),
   shipwayEmail: read("SHIPWAY_EMAIL"),
   shipwayLicenseKey: read("SHIPWAY_LICENSE_KEY"),
   shipwayWarehouseId: read("SHIPWAY_WAREHOUSE_ID"),
