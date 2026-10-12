@@ -9,6 +9,10 @@ on:
       - lib/server/self-build-preview.ts
       - styles/self-build-preview-20261013.css
       - scripts/browser-phase3-self-build-preview-20261013.mjs
+      - scripts/browser-phase3-self-build-admin-20261013.mjs
+      - features/admin/AdminSelfBuildManager.tsx
+      - styles/admin-self-build-20261013.css
+      - db/migrations/050_self_build_category_option_capacity.sql
       - .github/workflows/phase3-self-build-preview-browser-qa.yml
   workflow_dispatch:
 
@@ -59,6 +63,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/049_self_build_category_only_no_sku_mapping.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/050_self_build_category_option_capacity.sql
           npm run build
       - name: Verify real category-first design on 320, 390, 768 and 1280px
         shell: bash
@@ -75,11 +80,14 @@ jobs:
           done
           if [ "$READY" -ne 1 ]; then cat artifacts/phase3-self-build/server.log; exit 1; fi
           node scripts/browser-phase3-self-build-preview-20261013.mjs
+          node scripts/browser-phase3-self-build-admin-20261013.mjs
       - name: Save design screenshots and QA report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: phase3-self-build-design-${{ github.run_id }}
-          path: artifacts/phase3-self-build/
+          path: |
+            artifacts/phase3-self-build/
+            artifacts/phase3-self-build-admin/
           if-no-files-found: warn
           retention-days: 14
