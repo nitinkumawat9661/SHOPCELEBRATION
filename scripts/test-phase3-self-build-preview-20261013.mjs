@@ -39,7 +39,7 @@ assert(ui.includes('setQuantities')&&ui.includes('Math.max(0, count - 1)'),"Quan
 assert(ui.includes('sortedCategories.filter(item => item.parentId === (openId ?? null)')&&ui.includes('setOpenId(category.id)'),"Category-first navigation required")
 assert(ui.includes('category.selectionKind === "group" || category.selectionKind === "variant"'))
 assert(ui.includes('currentCategory?.selectionKind === "variant"')&&ui.includes("childOptions.map"))
-assert(ui.includes('category.selectionKind === "photo"')&&ui.includes('category:\${category.id}'),"Photos must have quantity control")
+assert(ui.includes('category.selectionKind === "photo"')&&ui.includes('category:${category.id}'),"Photos must have quantity control")
 assert(ui.includes('data.requestPrompt')&&ui.includes('maxLength={1200}'),"Admin text prompt must be rendered and bounded")
 assert(ui.includes('const units = chosen.reduce')&&ui.includes('const distinct = chosen.length'))
 assert(ui.includes('disabled={units === 0}'),"Require at least one selection to proceed")
