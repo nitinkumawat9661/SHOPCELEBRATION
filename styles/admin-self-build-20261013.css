@@ -1,0 +1,50 @@
+.sbAdmin{--sb-b:#7c3042;--sb-line:#e8e0d8;--sb-ink:#392b27;--sb-muted:#796e66;font-family:var(--font-shopping-sans),Arial,sans-serif;color:var(--sb-ink);padding:2px 0 35px;max-width:1200px}
+.sbAdmin *{box-sizing:border-box}
+.sbAdminHero{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin:5px 0 22px}
+.sbAdminEyebrow{font-size:10px;letter-spacing:.14em;color:#966b75;font-weight:650}
+.sbAdminHero h2{font:400 clamp(32px,4vw,45px)/1.1 var(--font-shopping-display),Georgia,serif;letter-spacing:-.04em;margin:12px 0;color:var(--sb-ink)}
+.sbAdminHero p,.sbAdminSectionHead p{max-width:670px;color:var(--sb-muted);font-size:12px;line-height:1.8;margin:0}
+.sbAdminPreview{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:160px;padding:10px 16px;border:1px solid #b999a0;border-radius:8px;color:#773043;text-decoration:none;font-size:12px;font-weight:600;background:#fff;white-space:nowrap}
+.sbAdminNotice{background:#fcf7f0;border:1px solid #e7d8c5;border-left:3px solid #b79583;border-radius:6px;padding:15px 17px;color:#755b4c;font-size:12px;line-height:1.7}
+.sbAdminNotice strong{color:#5b4036}
+.sbAdminFeedback{padding:14px 16px;margin:16px 0;border-radius:6px;font-size:12px;line-height:1.7}
+.sbAdminFeedbackError{border:1px solid #d6afb5;background:#fff3f2;color:#7d2d38}
+.sbAdminFeedbackSuccess{border:1px solid #b9d6bb;background:#f3faf2;color:#325e39}
+.sbAdminToolbar{margin:22px 0;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.sbAdminTabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:5px;background:#f4eeea;border:1px solid #e9e1da;border-radius:9px}
+.sbAdminTabs button{min-height:40px;padding:9px 13px;border:0;border-radius:6px;color:#765f5b;background:transparent;font-size:12px}
+.sbAdminTabs button.active{background:#fff;color:#772c40;box-shadow:0 1px 7px #532f2115;font-weight:650}
+.sbAdminStatus{font-size:11px;color:var(--sb-muted)}
+.sbAdminStatus b{color:#8b3d4f}
+.sbAdminBody{border:1px solid var(--sb-line);background:#fffdfa;border-radius:10px;padding:clamp(16px,2vw,27px)}
+.sbAdminSectionHead{border-bottom:1px solid var(--sb-line);padding-bottom:21px;margin-bottom:19px}
+.sbAdminSectionHead h3{font:400 28px/1.2 var(--font-shopping-display),Georgia,serif;margin:0 0 8px}
+.sbAdminRows{display:grid;gap:12px}
+.sbAdminRow{border:1px solid #e8e0da;background:#fff;border-radius:8px;padding:17px;min-width:0}
+.sbAdminRowTop{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}
+.sbAdminPill{font-size:10px;display:inline-flex;padding:6px 9px;border:1px solid #eadce1;border-radius:5px;background:#f9f2f3;color:#733c4d;font-weight:650}
+.sbAdminRowTop code{font-size:10px;color:#8f847c;white-space:normal;overflow-wrap:anywhere}
+.sbAdminFields,.sbAdminAddGrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(90px,1fr) minmax(120px,1fr);gap:12px}
+.sbAdminFields label,.sbAdminAddGrid label,.sbAdminSettings>label:not(.sbAdminToggle){display:flex;flex-direction:column;gap:7px;color:#63544d;font-size:11px;font-weight:600;min-width:0}
+.sbAdmin :is(input:not([type=checkbox]),select,textarea){display:block;width:100%;min-width:0;min-height:43px;border:1px solid #dfd3ca;border-radius:5px;background:#fff;color:#392b27;padding:10px 12px;font-family:inherit;font-size:12px}
+.sbAdmin textarea{line-height:1.7;resize:vertical}
+.sbAdmin :is(input,select,textarea,button,a):focus-visible{outline:3px solid #ac7786;outline-offset:2px}
+.sbAdminRowActions{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap}
+.sbAdminToggle{display:flex;align-items:center;gap:10px;font-size:11px;color:#5f554d;font-weight:550}
+.sbAdminToggle input{width:17px;height:17px;accent-color:#7c3042}
+.sbAdminDelete{border:0;background:none;color:#a04653;padding:8px;font-size:11px;min-height:40px}
+.sbAdminDelete:hover{text-decoration:underline}
+.sbAdminAdd{background:#f9f5f0;border:1px dashed #dccbc2;border-radius:8px;margin-top:20px;padding:18px}
+.sbAdminAdd h4{font:400 23px/1.2 var(--font-shopping-display),Georgia,serif;margin:0 0 15px}
+.sbAdminAdd>.secondary{margin-top:15px;min-height:42px}
+.sbAdminSettings{display:grid;gap:20px;max-width:720px}
+.sbAdminSettings>label:not(.sbAdminToggle){max-width:380px}
+.sbAdminSettings>.sbAdminFull{max-width:100%!important}
+.sbAdminFooter{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:20px;padding:19px 0;border-top:1px solid var(--sb-line)}
+.sbAdminSave{min-height:46px;background:#7c3042;color:#fffaf5;padding:12px 22px;border:1px solid #7c3042;border-radius:6px;font-weight:650;font-size:12px}
+.sbAdminSave:disabled{opacity:.55;cursor:not-allowed}
+.sbAdminFooter>.secondary{min-height:44px}
+.sbAdminFooter span{font-size:10px;color:var(--sb-muted)}
+@media(max-width:760px){.sbAdminHero{flex-direction:column;gap:15px}.sbAdminFields,.sbAdminAddGrid{grid-template-columns:minmax(0,1fr) minmax(90px,1fr)}.sbAdminFields label:first-child{grid-column:1/-1}.sbAdminToolbar{align-items:flex-start;flex-direction:column}.sbAdminRow[style]{margin-left:min(10px,3vw)!important}}
+@media(max-width:430px){.sbAdminFields,.sbAdminAddGrid{grid-template-columns:minmax(0,1fr)}.sbAdminAddGrid label,.sbAdminFields label:first-child{grid-column:auto}.sbAdminBody{padding:14px}.sbAdminRow{padding:13px}.sbAdminFooter{align-items:stretch;flex-direction:column}.sbAdminFooter>button{width:100%}}
+@media(prefers-reduced-motion:reduce){.sbAdmin *{transition:none!important;animation:none!important}}
