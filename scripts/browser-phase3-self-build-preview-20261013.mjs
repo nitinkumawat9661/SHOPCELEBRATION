@@ -13,7 +13,7 @@ const secret = process.env.ADMIN_SESSION_SECRET
 const version = process.env.ADMIN_SESSION_VERSION
 if (!secret || secret.length < 32 || !version) throw Error("Isolated admin test secrets missing")
 const payload = Buffer.from(JSON.stringify({
-  exp: Math.floor(Date.now() / 1000) + 1800, version, method: "password"
+  exp: Math.floor(Date.now() / 1000) + 1800, version, method: "passkey"
 })).toString("base64url")
 const signature = createHmac("sha256", secret).update(payload).digest("base64url")
 const cookie = payload + "." + signature
