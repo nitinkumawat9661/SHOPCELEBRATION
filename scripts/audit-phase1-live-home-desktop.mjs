@@ -111,8 +111,8 @@ function check(width,d){
  if(d.heroCTAs.length<2||d.heroCTAs.some(x=>!x.visible||x.rect.h<40))
    severe(width,"Jewellery and hamper hero buttons must be visible and clickable")
  if(d.heroTitleClipped)warning(width,"Hero title may be clipped")
- if(d.categoryCount!==7||d.categoryMedia!==7)
-   severe(width,"Expected seven original category cards and original photographs, got "+d.categoryCount+"/"+d.categoryMedia)
+ if(d.categoryCount!==8||d.categoryMedia!==8)
+   severe(width,"Expected eight approved category cards and original photographs, got "+d.categoryCount+"/"+d.categoryMedia)
  if(d.featuredCount!==4||d.featuredCss.display!=="grid")
    severe(width,"Original four-product desktop grid missing")
  if(d.featuredCount===4){
@@ -173,7 +173,7 @@ try{
      if(pageErrors.length)warning(width,pageErrors.length+" page JavaScript exceptions")
      if(serverErrors.length)warning(width,serverErrors.length+" HTTP 5xx asset/API errors")
      report.widths.push({width,status,metrics,pageErrors,serverErrors})
-     console.log("Desktop "+width+"px: HTTP "+status+", page="+metrics.documentWidth+"px, 7 categories="+metrics.categoryCount+", featured="+metrics.featuredCount+", 4-col="+metrics.featuredCss.gridColumns+", screenshots saved.")
+     console.log("Desktop "+width+"px: HTTP "+status+", page="+metrics.documentWidth+"px, 8 categories="+metrics.categoryCount+", featured="+metrics.featuredCount+", 4-col="+metrics.featuredCss.gridColumns+", screenshots saved.")
    }catch(error){
      severe(width,"Cannot verify live desktop homepage: "+error.message.slice(0,490))
      report.widths.push({width,status,error:error.message.slice(0,900),pageErrors,serverErrors})
