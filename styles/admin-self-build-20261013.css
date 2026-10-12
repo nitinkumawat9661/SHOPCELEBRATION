@@ -1,0 +1,121 @@
+/* Self-Build operational editor. Scoped; never restyles retail or checkout. */
+.sbAdminRoot{--sa-paper:#fffcf8;--sa-line:#e9e0d7;--sa-muted:#7f7065;--sa-red:#7d3242;--sa-dark:#352521;--sa-cream:#f8f1ea;color:var(--sa-dark);font-family:var(--font-shopping-sans),Arial,sans-serif}
+.sbAdminRoot *,.sbAdminRoot *::before,.sbAdminRoot *::after{box-sizing:border-box}
+.sbAdminRoot button,.sbAdminRoot a,.sbAdminRoot input,.sbAdminRoot select,.sbAdminRoot textarea{font-family:inherit}
+.sbAdminRoot button:focus-visible,.sbAdminRoot a:focus-visible,.sbAdminRoot input:focus-visible,.sbAdminRoot select:focus-visible,.sbAdminRoot textarea:focus-visible{outline:3px solid #a16a78;outline-offset:2px}
+.sbAdminRoot button{cursor:pointer}
+.sbAdminRoot button:disabled{cursor:not-allowed;opacity:.55}
+.sbAdminHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding-bottom:28px;border-bottom:1px solid var(--sa-line)}
+.sbAdminHeading>div:first-child{max-width:680px}
+.sbAdminEyebrow{font-size:10px;letter-spacing:.14em;font-weight:700;color:var(--sa-red)}
+.sbAdminHeading h2{font:500 clamp(27px,3vw,42px)/1.12 var(--font-shopping-display),Georgia,serif;margin:11px 0 10px;letter-spacing:-.035em}
+.sbAdminHeading p{font-size:12px;line-height:1.7;color:var(--sa-muted);margin:0}
+.sbAdminHeading p strong{font-weight:700;color:var(--sa-dark)}
+.sbAdminHeadingActions{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px}
+.sbAdminOutline,.sbAdminPublish{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;font-size:12px;font-weight:650;padding:11px 15px;border-radius:3px;white-space:nowrap}
+.sbAdminOutline{background:#fffbf8;color:var(--sa-red);border:1px solid #d9c9c4}
+.sbAdminOutline:hover{background:#f9f0eb}
+.sbAdminPublish{background:var(--sa-red);color:#fffaf5;border:1px solid var(--sa-red)}
+.sbAdminPublish:hover:not(:disabled){background:#632437}
+.sbAdminSafety{display:flex;gap:14px;padding:17px 19px;margin:22px 0;background:#f3ece7;border:1px solid #eadcd4}
+.sbAdminSafety>span{font-size:12px;color:#8a4252;padding-top:3px}
+.sbAdminSafety b{font-size:12px;letter-spacing:.025em}
+.sbAdminSafety p{font-size:11px;line-height:1.75;color:#736257;margin:6px 0 0}
+.sbAdminDirty,.sbAdminAlert{font-size:12px;line-height:1.65;padding:12px 15px;border-left:3px solid #b98d57;margin:15px 0;background:#fbf0d8;color:#66512e}
+.sbAdminAlert--good{background:#eef4eb;border-color:#71976a;color:#3e6042}
+.sbAdminAlert--error{background:#fff0ec;border-color:#a95454;color:#813c42}
+.sbAdminLoading{padding:30px 0;font-size:13px;color:var(--sa-muted)}
+.sbAdminStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0 0}
+.sbAdminStats>div{min-width:0;border:1px solid var(--sa-line);background:var(--sa-paper);padding:17px}
+.sbAdminStats b{display:block;font:400 32px/1.1 var(--font-shopping-display),Georgia,serif;color:var(--sa-red)}
+.sbAdminStats span{display:block;font-size:10px;color:var(--sa-muted);margin-top:7px;line-height:1.5}
+.sbAdminTabs{display:flex;gap:7px;flex-wrap:wrap;margin:26px 0 20px;padding-bottom:9px;border-bottom:1px solid var(--sa-line)}
+.sbAdminTabs button{border:0;border-bottom:2px solid transparent;min-height:44px;padding:11px 16px;color:var(--sa-muted);font-size:12px;font-weight:650;background:transparent}
+.sbAdminTabs button.active{color:var(--sa-red);border-bottom-color:var(--sa-red)}
+.sbAdminCreate{padding:24px;border:1px solid #e5d8cb;background:#fbf6ef;margin:15px 0 35px}
+.sbAdminCreate>div:first-child>b{font:400 24px/1.2 var(--font-shopping-display),Georgia,serif}
+.sbAdminCreate p{font-size:11px;color:var(--sa-muted);line-height:1.6;margin:8px 0 16px}
+.sbAdminCreateFields{display:grid;grid-template-columns:minmax(130px,2fr) minmax(135px,1.5fr) minmax(135px,1.5fr) auto;align-items:end;gap:10px}
+.sbAdminCreateFields label,.sbAdminFields label:not(.sbAdminCheck),.sbAdminCapacityCount,.sbAdminPrompt{display:flex;flex-direction:column;gap:8px;color:#634b43;font-size:11px;font-weight:650;line-height:1.4;min-width:0}
+.sbAdminCreateFields input,.sbAdminCreateFields select,.sbAdminFields input:not([type=checkbox]),.sbAdminFields select,.sbAdminCapacityCount input,.sbAdminPrompt textarea{width:100%;min-width:0;border-radius:3px;border:1px solid #dfd0c3;background:#fffdf9;color:#382720;padding:11px 12px;font-size:12px;min-height:43px;line-height:1.4;box-shadow:none}
+.sbAdminCreateFields button{min-height:43px;border-radius:3px;border:1px solid var(--sa-red);padding:9px 14px;background:var(--sa-red);color:#fff;font-size:11px;font-weight:700}
+.sbAdminSectionCaption{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin:24px 0 15px}
+.sbAdminSectionCaption>span{font-size:10px;letter-spacing:.12em;color:var(--sa-red);font-weight:700;white-space:nowrap}
+.sbAdminSectionCaption>p{font-size:11px;color:var(--sa-muted);line-height:1.5;margin:0}
+.sbAdminGroup{margin-bottom:19px}
+.sbAdminCategory{padding:20px;border:1px solid var(--sa-line);border-radius:3px;background:var(--sa-paper);min-width:0;margin:0}
+.sbAdminCategoryHead,.sbAdminOptionTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.sbAdminTitle{min-width:0}
+.sbAdminTitle strong{display:block;font:400 23px/1.2 var(--font-shopping-display),Georgia,serif;overflow-wrap:anywhere;letter-spacing:-.02em}
+.sbAdminTitle span{display:block;color:var(--sa-muted);font-size:10px;line-height:1.6;margin-top:4px;word-break:break-word}
+.sbAdminRowActions{display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;gap:5px;flex-wrap:wrap}
+.sbAdminRowActions button{background:#fffefa;border:1px solid #e5d6ca;border-radius:2px;color:#714b42;padding:5px 9px;min-height:34px;min-width:34px;font-size:13px}
+.sbAdminRowActions button:hover:not(:disabled){background:#f4e9e2}
+.sbAdminRowActions .sbAdminDanger{color:#a04f59;font-size:10px;min-width:unset;padding:5px 9px}
+.sbAdminFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;gap:14px 15px}
+.sbAdminFields label small{font-size:10px;font-weight:400;color:var(--sa-muted);line-height:1.5}
+.sbAdminCheck{display:inline-flex;flex-direction:row;align-items:center;gap:9px;font-size:11px;color:#5d4c43;cursor:pointer}
+.sbAdminCheck input[type=checkbox]{height:17px;width:17px;accent-color:var(--sa-red);flex:0 0 17px;margin:0}
+.sbAdminToggle{align-self:end;min-height:43px;font-weight:650;white-space:normal}
+.sbAdminCapacity{border-top:1px solid var(--sa-line);margin-top:19px;padding-top:15px;display:flex;align-items:center;flex-wrap:wrap;gap:14px 18px}
+.sbAdminCapacityCount{display:flex;flex-direction:row;align-items:center;gap:10px}
+.sbAdminCapacityCount input{width:110px;min-height:38px}
+.sbAdminCapacity>small{font-size:10px;color:var(--sa-muted);line-height:1.5}
+.sbAdminChildGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px 0 0 20px;margin-left:16px;border-left:2px solid #e7cfcb}
+.sbAdminChildGrid .sbAdminCategory{padding:17px}
+.sbAdminChildGrid .sbAdminTitle strong{font-size:20px}
+.sbAdminChildGrid .sbAdminFields{grid-template-columns:1fr}
+.sbAdminOptionsBlock{border-top:1px solid var(--sa-line);padding-top:18px;margin-top:20px}
+.sbAdminOptionHeading{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.sbAdminOptionHeading>div{display:flex;flex-direction:column;gap:6px}
+.sbAdminOptionHeading b{font-size:12px}
+.sbAdminOptionHeading span{font-size:11px;color:var(--sa-muted);line-height:1.55}
+.sbAdminOptionHeading>button{min-height:40px;background:#fffefa;border:1px solid #cdb8b3;color:var(--sa-red);border-radius:2px;padding:9px 12px;font-size:11px;font-weight:650;flex:0 0 auto}
+.sbAdminOptionsList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.sbAdminOptionRow{padding:14px;border:1px solid var(--sa-line);background:#faf6f2;min-width:0}
+.sbAdminOptionRow .sbAdminTitle strong{font-size:20px}
+.sbAdminOptionRow .sbAdminFields{grid-template-columns:1fr}
+.sbAdminOptionRow .sbAdminCapacity{gap:12px}
+.sbAdminEmpty{font-size:12px;color:var(--sa-muted);line-height:1.7;background:#fbf7f1;padding:16px}
+.sbAdminHint{font-size:11px;line-height:1.7;color:var(--sa-muted);margin:15px 0 0}
+.sbAdminConfiguration{max-width:850px;padding:7px 0 20px}
+.sbAdminPrompt{margin:24px 0}
+.sbAdminPrompt textarea{min-height:110px;resize:vertical}
+.sbAdminPrompt small{font-size:10px;color:var(--sa-muted);font-weight:400;line-height:1.6}
+.sbAdminLocked{border:1px solid #e4d3cc;background:#f8f1ec;padding:17px;margin-top:20px}
+.sbAdminLocked b{font-size:12px}
+.sbAdminLocked p{font-size:11px;line-height:1.65;color:#75645c;margin:8px 0 0}
+.sbAdminFooter{padding-top:23px;margin-top:20px;border-top:1px solid var(--sa-line);display:flex;align-items:center;justify-content:space-between;gap:18px}
+.sbAdminFooter p{font-size:11px;color:var(--sa-muted);line-height:1.75;margin:0}
+@media(max-width:1260px){
+ .sbAdminChildGrid,.sbAdminOptionsList{grid-template-columns:1fr}
+ .sbAdminCreateFields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:820px){
+ .sbAdminHeading{flex-direction:column}
+ .sbAdminHeadingActions{justify-content:flex-start;width:100%}
+ .sbAdminChildGrid{padding-left:12px;margin-left:9px}
+ .sbAdminOptionTop{flex-direction:column}
+ .sbAdminStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .sbAdminSectionCaption{flex-direction:column;gap:7px}
+}
+@media(max-width:530px){
+ .sbAdminRoot{padding:14px}
+ .sbAdminHeading h2{font-size:29px}
+ .sbAdminHeadingActions{display:grid;grid-template-columns:1fr 1fr}
+ .sbAdminHeadingActions .sbAdminPublish{grid-column:1/-1}
+ .sbAdminCreate{padding:15px}
+ .sbAdminCreateFields{grid-template-columns:1fr}
+ .sbAdminFields{grid-template-columns:1fr}
+ .sbAdminCategory{padding:13px}
+ .sbAdminCategoryHead{flex-direction:column;gap:9px}
+ .sbAdminRowActions{justify-content:flex-start}
+ .sbAdminChildGrid{border-left-width:1px;padding-left:8px;margin-left:3px}
+ .sbAdminChildGrid .sbAdminCategory{padding:12px}
+ .sbAdminCapacity{flex-direction:column;align-items:flex-start}
+ .sbAdminCapacityCount input{width:94px}
+ .sbAdminFooter{flex-direction:column;align-items:stretch}
+ .sbAdminFooter .sbAdminPublish{width:100%}
+ .sbAdminOptionHeading{flex-direction:column;align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){.sbAdminRoot *, .sbAdminRoot *::before, .sbAdminRoot *::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
