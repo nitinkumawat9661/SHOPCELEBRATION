@@ -41,7 +41,7 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
   const fields = copy.fields
 
   return (
-    <div className={individual ? "stepPane active cartDeliveryStep" : "stepPane active"}>
+    <div className={individual ? "stepPane active cartDeliveryStep" : "stepPane active hamperDeliveryStep"}>
       <div className="builderTitle"><div><h3>{individual ? "2. Delivery details" : copy.title}</h3><p>{individual ? "Tell us where to deliver your individual items." : copy.body}</p></div></div>
       <div className="detailsGrid">
         <div>
