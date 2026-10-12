@@ -7,6 +7,9 @@ on:
       - db/migrations/047_self_build_hamper_draft_architecture.sql
       - db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
       - db/migrations/049_self_build_category_only_no_sku_mapping.sql
+      - db/migrations/050_self_build_category_option_capacity.sql
+      - features/admin/AdminSelfBuildManager.tsx
+      - scripts/test-phase3-self-build-admin-20261013.mjs
       - lib/server/self-build-admin.ts
       - app/api/admin/self-build/route.ts
       - scripts/test-phase3-self-build-db-contract.mjs
@@ -50,6 +53,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/049_self_build_category_only_no_sku_mapping.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/050_self_build_category_option_capacity.sql
           psql -v ON_ERROR_STOP=1 <<'SQL'
           DO $$
           DECLARE n integer; r record; p integer;
@@ -60,7 +64,7 @@ jobs:
             IF n <> 8 THEN RAISE EXCEPTION 'Expected 8 owner-confirmed jewellery groups, found %',n; END IF;
             SELECT COUNT(*) INTO n FROM self_build_options;
             IF n <> 13 THEN RAISE EXCEPTION 'Expected 13 variant options, found %',n; END IF;
-            IF (SELECT version FROM self_build_configuration WHERE id='primary') <> 3 THEN
+            IF (SELECT version FROM self_build_configuration WHERE id='primary') <> 4 THEN
               RAISE EXCEPTION 'Owner revision did not bump admin optimistic version';
             END IF;
             IF (SELECT default_catalog_item_budget_paise FROM self_build_configuration WHERE id='primary') <> 6000 THEN
@@ -119,6 +123,10 @@ jobs:
               WHERE table_name='self_build_categories' AND column_name='catalog_category') THEN
               RAISE EXCEPTION 'The catalogue-category mapping field must be retired';
             END IF;
+            IF EXISTS (SELECT 1 FROM self_build_categories WHERE availability_confirmed OR available_units IS NOT NULL)
+              OR EXISTS (SELECT 1 FROM self_build_options WHERE availability_confirmed OR available_units IS NOT NULL) THEN
+              RAISE EXCEPTION 'Never seed fictional fulfilment stock';
+            END IF;
             IF (SELECT selection_kind FROM self_build_categories WHERE id='bangles') <> 'category' THEN
               RAISE EXCEPTION 'Standalone bangles must also be category-only';
             END IF;
@@ -143,9 +151,29 @@ jobs:
               RAISE EXCEPTION 'Pricing values must remain admin-editable in the database';
             END IF;
           END $$;
+          -- Category-level capacity can be confirmed by an owner without SKU mapping.
+          UPDATE self_build_categories SET availability_confirmed=true, available_units=11 WHERE id='korean-bangles';
+          UPDATE self_build_options SET availability_confirmed=true, available_units=3 WHERE id='chocolate-extra-100';
+          DO $
+          BEGIN
+            IF (SELECT available_units FROM self_build_categories WHERE id='korean-bangles') <> 11
+              OR (SELECT available_units FROM self_build_options WHERE id='chocolate-extra-100') <> 3 THEN
+              RAISE EXCEPTION 'Admin capacity planning did not persist';
+            END IF;
+            BEGIN
+              UPDATE self_build_categories SET availability_confirmed=false WHERE id='korean-bangles';
+              RAISE EXCEPTION 'Unconfirmed capacity must be NULL';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              UPDATE self_build_options SET available_units=-5 WHERE id='chocolate-extra-100';
+              RAISE EXCEPTION 'Negative capacity must not persist';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+          END $;
           -- Category/option quantity amounts remain editable; zero product IDs.
           UPDATE self_build_categories SET unit_budget_paise=15000 WHERE id='viral-bangles';
           DELETE FROM self_build_options;
           DELETE FROM self_build_categories;
           SQL
-          echo 'Postgres 16: 047 + 048 + category-only 049, eight nested groups, no SKU mapping, private per-unit pricing and gates passed.'
+          echo 'Postgres 16: 047 + 048 + 049 + category-capacity 050; stock defaults unconfirmed, verified counts persisted, no SKU mapping and private gates passed.'
