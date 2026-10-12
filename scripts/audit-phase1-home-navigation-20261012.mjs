@@ -182,8 +182,17 @@ try{
      const occasion=(await choice.locator(".celebrationOccasionName").textContent())?.trim()
      await choice.click({timeout:10000})
      await page.locator("#builder .stepPane").waitFor({state:"visible",timeout:20000})
+     // Builder mounts from a lazy-loaded React subtree. An initial visible
+     // select can carry the default occasion for one render before the actual
+     // user's chosen occasion is synchronized. Wait for the settled value,
+     // then check it remains selected after draft hydration.
+     await page.waitForFunction(
+       expected=>document.querySelector("#builder select.selectOcc")?.value===expected,
+       occasion,{timeout:8000}
+     ).catch(()=>{})
+     await page.waitForTimeout(400)
      const picked=await page.locator("#builder select.selectOcc").inputValue()
-     verify(id+" occasion selected in builder",picked===occasion,"selected option preserved",occasion+" -> "+picked)
+     verify(id+" occasion selected in builder",picked===occasion,"selected option preserved after hydration",occasion+" -> "+picked)
      verify(id+" occasion starts budget flow",await page.locator("#builder .tierSmall").count()>0,"regular curated hamper budget flow")
     }
    }catch(e){verify(id+" occasion-to-builder",false,"occasion retained in client builder",e.message.slice(0,400))}
