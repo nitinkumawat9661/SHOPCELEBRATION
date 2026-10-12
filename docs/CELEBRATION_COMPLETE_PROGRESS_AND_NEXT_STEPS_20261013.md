@@ -77,14 +77,21 @@
 
 **Ongoing reliability:** Site performance, storefront QA/SEO, shipping-order lifecycle/estimated delivery, support/claims, provenance checks, stock freshness and incident/regression follow-up continue independently of self-build.
 
-## 4. Acceptance checklist for this UI milestone
+## 4. Verified acceptance checklist for this UI milestone
 
-- [x] Requirements and past accomplishments captured in one durable GitHub document **before UI implementation**.
-- [ ] UI file(s) created and linked from admin for owner review.
-- [ ] Category nesting and option display read **from DB, NOT hardcoded JSON**.
-- [ ] Customer-preview component sees no internal-price fields and creates no orders.
-- [ ] Multiple category/option/photo quantity UX + notes + summary verified.
-- [ ] Responsive styling checked; public curated builder unaffected.
-- [ ] CI checks pass and production deploy/health verified.
+- [x] Consolidated all past work and future implementation roadmap **in this GitHub file before writing UI code** (first branch commit `dcac8536f83ee7e967ddae79d327e8f1d6dbcb15`).
+- [x] Implemented admin-only route `/admin/self-build-preview`, linked from AdminDashboard. No buyer-facing navigation.
+- [x] Dynamic category hierarchy and sizes read from PostgreSQL using `lib/server/self-build-preview.ts`; no static SKU array in UI.
+- [x] Client props are **server-whitelisted** identifiers/labels/kinds/sort only; confidential internal budget fields excluded.
+- [x] Category-first eight jewellery choices, standalone Bangles, size-options, multiple quantity controls, photo count, optional team-discussion note and summary.
+- [x] Minimized card clutter: cream/champagne background, restrained burgundy accents, existing Celebration local fonts, no heavy animation/remote stock images.
+- [x] **Actual Chromium tests at 320px, 390px, 768px and 1280px**: `106 PASS / 0 FAIL`; verified guest lockout, protected admin API, exact category labels, multi-quantity, Starter, three photos, custom text, review, no horizontal overflow, no JavaScript errors, no customer API writes and no confidential budget field in HTML.
+- [x] GitHub PR source audit, TypeScript typecheck and production build checks passed; isolated local PostgreSQL 034/047/048/049 migration and browser tests passed.
+- [ ] Production merge/deployment health confirmation — recorded separately in GitHub PR #142 deployment workflow after merge.
 
-**Keep this checklist updated after completion**, noting exact commit and remaining risks. Prior-phase documentation and migrations retain historical details; this file is the current top-level checkpoint.
+### Visual preview locations & limitations
+
+**Admin only:** `/admin/self-build-preview` after passkey/admin login (not indexed). Screenshots/report from isolated Chromium run in GitHub Actions **Celebration Phase 3 Self-Build Browser QA** artifact `phase3-self-build-design-<run_id>`, retained 14 days.
+
+**Important:** Preview selections live only in the browser's React state, and are deliberately discarded on navigation. It does not price an order, reserve category stock, upload photos, accept payment, save a draft, or promise item availability. Customers still use the unaffected curated checkout. The implementation plan in §3 documents the necessary follow-up slices; never enable the buying mode on the basis of design QA alone.
+
