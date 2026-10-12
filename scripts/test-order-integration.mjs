@@ -52,6 +52,7 @@ const { createOrder } = requireCompiled(join(output, 'lib/server/orders/create.j
 const { listOrders, findOrderByTrackingToken } = requireCompiled(join(output, 'lib/server/orders/read.js'))
 const { createCustomerAccount, listCustomerOrders } = requireCompiled(join(output, 'lib/server/customer-accounts.js'))
 const { reservePaymentAttempt, bindPaymentAttempt, failPaymentAttempt, applyProviderPaymentResult, getPaymentOrder } = requireCompiled(join(output, 'lib/server/payments/store.js'))
+const { recordTelegramOrderReply, listCustomerOrderMessages, acknowledgeCustomerOrderMessages } = requireCompiled(join(output, 'lib/server/telegram-order-messages.js'))
 const control = new pg.Client({ connectionString, ssl: false })
 await control.connect()
 try {
@@ -85,6 +86,50 @@ try {
   const auto = { paymentProvider: 'razorpay' }
   const created = await createOrder(normalize(), account.id, undefined, auto)
   assert.equal(created.pricing.payablePaise, 94900)
+
+  // Telegram integration uses only the disposable local test database.
+  const queuedNewOrder = await control.query(
+    `SELECT q.id,q.snapshot
+       FROM telegram_notification_outbox q JOIN orders o ON o.id=q.order_id
+      WHERE o.public_id=$1 AND q.source='order_event'
+        AND q.event_type='order_created'`,
+    [created.publicId]
+  )
+  assert.equal(queuedNewOrder.rows.length, 1, 'New orders must enqueue one Telegram alert')
+  assert.equal(queuedNewOrder.rows[0].snapshot.paymentStatus, 'pending',
+    'Queued order alerts must retain the unpaid event-time snapshot')
+
+  // Simulate Telegram delivery locally without hitting Telegram's API.
+  await control.query(
+    `UPDATE telegram_notification_outbox SET sent_at=now(),telegram_message_id=912345678
+      WHERE id=$1`, [queuedNewOrder.rows[0].id]
+  )
+  const replyInput = {
+    updateId: 812345678, messageId: 712345678, replyToMessageId: 912345678,
+    text: 'Your Celebration order is being prepared.'
+  }
+  const messageSaved = await recordTelegramOrderReply(replyInput)
+  assert.equal(messageSaved.ok, true, 'Admin Telegram reply must map to a real order')
+  assert.equal(messageSaved.duplicate, false)
+  assert.equal(messageSaved.publicId, created.publicId)
+  const replay = await recordTelegramOrderReply(replyInput)
+  assert.equal(replay.ok, true)
+  assert.equal(replay.duplicate, true, 'Telegram repeated delivery must not duplicate the message')
+  const unknown = await recordTelegramOrderReply({ ...replyInput, updateId: 812345679,
+    messageId: 712345679, replyToMessageId: 999999999 })
+  assert.equal(unknown.ok, false, 'Replies to unrecognized bot messages must not reach buyers')
+  const ownedMessages = await listCustomerOrderMessages(created.publicId, account.id)
+  assert.equal(ownedMessages.messages.length, 1)
+  assert.equal(ownedMessages.unreadCount, 1)
+  assert.equal(ownedMessages.messages[0].body, replyInput.text)
+  assert.equal(await listCustomerOrderMessages(created.publicId, otherAccount.id), null,
+    'A different signed-in customer must not read this order message')
+  assert.equal(await acknowledgeCustomerOrderMessages(created.publicId, otherAccount.id), null,
+    'A different customer must not mark another order as read')
+  const ack = await acknowledgeCustomerOrderMessages(created.publicId, account.id)
+  assert.equal(ack.acknowledged, 1)
+  assert.equal((await listCustomerOrderMessages(created.publicId, account.id)).unreadCount, 0)
+
   const saved = (await control.query('SELECT order_type,line_items,tier_id,amount_paise FROM orders WHERE public_id=$1', [created.publicId])).rows[0]
   assert.equal(saved.order_type, 'individual')
   assert.equal(saved.tier_id, null)
@@ -149,6 +194,22 @@ try {
   const paid = await getPaymentOrder(created.publicId, account.id)
   assert.equal(paid.paymentStatus, 'paid')
   assert.equal(paid.status, 'payment_verified')
+
+  const paidNotifications = await control.query(
+    `SELECT q.source,q.event_type,q.snapshot,q.payload
+       FROM telegram_notification_outbox q JOIN orders o ON o.id=q.order_id
+      WHERE o.public_id=$1 AND q.event_type IN ('payment.captured','payment_status_changed')
+      ORDER BY q.id`,
+    [created.publicId]
+  )
+  assert.equal(paidNotifications.rows.filter(row => row.event_type === 'payment.captured').length, 1,
+    'Repeated provider webhook must not create another payment event notification')
+  const paymentState = paidNotifications.rows.find(row =>
+    row.event_type === 'payment_status_changed' && row.snapshot.paymentStatus === 'paid')
+  assert.ok(paymentState, 'A successful payment must enqueue a paid-state alert')
+  assert.equal(paymentState.snapshot.amountPaise, 94900)
+  assert.ok(paymentState.snapshot.paidAt, 'Payment notification must carry verified paid time')
+
   assert.equal((await control.query('SELECT count(*)::int AS n FROM payment_events WHERE provider_event_id=$1', [providerResult.eventId])).rows[0].n, 1)
   await control.query("UPDATE orders SET payment_status='verified',status='preparing' WHERE public_id='LOCALTEST-LEGACY'")
   const verifiedLegacy = await getPaymentOrder('LOCALTEST-LEGACY', account.id)
@@ -175,6 +236,7 @@ try {
   await assert.rejects(bindPaymentAttempt(confirmationReserved.attemptId, { provider: 'razorpay', mode: 'test', providerOrderId: 'order_local_confirm_race', keyId: 'rzp_test_fixture', amountPaise: confirmationRace.pricing.payablePaise, currency: 'INR' }), /PAYMENT_ALREADY_CONFIRMED/)
   await assert.rejects(control.query(`UPDATE orders SET order_type='individual' WHERE public_id='LOCALTEST-LEGACY'`), { code: '23514' })
   await assert.rejects(control.query('UPDATE orders SET line_items=$1::jsonb WHERE public_id=$2', ['{}', created.publicId]), { code: '23514' })
+  console.log('TELEGRAM_POSTGRES_CHECKS_PASSED: new order snapshot, paid events, reply-to mapping, replay deduplication, customer isolation, read receipts')
   console.log('REAL_POSTGRES_CHECKS_PASSED: migrations001..009, legacyhamper, individualsnapshot, staleprice, pausedavailability, samecartretry, changedcartreject, ownermismatch, concurrentidempotency, catalogpublishlock, individualmanualrejected, hampermanualpreserved, customer/admin/trackingreads, provideramountmismatch, duplicatepaidwebhook, verifiedpaymentpreserved, cancelledretryblocked, cancelledbindingrace, confirmedbindingrace, DBconstraints')
 } finally { await control.end() }
 } finally {
