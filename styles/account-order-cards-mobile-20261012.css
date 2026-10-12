@@ -1,0 +1,560 @@
+/* My Celebration dashboard — account/order-card presentation ONLY.
+ * No changes to the previously approved courier five-circle component,
+ * order data, status/packing permissions, APIs, cart or checkout. */
+.customerDashboard {
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  gap:clamp(16px,2.6vw,25px);
+}
+.customerDashboard .customerDashHero{
+  box-sizing:border-box;
+  min-width:0;
+  padding:clamp(20px,3.2vw,35px);
+  border:1px solid #e9d7d0;
+  border-radius:17px;
+  background:linear-gradient(120deg,#fffdfb 0%,#fff7f2 62%,#f9eae6 100%);
+  box-shadow:0 4px 17px rgba(94,45,52,.045);
+}
+.customerDashboard .customerDashHero h1{
+  max-width:22ch;
+  margin:10px 0 0;
+  color:#6a3649;
+  font:500 clamp(29px,3.8vw,43px)/1.14 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.025em;
+  overflow-wrap:break-word;
+  word-break:normal;
+  text-wrap:balance;
+}
+.customerDashboard .customerDashHero p{
+  max-width:60ch;
+  margin-top:11px;
+  color:#7c6460;
+  font-size:clamp(12px,1.1vw,14px);
+  line-height:1.65;
+}
+.customerDashboard .customerDashActions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+  min-width:0;
+}
+.customerDashboard .customerDashActions :is(a,button){
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  min-height:46px;
+  padding:10px 15px;
+  font-size:12px;
+  line-height:1.4;
+  border-radius:9px;
+  text-align:center;
+  white-space:normal;
+}
+.customerDashboard .customerStats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(8px,1.3vw,13px);
+  width:100%;
+  max-width:800px;
+  min-width:0;
+  margin:0;
+  padding:0;
+}
+.customerDashboard .customerStats>div{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  min-width:0;
+  min-height:91px;
+  padding:clamp(12px,1.6vw,18px);
+  border:1px solid #e9d8cf;
+  border-radius:12px;
+  background:#fffbf8;
+  box-shadow:none;
+}
+.customerDashboard .customerStats span{
+  color:#8c706f;
+  font-size:11px;
+  font-weight:650;
+  line-height:1.4;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.customerDashboard .customerStats b{
+  color:#783d52;
+  font:700 clamp(24px,2.8vw,32px)/1.1 var(--font-shopping-sans),Arial,sans-serif;
+  letter-spacing:-.03em;
+}
+.customerDashboard .customerDashToolbar{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+  min-width:0;
+  margin:6px 0 0;
+  padding:0;
+}
+.customerDashboard .customerDashToolbar>div{
+  min-width:0;
+}
+.customerDashboard .customerDashToolbar h2{
+  margin:5px 0 0;
+  font:500 clamp(25px,2.8vw,33px)/1.17 var(--font-shopping-display),Georgia,serif;
+  color:#67384b;
+  letter-spacing:-.02em;
+}
+.customerDashboard .customerDashToolbar .dashboardActionNote{
+  margin-top:8px;
+  color:#907773;
+  font-size:10.5px;
+  line-height:1.55;
+}
+.customerDashboard .customerDashToolbar>button{
+  flex:0 0 auto;
+  min-height:44px;
+  min-width:93px;
+  border-radius:9px;
+  padding:10px 13px;
+  font-size:12px;
+  font-weight:700;
+}
+.customerDashboard .customerOrderList{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:clamp(14px,2.2vw,23px);
+  min-width:0;
+}
+.customerDashboard .customerOrderList>.customerOrderCard{
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:0;
+  padding:clamp(16px,2.4vw,26px);
+  border:1px solid #e8d6cf;
+  border-radius:15px;
+  background:#fffdfb;
+  box-shadow:0 4px 18px rgba(88,49,56,.045);
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.customerDashboard .customerOrderHead{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+  padding:0 0 16px;
+  border-bottom:1px solid #ecded7;
+}
+.customerDashboard .customerOrderHead>div{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:6px;
+  min-width:0;
+  max-width:100%;
+  text-align:left;
+}
+.customerDashboard .customerOrderHead>div:first-child{
+  flex:1 1 250px;
+}
+.customerDashboard .customerOrderHead>div:last-child{
+  flex:0 1 auto;
+  align-items:flex-end;
+  justify-items:unset;
+  text-align:right;
+}
+.customerDashboard .customerOrderHead small{
+  color:#977874;
+  font-size:10.5px;
+  font-weight:600;
+  line-height:1.45;
+}
+.customerDashboard .customerOrderHead h3{
+  margin:0;
+  color:#63374a;
+  font:500 clamp(21px,2.1vw,28px)/1.22 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.02em;
+  overflow-wrap:break-word;
+}
+.customerDashboard .customerOrderHead>div:first-child>span{
+  color:#906e70;
+  font-size:11px;
+  font-weight:650;
+  line-height:1.45;
+  letter-spacing:.012em;
+  overflow-wrap:anywhere;
+}
+.customerDashboard .customerOrderHead strong{
+  color:#72374d;
+  font:700 clamp(21px,2.2vw,28px)/1.12 var(--font-shopping-sans),Arial,sans-serif;
+  letter-spacing:-.035em;
+}
+.customerDashboard .customerOrderPrice>small{
+  max-width:100%;
+  color:#876f6a;
+  font-size:10px;
+  font-weight:500;
+  line-height:1.5;
+}
+.customerDashboard .customerStatus{
+  display:inline-flex!important;
+  justify-content:center;
+  align-items:center;
+  max-width:100%;
+  min-height:30px;
+  margin-top:3px;
+  padding:6px 10px;
+  border:1px solid #e3cdd0;
+  border-radius:999px;
+  background:#f8e9e9;
+  color:#783b51!important;
+  font-size:10px!important;
+  font-weight:750;
+  line-height:1.3;
+  text-align:center;
+  white-space:normal;
+  overflow-wrap:break-word;
+}
+.customerDashboard .customerStatus.status-delivered,
+.customerDashboard .customerStatus.status-payment_verified{
+  border-color:#c9ddca;
+  background:#f1f8f0;
+  color:#366b46!important;
+}
+.customerDashboard .customerStatus.status-cancelled,
+.customerDashboard .customerStatus.status-issue_reported{
+  border-color:#e6c7ba;
+  color:#924e3e!important;
+  background:#fff2eb;
+}
+.customerDashboard .customerOrderMeta{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  padding:16px 0;
+  margin:0;
+}
+.customerDashboard .customerOrderMeta>div{
+  box-sizing:border-box;
+  min-width:0;
+  padding:11px 12px;
+  border:1px solid #eee2dd;
+  border-radius:9px;
+  background:#fffaf7;
+}
+.customerDashboard .customerOrderMeta span{
+  display:block;
+  color:#967a75;
+  font-size:10px;
+  font-weight:650;
+  line-height:1.4;
+}
+.customerDashboard .customerOrderMeta b{
+  display:block;
+  min-width:0;
+  margin-top:6px;
+  color:#574146;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.45;
+  overflow-wrap:break-word;
+}
+.customerDashboard .customerOrderCard>.checkoutProgressNote{
+  display:flex;
+  gap:11px;
+  align-items:flex-start;
+  padding:13px 14px;
+  margin:0 0 13px;
+  border:1px solid #e4d1cc;
+  border-radius:10px;
+  background:#faf1ed;
+  color:#6f5455;
+  font-size:12px;
+  line-height:1.6;
+  overflow-wrap:break-word;
+}
+.customerDashboard .customerOrderCard>.checkoutProgressNote>span:first-child{
+  flex:0 0 auto;
+}
+.customerDashboard .customerOrderCard>.checkoutProgressNote>span:last-child{
+  min-width:0;
+}
+.customerDashboard .customerOfferSaved,
+.customerDashboard .customerOrderProducts,
+.customerDashboard .customerOrderUpdates .customerUpdateCard{
+  box-sizing:border-box;
+  max-width:100%;
+  min-width:0;
+  border-radius:10px;
+  padding:13px 14px;
+  background:#faf3ee;
+  border:1px solid #eee0d8;
+  box-shadow:none;
+}
+.customerDashboard .customerOrderProducts{
+  margin-bottom:13px;
+}
+.customerDashboard .customerOrderProducts span,
+.customerDashboard .customerUpdateCard span{
+  color:#896e6b;
+  font-size:10px;
+  line-height:1.5;
+  font-weight:700;
+}
+.customerDashboard .customerOrderProducts p{
+  margin:6px 0 0;
+  color:#59474a;
+  font-size:12px;
+  line-height:1.6;
+}
+.customerDashboard .customerUpdateCard b{
+  color:#604b4d;
+  font-size:12px;
+  line-height:1.55;
+}
+.customerDashboard .customerUpdateCard a{
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  color:#793d51;
+  font-size:12px;
+  font-weight:750;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.customerDashboard .customerPackingApproval{
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+  margin-top:15px;
+  padding:16px;
+  border:1px solid #dcb6b7;
+  border-radius:12px;
+  background:#fff7f4;
+  box-shadow:none;
+}
+.customerDashboard .customerPackingApproval>div b{
+  font-size:13px;
+  color:#633b48;
+  line-height:1.5;
+}
+.customerDashboard .customerPackingApproval>div p{
+  color:#826962;
+  font-size:12px;
+  line-height:1.6;
+}
+.customerDashboard .customerPackingApproval label{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  font-size:12px;
+  line-height:1.65;
+}
+.customerDashboard .customerPackingApproval label input{
+  flex:0 0 21px;
+  width:21px;
+  height:21px;
+  margin:3px 0 0;
+  accent-color:#87445a;
+}
+.customerDashboard .customerPackingApproval button{
+  min-height:49px;
+  font-size:12px;
+  border-radius:9px;
+}
+.customerDashboard .customerOrderFooter{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  margin:15px 0 0;
+  padding:15px 0 0;
+  border-top:1px solid #ecddd7;
+}
+.customerDashboard .customerOrderFooter>small{
+  flex:1 1 100%;
+  color:#95807a;
+  font-size:10px;
+  line-height:1.5;
+  overflow-wrap:break-word;
+}
+.customerDashboard .customerOrderFooter :is(button,a){
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  min-width:0;
+  min-height:44px;
+  margin:0;
+  padding:10px 13px;
+  border-radius:9px;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.4;
+  white-space:normal;
+  text-align:center;
+  text-decoration:none;
+}
+.customerDashboard .customerOrderFooter .danger{
+  border-color:#d2b0a7;
+  color:#934335;
+  background:#fff5f0;
+}
+.customerDashboard :is(a,button,input,textarea,select):focus-visible{
+  outline:2px solid #9c5e72;
+  outline-offset:3px;
+}
+@media(max-width:850px){
+  .customerDashboard .customerOrderMeta{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:639px){
+  .customerDashboard{
+    gap:17px;
+  }
+  .customerDashboard .customerDashHero{
+    padding:20px 16px;
+    border-radius:13px;
+  }
+  .customerDashboard .customerDashHero h1{
+    font-size:clamp(27px,7.3vw,34px);
+    line-height:1.2;
+  }
+  .customerDashboard .customerDashActions{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,.62fr);
+    gap:8px;
+    width:100%;
+  }
+  .customerDashboard .customerDashActions :is(a,button){
+    width:100%;
+    min-height:46px;
+    font-size:11px;
+    padding:9px;
+  }
+  .customerDashboard .customerStats{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+  }
+  .customerDashboard .customerStats>div{
+    padding:11px 9px;
+    min-height:92px;
+    gap:9px;
+    border-radius:10px;
+  }
+  .customerDashboard .customerStats span{
+    font-size:10px;
+    line-height:1.35;
+  }
+  .customerDashboard .customerStats b{
+    font-size:26px;
+  }
+  .customerDashboard .customerDashToolbar{
+    align-items:center;
+    margin-top:4px;
+  }
+  .customerDashboard .customerDashToolbar h2{
+    font-size:27px;
+  }
+  .customerDashboard .customerDashToolbar>button{
+    min-width:84px;
+  }
+  .customerDashboard .customerOrderList>.customerOrderCard{
+    padding:16px 13px;
+    border-radius:12px;
+  }
+  .customerDashboard .customerOrderHead{
+    flex-direction:column;
+    gap:11px;
+    padding-bottom:13px;
+  }
+  .customerDashboard .customerOrderHead>div:first-child{
+    flex:0 0 auto;
+    width:100%;
+  }
+  .customerDashboard .customerOrderHead>div:last-child{
+    display:flex;
+    flex-direction:row;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:7px 12px;
+    width:100%;
+    text-align:left;
+  }
+  .customerDashboard .customerOrderHead h3{
+    font-size:clamp(20px,5.7vw,25px);
+  }
+  .customerDashboard .customerOrderHead strong{
+    font-size:22px;
+  }
+  .customerDashboard .customerOrderHead .customerStatus{
+    margin:0;
+  }
+  .customerDashboard .customerOrderMeta{
+    gap:8px;
+    padding-block:12px;
+  }
+  .customerDashboard .customerOrderMeta>div{
+    padding:10px;
+    border-radius:9px;
+  }
+  .customerDashboard .customerOrderMeta b{
+    font-size:11px;
+  }
+  .customerDashboard .customerOrderCard>.checkoutProgressNote{
+    padding:11px 12px;
+    margin-bottom:12px;
+    font-size:11px;
+  }
+  .customerDashboard .customerOrderFooter{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+  }
+  .customerDashboard .customerOrderFooter>small{
+    grid-column:1/-1;
+    min-width:0;
+  }
+  .customerDashboard .customerOrderFooter :is(button,a){
+    min-width:0;
+    width:100%;
+    font-size:11px;
+    padding:9px 8px;
+  }
+  .customerDashboard .customerOrderFooter>a.primary{
+    grid-column:1/-1;
+  }
+}
+@media(max-width:360px){
+  .customerDashboard .customerDashActions{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .customerDashboard .customerStats>div{
+    padding:10px 7px;
+  }
+  .customerDashboard .customerOrderMeta{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .customerDashboard .customerOrderFooter{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .customerDashboard .customerOrderFooter :is(button,a){
+    grid-column:1;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .customerDashboard :is(a,button){
+    transition:none;
+  }
+}
