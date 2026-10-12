@@ -4,6 +4,7 @@ import { getShipwayTracking, findExistingShipwayAwbByOrderId } from "../shipway"
 import { unstable_cache } from "next/cache"
 import { attachVerifiedShipwayAwb } from "./recover-shipment"
 import { updateOrderStatus } from "./status"
+import { recordCourierObservation } from "./courier-observations"
 
 export type CourierEligibleOrder = {
   publicId: string
@@ -116,6 +117,19 @@ export async function syncOrderCourier(
       console.error("courier-order-sync-update", {
         orderId: order.publicId,
         code: error instanceof Error ? error.message : "UPDATE_FAILED"
+      })
+    }
+  }
+
+  // Best-effort, idempotent Telegram event capture; a notification storage
+  // failure must NEVER disrupt the customer's live tracking response.
+  if (live && trackingNumber) {
+    try {
+      await recordCourierObservation(order.publicId, trackingNumber, live, status)
+    } catch (error) {
+      console.error("telegram-courier-observation", {
+        orderId: order.publicId,
+        code: error instanceof Error ? error.message : "OBSERVATION_UNAVAILABLE"
       })
     }
   }
