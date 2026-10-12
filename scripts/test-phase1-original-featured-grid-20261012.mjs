@@ -24,6 +24,8 @@ assert(!ring.includes("scroll-snap") && !ring.includes("overflow-x:auto") &&
 assert(ring.includes("catalogCard--featuredPortraitRing") && grid.includes("catalogCard--featuredPortraitRing") &&
   grid.includes("object-fit:contain"),
   "Keep exact SKU image formatting, including ring portrait and all other full product photos")
+assert(grid.includes("line-clamp:unset") && grid.includes("max-height:none") && grid.includes("overflow:visible"),
+  "Do not clip the customer's exact featured jewellery SKU titles on 320px phones")
 assert(grid.includes("min-height:44px") && grid.includes("max-width:100%") &&
   grid.includes("min-width:0") && grid.includes("@media(max-width:360px)"),
   "2-column layout must keep touch cart actions, images and long labels inside narrow phones")
