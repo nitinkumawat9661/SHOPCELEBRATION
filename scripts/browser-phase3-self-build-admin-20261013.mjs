@@ -30,6 +30,8 @@ try{
     try{
       const res=await page.goto(base+"/admin",{waitUntil:"domcontentloaded",timeout:45000})
       check(width+" authenticated dashboard",res?.status()===200)
+      const debug=await page.evaluate(async()=>({body:document.body.innerText.slice(0,1300),path:location.pathname,api:(await fetch("/api/admin/self-build",{cache:"no-store"})).status}))
+      console.log("ADMIN_BROWSER_DIAGNOSTIC "+width+" "+JSON.stringify(debug))
       const nav=page.locator(".adminGroupedNav .adminNavButton").filter({hasText:"Self-Build Categories"})
       await nav.click()
       await page.locator(".sbAdminRoot .sbAdminStats").waitFor({timeout:20000})
