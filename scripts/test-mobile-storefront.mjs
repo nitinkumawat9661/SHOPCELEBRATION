@@ -49,7 +49,7 @@ has(/\.collectionPage \.mobileMarketplaceBuyBar>div:first-child\s*\{[^}]*grid-co
 has(/\.collectionPage \.mobileMarketplaceBuyBar \.catalogInlineQuantity\s*\{[^}]*grid-template-columns:44px minmax\(0,1fr\) 44px;/s, "Fixed buy bar +/- cannot shrink below 44px")
 has(/\.collectionPage:has\(\.mobileMarketplaceBuyBar\) \.celebrationSupport\s*\{display:none\}/s, "Do not cover purchase buttons with WhatsApp support")
 assert(page.includes("mobileMarketplaceBuyBar"), "Fixed mobile buy bar is expected on individual product pages")
-assert(plan.includes("## Phase 1 — Homepage Redesign") && plan.includes("physical-device and desktop screenshots"), "Approved homepage plan must retain mobile visual acceptance")
+assert(plan.includes("## Phase 1 — Homepage Redesign") && plan.includes("Verify the mobile header shows/hides without flicker on actual Android/iOS"), "Approved homepage plan must retain final real-device mobile visual acceptance")
 
 // Catch accidental partial edits before the CSS reaches production.
 assert.equal((styles.match(/\{/g) || []).length, (styles.match(/\}/g) || []).length, "Unbalanced CSS blocks")
