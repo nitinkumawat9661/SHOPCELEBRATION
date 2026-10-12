@@ -50,6 +50,8 @@ try{
    verify(width+" product page",response?.status()===200)
    const widget=page.locator(".productPincodeEstimate")
    await widget.waitFor({state:"visible",timeout:18000})
+   // Wait for React hydration; a visible SSR form can render before handlers attach.
+   await page.waitForFunction(()=>{const heart=document.querySelector(".wishlistDetailRow .wishlistToggle");return heart && !heart.disabled},{timeout:20000})
    const pin=widget.locator("#product-delivery-pincode"),button=widget.locator("button[type=submit]")
    verify(width+" disabled until valid PIN",await button.isDisabled())
    await pin.fill("302001")
@@ -70,7 +72,20 @@ try{
    await widget.locator("text=We couldn’t verify delivery right now.").waitFor({timeout:15000})
    verify(width+" upstream outage not mislabeled unavailable",count===5)
    verify(width+" request carries only PIN and SKU",posts.every(o=>o.pincode&&o.productId===path.slice("/jewelry/".length)&&Object.keys(o).length===2))
-   verify(width+" no horizontal overflow",await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3))
+   const overflow=await page.evaluate(()=>{
+    const rootWidth=document.documentElement.scrollWidth
+    const viewport=innerWidth
+    const offender=[...document.querySelectorAll("body *")].flatMap(el=>{
+      const rect=el.getBoundingClientRect()
+      if(!rect.width || !rect.height || (rect.right<=viewport+2 && rect.left>=-2))return []
+      const style=getComputedStyle(el)
+      if(style.position==="fixed" || style.visibility==="hidden")return []
+      return [{tag:el.tagName,classes:String(el.className||"").slice(0,120),left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width)}]
+    }).slice(0,18)
+    return {rootWidth,viewport,offender}
+   })
+   console.log("MOBILE_OVERFLOW_DIAGNOSTIC "+width+" "+JSON.stringify(overflow))
+   verify(width+" no horizontal overflow",overflow.rootWidth<=overflow.viewport+3,JSON.stringify(overflow))
    verify(width+" no JS errors",!errors.length,JSON.stringify(errors))
    await page.screenshot({path:resolve(dir,"product-"+width+".png"),animations:"disabled"})
   }catch(e){verify(width+" complete scenario",false,String(e?.message||e).slice(0,600))}
