@@ -23,6 +23,10 @@ ALTER TABLE self_build_categories
   ADD CONSTRAINT self_build_categories_selection_kind_check
   CHECK (selection_kind IN ('group', 'catalog', 'category', 'variant', 'photo', 'notes'));
 
+-- Remove the OLD charge constraint before changing the kind: it only
+-- recognizes 'catalog' and would reject the transition otherwise.
+ALTER TABLE self_build_categories DROP CONSTRAINT self_build_categories_charge_semantics;
+
 UPDATE self_build_categories
    SET selection_kind = 'category', updated_at = now()
  WHERE selection_kind = 'catalog';
@@ -32,7 +36,6 @@ ALTER TABLE self_build_categories
   ADD CONSTRAINT self_build_categories_selection_kind_check
   CHECK (selection_kind IN ('group', 'category', 'variant', 'photo', 'notes'));
 
-ALTER TABLE self_build_categories DROP CONSTRAINT self_build_categories_charge_semantics;
 ALTER TABLE self_build_categories
   ADD CONSTRAINT self_build_categories_charge_semantics CHECK (
     (selection_kind IN ('group','notes') AND charge_mode = 'none' AND unit_budget_paise IS NULL)
