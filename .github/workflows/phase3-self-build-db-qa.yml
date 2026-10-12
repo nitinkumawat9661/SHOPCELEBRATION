@@ -1,0 +1,108 @@
+name: Verify Phase 3 Self Build Database Schema
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - db/migrations/047_self_build_hamper_draft_architecture.sql
+      - lib/server/self-build-admin.ts
+      - app/api/admin/self-build/route.ts
+      - scripts/test-phase3-self-build-db-contract.mjs
+      - .github/workflows/phase3-self-build-db-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pg-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: selfbuild_test
+          POSTGRES_DB: selfbuild_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGDATABASE: selfbuild_test
+      PGUSER: postgres
+      PGPASSWORD: selfbuild_test
+    steps:
+      - uses: actions/checkout@v5
+      - name: Verify PostgreSQL schema, private prices and launch gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+          psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts (id text PRIMARY KEY); CREATE TABLE orders (id text PRIMARY KEY);'
+          psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          DECLARE n integer;
+          BEGIN
+            SELECT COUNT(*) INTO n FROM self_build_categories;
+            IF n <> 7 THEN RAISE EXCEPTION 'Expected 7 staged top-level categories, found %', n; END IF;
+            SELECT COUNT(*) INTO n FROM self_build_options;
+            IF n <> 13 THEN RAISE EXCEPTION 'Expected 13 size options, found %', n; END IF;
+            IF (SELECT default_catalog_item_budget_paise FROM self_build_configuration WHERE id='primary') <> 6000 THEN
+              RAISE EXCEPTION 'Default ₹60 rule missing';
+            END IF;
+            IF (SELECT unit_budget_paise FROM self_build_categories WHERE id='bangles') <> 15000 THEN
+              RAISE EXCEPTION 'Bangles ₹150 rule missing';
+            END IF;
+            IF (SELECT unit_budget_paise FROM self_build_categories WHERE id='personalised-photos') <> 5000 THEN
+              RAISE EXCEPTION 'Photo once-only ₹50 rule missing';
+            END IF;
+            IF (SELECT unit_budget_paise FROM self_build_options WHERE id='chocolate-medium') <>
+               (SELECT unit_budget_paise FROM self_build_options WHERE id='chocolate-large') THEN
+              RAISE EXCEPTION 'Chocolate medium and large must BOTH be ₹400';
+            END IF;
+            IF (SELECT active FROM self_build_options WHERE id='chocolate-extra-100') THEN
+              RAISE EXCEPTION 'Unnamed ₹100 chocolate tier must not be published';
+            END IF;
+            IF (SELECT customer_enabled OR show_item_prices FROM self_build_configuration WHERE id='primary') THEN
+              RAISE EXCEPTION 'Staging/public price gates must remain closed';
+            END IF;
+            IF EXISTS (SELECT 1 FROM self_build_catalog_product_rules) THEN
+              RAISE EXCEPTION 'Never invent jewellery SKU rules';
+            END IF;
+            BEGIN
+              UPDATE self_build_configuration SET customer_enabled=true WHERE id='primary';
+              RAISE EXCEPTION 'UNSAFE: enabled customer checkout without integration';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              UPDATE self_build_configuration SET show_item_prices=true WHERE id='primary';
+              RAISE EXCEPTION 'UNSAFE: visible private product budgets';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+          END $$;
+          -- Validate parent-child dynamic category edits and protected references.
+          INSERT INTO self_build_categories
+            (id,parent_id,label,selection_kind,charge_mode,display_order)
+            VALUES ('necklaces','jewellery','Necklaces','catalog','per_unit',15);
+          INSERT INTO self_build_catalog_product_rules (category_id,product_id,unit_budget_paise)
+            VALUES ('necklaces','verified-test-sku',15000);
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM self_build_catalog_product_rules
+              WHERE category_id='necklaces' AND product_id='verified-test-sku'
+                AND unit_budget_paise=15000) THEN
+              RAISE EXCEPTION 'SKU overrides not persisted';
+            END IF;
+          END $$;
+          DELETE FROM self_build_catalog_product_rules;
+          DELETE FROM self_build_options;
+          DELETE FROM self_build_categories;
+          SQL
+          echo 'Self-build Postgres 16 migration, seed, privacy gate, category tree and SKU override tests passed.'
