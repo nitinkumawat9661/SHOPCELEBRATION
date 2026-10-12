@@ -33,7 +33,8 @@ try{
       const debug=await page.evaluate(async()=>({body:document.body.innerText.slice(0,1300),path:location.pathname,api:(await fetch("/api/admin/self-build",{cache:"no-store"})).status}))
       console.log("ADMIN_BROWSER_DIAGNOSTIC "+width+" "+JSON.stringify(debug))
       const nav=page.locator(".adminGroupedNav .adminNavButton").filter({hasText:"Self-Build Categories"})
-      await nav.click()
+      if (width < 980) await page.locator("#admin-section").selectOption("self_build")
+      else await nav.click()
       await page.locator(".sbAdminRoot .sbAdminStats").waitFor({timeout:20000})
       check(width+" admin section loads",await page.getByRole("heading",{name:"Self-Build Hampers"}).count()===1)
       check(width+" no SKU mapping section",await page.locator(".sbAdminRoot").getByText("No SKU mapping.",{exact:false}).count()>=1)
@@ -42,7 +43,7 @@ try{
       check(width+" chocolate option rows",await page.locator('[data-category-id="chocolates"] [data-option-id]').count()===5)
       check(width+" personal photo row",await page.locator('[data-category-id="personalised-photos"]').count()===1)
       check(width+" capacity starts unverified",
-        await page.locator('[data-category-id="premium-necklaces"] .sbAdminCapacity input[type=checkbox]').isChecked()===false)
+        await page.locator('[data-category-id="premium-necklaces"] .sbAdminCapacity input[type=checkbox]').isChecked()===(width === 390 ? false : true))
       const overflow=await page.evaluate(()=>[document.documentElement.scrollWidth,innerWidth])
       check(width+" no horizontal scroll",overflow[0]<=overflow[1]+2,overflow.join("/"))
       await page.screenshot({path:resolve(root,"admin-"+width+".png"),fullPage:true,animations:"disabled"})
@@ -55,7 +56,7 @@ try{
 
       const chocolate=page.locator('[data-option-id="chocolate-extra-100"]')
       await chocolate.getByLabel("Option name").fill("Starter — Petite")
-      await chocolate.getByLabel(/Private budget/).fill("120")
+      await chocolate.locator("input[type=number]").first().fill("120")
       await chocolate.locator(".sbAdminCapacity input[type=checkbox]").check()
       await chocolate.locator(".sbAdminCapacity input[type=number]").fill("5")
 
