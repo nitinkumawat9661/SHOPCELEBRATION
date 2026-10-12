@@ -1,0 +1,22 @@
+/* Phase 2: precise serviceability check on SKU details; no guessed delivery promise. */
+.productPincodeEstimate{max-width:100%;padding:16px 18px;margin:0 0 20px;background:#fffbf6;border:1px solid #ead8c9;border-radius:12px;color:#56352f}
+.productPincodeIntro{display:flex;align-items:flex-start;gap:10px}
+.productPincodeIntro>span{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:#f8e7df;color:#861d34;font-size:24px}
+.productPincodeIntro h2{margin:0;font:700 13px/1.4 var(--font-shopping-sans),Arial,sans-serif;color:#632d39}
+.productPincodeIntro p{font-size:11px;line-height:1.5;color:#86665b;margin:3px 0 0}
+.productPincodeForm{margin-top:13px}
+.productPincodeLabel{display:block;font-size:10px;font-weight:700;color:#76544e;margin-bottom:6px}
+.productPincodeInputs{display:flex;gap:8px;align-items:stretch;min-width:0}
+.productPincodeInputs input{flex:1 1 140px;min-width:0;min-height:46px;box-sizing:border-box;border:1px solid #d8c3b6;border-radius:8px;background:#fff;padding:9px 12px;color:#422e2a;font-size:16px;letter-spacing:.035em}
+.productPincodeInputs button{flex:0 0 auto;min-height:46px;border-radius:8px;border:1px solid #841d30;background:#841d30;color:#fff;padding:10px 15px;font-weight:700;font-size:12px;cursor:pointer}
+.productPincodeInputs button:disabled{opacity:.55;cursor:not-allowed}
+.productPincodeInputs :is(input,button):focus-visible{outline:2px solid #bc9567;outline-offset:2px}
+.productPincodeResult{font-size:11px;line-height:1.55;overflow-wrap:anywhere}
+.productPincodeResult:empty{display:none}
+.productPincodeResult:not(:empty){margin-top:10px}
+.productPincodeResult strong{color:#28613c;display:block;font-size:12px}
+.productPincodeResult p{margin:5px 0;color:#664c43}
+.productPincodeResult small{display:block;font-size:10px;color:#85665b;margin-top:4px}
+.productPincodeResult--error,.productPincodeResult--not-serviceable{color:#9a2935}
+@media(max-width:360px){.productPincodeEstimate{padding:13px 12px}.productPincodeInputs{flex-wrap:wrap}.productPincodeInputs input{flex:1 1 100%}.productPincodeInputs button{width:100%}}
+@media(prefers-reduced-motion:reduce){.productPincodeEstimate *{scroll-behavior:auto}}
