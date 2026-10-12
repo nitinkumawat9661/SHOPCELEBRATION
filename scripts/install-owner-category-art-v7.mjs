@@ -64,3 +64,15 @@ try{
   }
   if(!await valid(slug))throw Error("Could not persist "+id)
  }
+ if(entries.some(([id,slug])=>previous.get(id)!==imageUrl(slug))){
+  await db.query("BEGIN")
+  try{
+   for(const [id,slug] of entries){
+    if(previous.get(id)===imageUrl(slug))continue
+    const fields=[imageUrl(slug),"owner-provided:2026-10-12:final-round-art",
+      "Celebration owner","Owner-supplied category illustration; not listing media",640,640]
+    if(previous.has(id)){
+     const updated=await db.query("UPDATE home_category_media SET image_url=$1,source_page=$2,photographer=$3,license_name=$4,width=$5,height=$6,updated_at=now() WHERE category_id=$7 AND image_url=$8",
+       [...fields,id,previous.get(id)])
+     if(updated.rowCount!==1)throw Error("Concurrent media modification for "+id)
+    }else{
