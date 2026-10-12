@@ -31,7 +31,7 @@ export async function recordTelegramOrderReply(input: TelegramReplyInput) {
       `INSERT INTO telegram_order_messages
         (order_id, body, telegram_update_id, telegram_message_id, reply_to_telegram_message_id)
        VALUES ($1,$2,$3,$4,$5)
-       ON CONFLICT (telegram_update_id) DO NOTHING
+       ON CONFLICT DO NOTHING
        RETURNING id`,
       [order.order_id, text, input.updateId, input.messageId, input.replyToMessageId]
     )
