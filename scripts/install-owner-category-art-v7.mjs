@@ -32,3 +32,16 @@ async function valid(slug){
   throw e
  }
 }
+async function prepare(mediaId){
+ const response=await fetch(root+mediaId+".png",{signal:AbortSignal.timeout(45000),redirect:"error"})
+ if(!response.ok)throw Error("Owner artwork fetch HTTP "+response.status)
+ const raw=Buffer.from(await response.arrayBuffer())
+ if(raw.length<25000||raw.length>8000000)throw Error("Bad source size")
+ const m=await sharp(raw).metadata()
+ if(m.width!==1254||m.height!==1254)throw Error("Unexpected image dimensions")
+ const mask=Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640"><circle cx="320" cy="320" r="316" fill="white"/></svg>')
+ const webp=await sharp(raw).resize(640,640).ensureAlpha()
+   .composite([{input:mask,blend:"dest-in"}]).webp({quality:83,alphaQuality:95,effort:4}).toBuffer()
+ if(webp.length<12000||webp.length>700000)throw Error("Invalid transformed WebP size")
+ return webp
+}
