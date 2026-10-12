@@ -29,6 +29,7 @@ function customerStatusLabel(status: OrderStatus) {
   if (status === "payment_verified" || status === "preparing") return "Confirmed"
   if (status === "packing_video_ready" || status === "customer_approved") return "Packing video"
   if (status === "shipped") return "On the way"
+  if (status === "out_for_delivery") return "Out for delivery"
   if (status === "delivered") return "Delivered"
   if (status === "issue_reported") return "Support in progress"
   if (status === "refund_or_replacement_resolved") return "Resolved"
@@ -88,7 +89,7 @@ export function TrackingPage() {
   }
 
   return (
-    <main>
+    <main className="celebrationTrackingPage">
       <TrustStrip />
       <SiteHeader />
       <section>
@@ -98,11 +99,11 @@ export function TrackingPage() {
           {Boolean(token) && tracked.loading && <div className="trackingState">{copy.loading}</div>}
           {Boolean(token) && tracked.error && !order && <><div className="errorBox" role="alert">{tracked.error}</div><TrackingLookup /></>}
           {order && <>
-            <div className="trackingHero"><div><small>{order.orderType === "individual" ? "ORDER" : "HAMPER"}</small><h1>{order.orderType === "individual" ? `${individualItemCount} ${individualItemCount === 1 ? "item" : "items"}` : order.tierName}</h1><p>{order.orderType === "individual" ? `Deliver to ${order.receiverName}` : `${order.receiverName}${uiContent.common.separator}${order.occasion}`}</p></div><strong>{formatMoney(fromMinorUnits(order.amountPaise))}</strong></div>
+            <div className="trackingHero"><div className="trackingHeroMain"><small>{order.orderType === "individual" ? "ORDER" : "HAMPER"}</small><h1>{order.orderType === "individual" ? `${individualItemCount} ${individualItemCount === 1 ? "item" : "items"}` : order.tierName}</h1><p>{order.orderType === "individual" ? `Deliver to ${order.receiverName}` : `${order.receiverName}${uiContent.common.separator}${order.occasion}`}</p><span className={`trackingHeroStatus trackingHeroStatus--${order.status}`} role="status">{customerStatusLabel(order.status)}</span></div><strong className="trackingHeroPrice">{formatMoney(fromMinorUnits(order.amountPaise))}</strong></div>
             {order.orderType === "individual" && <ul className="individualOrderLines" aria-label="Purchased items">{(order.lineItems || []).map((item) => <li key={item.productId}><div><b>{item.name}</b><span>{item.quantity} × {formatMoney(item.unitPricePaise / 100)} each</span></div><strong>{formatMoney(item.lineTotalPaise / 100)}</strong></li>)}</ul>}
             <div className="trackingMeta">
               <div><span>{copy.orderId}</span><b>{order.publicId}</b></div>
-              <div><span>{copy.requiredBy}</span><b>{order.requiredDate}</b></div>
+              <div><span>{copy.requiredBy}</span><b>{formatDeliveryDate(order.requiredDate)}</b></div>
               <div><span>{copy.payment}</span><b>{customerPaymentStatusLabel(order.paymentStatus)}</b></div>
               <div><span>{copy.status}</span><b>{customerStatusLabel(order.status)}</b></div>
             </div>
