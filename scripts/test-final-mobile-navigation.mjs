@@ -8,7 +8,7 @@ const [header, oldMobile, finalMobile, globalCss, cart, plan, originalStyle] = a
   "styles/mobile-navigation-final-task4.css",
   "app/globals.css",
   "features/cart/AddToCart.tsx",
-  "docs/FINAL_POLISH_AND_AI_FEEL_REMOVAL.md",
+  "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md",
   "styles/celebration.css"
 ].map(read))
 
@@ -54,7 +54,7 @@ assert(originalStyle.includes(".celebrationHeader{position:sticky"), "Sticky hea
 has(/scroll-margin-top:235px;/, "In-page anchors must clear the taller mobile header")
 assert(globalCss.includes('@import "../styles/mobile-navigation-final-task4.css";') && globalCss.indexOf("mobile-navigation-final-task4.css") > globalCss.indexOf("mobile-storefront-section6.css"), "Final navigation CSS must override the older responsive header rules")
 assert(globalCss.indexOf("homepage-human-rhythm-task5.css") > globalCss.indexOf("mobile-navigation-final-task4.css"), "Later homepage-only styles must not supersede navbar rules")
-assert(plan.includes("## 4. Mobile navigation and header usability"), "Source-of-truth task tracker must remain intact")
+assert(plan.includes("## Phase 1 — Homepage Redesign"), "Approved competitor homepage plan must preserve mobile navigation")
 assert.equal((finalMobile.match(/\{/g)||[]).length,(finalMobile.match(/\}/g)||[]).length,"Malformed mobile CSS block delimiters")
 
 console.log("Task 4 mobile navigation code checks passed: six visible links, 3x2 grid on 320–430px, 44px account/cart/link targets, full-width 48px search, Safari text sizing and keyboard focus.")
