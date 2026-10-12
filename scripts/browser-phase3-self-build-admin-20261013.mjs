@@ -48,17 +48,22 @@ try{
       check(width+" no horizontal scroll",overflow[0]<=overflow[1]+2,overflow.join("/"))
       await page.screenshot({path:resolve(root,"admin-"+width+".png"),fullPage:true,animations:"disabled"})
 
+      const categoryLabel = width === 390 ? "Premium Necklaces Editorial" : "Premium Necklaces Atelier"
+      const categoryCost = width === 390 ? 65 : 66
+      const categoryCount = width === 390 ? 9 : 10
+      const optionCost = width === 390 ? 120 : 121
+      const optionCount = width === 390 ? 5 : 6
       const category=page.locator('[data-category-id="premium-necklaces"]')
-      await category.getByLabel("Visible category label").fill("Premium Necklaces Editorial")
-      await category.getByLabel(/Private budget per unit/).fill("65")
+      await category.getByLabel("Visible category label").fill(categoryLabel)
+      await category.getByLabel(/Private budget per unit/).fill(String(categoryCost))
       await category.locator(".sbAdminCapacity input[type=checkbox]").check()
-      await category.locator(".sbAdminCapacity input[type=number]").fill("9")
+      await category.locator(".sbAdminCapacity input[type=number]").fill(String(categoryCount))
 
       const chocolate=page.locator('[data-option-id="chocolate-extra-100"]')
-      await chocolate.getByLabel("Option name").fill("Starter — Petite")
-      await chocolate.locator("input[type=number]").first().fill("120")
+      await chocolate.getByLabel("Option name").fill(width === 390 ? "Starter — Petite" : "Starter — Petite Plus")
+      await chocolate.locator("input[type=number]").first().fill(String(optionCost))
       await chocolate.locator(".sbAdminCapacity input[type=checkbox]").check()
-      await chocolate.locator(".sbAdminCapacity input[type=number]").fill("5")
+      await chocolate.locator(".sbAdminCapacity input[type=number]").fill(String(optionCount))
 
       const dirty=await page.locator(".sbAdminDirty").count()
       check(width+" drafts remain unpublished",dirty===1)
@@ -72,11 +77,11 @@ try{
         return {status:r.status,body:await r.json()}
       })
       check(width+" saved data persisted",live.status===200 &&
-        live.body.categories.find(c=>c.id==="premium-necklaces")?.label==="Premium Necklaces Editorial" &&
-        live.body.categories.find(c=>c.id==="premium-necklaces")?.unitBudgetPaise===6500 &&
-        live.body.categories.find(c=>c.id==="premium-necklaces")?.availableUnits===9)
-      check(width+" option budget persisted",live.body.options.find(o=>o.id==="chocolate-extra-100")?.unitBudgetPaise===12000
-        && live.body.options.find(o=>o.id==="chocolate-extra-100")?.availableUnits===5)
+        live.body.categories.find(c=>c.id==="premium-necklaces")?.label===categoryLabel &&
+        live.body.categories.find(c=>c.id==="premium-necklaces")?.unitBudgetPaise===categoryCost*100 &&
+        live.body.categories.find(c=>c.id==="premium-necklaces")?.availableUnits===categoryCount)
+      check(width+" option budget persisted",live.body.options.find(o=>o.id==="chocolate-extra-100")?.unitBudgetPaise===optionCost*100
+        && live.body.options.find(o=>o.id==="chocolate-extra-100")?.availableUnits===optionCount)
       check(width+" customer lock still off",live.body.config.customerEnabled===false && live.body.config.showItemPrices===false)
 
       const stale=await page.evaluate(async (body) => {
