@@ -123,6 +123,7 @@ export function useCustomerAccount() {
       const data = await response.json() as { ok?: boolean; account?: CustomerAccountView; error?: string }
       if (!response.ok || !data.ok || !data.account) throw new Error(data.error || "PASSWORD_RESET_UNAVAILABLE")
       setAccount(data.account)
+      window.dispatchEvent(new Event("celebration:auth-changed"))
       return data.account
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "PASSWORD_RESET_UNAVAILABLE")
