@@ -12,12 +12,14 @@ import { AdminCustomRequests } from "./AdminCustomRequests"
 import { AdminOrderCard } from "./AdminOrderCard"
 import { AdminOrderToolbar } from "./AdminOrderToolbar"
 import { AdminStoreSettings } from "./AdminStoreSettings"
+import { AdminSelfBuildManager } from "./AdminSelfBuildManager"
+import "../../styles/admin-self-build-20261013.css"
 import { AdminReservationReview } from "./AdminReservationReview"
 import { AdminReviews } from "./AdminReviews"
 import { countAdminFilter, defaultAdminOrderFilter, filterAdminOrders, type AdminOrderSort } from "./orderFilters"
 import { useAdminOrders } from "./useAdminOrders"
 
-type AdminView = "overview" | "orders" | "requests" | "reviews" | CatalogAdminSection | "campaigns" | "analytics" | "settings" | "history"
+type AdminView = "overview" | "orders" | "requests" | "reviews" | CatalogAdminSection | "campaigns" | "analytics" | "settings" | "history" | "selfBuild"
 
 type AdminNavItem = { id: AdminView; label: string; helper: string }
 type AdminNavGroup = { label: string; items: AdminNavItem[] }
@@ -42,6 +44,7 @@ const navGroups: AdminNavGroup[] = [
     label: "Catalog",
     items: [
       { id: "tiers", label: "Hampers & Pricing", helper: "Budgets and limits" },
+      { id: "selfBuild", label: "Self-Build Studio", helper: "Category choices and private budgets" },
       { id: "products", label: "Products", helper: "Items and images" },
       { id: "reviews", label: "Customer Reviews", helper: "Genuine verified feedback" },
       { id: "occasions", label: "Occasions", helper: "Builder defaults" }
@@ -65,6 +68,7 @@ const viewCopy: Record<AdminView, { kicker: string; title: string; body: string 
   campaigns: { kicker: "SALES", title: "Offers & campaigns", body: "Discount rules, eligibility, timing aur usage limits bina deploy ke control karein." },
   analytics: { kicker: "INSIGHTS", title: "Conversion analytics", body: "Funnel, checkout, campaign redemption aur order-value impact dekhein." },
   tiers: { kicker: "CATALOG", title: "Hampers & pricing", body: "Price tiers, sizes aur selection limits without code deploy manage karein." },
+  selfBuild: { kicker: "HAMPERS · PRIVATE CONFIGURATION", title: "Self-Build Studio", body: "Category names, internal budget, size options and other requests manage karein. Buyer checkout abhi disabled hai." },
   products: { kicker: "CATALOG", title: "Products & items", body: "Items, images, categories, eligibility aur display order manage karein." },
   reviews: { kicker: "CATALOG", title: "Real customer reviews", body: "Sirf real delivered orders ke reviews publish karein. Pending feedback ko verify karein." },
   occasions: { kicker: "CATALOG", title: "Occasions & defaults", body: "Builder occasions aur default selections control karein." },
@@ -202,6 +206,7 @@ export function AdminDashboard() {
               <div>
                 <button type="button" onClick={() => setView("products")}><b>Products</b><span>Add items or update images</span></button>
                 <button type="button" onClick={() => setView("tiers")}><b>Hamper pricing</b><span>Update budgets and limits</span></button>
+                <button type="button" onClick={() => setView("selfBuild")}><b>Self-Build Studio</b><span>Edit category choices and private amounts</span></button>
                 <button type="button" onClick={() => setView("campaigns")}><b>Offers</b><span>Create or manage discounts</span></button>
                 <button type="button" onClick={() => setView("requests")}><b>Custom requests</b><span>Review budget enquiries</span></button>
                 <button type="button" onClick={() => setView("analytics")}><b>Analytics</b><span>Check conversion performance</span></button>
@@ -233,6 +238,7 @@ export function AdminDashboard() {
         {(view === "tiers" || view === "products" || view === "occasions") && <AdminCatalogManager section={view} />}
         {view === "reviews" && <AdminReviews />}
         {view === "settings" && <AdminStoreSettings />}
+        {view === "selfBuild" && <AdminSelfBuildManager />}
         {view === "history" && <AdminCatalogHistory />}
       </div>
     </div>
