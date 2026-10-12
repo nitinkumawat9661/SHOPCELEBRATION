@@ -1,0 +1,396 @@
+/* Custom Hamper Builder — delivery step only.
+   After choosing a real hamper budget, use a calm mobile-first form.
+   This stylesheet does not apply to cart delivery, products, payments or
+   the full non-quick-start builder. The underlying input logic is unchanged. */
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep,
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep *{
+  box-sizing:border-box;
+}
+.celebrationHome #builder.quickBuilder .builderCard:has(.hamperDeliveryStep){
+  padding:clamp(15px,2.4vw,28px);
+  border:1px solid #e8d8d2;
+  border-radius:16px;
+  background:#fffdfa;
+  box-shadow:0 4px 18px rgba(89,44,51,.04);
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .builderTitle{
+  display:block;
+  margin:0 0 20px;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .builderTitle h3{
+  margin:0;
+  font:500 clamp(25px,2.9vw,35px)/1.18 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.025em;
+  color:#673345;
+  text-wrap:balance;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .builderTitle p{
+  max-width:57ch;
+  margin:7px 0 0;
+  color:#806662;
+  font-size:12px;
+  line-height:1.65;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailsGrid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-items:start;
+  gap:20px;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailsGrid>*{
+  min-width:0;
+  max-width:100%;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionStack{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:13px;
+  width:100%;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard,
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard:first-child,
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard:last-child{
+  position:relative;
+  display:block;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding:clamp(15px,2vw,21px);
+  border:1px solid #ebdbd5;
+  border-radius:13px;
+  background:linear-gradient(158deg,#fffdfb,#fffaf7);
+  box-shadow:none;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionHead{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:5px;
+  margin:0 0 15px;
+  padding:0 0 12px;
+  border:0;
+  border-bottom:1px solid #efe1dc;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionHead>div{
+  min-width:0;
+  max-width:100%;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionHead span{
+  display:block;
+  font-size:10px;
+  font-weight:750;
+  line-height:1.4;
+  letter-spacing:.09em;
+  color:#986672;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionHead h4{
+  margin:4px 0 0;
+  font:500 clamp(19px,1.8vw,24px)/1.24 var(--font-shopping-display),Georgia,serif;
+  color:#67394a;
+  letter-spacing:-.016em;
+  overflow-wrap:break-word;
+  text-wrap:balance;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionHead small{
+  display:block;
+  max-width:none;
+  margin:2px 0 0;
+  padding:0;
+  color:#88716c;
+  font-size:11px;
+  line-height:1.55;
+  text-align:left;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start;
+  gap:15px 13px;
+  width:100%;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .field{
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  margin:0;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .wide{
+  grid-column:1/-1;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .field>span{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:4px;
+  min-height:20px;
+  width:100%;
+  min-width:0;
+  margin:0 0 6px;
+  color:#5b4746;
+  font-size:12px;
+  font-weight:650;
+  line-height:1.45;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .optionalLabel{
+  display:inline;
+  margin:0 0 0 auto;
+  font-size:9px;
+  font-weight:550;
+  letter-spacing:.015em;
+  text-transform:none;
+  color:#9c837c;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .control{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  height:auto;
+  min-height:49px;
+  margin:0;
+  padding:12px 13px;
+  border:1px solid #dfcdc5;
+  border-radius:9px;
+  background:#fff;
+  color:#50393c;
+  box-shadow:none;
+  outline-offset:2px;
+  font:400 16px/1.4 var(--font-shopping-sans),Arial,sans-serif;
+  transition:border-color .15s ease,box-shadow .15s ease;
+  color-scheme:light;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .control::placeholder{
+  font-size:14px;
+  color:#a18b85;
+  opacity:1;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid textarea.control{
+  display:block;
+  min-height:88px;
+  height:auto;
+  padding-block:12px;
+  resize:vertical;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid input[type=date]{
+  min-width:0;
+  max-width:100%;
+  appearance:auto;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .control:focus-visible{
+  border-color:#9f6776;
+  outline:2px solid #e8cbd0;
+  outline-offset:1px;
+  box-shadow:none;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .field.invalid .control{
+  border-color:#b34e51;
+  background:#fff9f8;
+  box-shadow:0 0 0 1px rgba(179,78,81,.18);
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .fieldError{
+  display:block;
+  margin:7px 0 0;
+  color:#a33437;
+  font-size:11px;
+  font-weight:650;
+  line-height:1.5;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .savedDeliveryChoice{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:9px;
+  margin:0 0 15px;
+  padding:12px;
+  border:1px solid #e3d0c9;
+  border-radius:10px;
+  background:#fbf1ec;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .savedDeliveryChoice>div{
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .savedDeliveryChoice p{
+  margin:5px 0 0;
+  color:#76615e;
+  font-size:11px;
+  line-height:1.5;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .savedDeliveryActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .savedDeliveryActions button{
+  min-height:44px;
+  flex:0 1 auto;
+  padding:9px 12px;
+  font-size:11px;
+  font-weight:650;
+  white-space:normal;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutProgressNote{
+  display:grid;
+  grid-template-columns:26px minmax(0,1fr);
+  gap:9px;
+  align-items:start;
+  margin:13px 0 0;
+  padding:11px 12px;
+  border:1px solid #e6d7cd;
+  border-radius:10px;
+  background:#faf2ec;
+  color:#78635e;
+  font-size:11px;
+  line-height:1.55;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutProgressNote>span:last-child{
+  display:block;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .navRow.detailActions{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  margin:14px 0 0;
+  padding:13px 0 0;
+  border-top:1px solid #f0e4dd;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .primary,
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .secondary{
+  width:auto;
+  min-width:0;
+  min-height:47px;
+  padding:10px 14px;
+  margin:0;
+  border-radius:9px;
+  font-size:12px;
+  line-height:1.35;
+  font-weight:700;
+  text-align:center;
+  white-space:normal;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .tiny{
+  display:block;
+  min-width:0;
+  margin:0;
+  color:#88746d;
+  font-size:10px;
+  line-height:1.5;
+  text-align:center;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .summary{
+  width:100%;
+  min-width:0;
+  padding:clamp(17px,2vw,23px);
+  border:1px solid #e5d3c9;
+  border-radius:13px;
+  background:linear-gradient(155deg,#fdf4ee,#f7e9e4);
+  box-shadow:none;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .summary .sumPrice{
+  color:#7c3b51;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .summary .sumRow{
+  gap:8px 14px;
+  padding-block:11px;
+  font-size:12px;
+}
+.celebrationHome #builder.quickBuilder .hamperDeliveryStep .summary .sumRow b{
+  min-width:0;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+@media(min-width:980px){
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailsGrid{
+    grid-template-columns:minmax(0,1.53fr) minmax(260px,.9fr);
+    gap:23px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .summary{
+    position:sticky;
+    top:120px;
+  }
+}
+@media(max-width:759px){
+  .celebrationHome #builder.quickBuilder .builderCard:has(.hamperDeliveryStep){
+    padding:12px;
+    border-radius:13px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .builderTitle{
+    margin-bottom:16px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .builderTitle h3{
+    font-size:clamp(25px,6.8vw,31px);
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailsGrid{
+    grid-template-columns:minmax(0,1fr);
+    gap:15px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionStack{
+    gap:11px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard,
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard:first-child,
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard:last-child{
+    padding:14px 12px;
+    border-radius:11px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionHead{
+    margin-bottom:12px;
+    padding-bottom:10px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionHead h4{
+    font-size:20px;
+    line-height:1.23;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid{
+    grid-template-columns:minmax(0,1fr);
+    gap:12px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .wide{
+    grid-column:1;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .navRow.detailActions{
+    grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
+    gap:9px;
+    margin-top:13px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .secondary{
+    grid-column:1;
+    grid-row:1;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .primary{
+    grid-column:2;
+    grid-row:1;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .tiny{
+    grid-column:1/-1;
+    grid-row:2;
+    order:0;
+    margin-top:1px;
+  }
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .summary{
+    position:static;
+  }
+}
+@media(max-width:360px){
+  .celebrationHome #builder.quickBuilder .builderCard:has(.hamperDeliveryStep){padding:10px}
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard,
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard:first-child,
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutSectionCard:last-child{padding:13px 10px}
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .primary,
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .detailActions .secondary{
+    padding:10px 8px;
+    font-size:11px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome #builder.quickBuilder .hamperDeliveryStep .checkoutFormGrid .control{
+    transition:none;
+  }
+}
