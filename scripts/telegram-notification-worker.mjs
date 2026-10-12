@@ -95,18 +95,20 @@ function composeMessage(row) {
   // not the latest order row when a delayed notification is finally sent.
   const snapshot = row.event_snapshot && typeof row.event_snapshot === "object"
     ? row.event_snapshot : {};
+  const at = (key, current) =>
+    Object.prototype.hasOwnProperty.call(snapshot, key) ? snapshot[key] : current;
   const eventRow = {
     ...row,
-    status: snapshot.status ?? row.status,
-    payment_status: snapshot.paymentStatus ?? row.payment_status,
-    payment_provider: snapshot.paymentProvider ?? row.payment_provider,
-    paid_at: snapshot.paidAt ?? row.paid_at,
-    amount_paise: snapshot.amountPaise ?? row.amount_paise,
-    subtotal_paise: snapshot.subtotalPaise ?? row.subtotal_paise,
-    discount_paise: snapshot.discountPaise ?? row.discount_paise,
-    shipping_paise: snapshot.shippingPaise ?? row.shipping_paise,
-    shipping_provider: snapshot.shippingProvider ?? row.shipping_provider,
-    shipping_tracking_number: snapshot.trackingNumber ?? row.shipping_tracking_number
+    status: at("status", row.status),
+    payment_status: at("paymentStatus", row.payment_status),
+    payment_provider: at("paymentProvider", row.payment_provider),
+    paid_at: at("paidAt", row.paid_at),
+    amount_paise: at("amountPaise", row.amount_paise),
+    subtotal_paise: at("subtotalPaise", row.subtotal_paise),
+    discount_paise: at("discountPaise", row.discount_paise),
+    shipping_paise: at("shippingPaise", row.shipping_paise),
+    shipping_provider: at("shippingProvider", row.shipping_provider),
+    shipping_tracking_number: at("trackingNumber", row.shipping_tracking_number)
   };
   row = eventRow;
   const lines = [
