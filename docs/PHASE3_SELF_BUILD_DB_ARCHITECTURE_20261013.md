@@ -1,65 +1,69 @@
-# Celebration Self-Build Hamper — Database Architecture (STAGING)
+# Celebration — Self-Build Hamper Architecture (admin-only staging)
 
-**13 October 2026 · Implementation phase: DB + secured admin API only.**  
-This does **not** create a customer-facing self-build wizard, change the curated hamper, change jewellery retail prices, create warehouse stock, accept self-build payments or reserve inventory.
+**Owner-confirmed settings: 13 October 2026.** Effective data model: migrations **047 + 048**. Historical values in 047 (Large ₹400, photo once-only, unnamed ₹100 chocolate) are corrected by the applied-once 048 amendment; **do not edit historical migration 047**.
 
-## A. Owner's approved interaction architecture
+**Phase boundary:** PostgreSQL structure, seeded dynamic category/rate records, and secured admin read/write API. There is **no buyer-facing Self Build flow or private price leak**, no self-build checkout or inventory reservation, and no populated ready-made hamper stock. Existing curated hampers, jewellery selling prices, payment, invoices and courier logic are untouched. PostgreSQL constraints enforce `customer_enabled=false`, `show_item_prices=false`.
 
-Customer enters **Self Build → Category chooser first**, not a product wall. Categories/subcategories and labels are **database records** editable by admin, not hardcoded React arrays. Within Jewellery, subcategories correspond to the real jewellery assortment only; customer chooses multiple quantities of eligible products. A separate **Bangles** category also exists. For Chocolates, Snacks and Perfume, customer chooses sizes, not a fake catalogue product. Personalised Photos have one fixed **total** consumption when selected, even if 2+ photos; no per-image charge. There is a final optional **Anything Else?** free-text request; the team discusses the request instead of silently charging for it.
+## Buyer experience to build later (not live)
 
-**Do not expose item consumption prices in customer UI or public API**. Tier budget is the hamper's advertised selling price; internal consumption is not an individual jewellery selling price. Photo capture/upload is not implemented at this stage.
+1. Buyer chooses **Build Your Own Hamper**, then first sees **categories rather than products**.
+2. Opening **Jewellery** shows eight named subcategories. Opening a subcategory later shows **only its accurately mapped available SKUs** with quantity controls. A standalone top-level Bangles category also exists; do not fabricate duplicate stock.
+3. Chocolates, Snacks and Perfume expose DB-driven Starter/size options as applicable. Multiple quantities are allowed, constrained later by true stock, actual tier budget and packaging capacity — **no arbitrary one-item quantity limit**.
+4. Personalised Photos: **₹50 per individual photo** of any count, never ₹50 for the whole group; photo upload/print workflow is not implemented yet.
+5. Final **Anything Else?** field: buyer writes anything missing; the team discusses the request. Nothing additional is silently charged.
+6. Buyer sees **no item-level prices**, no internal budget-consumption figures, and never receives the protected admin API data. The overall tier's advertised selling price is a distinct concept.
 
-### Initial internal rules saved in PostgreSQL (admin editable, paise)
+## Confirmed DB-driven Jewellery subcategories
 
-| Source | Internal budget | Charging behaviour | DB state |
-| --- | ---: | --- | --- |
-| Other eligible jewellery products | ₹60 **per item** | Category default; SKU override possible | Unmapped, not customer exposed |
-| Stylish bangles (existing jewellery source category) | ₹150 **per item** | Explicit matching SKU must receive 15000-paise override | **SKU list awaiting owner verification** |
-| Standalone Bangles category | ₹150 **per item** | Explicit SKU rules; multiple units supported | **SKU list awaiting owner verification** |
-| Chocolates: Mini | ₹200 | Per selected pack | Staged |
-| Chocolates: Medium | ₹400 | Per selected pack | Staged |
-| Chocolates: Large | ₹400 | Per selected pack | Staged **same as Medium, intentionally** |
-| Chocolates: Mega | ₹1,000 | Per selected pack | Staged |
-| Chocolates: extra ₹100 choice | ₹100 | Per selected pack | **Inactive** until its customer-visible name is confirmed |
-| Snacks: Mini / Medium / Large / Mega | ₹200 / ₹400 / ₹400 / ₹1,000 | Per selected pack | Staged |
-| Perfume: Mini / Medium / Large / Mega | ₹200 / ₹400 / ₹400 / ₹1,000 | Per selected item | Staged |
-| Personalised Photos | ₹50 **total when any photo count ≥1** | Once per entire category; 1 and 20 photos have the same ₹50 consumption | Staged; upload not implemented |
-| Other requests | No automatic charge | Free text; contact/review required for additional items | Prompt admin editable |
+The short first display label follows the owner's direction to keep wording compact:
 
-**Rule hierarchy for a future verified quote:** explicit SKU `unit_budget_paise` override > category `unit_budget_paise` > config `default_catalog_item_budget_paise`, for catalog-backed items. `variant` uses the selected option's DB value × quantity. `photo` charges DB category amount **once**, regardless of the photo count (provided count >0). `notes` never automatically quotes extra products. Validate total <= selected tier and actual stock/capacity *on the server* before charging. This formula is a planned contract, **not a live checkout implementation**.
+| Order | Stored admin-editable display label | Private budget consumption per SKU × quantity |
+| --- | --- | ---: |
+| 1 | **Premium Feature Necklaces** | ₹60 |
+| 2 | **Premium Necklaces** | ₹60 |
+| 3 | **Necklace & Stud Sets** | ₹60 |
+| 4 | **Korean Earrings** | ₹60 |
+| 5 | **Indian Trending Earrings** | ₹60 |
+| 6 | **Minimal Rings** | ₹60 |
+| 7 | **Viral Bangles** | ₹150 |
+| 8 | **Korean Bangles** | ₹150 |
 
-**Multiple quantities:** no arbitrary `max_quantity=1` for product, pack, or photo in this model. A future checkout must enforce real stock, remaining budget, physical packing limits and input-safety constraints; no promise of unlimited physical supply.
+All eight records have `parent_id='jewellery'`, `selection_kind='catalog'`, `charge_mode='per_unit'`, a numeric internal unit budget and editable `display_order`. These are **customer category labels confirmed by the owner**, **not a claim of existing catalogue product availability**. The storefront source catalogue currently has five differently named categories; the new labels are **not automatically mapped by fuzzy name**. Explicit `self_build_catalog_product_rules` SKU links remain to be supplied/verified through admin before showing actual products. In particular, Korean Earrings and Indian Trending Earrings do not imply any earring SKUs already exist.
 
-## B. DB tables in migration 047
+Standalone top-level **Bangles** remains its own category at **₹150 per SKU per piece**. The owner-confirmed Viral/Korean Bangle categories also consume ₹150; there is no inferred price change to existing jewellery shop listings.
 
-- `self_build_configuration`: singleton; versioned/admin editable default budget contribution, multiple-quantity setting and discussion prompt. **DB CHECK permanently forces `customer_enabled=false` and `show_item_prices=false` for this staging migration**. Later activation requires reviewed migration + backend/payment/stock implementation.
-- `self_build_categories`: dynamic tree, sort order, active state, source catalogue category mapping, kind and internal charge mode. Jewellery child categories must be created using exact owner-approved names.
-- `self_build_options`: admin-editable size labels and budget amounts for variant categories; Chocolate's unnamed ₹100 option is deliberately inactive.
-- `self_build_catalog_product_rules`: explicit SKU→category mapping + optional budget override; no inference from product name, another SKU's images or retail MRP. Can explicitly map a stylish bangle to a category and override it to ₹150.
-- `self_build_drafts`: account-owned, expiring JSON selection draft; **no application writes yet**.
-- `self_build_order_snapshots`: reserved slot for frozen itemized order rules and total; **not populated**, not a live stock reservation, and no payment integration yet.
+## Confirmed dynamic option amounts (private)
 
-There is no destructive modification of existing `catalog_config`, `orders`, `inventory_reservations`, `product_inventory`, payment or checkout schemas. Migration is additive and applied by existing `scripts/migrate.mjs` only after passing CI.
+| Category | Starter | Mini | Medium | Large | Mega |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| **Chocolates** | ₹100 | ₹200 | ₹400 | **₹600** | ₹1,000 |
+| **Snacks** | — | ₹200 | ₹400 | **₹600** | ₹1,000 |
+| **Perfume** | — | ₹200 | ₹400 | **₹600** | ₹1,000 |
 
-## C. Secured admin integration interface
+The existing `chocolate-extra-100` option is renamed **Starter** and activated. Large is ₹600 **for all three groups**, Medium remains ₹400. These are **internal tier-budget consumption amounts**, not publicly displayed individual selling prices. Chocolates, Snacks and Perfume records represent **selection options, not verified warehouse goods**: actual availability, sizes, packing weight, brand/content and procurement must be confirmed before ordering is enabled.
 
-- `GET /api/admin/self-build`: requires verified admin session; returns current DB configuration, categories, options, product rules and version; `Cache-Control: private, no-store`.
-- `PATCH /api/admin/self-build`: verified admin session, **same-origin enforcement**, admin mutation rate limit, size-limited validated JSON; sends the complete GET payload fields `version`, `config`, `categories`, `options`, `productRules`; returns new version on success.
-- The PATCH is **atomic** (transaction + row lock); requires exact version, returns HTTP 409 for stale editor writes, checks unique IDs and valid group tree, rejects nonexistent source catalog categories and fake product SKUs.
-- Prices, sizes, ordering, labels, category activation and free-text prompt can change through this admin API without redeployment. Admin UI may consume this API later; **no UI widget has been introduced in this phase**.
-- Both staging gates (`customerEnabled=false`, `showItemPrices=false`) must stay false. **Never consume this admin endpoint from customer JavaScript; its private monetary fields are not customer-safe.**
+**Personalised Photos:** `selection_kind='photo'`, `charge_mode='per_unit'`, `unit_budget_paise=5000`. The future authoritative server calculation must use **photo count × database unit budget**. E.g. count 1 → ₹50 internally, count 3 → ₹150 internally. Zero photos → ₹0. Admin may edit the amount and allowed charge mode later; there must be no customer-facing per-photo price. This migration intentionally updates the PostgreSQL charge-mode constraint to allow the new semantics.
 
-## D. Clarification still required BEFORE building any customer-facing picker
+**Other eligible mapped jewellery:** the fallback config contains **₹60** (`default_catalog_item_budget_paise=6000`). Within category budget, SKU-specific overrides can take priority, but only with verified SKU ownership.
 
-1. The owner's **seven real Jewellery category names**: the checked-in current catalogue has **five nonempty** distinct category labels: Premium Anti-Tarnish Necklaces, Necklace + Earrings Sets, Trending Necklaces, Gold-Plated Bangles & Bracelets, Adjustable Rings. The homepage additionally creates an empty “Earrings” shortcut and separate “All Jewellery”. Do **not** invent or substitute the remaining names. Admin will add the seven verified child categories and explicitly link their products.
-2. **Which exact SKU IDs count as “stylish bangles”** at ₹150? The existing combined Gold-Plated Bangles & Bracelets category doesn't prove that every item is stylish. Do **not** apply ₹150 to all SKUs by string-matching.
-3. Label for the additional **₹100 chocolate size**. DB contains a disabled choice with provisional *admin-only* label; rename before activation.
-4. Which **real chocolates, snack packs and perfumes**, pack sizes, stock and packing weights are available? No SKU or inventory is fabricated by this migration.
-5. Are ₹60/₹150/₹200... numbers intended as *internal budget consumption*, separate from the actual sale price of the full hamper? This architecture interprets the word “budget consume” exactly that way. The store keeps its existing jewellery prices untouched.
-6. How should multiple photos be provided and printed? One per-unit charge is **not** introduced; upload and fulfilment need later specification.
+## Storage and administration
 
-## E. Production launch gate for future work
+- **`self_build_configuration`** — versioned, protected feature gates, default catalog-item internal budget, quantity policy and editable “Anything Else?” copy.
+- **`self_build_categories`** — dynamic tree, sorting/activation, category kind, mapping and rate.
+- **`self_build_options`** — edit any option label/rate/order/enabled state; new sizes can be added without a source-code deploy.
+- **`self_build_catalog_product_rules`** — explicit verified SKU-to-category mapping, per-SKU overrides, activation. **No fake SKU rows seeded.**
+- **`self_build_drafts`** — account-owned expiring draft storage; not wired to customer UI yet.
+- **`self_build_order_snapshots`** — future immutable line-item and budget reference for accepted transactions; not wired to orders yet.
 
-**No self-build order yet.** Before customer activation, implement catalogue/stock-backed choices, quote validation (including tier rules), SKU quantities, a frozen itemized BOM, transactional inventory reservation/expiry and cancellation release, real packing constraints, payment integration, customer privacy-safe APIs, fulfilment approval and sandbox checkout + concurrency tests. Keep current **Celebration Curates** route independent. No real ready-made bundles without owner-provided contents, media and stock.
+**Secured API:** `GET /api/admin/self-build` and `PATCH /api/admin/self-build` are admin-session-only with same-origin enforcement on writes, admin rate limits, private no-store response headers, strict normalization, atomic row-locked replacement, catalogue ID verification and optimistic-version conflict protection. The admin **API exists**, but the graphical admin editor does not yet exist. No public/customer route exports internal values. The backend contains no hardcoded item prices: the seed migration is initial editable DB data.
 
-**Guarantees in this phase:** all new monetary values are stored in DB, not hardcoded into user-facing app code; only admin can change them; disabled customer mode; no claim of payment-tested self-build orders.
+## Required before customer self-build can go live
+
+1. Map real product IDs to the eight jewellery subcategories and standalone Bangles in admin. Verify each correct product image/SKU; do not infer Korean/Viral or special features from a random name/photo.
+2. Confirm actual availability, units and packing economics for Chocolate, Snack and Perfume options; implement product quantity/stock and chocolate/food safety handling where applicable. Nothing here reserves inventory.
+3. Implement a **private server quote** using versioned DB costs, valid quantities, tier remainder, physical capacity and real inventory. `per_unit` photos multiply by the count. Keep internal SKU costs out of buyer JSON, HTML, analytics and UI.
+4. Implement transactional item stock reservation/expiry/cancellation release and immutable BOM for self-build orders before any payment action. Preserve existing curated hamper and individual retail paths.
+5. Build the category-first selection UI, multi-quantity controls, photo handling, free-text discussion and mobile/desktop QA. Confirm no visible item prices, unexpected delivery promises or fabricated merchandise.
+6. Add reviewed migration to remove the DB `customer_enabled=false` hard gate **only after** end-to-end safe fulfilment and payment tests pass.
+
+**Status:** Owner's category labels, per-photo cost, Large rate and Starter label have no open wording questions. **Still pending:** exact SKU mapping to eight labels and physically available non-jewellery inventory/photographs. Those unresolved data must never be fabricated.
