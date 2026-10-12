@@ -28,6 +28,8 @@ export function HeaderScrollBehavior() {
     let gestureDirection: "down" | "up" | null = null
     let gestureAt = 0
     let expandedHeight = 0
+    let previousViewportWidth = window.innerWidth
+    let previouslyMobile = mobile.matches
 
     function preserveHomeFlow() {
       if (!homeSpacer || typeof header!.getBoundingClientRect !== "function" || !("style" in homeSpacer)) return
@@ -116,15 +118,28 @@ export function HeaderScrollBehavior() {
     }
 
     function onViewportChange() {
+      // Android Chrome and iOS Safari resize the *visible height* as their
+      // address/tool bars slide away during scrolling. Resetting a compact
+      // sticky header for every such event causes needless re-layout and a
+      // visibly stuttering page. Recalculate only for real WIDTH changes
+      // (rotation/window split) or when entering/leaving the mobile breakpoint.
+      const width = window.innerWidth
+      const isMobile = mobile.matches
+      if (width === previousViewportWidth && isMobile === previouslyMobile) return
+      previousViewportWidth = width
+      previouslyMobile = isMobile
       setCollapsed(false)
       expandedHeight = 0
       previous = window.scrollY
       preserveHomeFlow()
     }
 
-    const headerResizeObserver = homeSpacer && typeof ResizeObserver !== "undefined"
-      ? new ResizeObserver(preserveHomeFlow) : null
-    headerResizeObserver?.observe(header)
+    // No ResizeObserver on header: the old max-height/opacity animation
+    // triggered a resize callback on almost every animation frame. Combined
+    // with reading header bounds and writing the spacer height, that forced
+    // recurring mobile layout work while the customer scrolled. The homepage
+    // header now switches in one frame; preserveHomeFlow is called only when
+    // the compact state changes or the actual viewport WIDTH changes.
 
     window.addEventListener("scroll", onScroll, { passive: true })
     document.addEventListener("touchstart", onTouchStart, { passive: true })
@@ -148,7 +163,6 @@ export function HeaderScrollBehavior() {
       header.removeEventListener("focusin", onFocus)
       if (frame) window.cancelAnimationFrame(frame)
       setCollapsed(false)
-      headerResizeObserver?.disconnect()
       if (homeSpacer && "style" in homeSpacer) homeSpacer.style.height = "0px"
       header.removeAttribute("data-compact-nav")
     }

@@ -18,6 +18,18 @@
     box-shadow:0 3px 13px rgba(94,47,56,.09);
     overflow-anchor:none;
   }
+  /* On home, do not animate max-height or opacity of sticky header
+     descendants. Animating these layout properties repeatedly triggers
+     paint/layout on mobile; the JS holds the document flow constant. */
+  .celebrationHome .celebrationHeader .celebrationNav,
+  .celebrationHome .celebrationHeader .celebrationSearch,
+  .celebrationHome .celebrationHeader .celebrationHeaderTop,
+  .celebrationHome .celebrationHeader .celebrationBrand,
+  .celebrationHome .celebrationHeader .celebrationBrand>span,
+  .celebrationHome .celebrationHeader .celebrationBrand>small{
+    transition:none!important;
+    animation:none!important;
+  }
   .celebrationHome .celebrationHomeHeaderSpacer{
     display:block;
     height:0;
