@@ -10,7 +10,7 @@ if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(base)) throw Error("Refuse live admin te
 const secret = process.env.ADMIN_SESSION_SECRET
 const version = process.env.ADMIN_SESSION_VERSION
 if (!secret || secret.length < 32 || !version) throw Error("Missing sandbox admin credentials")
-const payload = Buffer.from(JSON.stringify({exp: Math.floor(Date.now() / 1000) + 1800, version, method:"password"})).toString("base64url")
+const payload = Buffer.from(JSON.stringify({exp: Math.floor(Date.now() / 1000) + 1800, version, method:"passkey"})).toString("base64url")
 const value = payload + "." + createHmac("sha256",secret).update(payload).digest("base64url")
 const exe = [process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-chrome-stable","/usr/bin/chromium"].find(x => x && existsSync(x))
 if (!exe) throw Error("Chromium not found")
