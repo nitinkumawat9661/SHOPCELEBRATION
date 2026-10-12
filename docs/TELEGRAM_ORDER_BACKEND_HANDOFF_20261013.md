@@ -37,9 +37,14 @@ to its logged-in customer** in the future `My Orders` UI.
 - `POST /api/integrations/telegram/courier-poll`: off-by-default endpoint with
   dedicated private header, at most three active orders per call and five-minute
   recheck protection. `scripts/telegram-courier-cron.mjs` invokes it when enabled.
-- `scripts/test-telegram-backend.mjs`: static security-contract tests plus
-  executed message formatting cases (pending at event-time, paid later,
+- `scripts/test-telegram-backend.mjs`: static security-contract tests and
+  message-formatting fixtures (pending at event-time, paid later,
   cancellation, pickup failure).
+- `scripts/test-order-integration.mjs`: additive isolated-PostgreSQL assertions
+  for order event outbox, event-time pending/paid snapshots, Telegram reply
+  mapping, replay deduplication, owner/customer isolation and read receipts.
+  **This runner destroys only a specifically named local test database:**
+  `celebration_individual_test`. Never point at the live DB.
 - `config/env.ts`: private Telegram env keys, no browser `NEXT_PUBLIC` keys.
 
 ## What was deliberately NOT modified
@@ -105,6 +110,6 @@ Rolling back frontend release is independent of the retained additive tables.
 ## Explicit test limits
 The **GitHub code is prepared**; sender and format fixtures have been checked
 through static/manual validation. Full Next.js build, PostgreSQL migration
-integration, live Shipway poll, owner Telegram webhook, end-to-end buyer
+integration (test cases prepared but not yet run), live Shipway poll, owner Telegram webhook, end-to-end buyer
 isolation, PM2 deployment and production monitoring have not yet been run.
 Do NOT call this feature "live" until those checks are completed.
