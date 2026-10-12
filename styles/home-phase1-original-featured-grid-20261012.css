@@ -1,0 +1,319 @@
+/* Phase 1: use the ORIGINAL approved competitor concept for homepage
+   Trending Jewellery / Take a closer look (mobile 2 across, desktop 4).
+   This supersedes the interim horizontal swipe carousel. Scope ONLY to
+   the homepage feature section; shop-by-category circles deliberately
+   remain untouched until the LAST Phase 1 photo-replacement step. */
+.celebrationHome .celebrationFeatured{
+  padding-block:clamp(20px,2.5vw,34px) clamp(30px,4vw,49px);
+}
+.celebrationHome .celebrationFeatured .celebrationSectionHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:12px;
+  margin-bottom:clamp(13px,2vw,19px);
+}
+.celebrationHome .celebrationFeatured .celebrationSectionHead h2{
+  font-size:clamp(29px,3vw,39px);
+  line-height:1.15;
+  text-wrap:balance;
+}
+.celebrationHome .celebrationFeatured .collectionGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:stretch;
+  gap:clamp(11px,1.6vw,19px);
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:0;
+  padding:0;
+  overflow:visible;
+  overflow-x:visible;
+  overflow-y:visible;
+  scroll-snap-type:none;
+  scroll-padding:0;
+  overscroll-behavior-x:auto;
+  -webkit-overflow-scrolling:auto;
+  scrollbar-width:auto;
+  box-sizing:border-box;
+}
+.celebrationHome .celebrationFeatured .collectionGrid>.catalogCard{
+  display:flex;
+  flex:none;
+  flex-direction:column;
+  box-sizing:border-box;
+  align-self:stretch;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  min-height:0;
+  height:auto;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  scroll-snap-align:none;
+  border:1px solid #e7d8d2;
+  border-radius:13px;
+  background:#fffdfb;
+  box-shadow:0 2px 10px rgba(72,37,39,.055);
+}
+.celebrationHome .celebrationFeatured .collectionGrid>.catalogCard>.catalogCardLink{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  min-width:0;
+  width:100%;
+  text-decoration:none;
+}
+.celebrationHome .celebrationFeatured .catalogCardVisual,
+.celebrationHome .celebrationFeatured .catalogCard--clean .catalogCardVisual,
+.celebrationHome .celebrationFeatured .catalogCard--paper .catalogCardVisual,
+.celebrationHome .celebrationFeatured .catalogCard--folio .catalogCardVisual{
+  display:grid;
+  place-items:center;
+  position:relative;
+  box-sizing:border-box;
+  width:100%;
+  height:auto;
+  min-height:0;
+  flex:0 0 auto;
+  aspect-ratio:1/1;
+  margin:0;
+  padding:5px;
+  overflow:hidden;
+  background:#faf4ef;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia,
+.celebrationHome .celebrationFeatured .catalogCard--clean .catalogCardMedia,
+.celebrationHome .celebrationFeatured .catalogCard--paper .catalogCardMedia,
+.celebrationHome .celebrationFeatured .catalogCard--folio .catalogCardMedia{
+  display:block;
+  position:relative;
+  width:100%;
+  height:100%;
+  min-height:0;
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:#fffdfa;
+  overflow:hidden;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia .safeCatalogImageFrame{
+  display:block;
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  border-radius:7px;
+  background:#fffdfa;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia .safeCatalogImageFrame>img:not([style]){
+  width:100%;
+  height:100%;
+  max-width:100%;
+  object-fit:contain;
+  object-position:center;
+  background:#fffdfa;
+  transform:none;
+}
+.celebrationHome .celebrationFeatured .catalogCardMedia .safeCatalogImageFrame.catalogSpritePhoto>img{
+  object-fit:cover;
+}
+.celebrationHome .celebrationFeatured .catalogCard--featuredPortraitRing .catalogCardMedia .safeCatalogImageFrame>img:not([style]){
+  object-fit:cover;
+  object-position:50% 47%;
+  background:#f2e2d8;
+}
+.celebrationHome .celebrationFeatured .catalogCardVisual .catalogCardArrow{display:none}
+.celebrationHome .celebrationFeatured .catalogCardInfo{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  box-sizing:border-box;
+  align-items:stretch;
+  width:100%;
+  min-width:0;
+  padding:12px 12px 10px;
+}
+.celebrationHome .celebrationFeatured .catalogCardCategory{
+  display:block;
+  margin:0 0 5px;
+  min-width:0;
+  font-size:10px;
+  line-height:1.45;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.celebrationHome .celebrationFeatured .catalogCard h3{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  min-width:0;
+  min-height:2.8em;
+  max-height:2.85em;
+  margin:0;
+  font-size:13px;
+  line-height:1.4;
+  font-weight:680;
+  overflow:hidden;
+  overflow-wrap:break-word;
+  word-break:normal;
+  color:#573841;
+}
+.celebrationHome .celebrationFeatured .catalogCardPrice{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:5px 7px;
+  min-width:0;
+  margin-top:auto;
+  padding-top:10px;
+  border-top:1px solid #f0e6e0;
+  line-height:1.45;
+}
+.celebrationHome .celebrationFeatured .catalogCardPrice>span:first-child{
+  display:block;
+  width:100%;
+  min-width:0;
+  margin:0;
+  font-size:9px;
+  line-height:1.35;
+}
+.celebrationHome .celebrationFeatured .catalogCardPrice strong{
+  display:block;
+  font-size:19px;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.celebrationHome .celebrationFeatured .catalogCardPrice small{
+  min-width:0;
+  font-size:9px;
+  line-height:1.4;
+  overflow-wrap:break-word;
+}
+.celebrationHome .celebrationFeatured .catalogCard>.cartAddControl{
+  display:block;
+  flex:0 0 auto;
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding:0 12px 12px;
+}
+.celebrationHome .celebrationFeatured .catalogCard>.cartAddControl button{
+  box-sizing:border-box;
+  width:100%;
+  min-height:44px;
+  padding:8px;
+  border-radius:9px;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.25;
+}
+.celebrationHome .celebrationFeatured .catalogCard>.cartAddControl .catalogInlineQuantity{
+  width:100%;
+  min-width:0;
+  grid-template-columns:minmax(30px,auto) minmax(0,1fr) minmax(30px,auto);
+}
+@media(max-width:950px){
+  .celebrationHome .celebrationFeatured .collectionGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:700px){
+  .celebrationHome .celebrationFeatured{
+    padding-block:20px 34px;
+  }
+  .celebrationHome .celebrationFeatured .celebrationSectionHead{
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .celebrationHome .celebrationFeatured .celebrationSectionHead h2{
+    font-size:clamp(26px,7vw,33px);
+    max-width:12ch;
+  }
+  .celebrationHome .celebrationFeatured .celebrationSectionHead>a{
+    display:inline-flex;
+    min-height:44px;
+    align-items:center;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .celebrationHome .celebrationFeatured .collectionGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:11px 9px;
+    margin:0;
+    padding:0;
+    overflow:visible;
+    scroll-snap-type:none;
+  }
+  .celebrationHome .celebrationFeatured .collectionGrid>.catalogCard{
+    flex:none;
+    width:100%;
+    min-width:0;
+    border-radius:10px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardVisual,
+  .celebrationHome .celebrationFeatured .catalogCard--clean .catalogCardVisual,
+  .celebrationHome .celebrationFeatured .catalogCard--paper .catalogCardVisual,
+  .celebrationHome .celebrationFeatured .catalogCard--folio .catalogCardVisual{
+    aspect-ratio:1/1.02;
+    padding:4px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardInfo{
+    padding:9px 9px 8px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardCategory{
+    font-size:9px;
+    line-height:1.35;
+    margin-bottom:4px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard h3{
+    font-size:11.5px;
+    line-height:1.4;
+    min-height:2.8em;
+    max-height:2.85em;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard p{
+    font-size:9px;
+    line-height:1.4;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice{
+    padding-top:7px;
+    gap:3px 5px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice>span:first-child{
+    font-size:8.5px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice strong{
+    font-size:16px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCardPrice small{
+    font-size:8px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard>.cartAddControl{
+    padding:0 9px 9px;
+  }
+  .celebrationHome .celebrationFeatured .catalogCard>.cartAddControl button{
+    width:100%;
+    min-height:44px;
+    font-size:10px;
+    padding:8px 4px;
+  }
+}
+@media(max-width:360px){
+  .celebrationHome .celebrationFeatured .collectionGrid{gap:9px 7px}
+  .celebrationHome .celebrationFeatured .catalogCardInfo{padding-inline:7px}
+  .celebrationHome .celebrationFeatured .catalogCard>.cartAddControl{padding-inline:7px}
+  .celebrationHome .celebrationFeatured .catalogCard h3{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationFeatured .catalogCard{
+    transform:none;
+    transition:none;
+  }
+}

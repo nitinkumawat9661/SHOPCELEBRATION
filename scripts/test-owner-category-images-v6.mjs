@@ -10,7 +10,7 @@ const [seed,sql,loader,v3,v4,v5,home,featured,card,manifest]=await Promise.all([
   "scripts/create-clean-photo-category-circles-v4.mjs",
   "scripts/create-jewellery-detail-category-circles-v5.mjs",
   "features/home/HomeCatalog.tsx",
-  "styles/home-restore-featured-swipe-ring-fit-20261012.css",
+  "styles/home-phase1-original-featured-grid-20261012.css",
   "features/catalog/CatalogCard.tsx",
   "scripts/owner-category-sources-v6.json"
 ].map(file=>read(file).catch(error=>{
@@ -45,7 +45,7 @@ assert(sql.includes("category-v6%2F")&&sql.includes("owner-provided:2026-10-12")
 assert(loader.includes("category-v[123456]"),"Homepage reads owner-approved v6 PostgreSQL URLs")
 assert(v3.includes("category-v6%2F")&&v4.includes('old.includes("category-v6%2F")')&&v5.includes('old.includes("category-v6%2F")'),"Legacy scripts never replace owner's images on future deploys")
 assert(home.includes("categoriesForCatalog(catalog)")&&home.includes("<b>{category.label}</b>")&&home.includes("categoryMedia[category.id]"),"Preserve names, category navigation and DB image mapping")
-assert(featured.includes("display:flex")&&featured.includes("flex-wrap:nowrap")&&featured.includes("overflow-x:auto"),"User-approved rounded featured swipe cards remain")
+assert(featured.includes("display:grid")&&featured.includes("grid-template-columns:repeat(2,minmax(0,1fr))")&&featured.includes("grid-template-columns:repeat(4,minmax(0,1fr))"),"Owner selected original proposed 2/4 featured grid; this must not affect saved category photos")
 assert(card.includes('catalogCard--featuredPortraitRing'),"Do not change highlighted real product card image fit")
 if(manifest){
  const data=JSON.parse(manifest)
@@ -60,4 +60,4 @@ const workflow=await read(".github/workflows/deploy-production.yml").catch(error
  throw error
 })
 if(workflow)assert(workflow.includes('install-owner-category-art-v6.mjs'),"VPS must install user images before switching current release")
-console.log("Owner category image mapping v6 passed: six uploaded photos, seven proper categories, R2/SQL atomicity, rollback media and unchanged other cards.")
+console.log("Owner category image mapping v6 passed: six uploaded photos, seven proper categories, R2/SQL atomicity, rollback category media and owner-approved 2/4 featured layout.")
