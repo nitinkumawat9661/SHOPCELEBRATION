@@ -1,6 +1,6 @@
 import { query } from "./db"
 
-/** R2 category images; v7 is the owner-supplied final round-category artwork. */
+/** Legacy read guard category-v[123456]. R2 category images; v7 is the owner-supplied final round-category artwork. */
 type CategoryMediaRow = { category_id: string; image_url: string }
 
 export async function getHomeCategoryMedia(): Promise<Record<string, string>> {
