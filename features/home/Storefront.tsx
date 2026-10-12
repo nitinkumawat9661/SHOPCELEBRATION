@@ -29,7 +29,8 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
   return (
     <div className="celebrationHome">
         <TrustStrip />
-        <StorefrontHeader settings={initialSettings} stableOnHome />
+        <StorefrontHeader settings={initialSettings} />
+        <div className="celebrationHomeHeaderSpacer" aria-hidden="true" />
       <main id="main-content">
         <Hero tiers={tiers} />
         <div className="celebrationBenefits wrap" aria-label="Shopping at Celebration">

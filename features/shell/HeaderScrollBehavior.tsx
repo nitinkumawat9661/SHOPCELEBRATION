@@ -17,6 +17,9 @@ export function HeaderScrollBehavior() {
     if (!header) return
     const nav = header.querySelector<HTMLElement>(".celebrationNav")
     const search = header.querySelector<HTMLElement>(".celebrationSearch")
+    // Present only on the homepage. Keep its document-flow height steady
+    // while the sticky header folds search/navigation, avoiding Chrome jumps.
+    const homeSpacer = document.querySelector<HTMLElement>(".celebrationHomeHeaderSpacer")
     const mobile = window.matchMedia("(max-width: 700px)")
     let previous = window.scrollY
     let collapsed = false
@@ -24,6 +27,21 @@ export function HeaderScrollBehavior() {
     let touchPosition: { x: number; y: number } | null = null
     let gestureDirection: "down" | "up" | null = null
     let gestureAt = 0
+    let expandedHeight = 0
+
+    function preserveHomeFlow() {
+      if (!homeSpacer || typeof header!.getBoundingClientRect !== "function" || !("style" in homeSpacer)) return
+      if (!mobile.matches) {
+        expandedHeight = 0
+        homeSpacer.style.height = "0px"
+        return
+      }
+      const height = header!.getBoundingClientRect().height
+      if (!collapsed && height > expandedHeight) expandedHeight = height
+      // Header plus its sibling spacer always occupies the original expanded
+      // height in the document. The sticky toolbar itself can still shrink.
+      homeSpacer.style.height = `${Math.max(0, expandedHeight - height)}px`
+    }
 
     function setCollapsed(value: boolean) {
       if (collapsed === value) return
@@ -32,6 +50,7 @@ export function HeaderScrollBehavior() {
       // A visually hidden nav must not remain in the keyboard tab order.
       if (nav) nav.inert = value
       if (search) search.inert = value
+      preserveHomeFlow()
     }
 
     function rememberDirection(direction: "down" | "up") {
@@ -97,9 +116,15 @@ export function HeaderScrollBehavior() {
     }
 
     function onViewportChange() {
-      if (!mobile.matches) setCollapsed(false)
+      setCollapsed(false)
+      expandedHeight = 0
       previous = window.scrollY
+      preserveHomeFlow()
     }
+
+    const headerResizeObserver = homeSpacer && typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(preserveHomeFlow) : null
+    headerResizeObserver?.observe(header)
 
     window.addEventListener("scroll", onScroll, { passive: true })
     document.addEventListener("touchstart", onTouchStart, { passive: true })
@@ -107,7 +132,9 @@ export function HeaderScrollBehavior() {
     window.addEventListener("wheel", onWheel, { passive: true })
     document.addEventListener("keydown", onKeyDown)
     mobile.addEventListener("change", onViewportChange)
+    window.addEventListener("resize", onViewportChange, { passive: true })
     header.addEventListener("focusin", onFocus)
+    preserveHomeFlow()
     sync()
 
     return () => {
@@ -117,9 +144,12 @@ export function HeaderScrollBehavior() {
       window.removeEventListener("wheel", onWheel)
       document.removeEventListener("keydown", onKeyDown)
       mobile.removeEventListener("change", onViewportChange)
+      window.removeEventListener("resize", onViewportChange)
       header.removeEventListener("focusin", onFocus)
       if (frame) window.cancelAnimationFrame(frame)
       setCollapsed(false)
+      headerResizeObserver?.disconnect()
+      if (homeSpacer && "style" in homeSpacer) homeSpacer.style.height = "0px"
       header.removeAttribute("data-compact-nav")
     }
   }, [])

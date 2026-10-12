@@ -1,0 +1,47 @@
+/* Phase 1 homepage mobile header: restore intended gesture-based compact
+ * search/navigation without the previous Android sticky-header page jump.
+ *
+ * HeaderScrollBehavior maintains the adjacent invisible document-flow spacer
+ * at expanded header height as search/nav collapse on real vertical gestures.
+ * No category art, jewellery-grid, product, cart or checkout selectors here.
+ */
+.celebrationHome .celebrationHomeHeaderSpacer{
+  display:none;
+}
+@media(max-width:700px){
+  .celebrationHome .celebrationHeader{
+    position:sticky;
+    top:0;
+    z-index:40;
+    width:100%;
+    max-width:100%;
+    box-shadow:0 3px 13px rgba(94,47,56,.09);
+    overflow-anchor:none;
+  }
+  .celebrationHome .celebrationHomeHeaderSpacer{
+    display:block;
+    height:0;
+    margin:0;
+    padding:0;
+    border:0;
+    overflow:hidden;
+    pointer-events:none;
+    overflow-anchor:none;
+  }
+  .celebrationHome .celebrationHeader[data-compact-nav="true"]{
+    box-shadow:0 3px 14px rgba(94,47,56,.12);
+  }
+  /* Search and navigation retain their own accessibility-aware inert states
+     while folded, and the main brand/account/cart toolbar stays visible. */
+  .celebrationHome .celebrationHeader[data-compact-nav="true"] .celebrationNav,
+  .celebrationHome .celebrationHeader[data-compact-nav="true"] .celebrationSearch{
+    visibility:hidden;
+    pointer-events:none;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationHeader,
+  .celebrationHome .celebrationHomeHeaderSpacer{
+    transition:none;
+  }
+}
