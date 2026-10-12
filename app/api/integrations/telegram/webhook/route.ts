@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         String(message.chat?.id ?? "") !== env.telegramAdminChatId ||
         String(message.from?.id ?? "") !== env.telegramAdminChatId ||
         message.from?.is_bot === true)
-      return NextResponse.json({ ok: false }, { status: 403, headers: noStore })
+      return NextResponse.json({ ok: true, ignored: "UNAUTHORIZED_SENDER" }, { headers: noStore })
 
     if (!message.reply_to_message?.message_id) {
       return NextResponse.json({ ok: true, ignored: "NOT_AN_ORDER_REPLY" }, { headers: noStore })
@@ -77,9 +77,9 @@ export async function POST(request: Request) {
       { headers: noStore })
   } catch (error) {
     if (error instanceof RequestSecurityError) {
-      // Malformed updates get a permanent response so Telegram does not loop.
-      return NextResponse.json({ ok: false, error: error.code },
-        { status: error.status, headers: noStore })
+      // Telegram retries any non-2xx status. Acknowledge malformed updates
+      // (after header auth) so a bad update never blocks legitimate replies.
+      return NextResponse.json({ ok: true, ignored: "INVALID_UPDATE" }, { headers: noStore })
     }
     console.error("telegram-reply-persistence", error instanceof Error ? error.message : "ERROR")
     // 503 allows Telegram to retry the same update; the DB update ID is unique.
