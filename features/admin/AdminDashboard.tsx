@@ -165,6 +165,7 @@ export function AdminDashboard() {
           </div>
           <div className="adminActions">
             <button className="secondary" onClick={admin.load} disabled={admin.loading}>{admin.loading ? "Refreshing…" : copy.refresh}</button>
+            <a className="secondary" href="/admin/self-build-preview">Self-build design preview</a>
             <a className="secondary adminViewStoreButton" href="/" target="_blank" rel="noreferrer">View store</a>
             <button className="secondary adminDesktopLogout" onClick={admin.logout}>{copy.logout}</button>
           </div>

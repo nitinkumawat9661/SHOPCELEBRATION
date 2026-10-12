@@ -1,0 +1,85 @@
+name: Celebration Phase 3 Self-Build Browser QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - features/builder/SelfBuildDesignPreview.tsx
+      - app/admin/self-build-preview/page.tsx
+      - lib/server/self-build-preview.ts
+      - styles/self-build-preview-20261013.css
+      - scripts/browser-phase3-self-build-preview-20261013.mjs
+      - .github/workflows/phase3-self-build-preview-browser-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  minimal-category-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: celebration_preview_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: preview_only_db_pass
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:preview_only_db_pass@127.0.0.1:5432/celebration_preview_test
+      DATABASE_SSL_MODE: disable
+      ADMIN_SESSION_SECRET: 7f2a2a30d90467459afb8cc0cd81c4bd0603574c4a0982b3f8
+      ADMIN_SESSION_VERSION: isolated-preview-qa-v1
+      BASE_URL: http://127.0.0.1:3217
+      NEXT_PUBLIC_SITE_INDEXABLE: 'false'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Prepare isolated Next app, Chromium and disposable category data
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+          command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+          export PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=celebration_preview_test PGUSER=postgres PGPASSWORD=preview_only_db_pass
+          psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts(id text PRIMARY KEY); CREATE TABLE orders(id text PRIMARY KEY);'
+          psql -v ON_ERROR_STOP=1 -f db/migrations/034_admin_passkeys.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/049_self_build_category_only_no_sku_mapping.sql
+          npm run build
+      - name: Verify real category-first design on 320, 390, 768 and 1280px
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/phase3-self-build
+          npm run start -- -p 3217 > artifacts/phase3-self-build/server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          READY=0
+          for i in $(seq 1 50); do
+            if curl -fsS --max-time 2 "$BASE_URL/api/health" >/dev/null; then READY=1; break; fi
+            sleep 2
+          done
+          if [ "$READY" -ne 1 ]; then cat artifacts/phase3-self-build/server.log; exit 1; fi
+          node scripts/browser-phase3-self-build-preview-20261013.mjs
+      - name: Save design screenshots and QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-self-build-design-${{ github.run_id }}
+          path: artifacts/phase3-self-build/
+          if-no-files-found: warn
+          retention-days: 14
