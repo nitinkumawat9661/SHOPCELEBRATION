@@ -54,10 +54,10 @@ assert(css.includes(".celebrationCategories")&&!css.includes(".celebrationFeatur
 assert(imports.includes('@import "../styles/home-category-real-detail-v5.css";')&&
   imports.endsWith('@import "../styles/jewelry-two-column-scroll-header-fix.css";\n'),
   "Import category-only styles without altering protected jewelry grid ordering")
-assert(imports.includes('@import "../styles/home-restore-featured-swipe-ring-fit-20261012.css";'),
-  "Previously restored horizontal Take a Closer Look cards must remain")
+assert(imports.includes('@import "../styles/home-phase1-original-featured-grid-20261012.css";'),
+  "Use the owner's updated final 2-column mobile and 4-column desktop featured layout")
 assert(card.includes('catalogCard--featuredPortraitRing'),
   "Previously approved ring poster display formatting must remain")
 if(workflow)assert(workflow.includes("create-jewellery-detail-category-circles-v5.mjs"),
   "Production must generate and verify all seven category thumbnails before switching releases")
-console.log("Category photo-only v5 checks passed: seven tightly focused original Celebration SKU crops, stable round navigation, preserved featured cards and atomic R2/PostgreSQL publishing.")
+console.log("Category photo-only v5 checks passed: seven tightly focused original Celebration SKU crops, stable round navigation, independent featured 2/4 grid and atomic R2/PostgreSQL publishing.")
