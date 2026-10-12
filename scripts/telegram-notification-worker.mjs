@@ -39,6 +39,17 @@ function describeEvent(row) {
   const details = row.payload && typeof row.payload === "object" ? row.payload : {};
   if (row.source === "payment_event") return ["💳 PAYMENT EVENT", "Gateway event: " + event];
 
+  if (event === "payment_status_changed") {
+    return ["💳 PAYMENT STATUS CHANGED",
+      "Payment: " + str(details.from || "unknown") + " → " + str(details.to || "unknown")];
+  }
+  if (event === "courier_observed") {
+    return ["🚚 CARRIER STATUS OBSERVED",
+      "Carrier code: " + str(details.code || "unknown"),
+      "Verified status: " + str(details.label || details.stage || "unknown"),
+      "Scan time: " + time(details.scanOccurredAt),
+      "Last location: " + str(details.lastLocation || "Not provided")];
+  }
   if (event === "order_created") return ["📦 NEW ORDER"];
   if (event === "shipping_updated") return ["🚚 SHIPPING UPDATED"];
   if (event === "packing_video_uploaded") return ["🎬 PACKING VIDEO UPLOADED"];
@@ -80,11 +91,30 @@ function productSummary(row) {
 }
 
 function composeMessage(row) {
+  // Financial, payment and shipment fields MUST match the event transaction,
+  // not the latest order row when a delayed notification is finally sent.
+  const snapshot = row.event_snapshot && typeof row.event_snapshot === "object"
+    ? row.event_snapshot : {};
+  const eventRow = {
+    ...row,
+    status: snapshot.status ?? row.status,
+    payment_status: snapshot.paymentStatus ?? row.payment_status,
+    payment_provider: snapshot.paymentProvider ?? row.payment_provider,
+    paid_at: snapshot.paidAt ?? row.paid_at,
+    amount_paise: snapshot.amountPaise ?? row.amount_paise,
+    subtotal_paise: snapshot.subtotalPaise ?? row.subtotal_paise,
+    discount_paise: snapshot.discountPaise ?? row.discount_paise,
+    shipping_paise: snapshot.shippingPaise ?? row.shipping_paise,
+    shipping_provider: snapshot.shippingProvider ?? row.shipping_provider,
+    shipping_tracking_number: snapshot.trackingNumber ?? row.shipping_tracking_number
+  };
+  row = eventRow;
   const lines = [
     ...describeEvent(row),
     "",
     "Order ID: " + str(row.public_id),
     "Event time: " + time(row.occurred_at),
+    "Event ID: " + str(row.source_event_id),
     "Customer: " + str(row.customer_name),
     "Phone: " + str(row.phone),
     "Order type: " + (row.order_type === "individual" ? "Jewellery / individual" : "Gift hamper"),
@@ -137,7 +167,7 @@ async function dispatchBatch() {
   try {
     await client.query("BEGIN");
     const { rows } = await client.query(
-      "SELECT q.id, q.source, q.event_type, q.payload, q.occurred_at, q.attempts," +
+      "SELECT q.id, q.source, q.source_event_id, q.event_type, q.payload, q.snapshot AS event_snapshot, q.occurred_at, q.attempts," +
       " o.public_id, o.order_type, o.line_items, o.tier_name, o.selected_product_names," +
       " o.customer_name, o.phone, o.receiver_name, o.address, o.city, o.state, o.pincode, o.gift_message," +
       " o.required_date, o.subtotal_paise, o.discount_paise, o.shipping_paise, o.amount_paise," +
