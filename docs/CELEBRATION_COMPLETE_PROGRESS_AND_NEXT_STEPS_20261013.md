@@ -65,6 +65,8 @@ Migration **050** adds category- and option-level `availability_confirmed` / `av
 
 Operations manual: `docs/CELEBRATION_SELF_BUILD_ADMIN_OPERATIONS_20261013.md`.
 
+**Validation at PR #143:** isolated Postgres 16 migrations 047–050 and capacity integrity checks PASS; exact Next.js/TypeScript/source production build PASS; actual Chromium tests **106/106 category-first customer-preview checks PASS** at 320/390/768/1280px and **40/40 admin category editor checks PASS** at 390/1280px. Admin checks cover real database persistence of label, private budgets and confirmed available units, stale PATCH rejection, hard-disabled buyer mode and no SKU mapping. These prove the admin settings workflow, not live Self-Build checkout or stock reservation.
+
 ## 3. Roadmap after the visual review (strict ordered slices)
 
 **Phase 3.1 — Review UI preview & freeze approved copy:** Verify 320–430px phones, larger mobile, 768px tablet, >=1280px desktop and keyboard/screen-reader baseline; owner approves category tiles, typography and step order. Category values come from DB; preview must be read-only.
