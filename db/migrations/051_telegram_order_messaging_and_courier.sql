@@ -34,19 +34,35 @@ BEGIN
 END;
 $$;
 
--- Capture payment state changes from ALL supported payment paths, including
--- manual verified, attempt pending, failed and paid. Does not perform payment.
+-- Capture payment changes directly into the NEW Telegram outbox; do not
+-- insert an unfamiliar event type into the existing order_events timeline.
+-- Retain compatibility if migration 050 has already been applied elsewhere.
+ALTER TABLE telegram_notification_outbox
+  DROP CONSTRAINT IF EXISTS telegram_notification_outbox_source_check;
+ALTER TABLE telegram_notification_outbox
+  ADD CONSTRAINT telegram_notification_outbox_source_check
+  CHECK (source IN ('order_event','payment_event','payment_status'));
+
 CREATE FUNCTION telegram_record_payment_change() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
-  INSERT INTO order_events (id, order_id, event_type, payload)
+  INSERT INTO telegram_notification_outbox
+    (order_id, source, source_event_id, event_type, payload, snapshot)
   VALUES (
-    gen_random_uuid(), NEW.id, 'payment_status_changed',
+    NEW.id, 'payment_status', gen_random_uuid(), 'payment_status_changed',
     jsonb_build_object(
       'from', OLD.payment_status,
       'to', NEW.payment_status,
       'provider', NEW.payment_provider,
       'amountPaise', NEW.amount_paise
+    ),
+    jsonb_build_object(
+      'status', NEW.status, 'paymentStatus', NEW.payment_status,
+      'paymentProvider', NEW.payment_provider, 'paidAt', NEW.paid_at,
+      'amountPaise', NEW.amount_paise, 'subtotalPaise', NEW.subtotal_paise,
+      'discountPaise', NEW.discount_paise, 'shippingPaise', NEW.shipping_paise,
+      'shippingProvider', NEW.shipping_provider,
+      'trackingNumber', NEW.shipping_tracking_number
     )
   );
   RETURN NEW;
