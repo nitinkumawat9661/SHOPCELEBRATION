@@ -11,7 +11,7 @@ const [styles, globalCss, hero, homeCatalog, storefront, collection, header, mob
   read("features/catalog/CatalogCollection.tsx"),
   read("features/shell/StorefrontHeader.tsx"),
   read("styles/mobile-storefront-section6.css"),
-  read("docs/WEBSITE_FINAL_IMPROVEMENT_PLAN.md"),
+  read("docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md"),
   read("app/layout.tsx")
 ])
 
@@ -48,6 +48,6 @@ assert(storefront.includes("Prepared for dispatch") && storefront.includes("Trac
 assert(collection.includes("Jewelry for your everyday.") && collection.includes("Putting a hamper together?"), "Replace repetitive marketing phrases")
 assert(collection.includes("discoverProducts(products, filters)") && collection.includes("<CatalogCard key={product.id} product={product} />"), "Do not change filters or product identity")
 assert(header.includes("Search jewelry and gifts…") && header.includes("<CartLink />"), "Keep search and cart navigation")
-assert(plan.includes("## 7. AI फील") && plan.includes("## 8. बाकी"), "Do not expand beyond planned Section 7")
+assert(plan.includes("## Non-negotiable implementation rules") && plan.includes("## Phase 1 — Homepage Redesign"), "Do not expand beyond owner-approved premium ecommerce homepage scope")
 assert.equal((styles.match(/\{/g) || []).length, (styles.match(/\}/g) || []).length, "CSS brackets must balance")
 console.log("Section 7 checks passed: local fonts, type contrast, natural copy, varied spacing/cards, unchanged routes and mobile safeguards.")
