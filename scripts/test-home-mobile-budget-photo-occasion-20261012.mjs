@@ -6,7 +6,7 @@ const [budget, budgetStyles, imageCard, imageStyle, home, occasion, occasionStyl
   "features/catalog/BudgetSection.tsx",
   "styles/home-mobile-budget-featured-fix-20261012.css",
   "features/catalog/CatalogCard.tsx",
-  "styles/real-featured-product-rail-20261012.css",
+  "styles/home-phase1-original-featured-grid-20261012.css",
   "features/home/HomeCatalog.tsx",
   "features/catalog/OccasionRail.tsx",
   "styles/home-occasion-refined-20261012.css",
@@ -48,7 +48,7 @@ assert(imageCard.includes("catalogImageVariant(primary.url, imageVariant)"),
   "Featured image must come from its own exact SKU")
 assert(home.includes('<CatalogCard key={product.id} product={product} imageVariant="main" />'),
   "Featured cards should use full-resolution authentic main images")
-assert(imageStyle.includes("overflow-x:auto"), "Take a closer look remains swipeable")
+assert(imageStyle.includes("display:grid") && imageStyle.includes("grid-template-columns:repeat(2,minmax(0,1fr))") && imageStyle.includes("grid-template-columns:repeat(4,minmax(0,1fr))") && imageStyle.includes("scroll-snap-type:none"), "Take a closer look follows owner\'s approved original grid, not swipe")
 assert(budgetStyles.includes(".celebrationFeatured .catalogCardVisual") &&
   budgetStyles.includes("object-fit:contain") &&
   budgetStyles.includes(".catalogCardMedia .safeCatalogImageFrame"),
