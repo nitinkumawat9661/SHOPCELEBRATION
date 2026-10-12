@@ -31,6 +31,7 @@ export const routes = {
     customerLogin: "/api/account/login",
     customerLogout: "/api/account/logout",
     customerMe: "/api/account/me",
+    customerWishlist: "/api/account/wishlist",
     customerOrders: "/api/account/orders",
     customerPasswordResetRequest: "/api/account/password-reset/request",
     customerPasswordResetVerify: "/api/account/password-reset/verify",
