@@ -81,7 +81,6 @@ export function AdminSelfBuildManager() {
     const label=newLabel.trim(),id=slug(label,new Set(state.categories.map(c=>c.id)))
     if(!label || label.length>100 || !id){setFeedback({kind:"error",text:"Enter a valid category name (maximum 100 characters)."});return}
     if(newParent && !categoryGroups.some(c=>c.id===newParent)){setFeedback({kind:"error",text:"Choose an existing folder as parent."});return}
-    if(newParent && newKind==="group" && state.categories.some(c=>c.parentId===newParent && c.id===id)){return}
     const mode=newKind==="category" || newKind==="photo" ? "per_unit" : newKind==="variant" ? "option":"none"
     const cost=newKind==="category" ? state.config.defaultCatalogItemBudgetPaise : newKind==="photo" ? 0 : null
     const order=state.categories.filter(c=>c.parentId===(newParent||null)).reduce((m,c)=>Math.max(m,c.displayOrder),0)+10
@@ -116,7 +115,7 @@ export function AdminSelfBuildManager() {
   function valid() {
     if(!state)return "Settings are not loaded."
     if(Object.entries(editingAmounts).some(([key,raw])=>{
-      const found=key.startsWith("c:")?state.categories.some(c=>c.id===key.slice(2)):state.options.some(o=>o.id===key.slice(2))
+      const found=key==="default"|| (key.startsWith("c:")?state.categories.some(c=>c.id===key.slice(2)):state.options.some(o=>o.id===key.slice(2)))
       return found&&parseRupees(raw)===null
     }))return "Fix invalid budget fields. Use ₹ amounts with up to two decimal places."
     if(state.categories.some(c=>!c.label.trim()||c.label.trim().length>100||!Number.isSafeInteger(c.displayOrder)||Math.abs(c.displayOrder)>1_000_000))return "Fix category labels or display order."
