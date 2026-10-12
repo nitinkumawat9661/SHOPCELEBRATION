@@ -20,3 +20,14 @@
 .productPincodeResult--error,.productPincodeResult--not-serviceable{color:#9a2935}
 @media(max-width:360px){.productPincodeEstimate{padding:13px 12px}.productPincodeInputs{flex-wrap:wrap}.productPincodeInputs input{flex:1 1 100%}.productPincodeInputs button{width:100%}}
 @media(prefers-reduced-motion:reduce){.productPincodeEstimate *{scroll-behavior:auto}}
+
+/* Keep the mobile product detail grid inside its actual viewport. A bare 1fr
+ * track can grow to an unbreakable descendant's intrinsic min-content width. */
+@media(max-width:700px){
+  .collectionPage .collectionDetailGrid{grid-template-columns:minmax(0,1fr)}
+  .collectionPage .collectionDetailGrid > *{min-width:0}
+  .collectionPage .collectionDetailInfo{min-width:0}
+  .productPincodeEstimate{box-sizing:border-box;min-width:0}
+  .productPincodeInputs input{min-width:0}
+  .collectionPage .antiTarnishGuarantee{flex-wrap:wrap}
+}
