@@ -255,6 +255,7 @@ export function useHamperBuilder(initial: InitialBuilderData = {}) {
     accepted,
     detailsError,
     detailsFieldErrors,
+    draftReady,
     draftRestored,
     dismissDraftRestored: () => setDraftRestored(false),
     clearDraft,
