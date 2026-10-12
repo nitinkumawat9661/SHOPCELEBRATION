@@ -16,7 +16,7 @@ const [catalogRaw, mapRaw, inventory, card, treatment, styling, globals, loading
   "styles/catalog-image-reliability.css",
   "lib/domain/catalog-badges.ts",
   "features/catalog/ProductGallery.tsx",
-  "docs/FINAL_POLISH_AND_AI_FEEL_REMOVAL.md"
+  "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md"
 ].map(read))
 const products = JSON.parse(catalogRaw).products
 const map = JSON.parse(mapRaw).products
@@ -54,7 +54,7 @@ assert.equal(hosted, 67, "Unexpected number of R2 rehosted SKUs")
 assert.equal(localPng, 22, "Unexpected number of existing first-party PNGs")
 assert.equal(additionalAngles, 0, "New verified angles require a fresh photograph source audit")
 assert.equal(Object.keys(map).length, 67, "All original R2 records must remain available")
-assert(doc.includes("## 2. Product cards and photography"), "Track progress only in user's approved plan")
+assert(doc.includes("## Phase 2 — Jewellery Listing + Product Detail"), "Track progress only in user's approved plan")
 
 // Execute the actual TS presentation selector: variety is styling only, not
 // claims that an unverified image is a close-up, on-model or product-only.
