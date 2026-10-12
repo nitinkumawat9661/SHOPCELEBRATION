@@ -321,10 +321,22 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
       <section id="builder" className={`builder ${quickStart ? "quickBuilder" : ""}`}>
         <div className="wrap">
           <div className="centerHead quickBuilderHead"><div className="kicker">{quickStart ? "COMPLETE YOUR HAMPER" : copy.kicker}</div><h2>{quickStart ? "Just delivery, then payment." : copy.title}</h2><p>{quickStart ? "Your budget is already selected. Add the delivery details and you’re ready to pay." : copy.body}</p></div>
-          {quickStart && <div className="quickHamperSummary"><div><span>SELECTED HAMPER</span><b>{state.tier.name} • {formatMoney(state.tier.price)}</b><small>{state.checkout.occasion}</small></div><button className="secondary" type="button" onClick={changeBudget}>Change budget</button></div>}
+          {quickStart && <section className="quickHamperSummary quickHamperSummary--premium" aria-label="Your selected hamper">
+            <div className="quickHamperSummaryMain">
+              <span className="quickHamperSummaryEyebrow">YOUR SELECTED HAMPER</span>
+              <b className="quickHamperSummaryName">{state.tier.name}</b>
+              <p className="quickHamperSummaryNote">Complete hamper price, not just the box.</p>
+            </div>
+            <dl className="quickHamperFacts">
+              <div><dt>Budget</dt><dd>{formatMoney(state.tier.price)}</dd></div>
+              <div><dt>Occasion</dt><dd>{state.checkout.occasion}</dd></div>
+              <div><dt>Size</dt><dd>{state.tier.size}</dd></div>
+            </dl>
+            <button className="secondary quickHamperChange" type="button" onClick={changeBudget}>Change budget <span aria-hidden="true">↗</span></button>
+          </section>}
           {state.catalogLoading && <div className="trackingState">Loading the latest hamper options…</div>}
           {state.catalogError && <div className="catalogLoadNotice" role="alert"><span>{state.catalogError}</span><button className="secondary" type="button" disabled={state.catalogLoading} onClick={state.retryCatalog}>{state.catalogLoading ? "Retrying…" : "Retry"}</button></div>}
-          <div className={`steps ${quickStart ? "quickSteps" : "fourSteps"}`}>{(quickStart ? [{ step: 2, label: "Delivery" }, { step: 3, label: "Payment" }] : copy.stepLabels.map((label, index) => ({ step: index + 1, label }))).map(({ step, label }) => <button type="button" key={label} className={`stepBtn ${state.step === step ? "active" : state.step > step ? "done" : ""}`} aria-current={state.step === step ? "step" : undefined} onClick={() => quickStart && step === 2 && state.step === 2 ? undefined : moveToStep(step)}>{label}</button>)}</div>
+          <div className={`steps ${quickStart ? "quickSteps quickSteps--premium" : "fourSteps"}`} aria-label="Hamper checkout progress">{(quickStart ? [{ step: 2, label: "Delivery" }, { step: 3, label: "Payment" }] : copy.stepLabels.map((label, index) => ({ step: index + 1, label }))).map(({ step, label }) => <button type="button" key={label} className={`stepBtn ${state.step === step ? "active" : state.step > step ? "done" : ""}`} aria-current={state.step === step ? "step" : undefined} onClick={() => quickStart && step === 2 && state.step === 2 ? undefined : moveToStep(step)}>{quickStart && <span className="quickStepNumber" aria-hidden="true">{step === 2 ? "01" : "02"}</span>}<span className="quickStepLabel">{label}</span></button>)}</div>
           <div className="builderCard" data-builder-step-shell>
             {state.step === 1 && <BudgetStep tierId={state.tierId} occasion={state.checkout.occasion} tiers={state.tiers} occasions={state.occasions} onTier={state.selectTier} onOccasion={(value) => state.updateField("occasion", value)} onNext={() => moveToStep(2)} />}
             {state.step === 2 && <DetailsStep tier={state.tier} checkout={state.checkout} occasions={state.occasions} error={state.detailsError} fieldErrors={state.detailsFieldErrors} updateField={state.updateField} savedAddress={savedAddress} onUseSavedAddress={() => { if (savedAddress) useSavedAddress(savedAddress) }} onBack={quickStart ? changeBudget : () => moveToStep(1)} backLabel={quickStart ? "Change budget" : undefined} onNext={moveToPayment} />}
