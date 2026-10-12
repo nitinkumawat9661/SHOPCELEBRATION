@@ -42,6 +42,7 @@ jobs:
       ADMIN_SESSION_SECRET: 7f2a2a30d90467459afb8cc0cd81c4bd0603574c4a0982b3f8
       ADMIN_SESSION_VERSION: isolated-preview-qa-v1
       BASE_URL: http://127.0.0.1:3217
+      APP_BASE_URL: http://127.0.0.1:3217
       NEXT_PUBLIC_SITE_INDEXABLE: 'false'
     steps:
       - uses: actions/checkout@v5
