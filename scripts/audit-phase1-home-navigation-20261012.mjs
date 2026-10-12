@@ -34,8 +34,9 @@ async function goHomeAndClick(page,selector,timeout=25000){
  await home(page)
  const loc=page.locator(selector).first()
  await loc.scrollIntoViewIfNeeded({timeout:10000})
+ const before=page.url()
  await loc.click({timeout:10000})
- await page.waitForLoadState("domcontentloaded",{timeout}).catch(()=>{})
+ await page.waitForURL(u=>u.toString()!==before,{timeout}).catch(()=>{})
  return page.url()
 }
 async function verifyRoute(page,name,selector,{path="/jewelry",query={},hash=null,check=null}={}){
@@ -85,6 +86,10 @@ try{
    verify(id+" seven existing category links",categoryItems.length===7,"7",JSON.stringify(categoryItems))
    verify(id+" all category hrefs internal",categoryItems.every(e=>e.href?.startsWith("/jewelry?view=all")||e.href==="#budgets"),"five category routes + all + hamper")
    verify(id+" no changed round image names",await page.locator(".celebrationCategoryEditorialPhoto img").count()===7,"7 currently installed category images")
+   // The storefront tail (including footer) intentionally lazy-loads on
+   // scroll. Trigger it before verifying footer routes.
+   await page.evaluate(()=>window.scrollTo(0,500))
+   await page.locator(".finalFooter a").first().waitFor({state:"attached",timeout:18000})
    const footerLinks=await page.locator(".finalFooter a").evaluateAll(els=>els.map(e=>({text:e.textContent?.trim(),href:e.getAttribute("href")})))
    verify(id+" footer support and policies",["/faq","/track","/account","/claim","/privacy","/terms"].every(href=>footerLinks.some(x=>x.href===href)),"existing key support/info pages")
    await page.screenshot({path:resolve(root,id+"-homepage-start.png"),animations:"disabled",timeout:16000})
@@ -108,9 +113,6 @@ try{
    await verifyRoute(page,id+" featured view all",".celebrationFeatured .celebrationSectionHead a",{
     path:"/jewelry",query:{view:"all"}
    })
-   await verifyRoute(page,id+" genuine featured SKU",".celebrationFeatured .catalogCardLink",{
-    path:"/UNSET",check:null
-   }).catch(()=>{})
    // A featured product is dynamically identified by its href, not invented.
    // Verify separately because no static path should be assumed.
    await home(page)
