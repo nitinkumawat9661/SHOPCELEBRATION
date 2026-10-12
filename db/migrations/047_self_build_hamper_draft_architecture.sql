@@ -17,7 +17,7 @@ CREATE TABLE self_build_configuration (
 
 CREATE TABLE self_build_categories (
   id text PRIMARY KEY CHECK (id ~ '^[a-z0-9][a-z0-9-]{0,59}$'),
-  parent_id text NULL REFERENCES self_build_categories(id) ON DELETE RESTRICT,
+  parent_id text NULL REFERENCES self_build_categories(id) ON DELETE CASCADE,
   label text NOT NULL CHECK (char_length(label) BETWEEN 1 AND 100),
   -- Admin must explicitly associate real catalogue category/individual SKU.
   -- This does not invent 7 jewellery categories from the 5 currently listed.
