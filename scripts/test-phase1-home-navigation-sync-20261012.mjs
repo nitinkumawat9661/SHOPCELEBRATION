@@ -35,8 +35,8 @@ assert(budget.includes("onClick={() => onSelect(item.id)}") &&
   "Real accessible budget and occasion buttons remain unchanged")
 assert(navAudit.includes('BASE_URL||"https://shopcelebration.in/"') &&
   navAudit.includes("occasion selected in builder") &&
-  navAudit.includes("Intercept") === false,
-  "Keep read-only post-deployment navigation and occasion regression checks inside the packaged source")
+  navAudit.includes('await ctx.route("**/api/**"'),
+  "Keep safe post-deployment navigation and occasion regression checks inside the packaged source")
 assert(roadmap.includes("LAST STEP OF PHASE 1") &&
   roadmap.includes("two product cards side by side on phones"),
   "Do not change deferred seven category images or original featured layout")
