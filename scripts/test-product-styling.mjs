@@ -71,7 +71,7 @@ try {
     read("features/catalog/ProductHowToStyle.tsx"),
     read("styles/product-styling.css"),
     read("app/globals.css"),
-    read("docs/WEBSITE_FINAL_IMPROVEMENT_PLAN.md"),
+    read("docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md"),
     read("package.json")
   ])
   assert(page.includes('import { ProductHowToStyle }'), "Product page must import styling section")
@@ -82,7 +82,7 @@ try {
   assert(component.includes("advice.pairingNote"), "Render set-specific styling note")
   assert(globals.includes('@import "../styles/product-styling.css";'), "Styling stylesheet must load")
   assert(styles.includes("@media(max-width:750px)") && styles.includes("grid-template-columns:1fr"), "Mobile styling layout must stack without horizontal scroll")
-  assert(plan.includes("## 5. How to Style"), "Keep changes in locked Section 5")
+  assert(plan.includes("## Phase 2 — Jewellery Listing + Product Detail"), "Preserve accurate product detail and care guidance in approved jewellery phase")
   assert(packageJson.includes("scripts/test-product-styling.mjs"), "Include tests in standard CI audit")
   console.log(`Section 5 styling checks passed for ${data.products.length} catalog SKUs, necklace sets, rings, earrings, bracelets and gift-only fallbacks.`)
 } finally {

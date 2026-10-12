@@ -15,7 +15,7 @@ const [hero, homeCatalog, storefront, budget, occasions, request, content, store
   "app/globals.css",
   "styles/editorial-polish-section7.css",
   "styles/mobile-navigation-final-task4.css",
-  "docs/FINAL_POLISH_AND_AI_FEEL_REMOVAL.md"
+  "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md"
 ].map(read))
 
 const store = JSON.parse(storeRaw)
@@ -81,6 +81,6 @@ assert(olderEditorial.includes(".celebrationHome .celebrationHero::before"), "Ke
 assert(navCss.includes("grid-template-columns:repeat(3,minmax(0,1fr))"), "Do not break Task 4 nav layout")
 assert(globals.includes('@import "../styles/homepage-human-rhythm-task5.css";'), "Task 5 stylesheet must be imported")
 assert(globals.indexOf("homepage-human-rhythm-task5.css") > globals.indexOf("mobile-navigation-final-task4.css"), "Task 5 must follow earlier scoped style fixes")
-assert(plan.includes("## 5. Homepage copy and visual rhythm"), "Track only within locked nine-task plan")
+assert(plan.includes("## Phase 1 — Homepage Redesign") && plan.includes("premium, approachable, mobile-first"), "Respect actual mobile-first competitor homepage direction")
 assert.equal((css.match(/\{/g)||[]).length,(css.match(/\}/g)||[]).length, "CSS blocks are unbalanced")
 console.log("Task 5 homepage checks passed: concrete hero/category/budget/CTA copy, preserved tagline and live data, conditional packing video copy, asymmetric desktop spacing, stacked mobile and unchanged checkout/builder routes.")

@@ -18,7 +18,7 @@ const [gallery, styling, stylingComponent, finishCss, globals, mobile, header, c
   "lib/domain/real-social-proof.ts",
   "content/catalog-image-source-map.json",
   "content/catalog.json",
-  "docs/FINAL_POLISH_AND_AI_FEEL_REMOVAL.md",
+  "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md",
   "scripts/test-final-storefront.mjs",
   "styles/product-styling.css"
 ].map(read))
@@ -108,6 +108,6 @@ for(const source of [await read("features/home/Hero.tsx"),await read("features/h
 }
 assert(previousTests.includes('await visit(new URL("features/", root).pathname)'),
   "Keep existing broad customer TSX/json filler scan")
-assert(plan.includes("## 7. Improve “How to Style”") && plan.includes("## 8. Final professional finish") &&
-  plan.includes("## 9. Tests, release verification and evidence"),"Do not remove locked checklist")
+assert(plan.includes("## Phase 1 — Homepage Redesign") && plan.includes("## Phase 2 — Jewellery Listing + Product Detail") &&
+  plan.includes("## Phase 3 — Gift Hampers + Custom Hamper Builder"),"Keep the owner-approved three-phase competitor shopping roadmap intact")
 console.log(`Final tasks 7–9 source QA passed: 89 SKU mappings in ${Object.keys(counts).length} categories, 67 original fallbacks, gallery gesture/keyboard protections, mobile buy bar, filter accessibility, truthful product/order proof and no sample marketing text.`)
