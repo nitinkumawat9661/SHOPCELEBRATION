@@ -29,7 +29,9 @@ jobs:
       - name: Real browser wishlist save, refresh, retrieval, tabs and removal
         env:
           BASE_URL: https://shopcelebration.in
-        run: node scripts/audit-phase2-live-wishlist.mjs
+        run: |
+          node scripts/audit-phase2-live-wishlist.mjs
+          node scripts/audit-phase2-multidevice-mock.mjs
       - name: Preserve screenshots and QA report
         if: always()
         uses: actions/upload-artifact@v4
