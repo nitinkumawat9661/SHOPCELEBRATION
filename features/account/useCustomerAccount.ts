@@ -55,6 +55,7 @@ export function useCustomerAccount() {
       const data = await response.json() as { ok?: boolean; account?: CustomerAccountView; error?: string }
       if (!response.ok || !data.ok || !data.account) throw new Error(data.error || "AUTH_FAILED")
       setAccount(data.account)
+      window.dispatchEvent(new Event("celebration:auth-changed"))
       return data.account
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "AUTH_FAILED"
@@ -139,6 +140,7 @@ export function useCustomerAccount() {
       const data = await response.json().catch(() => ({})) as { ok?: boolean; error?: string }
       if (!response.ok || !data.ok) throw new Error(data.error || "LOGOUT_FAILED")
       setAccount(null)
+      window.dispatchEvent(new Event("celebration:auth-changed"))
       return true
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "LOGOUT_FAILED")
