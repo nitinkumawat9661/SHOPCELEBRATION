@@ -52,7 +52,16 @@ const measured=page=>page.evaluate(()=>{
    nav:box($(".celebrationHeader .celebrationNav")),
    navLinks:nav.map(el=>({text:el.textContent?.trim(),href:el.getAttribute("href"),rect:box(el),visible:visible(el)})),
    heroTitle:box($(".celebrationHero h1")),
-   heroTitleClipped:(()=>{const el=$(".celebrationHero h1");return el?el.scrollWidth>el.clientWidth+3||el.scrollHeight>el.clientHeight+3:null})(),
+   // Font ascenders/descenders can exceed a tight CSS line-height without
+   // being cropped when overflow is visible. Flag only true clipping.
+   heroTitleClipped:(()=>{
+     const el=$(".celebrationHero h1")
+     if(!el)return null
+     const st=getComputedStyle(el)
+     const clippedX=["clip","hidden"].includes(st.overflowX)&&el.scrollWidth>el.clientWidth+3
+     const clippedY=["clip","hidden"].includes(st.overflowY)&&el.scrollHeight>el.clientHeight+3
+     return clippedX||clippedY
+   })(),
    heroCTAs:heroButtons.map(el=>({text:el.textContent?.trim(),href:el.getAttribute("href"),rect:box(el),visible:visible(el)})),
    categoryCount:categories.length,
    categoryMedia:categories.filter(el=>!!el.querySelector(".celebrationCategoryEditorialPhoto img")).length,
