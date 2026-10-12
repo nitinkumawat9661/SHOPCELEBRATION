@@ -19,7 +19,7 @@ const [faq, policies, footer, fit, detail, home, orders, sitemap, styles, global
   "features/catalog/ProductGallery.tsx",
   "features/catalog/CatalogCard.tsx",
   "features/home/HomeCatalog.tsx",
-  "docs/WEBSITE_FINAL_IMPROVEMENT_PLAN.md"
+  "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md"
 ].map(read))
 
 // FAQ answers must match already-published policy and make no blanket promise.
@@ -95,5 +95,5 @@ for (const path of paths) {
   for (const regex of forbidden) assert(!regex.test(source), `Remove placeholder/customer-facing AI copy: ${path}: ${regex}`)
 }
 
-assert(plan.includes("## 8. बाकी जरूरी सुधार"), "Final plan section must remain auditable")
+assert(plan.includes("## Phase 3 — Gift Hampers + Custom Hamper Builder"), "Storefront must remain within owner-approved gifting scope")
 console.log(`Section 8 checks passed: FAQ policy consistency, fit accuracy, footer links, paid-only social proof, campaign WebPs, image loading and ${paths.length} source-surface placeholder scans.`)
