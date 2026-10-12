@@ -64,6 +64,13 @@ const getMetrics=async page=>page.evaluate(()=>{
     featuredCards:cards.map((el,i)=>({
       index:i,rect:rect(el),
       title:el.querySelector("h3")?.textContent?.trim()||"",
+      titleClipped:(()=>{
+        const heading=el.querySelector("h3")
+        if(!heading)return null
+        const computed=getComputedStyle(heading)
+        return heading.scrollHeight>heading.clientHeight+2 ||
+          (computed.webkitLineClamp!=="none" && computed.webkitLineClamp!=="unset" && computed.webkitLineClamp!=="" && Number(computed.webkitLineClamp)>0)
+      })(),
       image:el.querySelector(".catalogCardVisual img")?{
         loaded:el.querySelector(".catalogCardVisual img").complete,
         naturalWidth:el.querySelector(".catalogCardVisual img").naturalWidth,
@@ -109,6 +116,8 @@ function check(width,d){
       severe(width,"Featured product card extends outside mobile viewport")
     if(d.featuredCards.some(x=>!x.title||!x.price))
       severe(width,"Featured SKU title or real displayed price is missing")
+    if(d.featuredCards.some(x=>x.titleClipped))
+      warn(width,"Long featured SKU names are visually clipped; actual product identity must remain readable in 2-column layout")
     if(d.featuredCards.some(x=>!x.image||!x.image.loaded||!x.image.naturalWidth))
       warn(width,"At least one featured photo failed to load in Chromium; inspect screenshot/network")
     if(d.featuredCards.some(x=>x.cartButton && x.cartButton.h<42))
