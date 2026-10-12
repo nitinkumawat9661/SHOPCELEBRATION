@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - db/migrations/047_self_build_hamper_draft_architecture.sql
+      - db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
       - lib/server/self-build-admin.ts
       - app/api/admin/self-build/route.ts
       - scripts/test-phase3-self-build-db-contract.mjs
@@ -39,70 +40,105 @@ jobs:
       PGPASSWORD: selfbuild_test
     steps:
       - uses: actions/checkout@v5
-      - name: Verify PostgreSQL schema, private prices and launch gates
+      - name: Verify owner-confirmed PostgreSQL migrations and privacy gates
         shell: bash
         run: |
           set -euo pipefail
           command -v psql >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
           psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts (id text PRIMARY KEY); CREATE TABLE orders (id text PRIMARY KEY);'
           psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
           psql -v ON_ERROR_STOP=1 <<'SQL'
           DO $$
-          DECLARE n integer;
+          DECLARE n integer; r record; p integer;
           BEGIN
-            SELECT COUNT(*) INTO n FROM self_build_categories;
-            IF n <> 7 THEN RAISE EXCEPTION 'Expected 7 staged top-level categories, found %', n; END IF;
+            SELECT COUNT(*) INTO n FROM self_build_categories WHERE parent_id IS NULL;
+            IF n <> 7 THEN RAISE EXCEPTION 'Expected 7 staged top-level categories, found %',n; END IF;
+            SELECT COUNT(*) INTO n FROM self_build_categories WHERE parent_id='jewellery';
+            IF n <> 8 THEN RAISE EXCEPTION 'Expected 8 owner-confirmed jewellery groups, found %',n; END IF;
             SELECT COUNT(*) INTO n FROM self_build_options;
-            IF n <> 13 THEN RAISE EXCEPTION 'Expected 13 size options, found %', n; END IF;
+            IF n <> 13 THEN RAISE EXCEPTION 'Expected 13 variant options, found %',n; END IF;
+            IF (SELECT version FROM self_build_configuration WHERE id='primary') <> 2 THEN
+              RAISE EXCEPTION 'Owner revision did not bump admin optimistic version';
+            END IF;
             IF (SELECT default_catalog_item_budget_paise FROM self_build_configuration WHERE id='primary') <> 6000 THEN
-              RAISE EXCEPTION 'Default ₹60 rule missing';
+              RAISE EXCEPTION 'Default ₹60 contribution missing';
             END IF;
             IF (SELECT unit_budget_paise FROM self_build_categories WHERE id='bangles') <> 15000 THEN
-              RAISE EXCEPTION 'Bangles ₹150 rule missing';
+              RAISE EXCEPTION 'Standalone Bangles ₹150 missing';
             END IF;
-            IF (SELECT unit_budget_paise FROM self_build_categories WHERE id='personalised-photos') <> 5000 THEN
-              RAISE EXCEPTION 'Photo once-only ₹50 rule missing';
+            FOR r IN SELECT id,unit_budget_paise,display_order,catalog_category,active
+              FROM self_build_categories WHERE parent_id='jewellery' ORDER BY display_order LOOP
+              IF r.catalog_category IS NOT NULL OR r.active IS NOT TRUE THEN
+                RAISE EXCEPTION 'Do not manufacture catalogue SKU/category mappings';
+              END IF;
+              IF r.id IN ('viral-bangles','korean-bangles') THEN
+                IF r.unit_budget_paise<>15000 THEN RAISE EXCEPTION '% should be ₹150 per unit',r.id; END IF;
+              ELSE
+                IF r.unit_budget_paise<>6000 THEN RAISE EXCEPTION '% should be ₹60 per unit',r.id; END IF;
+              END IF;
+            END LOOP;
+            IF (SELECT label FROM self_build_categories WHERE id='premium-feature-necklaces')<>'Premium Feature Necklaces'
+              OR (SELECT label FROM self_build_categories WHERE id='premium-necklaces')<>'Premium Necklaces'
+              OR (SELECT label FROM self_build_categories WHERE id='necklace-stud-sets')<>'Necklace & Stud Sets'
+              OR (SELECT label FROM self_build_categories WHERE id='korean-earrings')<>'Korean Earrings'
+              OR (SELECT label FROM self_build_categories WHERE id='indian-trending-earrings')<>'Indian Trending Earrings'
+              OR (SELECT label FROM self_build_categories WHERE id='minimal-rings')<>'Minimal Rings'
+              OR (SELECT label FROM self_build_categories WHERE id='viral-bangles')<>'Viral Bangles'
+              OR (SELECT label FROM self_build_categories WHERE id='korean-bangles')<>'Korean Bangles' THEN
+              RAISE EXCEPTION 'Owner-confirmed category labels mismatch';
             END IF;
-            IF (SELECT unit_budget_paise FROM self_build_options WHERE id='chocolate-medium') <>
-               (SELECT unit_budget_paise FROM self_build_options WHERE id='chocolate-large') THEN
-              RAISE EXCEPTION 'Chocolate medium and large must BOTH be ₹400';
+            IF (SELECT unit_budget_paise FROM self_build_categories WHERE id='personalised-photos')<>5000
+              OR (SELECT charge_mode FROM self_build_categories WHERE id='personalised-photos')<>'per_unit' THEN
+              RAISE EXCEPTION 'Photos must consume ₹50 per photo';
             END IF;
-            IF (SELECT active FROM self_build_options WHERE id='chocolate-extra-100') THEN
-              RAISE EXCEPTION 'Unnamed ₹100 chocolate tier must not be published';
+            FOR r IN SELECT category_id FROM self_build_options GROUP BY category_id LOOP
+              IF r.category_id NOT IN ('chocolates','snacks','perfume') THEN RAISE EXCEPTION 'Unexpected size group'; END IF;
+              FOR p IN 1..4 LOOP
+                -- 1→Mini 200; 2→Medium 400; 3→Large 600; 4→Mega 1000
+                IF NOT EXISTS (SELECT 1 FROM self_build_options WHERE category_id=r.category_id
+                  AND label=(ARRAY['Mini','Medium','Large','Mega'])[p]
+                  AND unit_budget_paise=(ARRAY[20000,40000,60000,100000])[p] AND active) THEN
+                  RAISE EXCEPTION '% size % price mismatch',r.category_id,p;
+                END IF;
+              END LOOP;
+            END LOOP;
+            IF NOT EXISTS (SELECT 1 FROM self_build_options WHERE id='chocolate-extra-100'
+              AND category_id='chocolates' AND label='Starter' AND unit_budget_paise=10000 AND active) THEN
+              RAISE EXCEPTION 'Chocolate Starter ₹100 missing or inactive';
             END IF;
             IF (SELECT customer_enabled OR show_item_prices FROM self_build_configuration WHERE id='primary') THEN
-              RAISE EXCEPTION 'Staging/public price gates must remain closed';
+              RAISE EXCEPTION 'Staging customer and internal price visibility gates must remain closed';
             END IF;
             IF EXISTS (SELECT 1 FROM self_build_catalog_product_rules) THEN
-              RAISE EXCEPTION 'Never invent jewellery SKU rules';
+              RAISE EXCEPTION 'Do not auto-populate unverifiable catalogue SKUs';
             END IF;
             BEGIN
               UPDATE self_build_configuration SET customer_enabled=true WHERE id='primary';
-              RAISE EXCEPTION 'UNSAFE: enabled customer checkout without integration';
+              RAISE EXCEPTION 'UNSAFE: customer feature enabled without inventory integration';
             EXCEPTION WHEN check_violation THEN NULL;
             END;
             BEGIN
               UPDATE self_build_configuration SET show_item_prices=true WHERE id='primary';
-              RAISE EXCEPTION 'UNSAFE: visible private product budgets';
+              RAISE EXCEPTION 'UNSAFE: private internal budget exposed to customers';
             EXCEPTION WHEN check_violation THEN NULL;
             END;
           END $$;
-          -- Validate parent-child dynamic category edits and protected references.
-          INSERT INTO self_build_categories
-            (id,parent_id,label,selection_kind,charge_mode,display_order)
-            VALUES ('necklaces','jewellery','Necklaces','catalog','per_unit',15);
-          INSERT INTO self_build_catalog_product_rules (category_id,product_id,unit_budget_paise)
-            VALUES ('necklaces','verified-test-sku',15000);
+          -- The rate itself is dynamic: admin can update it without a new deploy.
+          UPDATE self_build_categories SET unit_budget_paise=7500 WHERE id='premium-necklaces';
+          UPDATE self_build_options SET unit_budget_paise=70000 WHERE id='chocolate-large';
           DO $$
           BEGIN
-            IF NOT EXISTS (SELECT 1 FROM self_build_catalog_product_rules
-              WHERE category_id='necklaces' AND product_id='verified-test-sku'
-                AND unit_budget_paise=15000) THEN
-              RAISE EXCEPTION 'SKU overrides not persisted';
+            IF (SELECT unit_budget_paise FROM self_build_categories WHERE id='premium-necklaces')<>7500
+              OR (SELECT unit_budget_paise FROM self_build_options WHERE id='chocolate-large')<>70000 THEN
+              RAISE EXCEPTION 'Pricing values must remain admin-editable in the database';
             END IF;
           END $$;
+          -- Test multi-category schema and the exact SKU override write mechanism.
+          INSERT INTO self_build_catalog_product_rules (category_id,product_id,unit_budget_paise)
+            VALUES ('viral-bangles','verified-test-sku',15000);
           DELETE FROM self_build_catalog_product_rules;
           DELETE FROM self_build_options;
           DELETE FROM self_build_categories;
           SQL
-          echo 'Self-build Postgres 16 migration, seed, privacy gate, category tree and SKU override tests passed.'
+          echo 'Postgres 16: historical 047 + updated 048, eight nested categories, photo per-unit, dynamic sizes, privacy and writable rules all passed.'
