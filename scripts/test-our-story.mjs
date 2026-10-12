@@ -6,15 +6,13 @@ const [page, styles, globals, plan, footer, routes, sitemap] = await Promise.all
   read("app/about/page.tsx"),
   read("styles/our-story.css"),
   read("app/globals.css"),
-  read("docs/WEBSITE_FINAL_IMPROVEMENT_PLAN.md"),
+  read("docs/OUR_STORY_APPROVED_SOURCE_COPY.md"),
   read("features/shell/SiteFooter.tsx"),
   read("config/routes.ts"),
   read("app/sitemap.ts")
 ])
-const storyStart = plan.indexOf("## 4. About Us / Our Story")
-const storyEnd = plan.indexOf("## 5. How to Style / How to Wear", storyStart)
-assert(storyStart >= 0 && storyEnd > storyStart, "Follow the original Section 4 plan")
-const section4 = plan.slice(storyStart, storyEnd)
+assert(plan.includes("## Original Hindi copy"), "Approved original story source must be preserved separately from project planning")
+const section4 = plan
 const sourceHindi = [
   "हमने Celebration की शुरुआत एक साधारण विचार से की थी",
   "Celebration Sikar, Rajasthan से शुरू हुआ।",
@@ -22,7 +20,7 @@ const sourceHindi = [
   "हर ऑर्डर के पीछे एक असली व्यक्ति होता है जिसे हम खुश करना चाहते हैं। यही हमारी असली प्रेरणा है।"
 ]
 for (const value of sourceHindi) {
-  assert(section4.includes(value), `Original owner-provided copy missing in plan: ${value}`)
+  assert(section4.includes(value), `Original owner-provided story source missing: ${value}`)
 }
 const translated = [
   "Mharo Surprise, Thari Smile",
@@ -58,4 +56,4 @@ assert(globals.includes('our-story.css'), "Story stylesheet missing from global 
 assert(footer.includes('href={routes.about}'), "Story must be discoverable from site footer")
 assert(routes.includes('about: "/about"'), "About route must be centralized")
 assert(sitemap.includes('`${base}/about`'), "About page must be in site sitemap")
-console.log("Our Story checks passed: English narrative, preserved original Hindi in plan, brand line, cards, team note, links, metadata and mobile CSS.")
+console.log("Our Story checks passed: English narrative, preserved original Hindi source, brand line, cards, team note, links, metadata and mobile CSS.")
