@@ -75,14 +75,14 @@ try{
    const overflow=await page.evaluate(()=>{
     const rootWidth=document.documentElement.scrollWidth
     const viewport=innerWidth
-    const offender=[...document.querySelectorAll("body *")].flatMap(el=>{
+    const offender=[...document.querySelectorAll("body *:not(.trustStrip):not(.trustStrip *)")].flatMap(el=>{
       const rect=el.getBoundingClientRect()
-      if(!rect.width || !rect.height || (rect.right<=viewport+2 && rect.left>=-2))return []
+      if(!rect.width || !rect.height || (rect.right+scrollX<=viewport+2 && rect.left+scrollX>=-2))return []
       const style=getComputedStyle(el)
       if(style.position==="fixed" || style.visibility==="hidden")return []
       return [{tag:el.tagName,classes:String(el.className||"").slice(0,120),left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width)}]
     }).slice(0,18)
-    return {rootWidth,viewport,offender}
+    return {rootWidth,viewport,scrollX,offender}
    })
    console.log("MOBILE_OVERFLOW_DIAGNOSTIC "+width+" "+JSON.stringify(overflow))
    verify(width+" no horizontal overflow",overflow.rootWidth<=overflow.viewport+3,JSON.stringify(overflow))
