@@ -1,0 +1,592 @@
+/* Celebration order tracking: presentation-only finish of the post-payment
+ * journey. All real order/courier statuses, approval, complaint, lookup token
+ * privacy, and shipping actions remain owned by existing components.
+ * IMPORTANT: scoped ONLY to /track page, not My Account's compact status. */
+.celebrationTrackingPage{
+  background:linear-gradient(180deg,#fffcf8 0%,#faf3ee 56%,#fffaf6 100%);
+}
+.celebrationTrackingPage>section{
+  padding-block:clamp(24px,3.5vw,48px) clamp(40px,5vw,65px);
+}
+.celebrationTrackingPage .trackingWrap{
+  box-sizing:border-box;
+  width:100%;
+  max-width:1030px;
+  min-width:0;
+}
+.celebrationTrackingPage .trackingWrap>.kicker{
+  color:#996c74;
+  font-size:10px;
+  font-weight:750;
+  letter-spacing:.13em;
+  line-height:1.4;
+}
+.celebrationTrackingPage .trackingState,
+.celebrationTrackingPage .trackingWrap>.errorBox{
+  margin-top:16px;
+  padding:16px;
+  border-radius:12px;
+  font-size:12px;
+  line-height:1.6;
+}
+.celebrationTrackingPage .trackingHero{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  box-sizing:border-box;
+  width:100%;
+  margin:12px 0 0;
+  padding:clamp(20px,3vw,32px);
+  border:1px solid #e8d4ce;
+  border-radius:16px;
+  background:linear-gradient(125deg,#fffdfa 0%,#fff5f0 62%,#f8e9e4 100%);
+  box-shadow:0 5px 17px rgba(94,48,53,.045);
+  overflow:hidden;
+}
+.celebrationTrackingPage .trackingHeroMain{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:0;
+  flex:1 1 auto;
+  min-width:0;
+}
+.celebrationTrackingPage .trackingHeroMain>small{
+  color:#a47479;
+  font-size:10px;
+  font-weight:750;
+  letter-spacing:.12em;
+  line-height:1.4;
+}
+.celebrationTrackingPage .trackingHero h1{
+  max-width:22ch;
+  margin:8px 0 0;
+  font:500 clamp(29px,3.6vw,42px)/1.13 var(--font-shopping-display),Georgia,serif;
+  color:#67364a;
+  letter-spacing:-.03em;
+  overflow-wrap:break-word;
+  text-wrap:balance;
+}
+.celebrationTrackingPage .trackingHero p{
+  max-width:55ch;
+  margin:8px 0 0;
+  color:#806663;
+  font-size:12px;
+  line-height:1.55;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.celebrationTrackingPage .trackingHeroPrice{
+  display:block;
+  flex:0 0 auto;
+  margin-top:18px;
+  font:700 clamp(24px,2.8vw,32px)/1.13 var(--font-shopping-sans),Arial,sans-serif;
+  letter-spacing:-.03em;
+  color:#7b3d52;
+  white-space:nowrap;
+}
+.celebrationTrackingPage .trackingHeroStatus{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:100%;
+  min-height:31px;
+  margin-top:16px;
+  padding:6px 11px;
+  border:1px solid #e5c8ca;
+  border-radius:999px;
+  background:#f9e9e8;
+  color:#75384b;
+  font-size:10.5px;
+  font-weight:750;
+  line-height:1.45;
+  text-align:center;
+  white-space:normal;
+}
+.celebrationTrackingPage .trackingHeroStatus--delivered,
+.celebrationTrackingPage .trackingHeroStatus--payment_verified{
+  border-color:#c7ddc8;
+  color:#356746;
+  background:#f0f7f0;
+}
+.celebrationTrackingPage .trackingHeroStatus--cancelled,
+.celebrationTrackingPage .trackingHeroStatus--issue_reported{
+  border-color:#e5c5bb;
+  color:#8f4f3b;
+  background:#fff1e9;
+}
+.celebrationTrackingPage .trackingMeta{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  box-sizing:border-box;
+  width:100%;
+  margin-top:13px;
+}
+.celebrationTrackingPage .trackingMeta>div{
+  box-sizing:border-box;
+  min-width:0;
+  min-height:81px;
+  margin:0;
+  padding:15px;
+  border:1px solid #e9d9d3;
+  border-radius:11px;
+  background:#fffbf8;
+  box-shadow:none;
+}
+.celebrationTrackingPage .trackingMeta span{
+  display:block;
+  color:#986e75;
+  font-size:9px;
+  font-weight:750;
+  letter-spacing:.09em;
+  line-height:1.4;
+}
+.celebrationTrackingPage .trackingMeta b{
+  display:block;
+  min-width:0;
+  margin-top:7px;
+  color:#5a4147;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.45;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.celebrationTrackingPage .trackingTimelineDesktop{
+  margin:19px 0 15px;
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timeline{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+  margin:0;
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timeline:has(.timelineItem:nth-child(4):last-child){
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timeline:has(.cancelledItem){
+  grid-template-columns:minmax(0,1fr);
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timelineItem{
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  min-height:59px;
+  margin:0;
+  padding:10px 8px;
+  border:1px solid #e8d9d1;
+  border-radius:10px;
+  color:#8b7771;
+  background:#fffbf7;
+  box-shadow:none;
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timelineItem.done{
+  border-color:#d4b7ba;
+  color:#754054;
+  background:#faf0ed;
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timelineItem>span{
+  display:grid;
+  place-items:center;
+  width:25px;
+  height:25px;
+  flex:0 0 25px;
+  border-radius:50%;
+  background:#f2e6e1;
+  font-size:11px;
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timelineItem.done>span{
+  color:#fff;
+  background:#834459;
+}
+.celebrationTrackingPage .trackingTimelineDesktop .timelineItem b{
+  font-size:10px;
+  font-weight:700;
+  line-height:1.35;
+  white-space:normal;
+}
+.celebrationTrackingPage .trackingTimelineMobile{
+  margin:15px 0;
+  overflow:hidden;
+  border:1px solid #e6d2cc;
+  border-radius:11px;
+  background:#fffcf9;
+  box-shadow:none;
+}
+.celebrationTrackingPage .trackingTimelineMobile>summary{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  box-sizing:border-box;
+  min-height:49px;
+  padding:12px 14px;
+  color:#694352;
+  cursor:pointer;
+}
+.celebrationTrackingPage .trackingTimelineMobile>summary span{
+  color:#947672;
+  font-size:10px;
+  font-weight:650;
+}
+.celebrationTrackingPage .trackingTimelineMobile>summary b{
+  color:#783d50;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.45;
+  overflow-wrap:break-word;
+}
+.celebrationTrackingPage .trackingTimelineMobile>summary:focus-visible,
+.celebrationTrackingPage :is(button,a,input,select,textarea):focus-visible{
+  outline:2px solid #94556a;
+  outline-offset:3px;
+}
+.celebrationTrackingPage .trackingTimelineMobile .timeline{
+  margin:0;
+  padding:10px;
+  border-top:1px solid #efdfd9;
+  background:#fffaf7;
+}
+.celebrationTrackingPage .trackingTimelineMobile .timelineItem{
+  min-height:48px;
+  background:#fffdfb;
+  border-radius:9px;
+  padding:11px;
+}
+.celebrationTrackingPage .trackingTimelineMobile .timelineItem b{
+  font-size:11px;
+  line-height:1.4;
+}
+.celebrationTrackingPage .trackingLiveRefresh{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:13px;
+  margin:18px 0 0;
+  color:#8b726e;
+  font-size:11px;
+  line-height:1.5;
+}
+.celebrationTrackingPage .trackingLiveRefresh button,
+.celebrationTrackingPage .trackingCards .adminActions button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:9px 13px;
+  margin:0;
+  flex:0 0 auto;
+  border-radius:9px;
+  font-size:11px;
+  font-weight:700;
+  white-space:normal;
+}
+.celebrationTrackingPage .courierJourney{
+  max-width:100%;
+  box-sizing:border-box;
+  margin:17px 0;
+  padding:clamp(15px,2.1vw,23px);
+  border:1px solid #e8d6cf;
+  border-radius:13px;
+  background:#fffbf8;
+  box-shadow:none;
+  overflow-wrap:break-word;
+}
+.celebrationTrackingPage .courierJourneyHead h3{
+  color:#69404c;
+}
+.celebrationTrackingPage .courierJourneyHead p{
+  color:#79645f;
+}
+.celebrationTrackingPage .courierJourney .courierMilestones{
+  max-width:100%;
+}
+.celebrationTrackingPage .courierJourney .courierExternal{
+  color:#783e53;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.celebrationTrackingPage .approvalCard,
+.celebrationTrackingPage .issueCard,
+.celebrationTrackingPage .trackingCards article{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  margin:14px 0;
+  padding:clamp(16px,2.1vw,22px);
+  border:1px solid #ead8d1;
+  border-radius:13px;
+  background:#fffdfb;
+  box-shadow:none;
+}
+.celebrationTrackingPage .approvalCardAction{
+  border-color:#d8b4bd;
+  background:#fffaf8;
+}
+.celebrationTrackingPage .approvalCardApproved{
+  border-color:#cce0cf;
+  background:#f3f9f3;
+}
+.celebrationTrackingPage .approvalCardWaiting{
+  background:#fffaf6;
+}
+.celebrationTrackingPage .approvalCard h2,
+.celebrationTrackingPage .trackingCards h2,
+.celebrationTrackingPage .issueCard h2{
+  color:#6d3b4e;
+  font:500 clamp(21px,2.2vw,27px)/1.2 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.016em;
+  overflow-wrap:break-word;
+}
+.celebrationTrackingPage .approvalCard p,
+.celebrationTrackingPage .trackingCards p,
+.celebrationTrackingPage .issueCard p{
+  color:#7e6861;
+  font-size:12px;
+  line-height:1.6;
+  overflow-wrap:break-word;
+}
+.celebrationTrackingPage .approvalConsent{
+  padding:13px;
+  border-radius:10px;
+}
+.celebrationTrackingPage .approvalConsent span{
+  min-width:0;
+  color:#584847;
+  font-size:12px;
+  line-height:1.6;
+}
+.celebrationTrackingPage .approvalCard .approvalButton{
+  min-height:49px;
+  border-radius:9px;
+  font-size:13px;
+}
+.celebrationTrackingPage .packingVideo{
+  display:block;
+  width:100%;
+  max-width:100%;
+  margin-block:13px 10px;
+  border-radius:9px;
+}
+.celebrationTrackingPage .trackingCards .trackingEta{
+  margin-block:10px;
+}
+.celebrationTrackingPage .issueCard :is(input,select,textarea){
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  min-height:47px;
+  padding:11px 12px;
+  border:1px solid #deccc6;
+  border-radius:9px;
+  background:#fff;
+  color:#4f4042;
+  font:400 16px/1.45 var(--font-shopping-sans),Arial,sans-serif;
+}
+.celebrationTrackingPage .issueCard textarea{
+  min-height:110px;
+}
+.celebrationTrackingPage .issueCard button[type=submit]{
+  min-height:47px;
+  border-radius:9px;
+  font-size:12px;
+}
+.celebrationTrackingPage .trackingLookup{
+  box-sizing:border-box;
+  max-width:100%;
+  margin:15px 0 0;
+  padding:clamp(17px,3vw,30px);
+  border:1px solid #e6d1cb;
+  border-radius:15px;
+  background:linear-gradient(140deg,#fffdfb,#fff7f3);
+  box-shadow:0 5px 16px rgba(88,45,53,.05);
+}
+.celebrationTrackingPage .trackingLookupHead h1{
+  color:#673549;
+  font:500 clamp(29px,3.6vw,41px)/1.15 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.026em;
+  text-wrap:balance;
+}
+.celebrationTrackingPage .trackingLookupHead p{
+  max-width:55ch;
+  margin-top:10px;
+  color:#816a65;
+  font-size:12px;
+  line-height:1.6;
+}
+.celebrationTrackingPage .trackingLookupGrid{
+  display:grid;
+  grid-template-columns:minmax(0,1.4fr) minmax(0,.6fr);
+  gap:13px;
+  margin-top:22px;
+}
+.celebrationTrackingPage .trackingLookupGrid .field{
+  display:block;
+  min-width:0;
+  margin:0;
+}
+.celebrationTrackingPage .trackingLookupGrid .field>span{
+  display:block;
+  min-height:18px;
+  margin-bottom:8px;
+  color:#62464e;
+  font-size:11px;
+  font-weight:650;
+  line-height:1.5;
+}
+.celebrationTrackingPage .trackingLookupGrid .field input{
+  box-sizing:border-box;
+  display:block;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  min-height:49px;
+  height:auto;
+  padding:12px 13px;
+  border:1px solid #dec8c4;
+  border-radius:9px;
+  background:#fff;
+  color:#563d44;
+  font:400 16px/1.4 var(--font-shopping-sans),Arial,sans-serif;
+}
+.celebrationTrackingPage .trackingLookupGrid .field input::placeholder{
+  color:#aa918c;
+}
+.celebrationTrackingPage .trackingLookup button[type=submit]{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  width:100%;
+  min-height:49px;
+  padding:11px 15px;
+  margin-top:18px;
+  border-radius:9px;
+  font-size:13px;
+  font-weight:750;
+  line-height:1.4;
+  white-space:normal;
+}
+.celebrationTrackingPage .trackingLookupPrivacy{
+  margin:12px 0 0;
+  color:#957c78;
+  font-size:10px;
+  line-height:1.55;
+}
+.celebrationTrackingPage .individualOrderLines{
+  box-sizing:border-box;
+  max-width:100%;
+  min-width:0;
+  padding:12px 17px;
+  background:#fffaf7;
+  border:1px solid #ebd9d3;
+  border-radius:13px;
+}
+.celebrationTrackingPage .individualOrderLines li{
+  gap:13px;
+}
+.celebrationTrackingPage .individualOrderLines :is(b,strong,span){
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+@media(min-width:980px){
+  .celebrationTrackingPage .trackingMeta{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:979px){
+  .celebrationTrackingPage .trackingMeta{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:639px){
+  .celebrationTrackingPage>section{
+    padding-block:20px 42px;
+  }
+  .celebrationTrackingPage .trackingHero{
+    flex-direction:column;
+    gap:16px;
+    padding:19px 16px;
+    border-radius:13px;
+  }
+  .celebrationTrackingPage .trackingHero h1{
+    font-size:clamp(27px,7.3vw,35px);
+  }
+  .celebrationTrackingPage .trackingHeroPrice{
+    margin:0;
+    font-size:25px;
+  }
+  .celebrationTrackingPage .trackingHeroStatus{
+    margin-top:12px;
+  }
+  .celebrationTrackingPage .trackingMeta{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+  }
+  .celebrationTrackingPage .trackingMeta>div{
+    min-height:79px;
+    padding:12px 11px;
+  }
+  .celebrationTrackingPage .trackingMeta b{
+    font-size:11px;
+    line-height:1.45;
+  }
+  .celebrationTrackingPage .trackingLiveRefresh{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+    justify-content:space-between;
+  }
+  .celebrationTrackingPage .trackingLiveRefresh button{
+    flex:0 0 auto;
+  }
+  .celebrationTrackingPage .courierJourney{
+    padding:15px 12px;
+  }
+  .celebrationTrackingPage .courierJourney .courierMilestones li{
+    overflow-wrap:normal;
+    font-size:9px;
+    line-height:1.3;
+  }
+  .celebrationTrackingPage .trackingCards article{
+    padding:16px 14px;
+  }
+  .celebrationTrackingPage .trackingLookup{
+    padding:19px 15px;
+    border-radius:12px;
+  }
+  .celebrationTrackingPage .trackingLookupGrid{
+    grid-template-columns:minmax(0,1fr);
+    gap:12px;
+    margin-top:18px;
+  }
+  .celebrationTrackingPage .trackingLookup button[type=submit]{
+    margin-top:15px;
+  }
+  .celebrationTrackingPage .approvalConsent{
+    gap:10px;
+  }
+  .celebrationTrackingPage .issueCard{
+    padding:16px 13px;
+  }
+}
+@media(max-width:360px){
+  .celebrationTrackingPage .trackingMeta{
+    grid-template-columns:minmax(0,1fr);
+    gap:8px;
+  }
+  .celebrationTrackingPage .trackingMeta>div{
+    min-height:0;
+    padding:12px;
+  }
+  .celebrationTrackingPage .courierJourney{
+    padding:13px 10px;
+  }
+  .celebrationTrackingPage .trackingLiveRefresh button{
+    width:100%;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationTrackingPage :is(button,a,input,select,textarea,summary){
+    transition:none;
+    scroll-behavior:auto;
+  }
+}
