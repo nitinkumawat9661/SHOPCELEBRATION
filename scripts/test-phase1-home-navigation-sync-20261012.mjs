@@ -1,13 +1,13 @@
 import assert from "node:assert/strict"
 import {readFile} from "node:fs/promises"
 const read=f=>readFile(new URL("../"+f,import.meta.url),"utf8")
-const [tail,state,home,budget,occasion,workflow,packageJson,roadmap]=await Promise.all([
+const [tail,state,home,budget,occasion,navAudit,packageJson,roadmap]=await Promise.all([
   "features/home/StorefrontTail.tsx",
   "features/builder/useHamperBuilder.ts",
   "features/home/StorefrontDiscovery.tsx",
   "features/catalog/BudgetSection.tsx",
   "features/catalog/OccasionRail.tsx",
-  ".github/workflows/phase1-home-navigation-qa.yml",
+  "scripts/audit-phase1-home-navigation-20261012.mjs",
   "package.json",
   "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md"
 ].map(read))
@@ -33,9 +33,10 @@ assert(home.includes("setOccasion(value)") &&
 assert(budget.includes("onClick={() => onSelect(item.id)}") &&
   occasion.includes("onClick={() => onChange(occasion)}"),
   "Real accessible budget and occasion buttons remain unchanged")
-assert(workflow.includes('workflows: ["Deploy Celebration Production"]') &&
-  workflow.includes('github.event.workflow_run.conclusion'),
-  "Live integration browser checks must verify actual production after new code is deployed")
+assert(navAudit.includes('BASE_URL||"https://shopcelebration.in/"') &&
+  navAudit.includes("occasion selected in builder") &&
+  navAudit.includes('await ctx.route("**/api/**"'),
+  "Keep safe post-deployment navigation and occasion regression checks inside the packaged source")
 assert(roadmap.includes("LAST STEP OF PHASE 1") &&
   roadmap.includes("two product cards side by side on phones"),
   "Do not change deferred seven category images or original featured layout")
