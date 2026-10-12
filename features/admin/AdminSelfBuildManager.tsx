@@ -51,7 +51,7 @@ export function AdminSelfBuildManager() {
       const response = await fetch("/api/admin/self-build", { cache: "no-store", credentials: "same-origin" })
       const data: unknown = await response.json()
       if (!response.ok || !data || typeof data !== "object" || !("ok" in data) || data.ok !== true) throw Error("Could not load current settings. Refresh and try again.")
-      const received = data as SelfBuildAdminState
+      const received = data as unknown as SelfBuildAdminState
       const next = { version: received.version, config: received.config, categories: received.categories, options: received.options }
       setState(next); setBaseline(JSON.stringify(next));setEditingAmounts({})
     } catch (error) {
