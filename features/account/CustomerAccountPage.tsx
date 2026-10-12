@@ -209,6 +209,7 @@ export function CustomerAccountPage() {
         </div>
         <div className="customerDashActions">
           <Link className="primary" href={`${routes.home}#budgets`}>Create another hamper</Link>
+          <Link className="secondary" href="/wishlist">♡ Saved pieces</Link>
           <button className="secondary" type="button" disabled={accountState.busy} onClick={logout}>{accountState.busy ? "Logging out…" : "Logout"}</button>
         </div>
       </section>
