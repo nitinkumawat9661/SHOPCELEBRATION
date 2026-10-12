@@ -24,6 +24,8 @@ assert(!ring.includes("scroll-snap") && !ring.includes("overflow-x:auto") &&
 assert(ring.includes("catalogCard--featuredPortraitRing") && grid.includes("catalogCard--featuredPortraitRing") &&
   grid.includes("object-fit:contain"),
   "Keep exact SKU image formatting, including ring portrait and all other full product photos")
+assert(grid.includes(".celebrationFeatured .catalogGuarantee") && grid.includes("white-space:normal") && grid.includes("text-overflow:clip"),
+  "Never truncate genuine guarantee wording in the two-across mobile cards")
 assert(grid.includes("line-clamp:unset") && grid.includes("max-height:none") && grid.includes("overflow:visible"),
   "Do not clip the customer's exact featured jewellery SKU titles on 320px phones")
 assert(grid.includes("min-height:44px") && grid.includes("max-width:100%") &&
