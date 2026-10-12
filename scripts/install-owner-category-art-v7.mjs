@@ -13,3 +13,22 @@ const entries=[
  ["__all__","all-jewellery","47bb1f95-0b05-4e61-8499-e545e6eb4c6d"],
  ["__hamper__","custom-hampers","6b6a8767-e3ef-4984-a4de-beb39552930b"]
 ]
+const root="https://d2ol7oe51mr4n9.cloudfront.net/user_3KQjOaQLt91OVbqaTV6Tb6NgxEq/"
+const path=slug=>prefix+slug+".webp"
+const imageUrl=slug=>"/api/catalog/image?key="+encodeURIComponent(path(slug))
+for(const key of ["DATABASE_URL","R2_ACCOUNT_ID","R2_ACCESS_KEY_ID","R2_SECRET_ACCESS_KEY","R2_BUCKET"])
+ if(!process.env[key])throw Error("Missing configuration: "+key)
+const r2=new S3Client({region:"auto",endpoint:"https://"+process.env.R2_ACCOUNT_ID+".r2.cloudflarestorage.com",
+ credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}})
+const bucket=process.env.R2_BUCKET
+const db=new pg.Client({connectionString:process.env.DATABASE_URL,
+ ssl:process.env.DATABASE_SSL_MODE==="disable"?false:{rejectUnauthorized:true}})
+async function valid(slug){
+ try{
+  const h=await r2.send(new HeadObjectCommand({Bucket:bucket,Key:path(slug)}))
+  return h.ContentType==="image/webp"&&Number(h.ContentLength)>12000
+ }catch(e){
+  if(e?.$metadata?.httpStatusCode===404||["NotFound","NoSuchKey"].includes(e?.name))return false
+  throw e
+ }
+}
