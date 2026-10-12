@@ -16,6 +16,8 @@ export type SelfBuildCategory = {
   unitBudgetPaise: number | null
   displayOrder: number
   active: boolean
+  availabilityConfirmed: boolean
+  availableUnits: number | null
 }
 export type SelfBuildOption = {
   id: string
@@ -24,6 +26,8 @@ export type SelfBuildOption = {
   unitBudgetPaise: number
   displayOrder: number
   active: boolean
+  availabilityConfirmed: boolean
+  availableUnits: number | null
 }
 export type SelfBuildConfiguration = {
   customerEnabled: false
@@ -54,6 +58,8 @@ type CategoryRow = {
   unit_budget_paise: number | null
   display_order: number
   active: boolean
+  availability_confirmed: boolean
+  available_units: number | null
 }
 type OptionRow = {
   id: string
@@ -62,6 +68,8 @@ type OptionRow = {
   unit_budget_paise: number
   display_order: number
   active: boolean
+  availability_confirmed: boolean
+  available_units: number | null
 }
 
 export class SelfBuildAdminError extends Error {
@@ -101,6 +109,12 @@ function boolean(value: unknown, code: string): boolean {
 function sortOrder(value: unknown): number {
   return integer(value, 1_000_000, "INVALID_DISPLAY_ORDER", -1_000_000)
 }
+function capacity(v: Record<string, unknown>) {
+  const confirmed = boolean(v.availabilityConfirmed, "INVALID_AVAILABILITY_CONFIRMATION")
+  const count = confirmed ? integer(v.availableUnits, 1_000_000, "INVALID_AVAILABLE_UNITS") : null
+  if (!confirmed && v.availableUnits != null) invalid("UNCONFIRMED_CAPACITY_MUST_BE_EMPTY")
+  return { availabilityConfirmed: confirmed, availableUnits: count }
+}
 function unique(ids: string[], code: string) {
   if (new Set(ids).size !== ids.length) invalid(code)
 }
@@ -139,7 +153,8 @@ function normalizeCategory(value: unknown): SelfBuildCategory {
     chargeMode: mode as ChargeMode,
     unitBudgetPaise: unit,
     displayOrder: sortOrder(v.displayOrder),
-    active: boolean(v.active, "INVALID_CATEGORY_ACTIVE")
+    active: boolean(v.active, "INVALID_CATEGORY_ACTIVE"),
+    ...capacity(v)
   }
 }
 function normalizeOption(value: unknown): SelfBuildOption {
@@ -150,7 +165,8 @@ function normalizeOption(value: unknown): SelfBuildOption {
     label: cleanText(v.label, 100, "INVALID_OPTION_LABEL"),
     unitBudgetPaise: integer(v.unitBudgetPaise, 2_147_483_647, "INVALID_OPTION_BUDGET"),
     displayOrder: sortOrder(v.displayOrder),
-    active: boolean(v.active, "INVALID_OPTION_ACTIVE")
+    active: boolean(v.active, "INVALID_OPTION_ACTIVE"),
+    ...capacity(v)
   }
 }
 function parentsFirst(categories: SelfBuildCategory[]) {
@@ -209,11 +225,13 @@ async function readState(client: PoolClient): Promise<SelfBuildAdminState> {
     categories: categories.rows.map(c => ({
       id: c.id, parentId: c.parent_id, label: c.label,
       selectionKind: c.selection_kind, chargeMode: c.charge_mode,
-      unitBudgetPaise: c.unit_budget_paise, displayOrder: c.display_order, active: c.active
+      unitBudgetPaise: c.unit_budget_paise, displayOrder: c.display_order, active: c.active,
+      availabilityConfirmed: c.availability_confirmed, availableUnits: c.available_units
     })),
     options: options.rows.map(o => ({
       id: o.id, categoryId: o.category_id, label: o.label,
-      unitBudgetPaise: o.unit_budget_paise, displayOrder: o.display_order, active: o.active
+      unitBudgetPaise: o.unit_budget_paise, displayOrder: o.display_order, active: o.active,
+      availabilityConfirmed: o.availability_confirmed, availableUnits: o.available_units
     }))
   }
 }
@@ -238,17 +256,17 @@ export async function saveSelfBuildAdminState(value: unknown) {
     for (const c of data.categories) {
       await client.query(
         `INSERT INTO self_build_categories
-          (id,parent_id,label,selection_kind,charge_mode,unit_budget_paise,display_order,active)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [c.id,c.parentId,c.label,c.selectionKind,c.chargeMode,c.unitBudgetPaise,c.displayOrder,c.active]
+          (id,parent_id,label,selection_kind,charge_mode,unit_budget_paise,display_order,active,availability_confirmed,available_units)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [c.id,c.parentId,c.label,c.selectionKind,c.chargeMode,c.unitBudgetPaise,c.displayOrder,c.active,c.availabilityConfirmed,c.availableUnits]
       )
     }
     for (const o of data.options) {
       await client.query(
         `INSERT INTO self_build_options
-          (id,category_id,label,unit_budget_paise,display_order,active)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [o.id,o.categoryId,o.label,o.unitBudgetPaise,o.displayOrder,o.active]
+          (id,category_id,label,unit_budget_paise,display_order,active,availability_confirmed,available_units)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [o.id,o.categoryId,o.label,o.unitBudgetPaise,o.displayOrder,o.active,o.availabilityConfirmed,o.availableUnits]
       )
     }
     await client.query(
