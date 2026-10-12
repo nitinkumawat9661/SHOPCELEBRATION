@@ -7,7 +7,8 @@ import { CategoryEditorialPhoto } from "./CategoryEditorialPhoto"
 
 export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogConfig; categoryMedia?: Record<string, string> }) {
   const products = visibleProducts(catalog)
-  const categories = categoriesForCatalog(catalog).filter((item) => item.id !== catalog.settings.allCategory.id)
+  const existingCategories = categoriesForCatalog(catalog).filter((item) => item.id !== catalog.settings.allCategory.id)
+  const categories = existingCategories.some((item) => item.id === "Earrings") ? existingCategories : [...existingCategories, { id: "Earrings", label: "Earrings" }]
   // Feature a real purchasable item from several collections instead of four
   // near-identical items from the first necklace category. Never fake badges.
   const featuredOrder = [

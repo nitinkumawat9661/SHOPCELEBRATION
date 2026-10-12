@@ -109,7 +109,9 @@ try {
   if(previous.size!==7)throw new Error("All 7 existing category rows must be present")
 
   const ready=items.every(item=>previous.get(item.id)===urlFor(item))
-  if(ready) {
+  const newer=items.every(item=>decodeURIComponent(previous.get(item.id)||"").includes("category-v7/"))
+  if(newer){ console.log("Preserving final owner v7 category media") }
+  else if(ready) {
     for(const item of items)if(!await objectIsValid(keyFor(item)))
       throw new Error(`Published v6 category media missing in R2: ${item.slug}`)
     console.log("Seven owner-approved category media assets already live (7/7)")

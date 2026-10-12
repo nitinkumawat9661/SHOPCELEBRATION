@@ -83,9 +83,9 @@ try{
      await page.locator(".celebrationHeaderActions a").count()>=2,
      "Home logo, account and cart entries")
    const categoryItems=await page.locator(".celebrationCategoryRail .celebrationCategory").evaluateAll(els=>els.map(e=>({label:e.querySelector("b")?.textContent?.trim(),href:e.getAttribute("href")})))
-   verify(id+" seven existing category links",categoryItems.length===7,"7",JSON.stringify(categoryItems))
+   verify(id+" eight approved category links",categoryItems.length===8,"8",JSON.stringify(categoryItems))
    verify(id+" all category hrefs internal",categoryItems.every(e=>e.href?.startsWith("/jewelry?view=all")||e.href==="#budgets"),"five category routes + all + hamper")
-   verify(id+" no changed round image names",await page.locator(".celebrationCategoryEditorialPhoto img").count()===7,"7 currently installed category images")
+   verify(id+" no changed round image names",await page.locator(".celebrationCategoryEditorialPhoto img").count()===8,"8 final owner category images")
    // The storefront tail (including footer) intentionally lazy-loads on
    // scroll. Trigger it before verifying footer routes.
    await page.evaluate(()=>window.scrollTo(0,500))

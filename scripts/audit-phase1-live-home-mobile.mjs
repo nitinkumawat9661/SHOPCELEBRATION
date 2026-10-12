@@ -102,8 +102,8 @@ function check(width,d){
   if(d.docWidth>width+3)severe(width,`document horizontally overflows: ${d.docWidth}px vs ${width}px`)
   if(!d.hero || !d.featured || !d.categories || !d.budgets || !d.occasions)
     severe(width,"Critical homepage sections missing from live document")
-  if(d.categoryCount!==7)severe(width,`Expected 7 actual category navigation cards, got ${d.categoryCount}`)
-  if(d.categoryPhotoCount!==7)warn(width,`Expected 7 current category photos, found ${d.categoryPhotoCount}; inspect fallback/DB`)
+  if(d.categoryCount!==8)severe(width,`Expected 8 actual category navigation cards, got ${d.categoryCount}`)
+  if(d.categoryPhotoCount!==8)warn(width,`Expected 8 current category photos, found ${d.categoryPhotoCount}; inspect fallback/DB`)
   if(d.featuredCount!==4)severe(width,`Expected four real featured SKU cards, got ${d.featuredCount}`)
   if(d.featuredDisplay!=="grid")severe(width,"Featured cards use "+d.featuredDisplay+" instead of approved 2-column grid")
   if(d.featuredCount>=2){
