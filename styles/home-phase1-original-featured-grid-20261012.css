@@ -162,6 +162,24 @@
   word-break:normal;
   color:#573841;
 }
+/* Preserve the *actual* product's warranty text, when present. On 320px
+   phones the older catalog rule forced a single line with ellipsis, which
+   hid the rest of an important commercial claim in the approved 2-col grid. */
+.celebrationHome .celebrationFeatured .catalogGuarantee{
+  display:block;
+  width:100%;
+  max-width:100%;
+  height:auto;
+  min-height:0;
+  max-height:none;
+  margin:6px 0 2px;
+  font-size:clamp(9px,1.8vw,10px);
+  line-height:1.45;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+  overflow-wrap:break-word;
+}
 .celebrationHome .celebrationFeatured .catalogCardPrice{
   display:flex;
   flex-wrap:wrap;
