@@ -154,7 +154,7 @@ jobs:
           -- Category-level capacity can be confirmed by an owner without SKU mapping.
           UPDATE self_build_categories SET availability_confirmed=true, available_units=11 WHERE id='korean-bangles';
           UPDATE self_build_options SET availability_confirmed=true, available_units=3 WHERE id='chocolate-extra-100';
-          DO $
+          DO $capacity_validate$
           BEGIN
             IF (SELECT available_units FROM self_build_categories WHERE id='korean-bangles') <> 11
               OR (SELECT available_units FROM self_build_options WHERE id='chocolate-extra-100') <> 3 THEN
@@ -170,7 +170,7 @@ jobs:
               RAISE EXCEPTION 'Negative capacity must not persist';
             EXCEPTION WHEN check_violation THEN NULL;
             END;
-          END $;
+          END $capacity_validate$;
           -- Category/option quantity amounts remain editable; zero product IDs.
           UPDATE self_build_categories SET unit_budget_paise=15000 WHERE id='viral-bangles';
           DELETE FROM self_build_options;
