@@ -57,13 +57,21 @@
 - No duplicate "self-build" route in the existing curated `HamperBuilder` until the server quote and stock protections are built.
 - No fake "available / in stock" badges, delivery estimates, free gifts or hardcoded prices.
 
+## Phase 3.2/3.3 admin operations delivered in this milestone
+
+The existing `/admin` workspace now has **Catalog → Self-Build Categories** and an Overview quick action. It loads/saves dynamically through the secured category-only admin API; supports nested labels/groups, reordering, create/remove (with confirmation), visibility, per-unit private budget, add/edit/reorder/delete Chocolate/Snack/Perfume sizes, the personalised photo charge mode, multiple-quantity policy, Anything Else? copy, unsaved changes, safe reload and 409 version protection.
+
+Migration **050** adds category- and option-level `availability_confirmed` / `available_units` planning fields. **Every initial value is NULL and unconfirmed** — the application invents no stock. Verified counts are not reservations and do not automatically decrement: actual transactional allocation is still pending. No SKU mapping. No customer switch, order or payment exposed.
+
+Operations manual: `docs/CELEBRATION_SELF_BUILD_ADMIN_OPERATIONS_20261013.md`.
+
 ## 3. Roadmap after the visual review (strict ordered slices)
 
 **Phase 3.1 — Review UI preview & freeze approved copy:** Verify 320–430px phones, larger mobile, 768px tablet, >=1280px desktop and keyboard/screen-reader baseline; owner approves category tiles, typography and step order. Category values come from DB; preview must be read-only.
 
-**Phase 3.2 — Admin category controls:** Build actual admin editor over existing secured GET/PATCH API: change names, order, per-category private costs, variant sizes, active status and prompt (never product/SKU mapping). Log/version conflicts; ensure no accidental price leaks into customer view.
+**Phase 3.2 — Admin category controls (DONE):** Admin editor over existing secured GET/PATCH API: change names, order, per-category private costs, variant sizes, active status and prompt (never product/SKU mapping). Log/version conflicts; ensure no accidental price leaks into customer view.
 
-**Phase 3.3 — Category/option-level fulfilment inventory:** Model available *units per category and size*, verified packing capacity, photo fulfilment limits; staff-controlled availability. Stock semantics must NOT depend on retail product SKU inventory; explicitly agree how a selected category is fulfilled.
+**Phase 3.3 — Category/option-level fulfilment inventory (planning schema/editor DONE; reservation PENDING):** Store verified available *units per category and size*; real physical packing capacity, photo fulfilment limits and transactional stock allocation still require a future backend. Stock semantics must NOT depend on retail product SKU inventory; explicitly agree how a selected category is fulfilled.
 
 **Phase 3.4 — Authoritative server quote:** Server retrieves current versioned DB rules and units to calculate budget consumption privately; enforce positive quantities, supported category, tier budget, capacity, availability, abuse limits. Public UI can only receive an allowance/error and the **advertised full hamper price**, never item price or invisible-cost information.
 
