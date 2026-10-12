@@ -1,0 +1,612 @@
+/* Celebration — quick-start hamper payment screen.
+ * Scope: homepage #builder.quickBuilder PAYMENT only, not cart checkout,
+ * not full builder, not the featured/category cards.
+ * Display-only: all amounts, gateway/payment state, coupon and terms controls
+ * remain owned by PaymentStep and the original server-side checkout logic. */
+.celebrationHome #builder.quickBuilder [data-payment-checkout],
+.celebrationHome #builder.quickBuilder [data-payment-checkout] *{
+  box-sizing:border-box;
+}
+.celebrationHome #builder.quickBuilder .builderCard:has([data-payment-checkout]){
+  width:100%;
+  min-width:0;
+  padding:clamp(16px,2.3vw,28px);
+  border:1px solid #e8d8d2;
+  border-radius:16px;
+  background:#fffdfa;
+  box-shadow:0 4px 18px rgba(90,49,57,.045);
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .builderTitle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  min-width:0;
+  margin:0 0 20px;
+  padding:0 0 17px;
+  border-bottom:1px solid #eee0d9;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .builderTitle>div{
+  flex:1 1 auto;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .builderTitle h3{
+  margin:0;
+  font:500 clamp(26px,3vw,36px)/1.14 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.025em;
+  color:#633345;
+  text-wrap:balance;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .builderTitle p{
+  margin:7px 0 0;
+  max-width:52ch;
+  color:#806861;
+  font-size:12px;
+  line-height:1.57;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentAmount{
+  flex:0 0 auto;
+  margin:0;
+  color:#7b3b50;
+  font:700 clamp(23px,2.7vw,33px)/1.15 var(--font-shopping-sans),Arial,sans-serif;
+  white-space:nowrap;
+  letter-spacing:-.035em;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentGrid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-items:start;
+  gap:16px;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentGrid>*{
+  min-width:0;
+  max-width:100%;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentGrid>div:first-child{
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr);
+  align-items:start!important;
+  gap:12px!important;
+  margin:0 0 14px;
+  padding:16px!important;
+  border:1px solid #e4d2ca!important;
+  border-radius:12px!important;
+  background:#fcf5f0!important;
+  box-shadow:none;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount.ready{
+  border-color:#d8e0d3!important;
+  background:#f6f8f2!important;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount>div{
+  display:flex!important;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount span{
+  color:#916d70;
+  font-size:10px!important;
+  font-weight:750;
+  letter-spacing:.09em;
+  line-height:1.35!important;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount b{
+  color:#623845;
+  font-size:13px!important;
+  font-weight:700;
+  line-height:1.47!important;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount small{
+  color:#7d6963!important;
+  font-size:11px!important;
+  line-height:1.55!important;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount>a,
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount>button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  width:100%;
+  min-height:46px;
+  padding:10px 14px;
+  border-radius:9px;
+  font-size:12px;
+  line-height:1.35;
+  font-weight:700;
+  white-space:normal;
+  text-decoration:none;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCoupon,
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutOfferCard,
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutPriceCheck,
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutPriceNote{
+  box-sizing:border-box;
+  max-width:100%;
+  min-width:0;
+  border-radius:11px;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCoupon{
+  padding:15px;
+  margin:12px 0;
+  border:1px solid #e6d6ce;
+  background:#fffaf7;
+  box-shadow:none;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCoupon>div:first-child{
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCoupon b{
+  color:#663b48;
+  font-size:13px;
+  line-height:1.4;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCoupon small{
+  color:#886f69;
+  font-size:11px;
+  line-height:1.5;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCouponForm{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  width:100%;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCouponForm input{
+  display:block;
+  flex:1 1 150px;
+  min-width:0;
+  width:auto;
+  max-width:100%;
+  min-height:46px;
+  border:1px solid #dfc9c6;
+  border-radius:9px;
+  background:#fff;
+  padding:10px 12px;
+  color:#5d3d44;
+  font:400 16px/1.4 var(--font-shopping-sans),Arial,sans-serif;
+  text-transform:uppercase;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCouponForm button{
+  flex:0 0 auto;
+  min-height:46px;
+  min-width:70px;
+  margin:0;
+  padding:9px 13px;
+  border-radius:9px;
+  font-size:12px;
+  font-weight:700;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] :is(.checkoutCouponForm input,.checkoutCouponForm button):focus-visible,
+.celebrationHome #builder.quickBuilder [data-payment-checkout] :is(.payButton,.paymentActions button,.paymentStateActions button,.checkoutAccount>a,.checkoutAccount>button):focus-visible{
+  outline:2px solid #8a4b5e;
+  outline-offset:3px;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .policyCheck{
+  display:flex;
+  align-items:flex-start;
+  gap:11px!important;
+  width:100%;
+  min-width:0;
+  margin:12px 0 0;
+  padding:14px!important;
+  border:1px solid #e7d6ce!important;
+  border-radius:11px!important;
+  background:#fffcf9!important;
+  box-shadow:none;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .policyCheck input{
+  display:block;
+  flex:0 0 21px;
+  width:21px!important;
+  height:21px!important;
+  margin:1px 0 0!important;
+  accent-color:#7d3d51;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .policyCheck>span{
+  display:block;
+  min-width:0;
+  color:#6f5855!important;
+  font-size:11px!important;
+  line-height:1.64!important;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .policyCheck a{
+  color:#793b50;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentPolicyHint{
+  margin:8px 0 13px;
+  color:#87706b;
+  font-size:10.5px;
+  line-height:1.55;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox,
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox.automatedPaymentBox{
+  display:grid;
+  grid-template-columns:minmax(0,1fr)!important;
+  justify-items:stretch;
+  align-items:center;
+  gap:13px!important;
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+  margin:0;
+  padding:19px!important;
+  border:1px solid #e2c6c9!important;
+  border-radius:14px;
+  background:linear-gradient(150deg,#fffaf5,#f7e9e7)!important;
+  box-shadow:none;
+  text-align:left!important;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox .paymentSticker{
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  margin:0;
+  border:1px solid #e6ced1;
+  border-radius:11px;
+  background:#fffdfb;
+  box-shadow:none;
+  color:#804359;
+  font-size:21px;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox>div:not(.paymentSticker){
+  min-width:0;
+  width:100%;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox span{
+  display:block;
+  color:#956a70;
+  font-size:10px!important;
+  font-weight:750;
+  line-height:1.4;
+  letter-spacing:.075em;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox strong{
+  display:block;
+  margin:6px 0 0;
+  color:#6e3349;
+  font:700 clamp(30px,3.1vw,38px)/1.13 var(--font-shopping-sans),Arial,sans-serif;
+  letter-spacing:-.035em;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox small{
+  display:block;
+  max-width:100%;
+  margin:6px 0 0!important;
+  color:#79635e;
+  font-size:11px!important;
+  line-height:1.55!important;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox .payButton{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  width:100%!important;
+  min-width:0;
+  min-height:52px;
+  padding:12px 16px;
+  margin:0;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:750;
+  line-height:1.35;
+  white-space:normal;
+  text-align:center;
+  text-decoration:none;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox .payButton:disabled{
+  cursor:not-allowed;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentSteps{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:0!important;
+  margin:14px 0 0!important;
+  border:1px solid #eddfd8;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fffdfb;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentSteps>div{
+  display:flex;
+  align-items:center!important;
+  gap:11px;
+  min-width:0;
+  min-height:0;
+  margin:0;
+  padding:11px 13px!important;
+  border:0!important;
+  border-radius:0!important;
+  border-bottom:1px solid #f0e5e0!important;
+  background:transparent;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentSteps>div:last-child{
+  border-bottom:0!important;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentSteps b{
+  display:grid;
+  place-items:center;
+  flex:0 0 28px;
+  width:28px!important;
+  height:28px!important;
+  border-radius:50%;
+  background:#f5e9e5;
+  color:#7e4555;
+  font-size:11px!important;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentSteps span{
+  min-width:0;
+  color:#76615f!important;
+  font-size:11px!important;
+  line-height:1.5!important;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] :is(.paymentReturnHint,.paymentStateCard,.errorBox,.successBox){
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+  border-radius:11px;
+  overflow-wrap:break-word;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentStateCard{
+  grid-template-columns:32px minmax(0,1fr);
+  gap:10px;
+  padding:13px;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentStateActions{
+  display:flex;
+  align-items:stretch;
+  flex-wrap:wrap;
+  gap:8px;
+  grid-column:1/-1;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentStateActions button{
+  min-width:0;
+  min-height:44px;
+  padding:10px 12px;
+  font-size:12px;
+  white-space:normal;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .utrField{
+  display:block;
+  width:100%;
+  margin:15px 0;
+  min-width:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .utrField .control{
+  display:block;
+  width:100%;
+  min-width:0;
+  min-height:49px;
+  padding:11px 13px;
+  font:400 16px/1.4 var(--font-shopping-sans),Arial,sans-serif;
+  background:#fff;
+  color:#533a40;
+  border:1px solid #dfc9c4;
+  border-radius:9px;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .utrField .control:focus-visible{
+  outline:2px solid #dabcc6;
+  outline-offset:2px;
+  border-color:#995467;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .successActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .successActions :is(button,a){
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:1 1 125px;
+  min-height:44px;
+  padding:10px 12px;
+  white-space:normal;
+  text-decoration:none;
+  font-size:12px;
+  line-height:1.35;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .navRow.paymentActions{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);
+  align-items:center;
+  gap:10px;
+  margin:17px 0 0;
+  padding:14px 0 0;
+  border-top:1px solid #efe1db;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentActions .secondary{
+  grid-column:1;
+  grid-row:1;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentActions .primary{
+  grid-column:2;
+  grid-row:1;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentActions :is(.secondary,.primary){
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  min-height:46px;
+  margin:0;
+  padding:10px 12px;
+  border-radius:9px;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.35;
+  text-align:center;
+  white-space:normal;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentActions .tiny{
+  display:block;
+  grid-column:1/-1;
+  grid-row:2;
+  min-width:0;
+  width:100%;
+  margin:0;
+  color:#88716e;
+  font-size:10.5px;
+  line-height:1.55;
+  text-align:center;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard{
+  display:block;
+  min-width:0;
+  padding:18px;
+  border:1px solid #e9d9ce;
+  border-top:2px solid #98617a;
+  border-radius:13px;
+  background:#f9f1eb;
+  box-shadow:none;
+  color:#69434c;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCardIcon{
+  font-size:22px;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard .kicker{
+  color:#91636a;
+  font-size:10px;
+  letter-spacing:.09em;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard h3{
+  margin:6px 0 13px;
+  color:#6d3d4b;
+  font:500 clamp(20px,1.8vw,25px)/1.21 var(--font-shopping-display),Georgia,serif;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard ul{
+  display:grid;
+  gap:10px;
+  margin:0;
+  padding:0;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard li{
+  color:#765d5a;
+  font-size:11px;
+  line-height:1.55;
+}
+.celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard .policyLink{
+  display:inline-block;
+  color:#793c50;
+  font-size:11px;
+  line-height:1.5;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+@media(min-width:900px){
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentGrid{
+    grid-template-columns:minmax(0,1.45fr) minmax(260px,.85fr);
+    gap:22px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard{
+    position:sticky;
+    top:115px;
+  }
+}
+@media(min-width:1150px){
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox.automatedPaymentBox{
+    grid-template-columns:44px minmax(0,1fr) auto!important;
+    text-align:left!important;
+    justify-items:stretch;
+    gap:14px!important;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox.automatedPaymentBox .payButton{
+    width:auto!important;
+    min-width:180px;
+  }
+}
+@media(max-width:759px){
+  .celebrationHome #builder.quickBuilder .builderCard:has([data-payment-checkout]){
+    padding:12px;
+    border-radius:13px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .builderTitle{
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:8px 12px;
+    margin:0 0 16px;
+    padding:0 0 13px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .builderTitle h3{
+    font-size:clamp(26px,7vw,32px);
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .builderTitle .paymentAmount{
+    font-size:26px;
+    width:100%;
+    margin-top:2px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentGrid{
+    grid-template-columns:minmax(0,1fr);
+    gap:13px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutAccount{
+    padding:14px!important;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox,
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox.automatedPaymentBox{
+    padding:16px!important;
+    gap:11px!important;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox strong{
+    font-size:32px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox .payButton{
+    min-height:52px;
+    font-size:13px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentSteps>div{
+    padding:10px 12px!important;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentStateActions button{
+    flex:1 1 150px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .trustCard{
+    position:static;
+    padding:16px;
+  }
+}
+@media(max-width:360px){
+  .celebrationHome #builder.quickBuilder .builderCard:has([data-payment-checkout]){
+    padding:10px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCoupon,
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox,
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox.automatedPaymentBox{
+    padding:13px!important;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCouponForm input{
+    flex-basis:100%;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .checkoutCouponForm button{
+    flex:1 1 75px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentBox strong{
+    font-size:29px;
+  }
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] .paymentActions :is(.secondary,.primary){
+    font-size:11px;
+    padding-inline:8px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome #builder.quickBuilder [data-payment-checkout] :is(button,input,a){
+    transition:none;
+  }
+}
