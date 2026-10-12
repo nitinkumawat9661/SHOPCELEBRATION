@@ -39,8 +39,8 @@ try {
   for (const width of [320, 390, 768, 1280]) {
     const context = await browser.newContext({ viewport: { width, height: 820 }, locale: "en-IN", reducedMotion: "reduce" })
     await context.addCookies([{
-      name: "celebration_admin", value: cookie, url: base,
-      httpOnly: true, sameSite: "Strict", path: "/"
+      name: "celebration_admin", value: cookie, domain: "127.0.0.1", path: "/",
+      httpOnly: true, sameSite: "Strict"
     }])
     const writes = [], errors = []
     await context.route("**/api/**", async route => {
