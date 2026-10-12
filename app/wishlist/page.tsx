@@ -11,7 +11,7 @@ import { defaultStoreSettings, getStoreSettings } from "../../lib/server/store-s
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = {
   title: "Saved Jewellery",
-  description: "Find the jewellery and gifts you saved for later on this device.",
+  description: "Find jewellery saved with your Celebration account across devices, or locally before sign-in.",
   robots: { index: false, follow: true }
 }
 
@@ -30,7 +30,7 @@ export default async function WishlistPage() {
         <header className="wishlistHeading">
           <span className="collectionEyebrow">YOUR SHORTLIST</span>
           <h1>Saved pieces</h1>
-          <p>Keep the pieces you love in one place. Saved items stay in this browser, not in your Celebration account.</p>
+          <p>Keep the pieces you love in one place. Sign in with your Celebration account to access saved pieces on your phone, laptop and other devices.</p>
         </header>
         <WishlistCollection products={verified?.products || []} available={Boolean(catalog)} />
       </div>
