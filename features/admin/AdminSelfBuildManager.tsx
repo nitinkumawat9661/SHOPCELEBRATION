@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import type { SelfBuildAdminState, SelfBuildCategory, SelfBuildOption } from "../../lib/server/self-build-admin"
-import "../../styles/admin-self-build-20261013.css"
 
 type Kind = SelfBuildCategory["selectionKind"]
 type Notice = { tone: "good" | "error"; message: string }
