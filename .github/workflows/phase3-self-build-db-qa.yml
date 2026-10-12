@@ -6,6 +6,7 @@ on:
     paths:
       - db/migrations/047_self_build_hamper_draft_architecture.sql
       - db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
+      - db/migrations/049_self_build_category_only_no_sku_mapping.sql
       - lib/server/self-build-admin.ts
       - app/api/admin/self-build/route.ts
       - scripts/test-phase3-self-build-db-contract.mjs
@@ -48,6 +49,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts (id text PRIMARY KEY); CREATE TABLE orders (id text PRIMARY KEY);'
           psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/049_self_build_category_only_no_sku_mapping.sql
           psql -v ON_ERROR_STOP=1 <<'SQL'
           DO $$
           DECLARE n integer; r record; p integer;
@@ -58,7 +60,7 @@ jobs:
             IF n <> 8 THEN RAISE EXCEPTION 'Expected 8 owner-confirmed jewellery groups, found %',n; END IF;
             SELECT COUNT(*) INTO n FROM self_build_options;
             IF n <> 13 THEN RAISE EXCEPTION 'Expected 13 variant options, found %',n; END IF;
-            IF (SELECT version FROM self_build_configuration WHERE id='primary') <> 2 THEN
+            IF (SELECT version FROM self_build_configuration WHERE id='primary') <> 3 THEN
               RAISE EXCEPTION 'Owner revision did not bump admin optimistic version';
             END IF;
             IF (SELECT default_catalog_item_budget_paise FROM self_build_configuration WHERE id='primary') <> 6000 THEN
@@ -67,10 +69,10 @@ jobs:
             IF (SELECT unit_budget_paise FROM self_build_categories WHERE id='bangles') <> 15000 THEN
               RAISE EXCEPTION 'Standalone Bangles ₹150 missing';
             END IF;
-            FOR r IN SELECT id,unit_budget_paise,display_order,catalog_category,active
+            FOR r IN SELECT id,unit_budget_paise,display_order,selection_kind,active
               FROM self_build_categories WHERE parent_id='jewellery' ORDER BY display_order LOOP
-              IF r.catalog_category IS NOT NULL OR r.active IS NOT TRUE THEN
-                RAISE EXCEPTION 'Do not manufacture catalogue SKU/category mappings';
+              IF r.selection_kind <> 'category' OR r.active IS NOT TRUE THEN
+                RAISE EXCEPTION 'All eight jewellery choices must be selectable categories';
               END IF;
               IF r.id IN ('viral-bangles','korean-bangles') THEN
                 IF r.unit_budget_paise<>15000 THEN RAISE EXCEPTION '% should be ₹150 per unit',r.id; END IF;
@@ -110,8 +112,15 @@ jobs:
             IF (SELECT customer_enabled OR show_item_prices FROM self_build_configuration WHERE id='primary') THEN
               RAISE EXCEPTION 'Staging customer and internal price visibility gates must remain closed';
             END IF;
-            IF EXISTS (SELECT 1 FROM self_build_catalog_product_rules) THEN
-              RAISE EXCEPTION 'Do not auto-populate unverifiable catalogue SKUs';
+            IF to_regclass('self_build_catalog_product_rules') IS NOT NULL THEN
+              RAISE EXCEPTION 'The SKU mapping structure must be retired';
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns
+              WHERE table_name='self_build_categories' AND column_name='catalog_category') THEN
+              RAISE EXCEPTION 'The catalogue-category mapping field must be retired';
+            END IF;
+            IF (SELECT selection_kind FROM self_build_categories WHERE id='bangles') <> 'category' THEN
+              RAISE EXCEPTION 'Standalone bangles must also be category-only';
             END IF;
             BEGIN
               UPDATE self_build_configuration SET customer_enabled=true WHERE id='primary';
@@ -134,11 +143,9 @@ jobs:
               RAISE EXCEPTION 'Pricing values must remain admin-editable in the database';
             END IF;
           END $$;
-          -- Test multi-category schema and the exact SKU override write mechanism.
-          INSERT INTO self_build_catalog_product_rules (category_id,product_id,unit_budget_paise)
-            VALUES ('viral-bangles','verified-test-sku',15000);
-          DELETE FROM self_build_catalog_product_rules;
+          -- Category/option quantity amounts remain editable; zero product IDs.
+          UPDATE self_build_categories SET unit_budget_paise=15000 WHERE id='viral-bangles';
           DELETE FROM self_build_options;
           DELETE FROM self_build_categories;
           SQL
-          echo 'Postgres 16: historical 047 + updated 048, eight nested categories, photo per-unit, dynamic sizes, privacy and writable rules all passed.'
+          echo 'Postgres 16: 047 + 048 + category-only 049, eight nested groups, no SKU mapping, private per-unit pricing and gates passed.'
