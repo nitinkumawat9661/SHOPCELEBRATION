@@ -60,18 +60,22 @@ export async function listCustomerOrderMessages(publicId: string, accountId: str
   }>(
     `SELECT id,sender,body,sent_at,read_at
        FROM telegram_order_messages
-      WHERE order_id=$1 ORDER BY sent_at ASC,id ASC LIMIT 100`,
+      WHERE order_id=$1 ORDER BY sent_at DESC,id DESC LIMIT 100`,
+    [orderId]
+  )
+  const unread = await query<{ count: number }>(
+    `SELECT count(*)::int AS count FROM telegram_order_messages WHERE order_id=$1 AND read_at IS NULL`,
     [orderId]
   )
   return {
-    messages: rows.rows.map(row => ({
+    messages: rows.rows.reverse().map(row => ({
       id: row.id,
       sender: row.sender,
       body: row.body,
       sentAt: row.sent_at.toISOString(),
       readAt: row.read_at?.toISOString() ?? null
     })),
-    unreadCount: rows.rows.filter(row => !row.read_at).length
+    unreadCount: unread.rows[0]?.count || 0
   }
 }
 
