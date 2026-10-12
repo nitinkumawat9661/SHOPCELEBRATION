@@ -7,12 +7,18 @@ on:
       - ".github/workflows/phase1-mobile-browser-qa.yml"
       - "scripts/audit-phase1-live-home-mobile.mjs"
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Celebration Production"]
+    types: [completed]
 
 permissions:
   contents: read
 
 jobs:
   actual-mobile-homepage:
+    # A post-deploy screenshot reflects the new LIVE version, not the old
+    # published revision that still exists while the PR builds.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 16
     steps:
