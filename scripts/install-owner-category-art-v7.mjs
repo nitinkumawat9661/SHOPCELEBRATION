@@ -1,0 +1,1 @@
+// Owner-approved eight round category images.\n
