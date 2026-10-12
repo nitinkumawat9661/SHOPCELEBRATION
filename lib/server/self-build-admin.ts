@@ -149,7 +149,7 @@ function normalizeCategory(value: unknown): SelfBuildCategory {
   const allowed = (["group","notes"].includes(String(kind)) && mode === "none" && unit === null)
     || (kind === "catalog" && mode === "per_unit")
     || (kind === "variant" && mode === "option" && unit === null)
-    || (kind === "photo" && mode === "once_per_category" && unit !== null)
+    || (kind === "photo" && (mode === "per_unit" || mode === "once_per_category") && unit !== null)
   if (!allowed) invalid("INVALID_CATEGORY_CHARGE_COMBINATION")
   return {
     id: slug(v.id),
