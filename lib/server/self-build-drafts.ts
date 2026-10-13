@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto"
 import { query, transaction } from "./db"
 import type { SelfBuildSelection } from "./self-build-quote"
-import { getCatalogConfig } from "./catalog"
+import { getSelfBuildPublishedCatalog } from "./self-build-published-tiers"
 import { deleteSelfBuildPrivatePhoto } from "./r2"
 import { countSelfBuildPieces, getSelfBuildTierLimits } from "./self-build-tier-limits"
 import { evaluatePrivateSelfBuildChoices, type PrivateCategory, type PrivateOption } from "./self-build-private-budget"
@@ -52,7 +52,7 @@ export async function getSelfBuildDraft(accountId:string) {
 }
 export async function saveSelfBuildDraft(accountId:string,input:unknown){
   const clean=parseDraftBody(input)
-  const {catalog}=await getCatalogConfig()
+  const catalog=await getSelfBuildPublishedCatalog()
   const tier=catalog.tiers.find(t=>t.id===clean.tierId&&t.active!==false)
   if(!tier)reject("TIER_UNAVAILABLE")
   const limits=getSelfBuildTierLimits(tier)
