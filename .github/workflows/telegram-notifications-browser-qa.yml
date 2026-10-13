@@ -1,6 +1,11 @@
 name: Celebration Telegram Notification Center Browser QA
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/audit-notifications-browser.mjs'
+      - '.github/workflows/telegram-notifications-browser-qa.yml'
   workflow_dispatch:
   workflow_run:
     workflows: ["Deploy Celebration Production"]

@@ -20,30 +20,34 @@ const response=(data,status=200)=>({status,contentType:"application/json",header
 async function mockDevice(width,who){
   const context=await browser.newContext({viewport:{width,height:820},deviceScaleFactor:1})
   const orderId="CEL-DEMO-"+who
+  const messages=[...conversations[who]]
   let unread=1
   await context.route("**/api/account/me",route=>route.fulfill(response({ok:true,account:{id:"demo-"+who,displayName:"Browser QA",phoneVerified:true}})))
   await context.route("**/api/account/orders/message-unread",route=>route.fulfill(response({ok:true,unread:unread?[{publicId:orderId,unreadCount:unread}]:[]})))
   await context.route("**/api/account/notifications",route=>route.fulfill(response({ok:true,threads:[{
     orderId,title:"Premium Jewelry",orderType:"individual",createdAt:time,
-    unreadCount:unread,lastBody:conversations[who].at(-1)?.body||null,
-    lastSender:conversations[who].at(-1)?.sender||null,lastAt:time
+    unreadCount:unread,lastBody:messages.at(-1)?.body||null,
+    lastSender:messages.at(-1)?.sender||null,lastAt:time
   }]})))
-  await context.route("**/api/account/orders/*/messages*",async route=>{
+  await context.route("**/api/account/orders/**",async route=>{
     const path=new URL(route.request().url()).pathname
+    if(path==="/api/account/orders/message-unread")return route.fallback()
     if(!path.includes(orderId))return route.fulfill(response({ok:false,error:"ORDER_NOT_FOUND"},404))
     if(path.endsWith("/send")){
       const body=route.request().postDataJSON()
       const message={id:body.requestId,sender:"customer",body:body.text,sentAt:time,readAt:null}
-      conversations[who].push(message)
+      messages.push(message)
       return route.fulfill(response({ok:true,message}))
     }
     if(route.request().method()==="POST"){unread=0;return route.fulfill(response({ok:true,acknowledged:1}))}
-    return route.fulfill(response({ok:true,orderId,messages:conversations[who],unreadCount:unread}))
+    return route.fulfill(response({ok:true,orderId,messages,unreadCount:unread}))
   })
   await context.route("**/api/**",async route=>{
     const m=route.request().method()
-    if(m!=="GET"&&m!=="HEAD")return route.abort("blockedbyclient")
-    return route.continue()
+    const path=new URL(route.request().url()).pathname
+    if(m==="GET"||m==="HEAD"||(m==="POST"&&path.startsWith("/api/account/orders/")&&path.includes("/messages")))
+      return route.fallback()
+    return route.abort("blockedbyclient")
   })
   return {context,orderId,page:await context.newPage()}
 }
@@ -73,7 +77,7 @@ try{
   }
   const {context,page}=await mockDevice(390,"B")
   await page.goto(base+"/notifications",{waitUntil:"domcontentloaded"})
-  await page.getByText("Your own order is confirmed.").waitFor({timeout:15000})
+  await page.locator(".notificationBubble.fromCelebration").getByText("Your own order is confirmed.",{exact:true}).waitFor({timeout:15000})
   assert.equal(await page.getByText("Your bracelet is being packed.").count(),0,"Buyer B cannot view A mock conversation")
   await context.close()
   console.log("TELEGRAM_NOTIFICATION_INBOX_BROWSER_QA_PASSED")
