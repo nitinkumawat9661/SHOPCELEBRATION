@@ -1,0 +1,54 @@
+name: Celebration Self-Build Read-Only Launch Readiness
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Celebration Production"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-self-build-launch-audit
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure audited SSH host (never print credentials)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!name:-}" ] || { echo "Missing SSH config: $name" >&2; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration-readiness"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration-readiness" "$HOME/.ssh/known_hosts"
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+      - name: Inspect live category readiness with PostgreSQL BEGIN READ ONLY
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration-readiness" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
+          set -euo pipefail
+          test "$(id -un)" = nitin
+          APP_ROOT=/var/www/celebration
+          RELEASE="$(readlink -f "$APP_ROOT/current")"
+          case "$RELEASE" in "$APP_ROOT"/releases/github-*) ;; *) echo "Unknown production source"; exit 1 ;; esac
+          test -f "$RELEASE/scripts/audit-self-build-readiness.mjs"
+          test -f "$RELEASE/.env.production"
+          cd "$RELEASE"
+          node -e "require('@next/env').loadEnvConfig(process.cwd(),false); import('./scripts/audit-self-build-readiness.mjs')"
+          REMOTE

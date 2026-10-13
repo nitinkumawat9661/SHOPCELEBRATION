@@ -109,3 +109,7 @@ Read [PHASE3_SELF_BUILD_ORDER_OPERATIONS_20261013.md](./PHASE3_SELF_BUILD_ORDER_
 
 **Important:** Preview selections live only in the browser's React state, and are deliberately discarded on navigation. It does not price an order, reserve category stock, upload photos, accept payment, save a draft, or promise item availability. Customers still use the unaffected curated checkout. The implementation plan in §3 documents the necessary follow-up slices; never enable the buying mode on the basis of design QA alone.
 
+
+## Phase 3 next safety milestone — read-only launch readiness audit (13 October 2026)
+
+An automated VPS-only readiness check now reads current staff-verified category/size capacity counts, enabled internal tier allowance **counts**, pending capacity holds and expired draft counts using PostgreSQL `BEGIN READ ONLY`. Results never include confidential unit budgets, customer photos, retail SKU mappings, or personally identifying data. It runs after a successful deployment, with optional workflow dispatch and verified SSH. Neither the audit nor dashboard changes public checkout availability; `customer_enabled=false` remains mandatory. Even if every unit is verified, Self-Build remains blocked until payment idempotency, paid-photo retention, lifecycle end-to-end tests and explicit owner launch approval.
