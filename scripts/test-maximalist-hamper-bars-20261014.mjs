@@ -28,7 +28,8 @@ const previewNames=preview.split('<div className="sbPreviewTierBars">')[1]?.spli
 const buyerNames=buyer.split('<div className="sbBuyerTiers" role="group" aria-label="Hamper names">')[1]?.split('</div>')[0]
 assert.ok(previewNames&&buyerNames,"Tier names must be visible and selectable on both surfaces")
 for(const [s,prefix]of [[previewNames,"sbPreviewTierBar"],[buyerNames,"sbBuyerTierBar"]]){
- assert.ok(s.includes("aria-pressed={tierId===")&&s.includes("onClick={()=>setTierId(")&&s.includes("{item.name}" )===s.includes(prefix==="sbPreviewTierBar"),
+ assert.ok(s.includes("aria-pressed={tierId===")&&s.includes("onClick={()=>setTierId(")&&
+   s.includes(prefix==="sbPreviewTierBar"?"{item.name}":"{t.name}"),
  "Same tier selected by clicking its real catalog name")
  assert.ok(s.includes(prefix))
  assert.ok(!/<span\b|<strong\b|<small\b|<img\b|<svg\b|<p\b|formatMoney\(|hamperFinalPriceRupees\(/.test(s),
