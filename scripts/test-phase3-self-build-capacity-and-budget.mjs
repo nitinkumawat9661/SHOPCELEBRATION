@@ -89,8 +89,8 @@ const copy=(value)=>structuredClone(value)
 const withTierBudget=(value)=>{
  const next=copy(capacity);next.tiers[0].allowancePaise=value;return next
 }
-test("budget overrun", [item("option","large",2)],"TIER_BUDGET_EXCEEDED",rules,withTierBudget(80000))
-// Note: Large has 1 unit verified; availability must block double quantity
+test("budget overrun", [item("category","photos",5),item("category","viral-bangles",2),item("option","large",1)],"TIER_BUDGET_EXCEEDED",rules,withTierBudget(80000))
+// Large has 1 physical unit; availability must block double quantity
 test("capacity bound", [item("option","large",2)],"INSUFFICIENT_VERIFIED_CATEGORY_CAPACITY")
 test("valid single large", [item("option","large",1)],"WITHIN_PRIVATE_BUDGET")
 test("category not product SKU", [item("category","not-a-product",1)],"CATEGORY_UNAVAILABLE")
