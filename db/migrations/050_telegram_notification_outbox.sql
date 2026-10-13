@@ -3,9 +3,9 @@
 -- Applying the migration never contacts Telegram or changes existing order/payment rows.
 CREATE TABLE telegram_notification_outbox (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  order_id uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  order_id text NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   source text NOT NULL CHECK (source IN ('order_event', 'payment_event')),
-  source_event_id uuid NOT NULL,
+  source_event_id text NOT NULL,
   event_type text NOT NULL,
   payload jsonb NOT NULL DEFAULT '{}'::jsonb,
   occurred_at timestamptz NOT NULL DEFAULT now(),
