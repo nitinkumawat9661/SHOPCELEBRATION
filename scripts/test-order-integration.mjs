@@ -229,12 +229,22 @@ try {
   const hamper = await createOrder(hamperInput, account.id, undefined, auto)
   const hamperRetry = await createOrder(hamperInput, account.id, undefined, auto)
   assert.equal(hamper.publicId, hamperRetry.publicId)
-  assert.equal(hamper.pricing.payablePaise, 49900)
+  assert.equal(hamper.pricing.payablePaise, 54900, 'Curated Hamper ₹499 + ₹50 delivery')
+  assert.equal(hamperRetry.pricing.payablePaise, 54900, 'Idempotent retry must not double-charge shipping')
+  assert.equal(hamper.pricing.shippingPaise, 5000, 'Server-side courier fee remains separate from the tier')
+  assert.equal(hamper.pricing.subtotalPaise, 49900, 'Published hamper tier stays unchanged')
   const manualHamperInput = normalizeOrderInput({ ...body, orderType: 'hamper', tierId: 't499', selectedProductIds: ['test-hamper-card'], occasion: 'Birthday', idempotencyKey: randomUUID(), paymentReference: 'LOCALUPIHAMPER01' }, 'Asia/Kolkata', catalog)
   const manualHamper = await createOrder(manualHamperInput, account.id)
-  const manualRow = (await control.query('SELECT payment_status,payment_reference FROM orders WHERE public_id=$1', [manualHamper.publicId])).rows[0]
+  const manualRow = (await control.query('SELECT payment_status,payment_reference,subtotal_paise,shipping_paise,amount_paise FROM orders WHERE public_id=$1', [manualHamper.publicId])).rows[0]
   assert.equal(manualRow.payment_status, 'verification_pending')
   assert.equal(manualRow.payment_reference, 'LOCALUPIHAMPER01')
+  assert.equal(manualRow.subtotal_paise, 49900, 'Manual hamper tier must remain ₹499')
+  assert.equal(manualRow.shipping_paise, 5000, 'Manual UPI hampers include delivery')
+  assert.equal(manualRow.amount_paise, 54900, 'Manual UPI total must match gateway hamper total')
+  const individualShipping=(await control.query(
+    'SELECT shipping_paise FROM orders WHERE public_id=$1', [created.publicId])).rows[0]
+  assert.equal(individualShipping.shipping_paise, 0,
+    'Jewellery/individual shipping must remain free and unchanged')
   const customerRows = await listCustomerOrders(account.id)
   assert.equal(customerRows.find((p) => p.publicId === created.publicId).lineItems[0].quantity, 2)
   const adminRows = await listOrders()
@@ -324,7 +334,7 @@ try {
      ON CONFLICT(tier_id) DO UPDATE SET allowance_paise=20000,enabled=true`)
   const staged=await createStagedSelfBuildOrder(stagedInput)
   assert.equal(staged.created,true)
-  assert.equal(staged.payablePaise,49900)
+  assert.equal(staged.payablePaise,54900, 'Legacy staged hamper also includes fixed delivery')
   assert.equal(staged.reservationStatus,'reserved')
   const storedStaged=await control.query(`SELECT o.id,o.payment_status,o.order_type,o.selected_product_ids,
     b.status,s.other_request_text, s.selections
@@ -476,7 +486,7 @@ try {
       (id,provider,provider_event_id,order_id,event_type,payload)
       VALUES ($1,'razorpay',$2,$3,$4,'{}'::jsonb)`,
       [randomUUID(),eventId,orderId,status==='paid'?'payment.captured':'payment.failed'])
-    return {provider:'razorpay',providerOrderId,providerPaymentId,status,amountPaise:49900,
+    return {provider:'razorpay',providerOrderId,providerPaymentId,status,amountPaise:54900,
       eventId,eventType:status==='paid'?'payment.captured':'payment.failed',payload:{localFixture:true}}
   }
 
@@ -484,7 +494,7 @@ try {
   const curatedInternalId=(await control.query('SELECT id FROM orders WHERE public_id=$1',[manualHamper.publicId])).rows[0].id
   assert.equal((await settleTest(curatedInternalId,{
     provider:'razorpay',providerOrderId:'unused',status:'pending',
-    eventId:'unrecognized',eventType:'payment.pending',amountPaise:49900,payload:{}
+    eventId:'unrecognized',eventType:'payment.pending',amountPaise:54900,payload:{}
   })).status,'not_self_build','Legacy curated checkout is not touched')
 
   const stageId=storedStaged.rows[0].id
