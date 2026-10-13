@@ -244,7 +244,7 @@ export function PaymentStep({
           </div>}
           {!individual && tier && <div className="checkoutPriceNote" aria-label="Hamper final price">
             <strong>Final hamper price: {formatMoney(payablePaise / 100)}</strong>
-          </div}
+          </div>}
           {customerAccount && quoteError && <div className="checkoutPriceNote">{quoteError}</div>}
           {customerAccount && <div className="checkoutCoupon">
             <div><b>Have a coupon?</b><small>Enter the code exactly as shared by Celebration.</small></div>
