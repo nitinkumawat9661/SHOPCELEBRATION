@@ -16,7 +16,7 @@ const [home,header,controller,css,globals,featured,category,media,roadmap,packag
   "docs/CELEBRATION_COMPETITOR_UI_UX_ROADMAP.md",
   "package.json"
 ].map(read))
-assert(home.includes('<StorefrontHeader settings={initialSettings} />') &&
+assert(home.includes('<StorefrontHeader settings={initialSettings} showSelfBuild={initialSelfBuildEnabled} />') &&
   home.includes('className="celebrationHomeHeaderSpacer"'),
   "Homepage enables a single shared controller and reserves natural header space")
 assert(!home.includes("stableOnHome") && !header.includes("stableOnHome") &&

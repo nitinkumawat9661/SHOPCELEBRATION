@@ -1,0 +1,55 @@
+/* Celebration self-build customer flow: restrained utility-first editorial UI. */
+.sbBuyerPage{background:#fffaf7;min-height:100vh}
+.sbBuyer{max-width:1020px;margin:30px auto 70px;color:#563442}
+.sbBuyerTop{padding:0 0 25px;border-bottom:1px solid #eadad6;margin-bottom:21px}
+.sbBuyerKicker,.sbBuyerComingSoon>span{letter-spacing:.16em;color:#96747a;font:750 10px/1.4 Arial,sans-serif}
+.sbBuyerTop h1,.sbBuyerComingSoon h1{font:600 clamp(29px,3.5vw,42px)/1.12 Georgia,serif;letter-spacing:-.03em;color:#612f44;margin:9px 0 11px}
+.sbBuyerTop p,.sbBuyerComingSoon p{max-width:700px;font-size:13px;line-height:1.75;color:#7d676b}
+.sbBuyerCard{background:#fff;border:1px solid #eadad5;border-radius:15px;padding:clamp(17px,3vw,28px);margin:18px 0;box-shadow:0 7px 27px #673c4c0a;min-width:0}
+.sbBuyerCardHead{display:flex;gap:15px;align-items:start;margin-bottom:18px}
+.sbBuyerCardHead>span{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;color:#743c4d;background:#faf0eb;border-radius:9px;font-weight:800;font-size:12px}
+.sbBuyerCardHead h2,.sbBuyerCard h2{font:600 clamp(20px,2.6vw,27px)/1.3 Georgia,serif;color:#612f44;margin:2px 0 7px}
+.sbBuyerCardHead p,.sbBuyerCard p{font-size:12px;line-height:1.7;color:#836d74;margin:4px 0}
+.sbBuyerTiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.sbBuyerTiers button{padding:15px 10px;display:grid;gap:6px;text-align:left;min-height:110px;border:1px solid #e7d5d0;background:#fffaf8;color:#753952;border-radius:10px;cursor:pointer}
+.sbBuyerTiers button[aria-pressed=true]{background:#772c49;border-color:#772c49;color:#fff}
+.sbBuyerTiers button b{font-size:13px}.sbBuyerTiers button span{font-size:16px;font-weight:800}.sbBuyerTiers button small{font-size:10px;opacity:.78}
+.sbBuyerChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.sbBuyerChoice{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px;border:1px solid #eee0dd;border-radius:11px;background:#fffdfc;min-width:0}
+.sbBuyerChoice>div:first-child{min-width:0;display:grid;gap:4px}
+.sbBuyerChoice small{font-size:10px;color:#99828a;line-height:1.4}
+.sbBuyerChoice strong{font-size:12px;color:#6c3547;line-height:1.4}
+.sbBuyerQty{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.sbBuyerQty button{width:31px;height:36px;border:1px solid #ead5d2;border-radius:8px;background:#fff6f2;color:#71334c;font-size:18px;cursor:pointer}
+.sbBuyerQty button:disabled{opacity:.35;cursor:not-allowed}
+.sbBuyerQty output{min-width:20px;text-align:center;color:#6e3549;font-weight:800;font-size:12px}
+.sbBuyerField{display:grid;gap:7px;margin-top:14px;color:#6c4756;font-size:12px;font-weight:650}
+.sbBuyerField input,.sbBuyerField select,.sbBuyerField textarea{width:100%;padding:11px 12px;min-height:44px;border:1px solid #e4d2cd;border-radius:9px;background:#fff;color:#543946;font:400 13px/1.4 Arial,sans-serif;min-width:0}
+.sbBuyerField textarea{resize:vertical}
+.sbBuyerActions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:17px}
+.sbBuyerActions button,.sbBuyerPay button,.sbBuyerPhotoPicker,.sbBuyerSuccess a{display:inline-flex;align-items:center;justify-content:center;min-height:45px;padding:11px 19px;border:0;border-radius:9px;background:#76304b;color:#fff;font-size:12px;font-weight:750;cursor:pointer;text-decoration:none}
+.sbBuyerActions span,.sbBuyerPending{font-size:11px;color:#896f7b}
+.sbBuyerActions button:disabled,.sbBuyerPay button:disabled{opacity:.47;cursor:not-allowed}
+.sbBuyerForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 15px}
+.sbBuyerForm .sbBuyerField:nth-child(3),.sbBuyerForm .sbBuyerField:last-child{grid-column:1/-1}
+.sbBuyerAccept{display:flex;align-items:center;gap:10px;margin:20px 0;color:#745968;font-size:12px;line-height:1.45}
+.sbBuyerAccept input{width:17px;height:17px;accent-color:#77374f}
+.sbBuyerPay{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 0 0;border-top:1px solid #efe1dc}
+.sbBuyerPay>div{display:grid;gap:4px}.sbBuyerPay small{font-size:11px;color:#8b767b}
+.sbBuyerPay b{font-size:22px;color:#64243e}
+.sbBuyerPending{margin:15px 0 0!important;line-height:1.6}
+.sbBuyerPending button{margin-left:10px;padding:6px 9px;border:1px solid #ceb8bf;background:#fff;min-height:38px;color:#713951;border-radius:7px;cursor:pointer}
+.sbBuyerPhotoPicker{margin:8px 0}
+.sbBuyerPhotoPicker input{max-width:260px;margin-left:12px;color:#fff;font-size:10px}
+.sbBuyerPhotoList{display:flex;gap:9px;flex-wrap:wrap}
+.sbBuyerPhotoList>div{width:99px;display:grid;gap:5px}
+.sbBuyerPhotoList img{width:99px;height:99px;object-fit:cover;border-radius:9px;border:1px solid #e8d2d0}
+.sbBuyerPhotoList button{min-height:35px;border:1px solid #e9d5d5;color:#713d4e;background:#fff;border-radius:7px}
+.sbBuyerMessage{padding:12px 15px;margin:12px 0;border:1px solid #cfdccd;border-radius:9px;background:#f5fbf3;font-size:12px;color:#345f45;line-height:1.6}
+.sbBuyerError{background:#fff4f1;color:#9c3b39;border-color:#e9c6c0}
+.sbBuyerComingSoon{max-width:730px;padding:clamp(52px,10vw,116px) 0;margin:0 auto;min-height:380px}
+.sbBuyerComingSoon a{display:inline-flex;margin-top:20px;min-height:44px;align-items:center;background:#73324c;color:#fff;border-radius:9px;padding:11px 16px;text-decoration:none;font-size:12px;font-weight:750}
+.sbBuyerCard button:focus-visible,.sbBuyerComingSoon a:focus-visible,.sbBuyerField input:focus-visible,.sbBuyerField textarea:focus-visible{outline:3px solid #bc989b;outline-offset:3px}
+@media(max-width:900px){.sbBuyerTiers{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sbBuyer{margin:20px auto 45px}.sbBuyerChoices{grid-template-columns:minmax(0,1fr)}.sbBuyerForm{grid-template-columns:minmax(0,1fr)}.sbBuyerForm .sbBuyerField:nth-child(3),.sbBuyerForm .sbBuyerField:last-child{grid-column:auto}.sbBuyerPay{align-items:stretch;flex-direction:column}.sbBuyerPhotoPicker{display:flex;flex-direction:column;gap:9px}.sbBuyerPhotoPicker input{margin:0}}
+@media(max-width:380px){.sbBuyerTiers{gap:7px}.sbBuyerTiers button{padding:10px 8px}.sbBuyerCard{padding:14px}}
