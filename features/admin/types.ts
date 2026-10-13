@@ -3,6 +3,7 @@ import type { OrderLineItem } from "../../lib/domain/order"
 
 export type AdminOrder = {
   orderType: "hamper" | "individual"
+  selfBuild?: { selections: { kind: "category" | "option"; id: string; label: string; quantity: number }[]; otherRequestText: string; reservationStatus: "reserved" | "committed" | "released" | null }
   lineItems: OrderLineItem[]
   publicId: string
   subtotalPaise: number

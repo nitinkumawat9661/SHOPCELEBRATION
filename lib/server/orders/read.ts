@@ -56,7 +56,52 @@ export async function listOrders(limit = databaseConfig.adminOrderListDefault) {
     `SELECT ${ORDER_SELECT} FROM orders ORDER BY created_at DESC LIMIT $1`,
     [safeLimit]
   )
-  return result.rows.map(mapOrder)
+  const orders = result.rows.map(mapOrder)
+  if (!orders.length) return orders
+
+  // Authenticated admin list only: order snapshots are NEVER joined into
+  // customer tracking or public My Orders endpoints. No internal budget data
+  // or photo object keys leave the backend.
+  const snapshots = await query<{
+    public_id: string
+    selections: unknown
+    other_request_text: string
+    reservation_status: "reserved" | "committed" | "released" | null
+  }>(
+    `SELECT o.public_id,s.selections,s.other_request_text,
+            b.status AS reservation_status
+       FROM orders o
+       JOIN self_build_order_snapshots s ON s.order_id=o.id
+       LEFT JOIN self_build_order_reservation_batches b ON b.order_id=o.id
+      WHERE o.public_id = ANY($1::text[])`,
+    [orders.map(order => order.publicId)]
+  )
+  const byId = new Map(snapshots.rows.map(s => [s.public_id, s]))
+  return orders.map(order => {
+    const snapshot = byId.get(order.publicId)
+    if (!snapshot) return order
+    const selections = Array.isArray(snapshot.selections)
+      ? snapshot.selections.filter((entry): entry is Record<string, unknown> =>
+          entry !== null && typeof entry === "object" && !Array.isArray(entry))
+          .filter(entry => (entry.kind === "category" || entry.kind === "option") &&
+            typeof entry.label === "string" &&
+            typeof entry.id === "string" &&
+            typeof entry.quantity === "number" &&
+            Number.isSafeInteger(entry.quantity) && entry.quantity > 0)
+          .slice(0, 200).map(entry => ({
+            kind: entry.kind as "category" | "option",
+            id: String(entry.id), label: String(entry.label).slice(0,100),
+            quantity: Number(entry.quantity)
+          })) : []
+    return {
+      ...order,
+      selfBuild: {
+        selections,
+        otherRequestText: snapshot.other_request_text,
+        reservationStatus: snapshot.reservation_status
+      }
+    }
+  })
 }
 
 export async function getTierPopularity(): Promise<TierPopularity | null> {

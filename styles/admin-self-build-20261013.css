@@ -66,3 +66,20 @@
 .sbCapacityRow .sbAdminToggle{justify-content:flex-end;min-height:43px}
 @media(max-width:700px){.sbCapacityRow{grid-template-columns:minmax(0,1fr) minmax(100px,140px);gap:11px}.sbCapacityLabel{grid-column:1/-1}.sbCapacityRow .sbAdminToggle{justify-content:flex-start}}
 @media(max-width:380px){.sbCapacityRow{padding:12px}.sbCapacityTitle h4{font-size:22px}}
+
+/* Authenticated admin order packing snapshot. Never customer-facing. */
+.sbAdminOrderSnapshot{margin:18px 0;border:1px solid #ded2c9;border-radius:9px;background:#fffcf8;padding:clamp(15px,2.4vw,22px);color:#382b27}
+.sbAdminOrderSnapshotHead{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:15px;flex-wrap:wrap}
+.sbAdminOrderSnapshotHead>div{display:flex;flex-direction:column;gap:7px}
+.sbAdminOrderSnapshotHead b{font-size:15px;font-weight:650}
+.sbAdminOrderSnapshotHead small,.sbAdminOrderSnapshotDisclaimer{font-size:11px;line-height:1.7;color:#796e66}
+.sbAdminOrderSnapshotStatus{padding:7px 10px;border-radius:30px;background:#f0e4e1;color:#703747;font-size:11px;font-weight:600;text-transform:capitalize}
+.sbAdminOrderSnapshotItems{padding:0;margin:0;list-style:none;border-top:1px solid #ece3dd}
+.sbAdminOrderSnapshotItems li{padding:10px 0;border-bottom:1px solid #ece3dd;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sbAdminOrderSnapshotItems li>span{font-size:13px;font-weight:600;display:flex;flex-direction:column;gap:4px}
+.sbAdminOrderSnapshotItems li small{font-weight:400;font-size:10px;color:#827268}
+.sbAdminOrderSnapshotItems li strong{font-size:13px;white-space:nowrap;color:#793344}
+.sbAdminOrderSnapshotNote{margin-top:16px;padding:13px 16px;background:#f7efe9;border-radius:5px}
+.sbAdminOrderSnapshotNote b{font-size:11px}
+.sbAdminOrderSnapshotNote p{font-size:12px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0}
+.sbAdminOrderSnapshotDisclaimer{margin:14px 0 0}

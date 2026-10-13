@@ -1,0 +1,54 @@
+name: Celebration Self-Build Private Draft Cleanup
+
+on:
+  schedule:
+    # 03:30 IST (22:00 UTC); GitHub scheduled actions are approximate.
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-self-build-private-draft-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure verified SSH access
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!name:-}" ] || { echo "Missing required value: $name" >&2; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration_cleanup"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration_cleanup" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/celebration_cleanup" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+      - name: Clean private expired drafts on active Celebration VPS release
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration_cleanup" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
+          set -euo pipefail
+          test "$(id -un)" = nitin
+          APP_ROOT=/var/www/celebration
+          RELEASE="$(readlink -f "$APP_ROOT/current")"
+          case "$RELEASE" in "$APP_ROOT"/releases/*) ;; *) echo "Unsafe release path" >&2; exit 1 ;; esac
+          test -f "$RELEASE/scripts/cleanup-self-build-staging.mjs"
+          test -f "$RELEASE/.env.production"
+          cd "$RELEASE"
+          node -e "require('@next/env').loadEnvConfig(process.cwd(), false); import('./scripts/cleanup-self-build-staging.mjs')"
+          REMOTE
