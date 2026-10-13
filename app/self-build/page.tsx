@@ -49,7 +49,7 @@ export default async function SelfBuildCustomerPage(){
   }
   return <main className="sbBuyerPage">
     <TrustStrip />
-    <StorefrontHeader settings={settings?.settings||defaultStoreSettings} />
+    <StorefrontHeader settings={settings?.settings||defaultStoreSettings} showSelfBuild={enabled} />
     <div className="wrap">{surface}</div>
     <SiteFooter />
   </main>
