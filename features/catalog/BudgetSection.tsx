@@ -4,6 +4,7 @@ import { useRef } from "react"
 import type { Tier } from "../../lib/domain/catalog"
 import { uiContent } from "../../lib/domain/content"
 import { formatMoney } from "../../lib/domain/money"
+import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 
 const UNSUPPORTED_SOCIAL_PROOF = new Set(["POPULAR", "BESTSELLER", "MOST POPULAR", "CUSTOMER FAVORITE", "CUSTOMER FAVOURITE"])
 
@@ -41,7 +42,7 @@ export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommende
           <div className="celebrationBudgetIntro">
             <div className="kicker">{uiContent.budgets.kicker}</div>
             <h2>{uiContent.budgets.title}</h2>
-            {startingPrice !== null && <span className="celebrationBudgetStarting">Complete hampers from <strong>{formatMoney(startingPrice)}</strong></span>}
+            {startingPrice !== null && <span className="celebrationBudgetStarting">Complete hampers from <strong>{formatMoney(hamperFinalPriceRupees(startingPrice))}</strong></span>}
           </div>
           <p>{uiContent.budgets.body}</p>
         </div>
@@ -63,7 +64,7 @@ export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommende
                   {badge && <span className="badge">{badge}</span>}
                 </div>
                 <div className="celebrationTierMain">
-                  <span className="price">{formatMoney(item.price)}</span>
+                  <span className="price">{formatMoney(hamperFinalPriceRupees(item.price))}</span>
                   <span className="name">{item.name}</span>
                 </div>
                 <div className="celebrationTierDetails">
