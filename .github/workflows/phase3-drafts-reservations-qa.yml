@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - db/migrations/051_self_build_account_drafts_photos_and_reservations.sql
+      - db/migrations/104_self_build_order_photos_delivery_retention.sql
+      - lib/server/self-build-order-photos.ts
+      - scripts/cleanup-self-build-delivered-photos.mjs
       - lib/server/self-build-drafts.ts
       - lib/server/self-build-photos.ts
       - lib/server/self-build-reservations.ts
@@ -59,9 +62,10 @@ jobs:
           set -euo pipefail
           command -v psql >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
           psql -v ON_ERROR_STOP=1 -c "CREATE TABLE customer_accounts(id text PRIMARY KEY); CREATE TABLE orders(id text PRIMARY KEY,customer_account_id text,order_type text,tier_id text,payment_status text);"
-          for file in db/migrations/047_self_build_hamper_draft_architecture.sql db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql db/migrations/049_self_build_category_only_no_sku_mapping.sql db/migrations/050_self_build_category_capacity_and_tier_allowances.sql db/migrations/051_self_build_account_drafts_photos_and_reservations.sql; do
+          for file in db/migrations/047_self_build_hamper_draft_architecture.sql db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql db/migrations/049_self_build_category_only_no_sku_mapping.sql db/migrations/050_self_build_category_capacity_and_tier_allowances.sql db/migrations/051_self_build_account_drafts_photos_and_reservations.sql db/migrations/104_self_build_order_photos_delivery_retention.sql; do
             psql -v ON_ERROR_STOP=1 -f "$file"
           done
+          psql -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM self_build_order_photos"
           psql -v ON_ERROR_STOP=1 <<'SQL'
           DO $$
           BEGIN
