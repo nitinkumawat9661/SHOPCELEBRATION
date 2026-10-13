@@ -25,6 +25,10 @@ export function JewelryMarketplaceFilters({ categories }: { categories: Category
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [panel, setPanel] = useState<"sort" | "category" | "price" | null>(null)
+  // Server-rendered filter buttons must not appear interactive until React
+  // attaches their handlers; avoids a dead first tap on slow mobile hydration.
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => { setHydrated(true) }, [])
   const dialogRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -96,22 +100,22 @@ export function JewelryMarketplaceFilters({ categories }: { categories: Category
 
   return <>
     <div className="marketplaceFilterBar" aria-label="Jewelry filters">
-      <button type="button" className={activeSort ? "active" : ""} onClick={() => setPanel("sort")} aria-haspopup="dialog" aria-expanded={panel === "sort"}>
+      <button type="button" className={activeSort ? "active" : ""} onClick={() => setPanel("sort")} disabled={!hydrated} aria-haspopup="dialog" aria-expanded={panel === "sort"}>
         <span className="marketplaceFilterIcon" aria-hidden="true">⇅</span>
         <span><b>Sort</b><small>{sortLabel}</small></span>
         <span aria-hidden="true">⌄</span>
       </button>
-      <button type="button" className={activeCategory ? "active" : ""} onClick={() => setPanel("category")} aria-haspopup="dialog" aria-expanded={panel === "category"}>
+      <button type="button" className={activeCategory ? "active" : ""} onClick={() => setPanel("category")} disabled={!hydrated} aria-haspopup="dialog" aria-expanded={panel === "category"}>
         <span className="marketplaceFilterIcon" aria-hidden="true">☰</span>
         <span><b>Category</b><small>{categoryLabel}</small></span>
         <span aria-hidden="true">⌄</span>
       </button>
-      <button type="button" className={activePrice ? "active" : ""} onClick={() => setPanel("price")} aria-haspopup="dialog" aria-expanded={panel === "price"}>
+      <button type="button" className={activePrice ? "active" : ""} onClick={() => setPanel("price")} disabled={!hydrated} aria-haspopup="dialog" aria-expanded={panel === "price"}>
         <span className="marketplaceFilterIcon" aria-hidden="true">₹</span>
         <span><b>Price</b><small>{priceLabel}</small></span>
         <span aria-hidden="true">⌄</span>
       </button>
-      {activeCount > 0 && <button type="button" className="marketplaceFilterClear" onClick={clearAll} aria-label="Clear all filters">
+      {activeCount > 0 && <button type="button" className="marketplaceFilterClear" onClick={clearAll} disabled={!hydrated} aria-label="Clear all filters">
         Clear {activeCount}
       </button>}
     </div>
