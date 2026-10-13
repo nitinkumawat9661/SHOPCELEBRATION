@@ -19,7 +19,7 @@ const [page,ui,css,draftApi,photoApi,createApi,retryApi,gate,provider] = await P
 assert(page.includes("customerSelfBuildEnabled().catch(()=>false)")&&
  page.includes("if(!enabled)")&&page.includes("<CustomerSelfBuildStudio"),
  "Actual production DB hard launch gate must control buyer studio rendering")
-assert(page.includes("getSelfBuildVisualData()")&&page.includes("getCatalogConfig()"),
+assert(page.includes("getSelfBuildVisualData()")&&page.includes("getSelfBuildPublishedCatalog()"),
  "Buyer sees verified category names and public hamper tier prices only")
 assert(page.includes("robots:{index:false")&&page.includes("Our create-your-own hamper studio is being prepared"),
  "Unlaunched self-build must be noindex and show honest coming-soon")
