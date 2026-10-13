@@ -21,10 +21,10 @@ assert.match(draft,/customer_enabled===true/)
 // Presentation may group public labels, but must not re-key payload or alter
 // original server-side selection, unit quantities, budget, or payment gate.
 for(const text of [
- 'grouped.map(item=>',
+ 'visibleSections.map(section=>',
  'sbBuyerFlatChoices',
  'sbBuyerChoiceText',
- 'setBuyerStep("select")',
+ 'setBuyerStep("categories")',
  'sbBuyerUpgradeDialog',
  'sbBuyerChoiceActive',
  'selectedUnits>=maxUnits',

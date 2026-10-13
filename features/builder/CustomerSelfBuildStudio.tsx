@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { orderConfig } from "../../config/order"
 import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
+import { buildSelfBuildGiftSections } from "../../lib/domain/self-build-choice-sections"
 import type { Tier } from "../../lib/domain/catalog"
 import { formatMoney } from "../../lib/domain/catalog"
 import type { SelfBuildVisualData } from "../../lib/server/self-build-preview"
@@ -103,8 +104,9 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   const [tierId,setTierId]=useState(tiers[0]?.id||"")
   const [quantity,setQuantity]=useState<Record<string,number>>({})
   const [note,setNote]=useState("")
-  const [buyerStep,setBuyerStep]=useState<"tier"|"select">("tier")
+  const [buyerStep,setBuyerStep]=useState<"tier"|"categories"|"select">("tier")
   const [upgradeOpen,setUpgradeOpen]=useState(false)
+  const [activeSectionId,setActiveSectionId]=useState<string|null>(null)
   const [draftId,setDraftId]=useState("")
   const [savedSignature,setSavedSignature]=useState("")
   const [photos,setPhotos]=useState<Photo[]>([])
@@ -138,19 +140,12 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   const signature=JSON.stringify({tierId,selections:items,note:note.trim()})
   const saved=Boolean(draftId)&&savedSignature===signature
   const readyToPay=saved&&items.length>0&&!tooManyItems&&photos.length===photoQuantity&&Boolean(tier)&&accepted&&Boolean(customer.account)
-  const grouped=useMemo(()=>{
-    const categoryNames=new Map(data.categories.map(c=>[c.id,c.label]))
-    const selectable=data.categories.filter(c=>["category","photo"].includes(c.selectionKind)).map(c=>({
-      key:`category:${c.id}`,label:c.label,group:c.parentId?categoryNames.get(c.parentId)||"":"",kind:c.selectionKind
-    }))
-    const options=data.options.map(o=>({
-      key:`option:${o.id}`,label:o.label,group:categoryNames.get(o.categoryId)||"",kind:"variant"
-    }))
-    return [...selectable,...options]
-  },[data])
-
-  // Keep every selectable category/variant visible in one continuous list.
-  // No category navigation and no extra nested page for teddy, jewellery, etc.
+  const sections=useMemo(()=>buildSelfBuildGiftSections(data),[data])
+  const visibleSections=useMemo(()=>activeSectionId?
+    [...sections].sort((a,b)=>Number(b.id===activeSectionId)-Number(a.id===activeSectionId)):
+    sections,[sections,activeSectionId])
+  // Every gift is always available regardless of hamper price; tier allowances
+  // remain enforced only at quantity selection and on the existing server.
   const upgradeTier=useMemo(()=>[...tiers]
     .filter(t=>t.maxChoices>selectedUnits && t.maxChoices>maxUnits && t.price>(tier?.price||0))
     .sort((a,b)=>a.price-b.price)[0],[tiers,selectedUnits,maxUnits,tier?.price])
@@ -302,7 +297,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
           {tiers.map(t=><button key={t.id} type="button" disabled={disabled}
             className="sbBuyerTierBar" onClick={()=>{
               if(selectedUnits>t.maxChoices){setUpgradeOpen(true);return}
-              setTierId(t.id);setBuyerStep("select")
+              setTierId(t.id);setBuyerStep("categories");setActiveSectionId(null)
               window.scrollTo({top:0,behavior:"auto"})
             }}>
             <span className="sbBuyerTierName">{t.name}</span>
@@ -310,35 +305,57 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
             <span className="sbBuyerTierArrow" aria-hidden="true">→</span>
           </button>)}
         </div>
+      </section>:buyerStep==="categories"?<section className="sbBuyerCategoryStage"
+        aria-label="Choose your gift categories">
+        <h2>Explore gift categories</h2>
+        <p>Choose any collection to start, or explore every gift together.</p>
+        <div className="sbBuyerCategoryList">{sections.map(section=><button type="button"
+          key={section.id} disabled={disabled} onClick={()=>{
+            setActiveSectionId(section.id);setBuyerStep("select")
+            window.scrollTo({top:0,behavior:"auto"})
+          }}><span>{section.label}</span><span aria-hidden="true">→</span></button>)}</div>
+        <button type="button" className="sbBuyerAllCategories" disabled={disabled}
+          onClick={()=>{setActiveSectionId(null);setBuyerStep("select")
+            window.scrollTo({top:0,behavior:"auto"})}}>
+          Explore all gifts <span aria-hidden="true">→</span>
+        </button>
+        <button type="button" className="sbBuyerBackCategory" disabled={disabled}
+          onClick={()=>setBuyerStep("tier")}>← Change hamper</button>
       </section>:<>
         <div className="sbBuyerChosenTier">
           <span>{tier?.name||"Hamper"} · <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong></span>
-          <button type="button" disabled={disabled} onClick={()=>setBuyerStep("tier")}>Change hamper</button>
+          <button type="button" disabled={disabled} onClick={()=>setBuyerStep("categories")}>Back to categories</button>
         </div>
       <section className="sbBuyerCard sbBuyerSelectionsSection"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
         <p>Explore the gift categories below. You can choose the same type more than once.</p></div></div>
-        <div className="sbBuyerChoices sbBuyerFlatChoices" aria-label="All available gifts">
-          {grouped.map(item=>{
-            const count=quantity[item.key]||0
-            return <div className={count>0?"sbBuyerChoice sbBuyerChoiceActive":"sbBuyerChoice"} key={item.key}>
-              <div className="sbBuyerChoiceText"><strong>{item.label}</strong>
-                {item.group&&<small>{item.group}</small>}
-              </div>
-              <div className="sbBuyerQty">
-                <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
-                  onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
-                <output aria-label={`${item.label}: ${count} selected`}>{count}</output>
-                <button type="button" disabled={disabled||count>=100} aria-label={`Add ${item.label}`}
-                  onClick={()=>{
-                    if(selectedUnits>=maxUnits){setUpgradeOpen(true);return}
-                    setQuantity(v=>{
-                      const total=Object.values(v).reduce((sum,value)=>sum+Math.max(0,value),0)
-                      return total>=maxUnits?v:{...v,[item.key]:Math.min(100,(v[item.key]||0)+1)}
-                    })
-                  }}>+</button>
-              </div>
+        <div className="sbBuyerGiftSections" aria-label="All available gifts">
+          {visibleSections.map(section=><section className="sbBuyerGiftSection"
+            key={section.id} aria-labelledby={`buyer-gift-section-${section.id}`}>
+            <h3 id={`buyer-gift-section-${section.id}`}>{section.label}</h3>
+            <div className="sbBuyerChoices sbBuyerFlatChoices">
+              {section.choices.map(item=>{
+                const count=quantity[item.key]||0
+                return <div className={count>0?"sbBuyerChoice sbBuyerChoiceActive":"sbBuyerChoice"} key={item.key}>
+                  <div className="sbBuyerChoiceText"><strong>{item.label}</strong>
+                    {item.groupLabel&&item.groupLabel!==section.label&&<small>{item.groupLabel}</small>}
+                  </div>
+                  <div className="sbBuyerQty">
+                    <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
+                      onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
+                    <output aria-label={`${item.label}: ${count} selected`}>{count}</output>
+                    <button type="button" disabled={disabled||count>=100} aria-label={`Add ${item.label}`}
+                      onClick={()=>{
+                        if(selectedUnits>=maxUnits){setUpgradeOpen(true);return}
+                        setQuantity(v=>{
+                          const total=Object.values(v).reduce((sum,value)=>sum+Math.max(0,value),0)
+                          return total>=maxUnits?v:{...v,[item.key]:Math.min(100,(v[item.key]||0)+1)}
+                        })
+                      }}>+</button>
+                  </div>
+                </div>
+              })}
             </div>
-          })}
+          </section>)}
         </div>
         {tooManyItems&&<p className="sbBuyerCountError" role="alert">
           This hamper cannot fit all your chosen gifts. Choose a larger hamper or remove some gifts.

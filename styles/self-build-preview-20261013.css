@@ -488,3 +488,49 @@
   .sbPreviewPage .sbChoiceCard{min-height:66px}
   .sbPreviewPage .sbChosenTierLine{font-size:17px}
 }
+
+
+/* 2026-10-14 / Owner-approved intermediary category step + direct grouped gifts.
+   Categories are plain interactive rows; no dropdowns or drill-down pages.
+   Gift options remain directly selectable beneath strong category headings. */
+.sbPreviewPage .sbCategoryStep{padding:0 0 23px}
+.sbPreviewPage .sbCategoryMenu{border-top:2px solid #9b6672;display:flex;flex-direction:column}
+.sbPreviewPage .sbCategoryJump{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:transparent;border:0;border-bottom:1px solid #d8babc;
+  border-radius:0;padding:16px 8px;min-height:66px;text-align:left;
+  color:#4d1c35;box-shadow:none
+}
+.sbPreviewPage .sbCategoryJump>span:first-child{
+  font:italic 800 clamp(24px,3vw,32px)/1.17 var(--sb-serif);
+  letter-spacing:-.03em;overflow-wrap:anywhere
+}
+.sbPreviewPage .sbCategoryJump>span:last-child{
+  display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;
+  border-radius:50%;background:#741e38;color:#fff9f5;font:700 18px/1 var(--sb-sans)
+}
+.sbPreviewPage .sbCategoryJump:hover{background:#f0dddc;color:#61172f}
+.sbPreviewPage .sbCategoryAll{
+  margin:19px 0 0;min-height:48px;padding:12px 20px;
+  background:#741e38;border:1px solid #741e38;color:#fff9f5;
+  font:700 13px/1.2 var(--sb-sans);letter-spacing:.01em
+}
+.sbPreviewPage .sbCategoryAll>span{margin-left:12px}
+.sbPreviewPage .sbGiftSections{display:flex;flex-direction:column;gap:29px;padding:5px 0 15px}
+.sbPreviewPage .sbGiftSection{min-width:0;scroll-margin-top:18px}
+.sbPreviewPage .sbGiftSectionHeading{
+  margin:0;padding:11px 2px 13px;border-bottom:2px solid #ae6d7d;
+  color:#501930;font:italic 800 clamp(26px,3.5vw,36px)/1.14 var(--sb-serif);
+  letter-spacing:-.035em;overflow-wrap:anywhere
+}
+.sbPreviewPage .sbGiftSection .sbChoiceGrid{border-top:0}
+.sbPreviewPage .sbGiftSection .sbChoiceCard:first-child{border-top:0}
+@media(max-width:600px){
+  .sbPreviewPage .sbCategoryJump{min-height:61px;padding:12px 4px}
+  .sbPreviewPage .sbCategoryJump>span:first-child{font-size:23px}
+  .sbPreviewPage .sbGiftSections{gap:23px}
+  .sbPreviewPage .sbGiftSectionHeading{font-size:27px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sbPreviewPage .sbCategoryJump{transition:none}
+}
