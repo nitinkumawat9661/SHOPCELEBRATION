@@ -1,6 +1,10 @@
 "use client"
 
+import { useEffect, useState } from "react"
+
 export function OccasionRail({ value, occasions, onChange }: { value: string; occasions: string[]; onChange: (value: string) => void }) {
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => { setHydrated(true) }, [])
   if (!occasions.length) return null
 
   return (
@@ -24,6 +28,7 @@ export function OccasionRail({ value, occasions, onChange }: { value: string; oc
                 key={occasion}
                 className={`chip ${value === occasion ? "active" : ""}`}
                 aria-pressed={value === occasion}
+                disabled={!hydrated}
                 onClick={() => onChange(occasion)}
               >
                 <span className="celebrationOccasionName">{occasion}</span>
