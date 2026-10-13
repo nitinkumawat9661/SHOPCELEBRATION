@@ -28,7 +28,7 @@ function fail(error:unknown){
 export async function GET(){
   try{
     const a=await access()
-    if("code" in a)return response(a.code,a.status)
+    if("code" in a)return response(a.code || "AUTH_REQUIRED",a.status || 401)
     return NextResponse.json({ok:true,draft:await getSelfBuildDraft(a.id)},{headers:noStore})
   }catch(error){return fail(error)}
 }
@@ -36,7 +36,7 @@ export async function PUT(request:Request){
   try{
     enforceSameOrigin(request)
     const a=await access()
-    if("code" in a)return response(a.code,a.status)
+    if("code" in a)return response(a.code || "AUTH_REQUIRED",a.status || 401)
     const allowed=await consumeRequestRateLimit("customer-self-build-draft",request,validation.rateLimits.customerMutation)
     if(!allowed)return response("RATE_LIMITED",429)
     const body=await readJsonBody<unknown>(request)
