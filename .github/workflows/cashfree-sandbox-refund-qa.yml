@@ -1,0 +1,59 @@
+name: Cashfree SANDBOX Refund Reconciliation QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "inspect = read only, refund = explicitly issue ONE Cashfree SANDBOX test refund"
+        type: choice
+        required: true
+        default: inspect
+        options:
+          - inspect
+          - refund
+      order_id:
+        description: "Paid test order ID starting SBQA_ (never a live website order)"
+        type: string
+        required: true
+      approval:
+        description: "For refund ONLY, enter exactly SANDBOX_REFUND_549"
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-cashfree-sandbox-refund
+  cancel-in-progress: false
+
+jobs:
+  refund-test:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: cashfree-sandbox
+    env:
+      CASHFREE_TEST_APP_ID: ${{ secrets.CASHFREE_TEST_APP_ID }}
+      CASHFREE_TEST_SECRET_KEY: ${{ secrets.CASHFREE_TEST_SECRET_KEY }}
+      CASHFREE_SANDBOX_REFUND_WORKFLOW: "true"
+      CASHFREE_REFUND_QA_ACTION: ${{ inputs.action }}
+      CASHFREE_REFUND_QA_ORDER_ID: ${{ inputs.order_id }}
+      CASHFREE_REFUND_QA_APPROVAL: ${{ inputs.approval }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Safety checks - no production credentials or environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CASHFREE_TEST_APP_ID"
+          test -n "$CASHFREE_TEST_SECRET_KEY"
+          test ! -e .env
+          test ! -e .env.production
+          node --check scripts/run-cashfree-sandbox-refund-qa.mjs
+      - name: Cashfree test refund inspection or explicit test-only refund
+        shell: bash
+        run: node scripts/run-cashfree-sandbox-refund-qa.mjs
