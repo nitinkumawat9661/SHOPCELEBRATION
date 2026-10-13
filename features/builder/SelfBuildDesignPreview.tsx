@@ -4,11 +4,10 @@ import Link from "next/link"
 import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 import { formatMoney } from "../../lib/domain/catalog"
 import { useMemo, useState } from "react"
-import type { SelfBuildVisualCategory, SelfBuildVisualData, SelfBuildVisualOption } from "../../lib/server/self-build-preview"
+import { buildSelfBuildGiftSections } from "../../lib/domain/self-build-choice-sections"
+import type { SelfBuildVisualData } from "../../lib/server/self-build-preview"
 
-type Step = "tier" | "choose" | "personalise" | "review"
-type Choice = { id: string; label: string; kind: "category" | "option" | "photo"; groupLabel: string }
-
+type Step = "tier" | "categories" | "choose" | "personalise" | "review"
 function QuantityControl({ label, count, onChange }: { label: string; count: number; onChange: (count: number) => void }) {
   return <div className={count ? "sbQty sbQty--active" : "sbQty"} aria-label={`Quantity of ${label}`}>
     <button type="button" aria-label={`Remove one ${label}`} disabled={count === 0} onClick={() => onChange(Math.max(0, count - 1))}>−</button>
@@ -31,10 +30,6 @@ function SelectionCard({ title, group, count, onChange }: {
   </div>
 }
 
-function isSelectable(kind: string): kind is Choice["kind"] {
-  return kind === "category" || kind === "photo"
-}
-
 export function SelfBuildDesignPreview({ data, tiers }: {
   data: SelfBuildVisualData
   tiers: {id:string;name:string;maxChoices:number;price:number}[]
@@ -42,44 +37,22 @@ export function SelfBuildDesignPreview({ data, tiers }: {
   const [step, setStep] = useState<Step>("tier")
   const [tierId,setTierId]=useState(tiers[0]?.id||"")
   const [upgradeOpen, setUpgradeOpen] = useState(false)
+  const [activeSectionId,setActiveSectionId]=useState<string|null>(null)
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [message, setMessage] = useState("")
-  const sortedCategories = useMemo(() => [...data.categories].sort((a,b) =>
-    a.displayOrder-b.displayOrder || a.label.localeCompare(b.label)),[data.categories])
-  const sortedOptions = useMemo(() => [...data.options].sort((a,b) =>
-    a.displayOrder-b.displayOrder || a.label.localeCompare(b.label)),[data.options])
-  const notesCategory=sortedCategories.find(c=>c.selectionKind==="notes")
-
-  // Flatten every selectable category and size into ONE continuous list.
-  // Parent categories supply context only, never force another browsing page.
-  const availableChoices = useMemo<Choice[]>(()=>{
-    const entries:Choice[]=[]
-    const visited=new Set<string>()
-    const walk=(category:SelfBuildVisualCategory, ancestors:string[])=>{
-      if(visited.has(category.id))return
-      visited.add(category.id)
-      const groupLabel=ancestors.join(" · ")
-      if(isSelectable(category.selectionKind)){
-        entries.push({id:`category:${category.id}`,label:category.label,
-          kind:category.selectionKind,groupLabel})
-      }
-      if(category.selectionKind==="variant"){
-        sortedOptions.filter(o=>o.categoryId===category.id).forEach(o=>
-          entries.push({id:`option:${o.id}`,label:o.label,kind:"option",
-            groupLabel:[...ancestors,category.label].join(" · ")}))
-      }
-      sortedCategories.filter(child=>child.parentId===category.id).forEach(child=>
-        walk(child,[...ancestors,category.label]))
-    }
-    sortedCategories.filter(category=>!category.parentId||
-      !sortedCategories.some(parent=>parent.id===category.parentId))
-      .forEach(root=>walk(root,[]))
-    sortedCategories.forEach(orphan=>walk(orphan,[]))
-    return entries
-  },[sortedCategories,sortedOptions])
-
-  const chosen = useMemo(() => availableChoices.map(choice => ({ ...choice, quantity: quantities[choice.id] ?? 0 }))
-    .filter(choice => choice.quantity > 0), [availableChoices, quantities])
+  const sections=useMemo(()=>buildSelfBuildGiftSections(data),[data])
+  const notesCategory=data.categories.find(c=>c.selectionKind==="notes")
+  // A category click brings that section first, but every category remains
+  // present on the next screen, with no accordion, dropdown or hidden products.
+  const visibleSections=useMemo(()=>activeSectionId?
+    [...sections].sort((a,b)=>Number(b.id===activeSectionId)-Number(a.id===activeSectionId)):
+    sections,[sections,activeSectionId])
+  const availableChoices=useMemo(()=>sections.flatMap(section=>section.choices.map(choice=>({
+    id:choice.key,label:choice.label,kind:choice.kind,groupLabel:section.label
+  }))),[sections])
+  const chosen=useMemo(()=>availableChoices.map(choice=>({
+    ...choice,quantity:quantities[choice.id]??0
+  })).filter(choice=>choice.quantity>0),[availableChoices,quantities])
   const units = chosen.reduce((sum, choice) => sum + choice.quantity, 0)
   const distinct = chosen.length
   const tier=tiers.find(item=>item.id===tierId)||tiers[0]
@@ -104,17 +77,21 @@ export function SelfBuildDesignPreview({ data, tiers }: {
     const chosenTier=tiers.find(t=>t.id===id)
     if(chosenTier&&units>chosenTier.maxChoices){setUpgradeOpen(true);return}
     setTierId(id)
-    setStep("choose")
+    setStep("categories")
+    setActiveSectionId(null)
     window.scrollTo({top:0,behavior:"auto"})
   }
   function goBack(){
     if(step==="review"){setStep("personalise");return}
     if(step==="personalise"){setStep("choose");return}
-    if(step==="choose"){setStep("tier");return}
+    if(step==="choose"){setStep("categories");return}
+    if(step==="categories"){setStep("tier");return}
   }
-  const title=step==="choose"?"Choose your gifts":
+  const title=step==="categories"?"Browse gift categories":
+    step==="choose"?"Choose your gifts":
     step==="personalise"?"Add your personal touch":"Your hamper, at a glance"
-  const description=step==="choose"?"All gift options are below. Select the types and quantities you'd like.":
+  const description=step==="categories"?"Choose where to start. Every collection is visible on the next screen.":
+    step==="choose"?"Gifts are organised by category. Select any combination you like.":
     step==="personalise"?"Tell us what would make this gift feel personal.":
     "A simple summary of your choices. This is a design preview, not an order."
 
@@ -128,15 +105,15 @@ export function SelfBuildDesignPreview({ data, tiers }: {
     <div className={step==="tier"?"sbPreviewLayout sbPreviewLayout--tier":"sbPreviewLayout"}>
       <div className="sbPreviewMain">
         <div className="sbIntro">
-          <h1>{step==="tier"?"Choose your hamper":step==="choose"?"Make it yours.":"Your personal gift."}</h1>
-          <p>{step==="tier"?"Select a hamper to explore the full gift collection.":"Choose from every available gift option."}</p>
+          <h1>{step==="tier"?"Choose your hamper":step==="categories"?"Explore the collections.":step==="choose"?"Make it yours.":"Your personal gift."}</h1>
+          <p>{step==="tier"?"Select a hamper to explore the full gift collection.":"Explore by collection, with every gift available."}</p>
         </div>
 
         <nav className="sbSteps" aria-label="Hamper design steps">
-          {([["tier","01","Hamper"],["choose","02","Gifts"],
-            ["personalise","03","Personalise"],["review","04","Review"]] as const)
+          {([["tier","01","Hamper"],["categories","02","Categories"],
+            ["choose","03","Gifts"],["personalise","04","Personalise"],["review","05","Review"]] as const)
             .map(([id,number,label],index)=>{
-              const active=(["tier","choose","personalise","review"] as Step[]).indexOf(step)
+              const active=(["tier","categories","choose","personalise","review"] as Step[]).indexOf(step)
               return <button type="button" key={id} disabled={index>active}
                 onClick={()=>setStep(id)} className={step===id?"sbStep sbStep--current":
                   index<active?"sbStep sbStep--complete":"sbStep"}
@@ -169,17 +146,35 @@ export function SelfBuildDesignPreview({ data, tiers }: {
             </button>
           </div>}
 
+          {step==="categories"&&<div className="sbCategoryStep" aria-label="Choose a gift collection">
+            <div className="sbCategoryMenu">
+              {sections.map(section=><button type="button" className="sbCategoryJump" key={section.id}
+                onClick={()=>{setActiveSectionId(section.id);setStep("choose");window.scrollTo({top:0,behavior:"auto"})}}>
+                <span>{section.label}</span><span aria-hidden="true">→</span>
+              </button>)}
+            </div>
+            <button type="button" className="sbCategoryAll" onClick={()=>{
+              setActiveSectionId(null);setStep("choose");window.scrollTo({top:0,behavior:"auto"})
+            }}>Explore all gifts <span aria-hidden="true">→</span></button>
+          </div>}
+
           {step==="choose"&&<div className="sbSelectionArea">
             <div className="sbChosenTierLine">
               <span>{tier?.name||"Hamper"}</span>
               <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong>
               <button type="button" onClick={()=>setStep("tier")}>Change hamper</button>
             </div>
-            <div className="sbChoiceGrid">
-              {availableChoices.map(choice=><SelectionCard key={choice.id}
-                title={choice.label} group={choice.groupLabel}
-                count={quantities[choice.id]||0}
-                onChange={count=>changeQuantity(choice.id,count)}/>)}
+            <div className="sbGiftSections">
+              {visibleSections.map(section=><section key={section.id} className="sbGiftSection"
+                aria-labelledby={`gift-group-${section.id}`}>
+                <h3 id={`gift-group-${section.id}`} className="sbGiftSectionHeading">{section.label}</h3>
+                <div className="sbChoiceGrid">
+                  {section.choices.map(choice=><SelectionCard key={choice.key}
+                    title={choice.label} group={choice.groupLabel===section.label?"":choice.groupLabel}
+                    count={quantities[choice.key]||0}
+                    onChange={count=>changeQuantity(choice.key,count)}/>)}
+                </div>
+              </section>)}
             </div>
           </div>}
 
@@ -202,7 +197,7 @@ export function SelfBuildDesignPreview({ data, tiers }: {
             {step === "choose" && <button className="sbPrimary" type="button" disabled={units === 0 || exceedsMax} onClick={() => setStep("personalise")}>Continue to personalise <span aria-hidden="true">→</span></button>}
             {step === "personalise" && <button className="sbPrimary" type="button" onClick={() => setStep("review")}>Review my hamper <span aria-hidden="true">→</span></button>}
             {step === "review" && <button className="sbPrimary" type="button" onClick={() => setStep("choose")}>Edit gifts <span aria-hidden="true">↗</span></button>}
-            <span>{step==="tier"?"":step==="choose"?units?"Review your choices or continue":"Choose at least one gift type to continue":step==="personalise"?"Your note is optional":"Ordering is disabled in this design review"}</span>
+            <span>{step==="tier"?"":step==="categories"?"Open any collection or browse them all":step==="choose"?units?"Review your choices or continue":"Choose at least one gift type to continue":step==="personalise"?"Your note is optional":"Ordering is disabled in this design review"}</span>
           </div>
         </section>
       </div>
