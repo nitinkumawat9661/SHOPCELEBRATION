@@ -16,7 +16,7 @@ assert(page.indexOf('if (!await isAdminRequest())') < page.indexOf('getSelfBuild
 assert(page.includes('robots: { index: false, follow: false }'),"Admin preview must be noindex")
 assert(page.includes('export const dynamic = "force-dynamic"'))
 assert(page.includes('SelfBuildDesignPreview data={data} tiers={tiers}'))
-assert(page.includes("getCatalogConfig()")&&page.includes("maxChoices:t.maxChoices"),"Preview tier max is from live catalog, not a hardcoded internal budget")
+assert(page.includes("getSelfBuildPublishedCatalog()")&&page.includes("maxChoices:t.maxChoices"),"Preview tier max is from live catalog, not a hardcoded internal budget")
 assert(page.includes('self-build-preview-20261013.css'))
 assert(!/getSelfBuildAdminState|unitBudgetPaise|productRules/.test(page),"Route must pass sanitized visual data only")
 assert(projection.includes('getSelfBuildAdminState()'),"Use live admin DB categories, not static client seed")
