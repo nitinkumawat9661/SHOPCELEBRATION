@@ -1,50 +1,36 @@
 #!/usr/bin/env node
-// Historical competitor-style check now verifies the user's latest, simpler
-// category *names*, not the superseded category cards or visual decorations.
+// Historic test renamed in effect: no staged category navigation.
 import assert from "node:assert/strict"
 import {readFile} from "node:fs/promises"
 import ts from "typescript"
 const read=p=>readFile(new URL("../"+p,import.meta.url),"utf8")
 const [ui,css,buyerCss,route,price,buyer]=await Promise.all([
- read("features/builder/SelfBuildDesignPreview.tsx"),
- read("styles/self-build-preview-20261013.css"),
- read("styles/self-build-buyer-20261013.css"),
- read("app/admin/self-build-preview/page.tsx"),
- read("config/self-build-delivery.ts"),
- read("features/builder/CustomerSelfBuildStudio.tsx")
+ read("features/builder/SelfBuildDesignPreview.tsx"),read("styles/self-build-preview-20261013.css"),
+ read("styles/self-build-buyer-20261013.css"),read("app/admin/self-build-preview/page.tsx"),
+ read("config/self-build-delivery.ts"),read("features/builder/CustomerSelfBuildStudio.tsx")
 ])
-const errs=ts.transpileModule(ui,{fileName:"SelfBuildDesignPreview.tsx",reportDiagnostics:true,compilerOptions:{
- jsx:ts.JsxEmit.Preserve,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext
-}}).diagnostics?.filter(x=>x.category===ts.DiagnosticCategory.Error)||[]
-assert.equal(errs.length,0,errs.map(x=>x.messageText).join("; "))
+const {diagnostics=[]}=ts.transpileModule(ui,{fileName:"SelfBuildDesignPreview.tsx",reportDiagnostics:true,
+ compilerOptions:{jsx:ts.JsxEmit.Preserve,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}})
+assert.equal(diagnostics.filter(x=>x.category===ts.DiagnosticCategory.Error).length,0)
 assert.ok(route.includes("if (!await isAdminRequest())"))
 assert.ok(route.includes("id:t.id,name:t.name,maxChoices:t.maxChoices,price:t.price"))
-assert.ok(ui.includes('category.selectionKind === "group" || category.selectionKind === "variant"'))
-assert.ok(ui.includes('className="sbExploreCard"')&&ui.includes('aria-label={`Explore ${category.label}`}'))
-assert.ok(ui.includes('className="sbExploreName"')&&ui.includes("sbExploreArrow"))
-assert.ok(!ui.includes("sbExploreKind")&&!ui.includes("sbCardMotif"))
-assert.ok(ui.includes('kind === "category" || kind === "photo"'))
-assert.ok(ui.includes("function QuantityControl")&&ui.includes("onChange(Math.max(0, count - 1))"))
-assert.ok(ui.includes("canAdd={!atMax}")&&ui.includes("maxItems-others"))
-assert.ok(!ui.includes("sbChoiceCardTag")&&!ui.includes("sbChoiceGlyph"))
-assert.ok(css.includes("/* 2026-10-14 / NAME-ONLY SELECTORS"))
-assert.ok(css.includes("--sb-paper:#fcf8f1")&&css.includes("--sb-rose:#7b1420"))
-assert.ok(css.includes(".sbPreviewPage .sbExploreName"))
-assert.ok(css.includes(".sbPreviewPage .sbChoiceCard"))
-assert.ok(css.includes("background:transparent;border:0;border-bottom:1px"))
-assert.ok(css.includes(".sbPreviewPage .sbQty button"))
-assert.ok(css.includes("@media(max-width:520px)"))
-assert.ok(css.includes(".sbPreviewPage .sbChoiceGrid{display:flex;flex-direction:column;gap:0}"))
-assert.ok(!css.includes("competitor-aligned redesign"))
-assert.ok(!buyerCss.includes("MAXIMALIST / NAME + FINAL PRICE ONLY"))
-assert.ok(!css.includes("linear-gradient(125deg,#3b102a"))
-assert.ok(!buyerCss.includes("linear-gradient(116deg,#371020"))
-assert.ok(buyer.includes("sbBuyerSelectionsSection"))
-assert.ok(buyerCss.includes(".sbBuyerChoices"))
-assert.ok(buyerCss.includes("background:transparent;border:0;border-bottom"))
-const code=ts.transpileModule(price,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText
-const {hamperFinalPriceRupees}=await import("data:text/javascript;base64,"+Buffer.from(code).toString("base64"))
+assert.ok(ui.includes("const walk=(category:SelfBuildVisualCategory, ancestors:string[])=>"))
+assert.ok(ui.includes("sortedCategories.filter(child=>child.parentId===category.id)"))
+assert.ok(ui.includes('sortedOptions.filter(o=>o.categoryId===category.id)'))
+assert.ok(ui.includes('group={choice.groupLabel}'))
+assert.ok(ui.includes('availableChoices.map(choice=>'))
+assert.ok(!ui.includes("sbExploreCard")&&!ui.includes("sbBreadcrumb"))
+assert.ok(ui.includes('function QuantityControl')&&ui.includes("onChange(Math.max(0, count - 1))"))
+assert.ok(ui.includes("maxItems-others")&&ui.includes("setUpgradeOpen(true)"))
+assert.ok(ui.includes('step==="tier"')&&ui.includes('step==="choose"'))
+assert.ok(css.includes("font:italic")&&css.includes(".sbPreviewPage .sbChoiceLabel"))
+assert.ok(css.includes("--sb-ink:#331d24")&&css.includes(".sbPreviewPage .sbPreviewTierPrice"))
+assert.ok(css.includes("@media(max-width:600px)")&&css.includes("min-height:44px"))
+assert.ok(buyerCss.includes(".sbBuyerFlatChoices")&&buyerCss.includes("font:italic"))
+assert.ok(buyer.includes("grouped.map(item=>"))
+const p=ts.transpileModule(price,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}})
+const {hamperFinalPriceRupees}=await import("data:text/javascript;base64,"+Buffer.from(p.outputText).toString("base64"))
 assert.equal(hamperFinalPriceRupees(499),549)
 assert.equal(hamperFinalPriceRupees(1299),1349)
 assert.ok(!/unitBudgetPaise|internalSpentPaise|retail_inventory|stock|selectedProductIds/.test(ui))
-console.log("CELEBRATION_NAME_ONLY_CATEGORY_SELECTION_PASSED: no visual cards, public labels, 44px controls, mobile, privacy and gate unchanged")
+console.log("SELF_BUILD_FLAT_PREMIUM_CATEGORY_LAYOUT_PASSED")
