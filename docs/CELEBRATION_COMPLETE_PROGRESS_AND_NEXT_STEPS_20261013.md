@@ -77,6 +77,16 @@
 
 **Ongoing reliability:** Site performance, storefront QA/SEO, shipping-order lifecycle/estimated delivery, support/claims, provenance checks, stock freshness and incident/regression follow-up continue independently of self-build.
 
+## Phase 3.2 — Self-Build Studio admin controls implemented (13 October 2026)
+
+**Editor location:** existing authenticated `/admin` sidebar → **Catalog → Self-Build Studio** (also in mobile admin section picker and overview quick actions). This is a **settings editor**, not a customer checkout. It reuses the deployed secured `GET/PATCH /api/admin/self-build` API, whose values are stored in PostgreSQL.
+
+Admin can edit the full dynamic category hierarchy (including 8 Jewellery subcategories, separate Bangles, Chocolates, Snacks, Perfume, Photos, Anything Else), per-category private internal amounts, labels, display order, enable/disable; add/remove categories and groups (cannot remove a group while it contains children/options); size/option labels, internal budgets, sort and enable/disable; add/remove size options; default category budget, multiple-quantity policy and final team-discussion text. **No individual SKU mapping or images.**
+
+The editor displays unsaved status, discarding confirmation, per-field validation, authenticated same-origin submission and server authoritative read-after-save. Atomic DB transaction + optimistic version lock prevent partially applied lists and flag simultaneous admin editor conflicts for reload. Backend continues enforcing no shopper self-build checkout and no customer item-price visibility at the database level. The existing curated hamper, retail jewellery prices and stock, payments, customer order management and fulfilment are unchanged.
+
+**Important limitation:** This phase edits future category offers and unit budget assumptions, not actual warehouse availability. **Category-level inventory, stock reservations, payment quoting, buyer checkout and order fulfilment integrations remain separate future phases (§3).** Editing an active checkbox here only controls design preview visibility, not safe sellable stock or public launch.
+
 ## 4. Verified acceptance checklist for this UI milestone
 
 - [x] Consolidated all past work and future implementation roadmap **in this GitHub file before writing UI code** (first branch commit `dcac8536f83ee7e967ddae79d327e8f1d6dbcb15`).
