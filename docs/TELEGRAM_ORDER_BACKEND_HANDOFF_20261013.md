@@ -4,6 +4,8 @@
 **Development branch:** `feat/telegram-order-messages`  
 **Production:** NOT MERGED, NOT DEPLOYED, NOT MIGRATED. Customer UI deliberately unchanged.
 
+> **STATUS UPDATE (13 Oct 2026):** This file is the *original backend design/historical checklist*, not the latest execution status. Static/security tests, isolated real PostgreSQL integration, build, backup-restore and Telegram migration 100–102 smoke tests have since PASSED on the previous feature head. The new UI, latest-main integration, production deployment, worker, webhook registration and real Telegram end-to-end test remain outstanding. **Read TELEGRAM_ORDER_SYSTEM_COMPLETE_HANDOFF_20261013.md and TELEGRAM_PRODUCTION_DEPLOYMENT_RUNBOOK_20261013.md as the current source of truth.**
+
 ## Required owner-approved behavior
 Every new order, even unpaid, should create an owner alert. Further payment,
 packing, cancellation, courier, delivery, issues and recorded resolution events
