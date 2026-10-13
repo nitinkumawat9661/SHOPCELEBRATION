@@ -1,5 +1,6 @@
 import { formatMoney, type Tier } from "../../../lib/domain/catalog"
 import { uiContent } from "../../../lib/domain/content"
+import { hamperFinalPriceRupees } from "../../../config/self-build-delivery"
 import type { CheckoutData } from "../types"
 
 export function OrderSummary({ tier, checkout }: { tier: Tier; checkout: CheckoutData }) {
@@ -7,7 +8,7 @@ export function OrderSummary({ tier, checkout }: { tier: Tier; checkout: Checkou
   return (
     <div className="summary">
       <div className="kicker">{copy.kicker}</div>
-      <div className="sumPrice">{formatMoney(tier.price)}</div>
+      <div className="sumPrice">{formatMoney(hamperFinalPriceRupees(tier.price))}</div>
       <div className="sumRow"><span>{copy.hamper}</span><b>{tier.name}</b></div>
       <div className="sumRow"><span>{copy.box}</span><b>{tier.size}</b></div>
       <div className="sumRow"><span>{copy.occasion}</span><b>{checkout.occasion}</b></div>

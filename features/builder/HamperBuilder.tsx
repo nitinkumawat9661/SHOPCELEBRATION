@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { uiContent } from "../../lib/domain/content"
 import { formatMoney } from "../../lib/domain/money"
+import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 import { BudgetStep } from "./steps/BudgetStep"
 import { DetailsStep } from "./steps/DetailsStep"
 import { PaymentStep } from "./steps/PaymentStep"
@@ -328,7 +329,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
               <p className="quickHamperSummaryNote">Complete hamper price, not just the box.</p>
             </div>
             <dl className="quickHamperFacts">
-              <div><dt>Budget</dt><dd>{formatMoney(state.tier.price)}</dd></div>
+              <div><dt>Final price</dt><dd>{formatMoney(hamperFinalPriceRupees(state.tier.price))}</dd></div>
               <div><dt>Occasion</dt><dd>{state.checkout.occasion}</dd></div>
               <div><dt>Size</dt><dd>{state.tier.size}</dd></div>
             </dl>

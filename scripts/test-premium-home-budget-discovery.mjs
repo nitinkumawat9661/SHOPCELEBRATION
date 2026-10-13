@@ -20,8 +20,8 @@ for (const tier of tiers) {
     "Real tier name, size and max gift choice data are present")
 }
 assert(budget.includes("tiers.map((item) =>"), "Render every live tier, not a hard-coded shortlist")
-assert(budget.includes("{formatMoney(item.price)}") && budget.includes("{item.name}"),
-  "Exact tier prices and names come from real catalog")
+assert(budget.includes("{formatMoney(hamperFinalPriceRupees(item.price))}") && budget.includes("{item.name}"),
+  "Final tier display price includes ₹50; tier names and original catalog prices remain authoritative")
 assert(budget.includes("Math.min(...tiers.map((tier) => tier.price))"), "Honest minimum starting price")
 assert(budget.includes("item.maxChoices") && budget.includes("{item.size}"), "Display only configured limitations")
 assert(budget.includes("Price for the complete hamper"), "Keep full hamper price clarity")
