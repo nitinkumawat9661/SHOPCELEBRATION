@@ -14,7 +14,6 @@ import { CourierJourney } from "../tracking/CourierJourney"
 import type { CourierPublicStatus } from "../../lib/domain/courier-tracking"
 import { DefaultAddressPanel } from "./DefaultAddressPanel"
 import { useCustomerAccount } from "./useCustomerAccount"
-import { OrderCelebrationMessages } from "./OrderCelebrationMessages"
 
 type DashboardOrder = {
   orderType: "hamper" | "individual"
@@ -73,14 +72,11 @@ export function CustomerAccountPage() {
   const settings = useStoreSettings()
   const [storedOrders, setOrders] = useState<DashboardOrder[]>([])
   const [ordersOwnerId, setOrdersOwnerId] = useState("")
-  const [storedUnreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
-  const [unreadOwnerId, setUnreadOwnerId] = useState("")
   const accountId = accountState.account?.id || ""
   const activeAccountRef = useRef(accountId)
   activeAccountRef.current = accountId
   // Never render the prior buyer's locally cached orders or unread counts during an account switch.
   const orders = ordersOwnerId === accountId ? storedOrders : []
-  const unreadCounts = unreadOwnerId === accountId ? storedUnreadCounts : {}
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [ordersError, setOrdersError] = useState("")
   const [approving, setApproving] = useState("")
@@ -101,26 +97,6 @@ export function CustomerAccountPage() {
       setOrders(data.orders || [])
       setOrdersOwnerId(ownerId)
       setLastRefreshedAt(new Date())
-      // One account-scoped count query per normal order refresh, never per-order polling.
-      try {
-        const unreadResponse = await fetch("/api/account/orders/message-unread", { cache: "no-store" })
-        const unreadData = await unreadResponse.json() as {
-          ok?: boolean
-          unread?: Array<{ publicId: string; unreadCount: number }>
-        }
-        if (unreadResponse.ok && unreadData.ok && activeAccountRef.current === ownerId) {
-          const next: Record<string, number> = {}
-          for (const item of unreadData.unread || []) {
-            if (typeof item.publicId === "string" && Number.isSafeInteger(item.unreadCount) && item.unreadCount > 0) {
-              Object.defineProperty(next, item.publicId, { value: item.unreadCount, enumerable: true, writable: true })
-            }
-          }
-          setUnreadCounts(next)
-          setUnreadOwnerId(ownerId)
-        }
-      } catch {
-        // Messaging availability must never block order tracking or the existing checkout.
-      }
       if (announce) notifyUx({ title: "Orders updated ✓", body: "You’re seeing the latest progress.", tone: "success" })
     } catch (cause) {
       const code = cause instanceof Error ? cause.message : "ORDER_LOAD_FAILED"
@@ -215,10 +191,6 @@ export function CustomerAccountPage() {
     if (ok) notifyUx({ title: "Logged out", body: "You can sign in again anytime to see your orders.", tone: "info" })
     else notifyUx({ title: "Couldn’t log out", body: "Please check your connection and try again.", tone: "error" })
   }
-
-  const handleMessageRead = useCallback((publicId: string) => {
-    setUnreadCounts(current => ({ ...current, [publicId]: 0 }))
-  }, [])
 
   const stats = useMemo(() => ({
     total: orders.length,
@@ -324,18 +296,11 @@ export function CustomerAccountPage() {
 
               {approvalReady && <div className="customerPackingApproval"><div><b>Your {individual ? "order" : "hamper"} is ready for a final look</b><p>Watch the packing video and approve it when you’re happy with the presentation.</p></div><label><input type="checkbox" checked={Boolean(approvalConsent[order.publicId])} onChange={(event) => setApprovalConsent((current) => ({ ...current, [order.publicId]: event.target.checked }))} /><span>I’ve reviewed the packing video and approve this {individual ? "order" : "hamper"} for dispatch.</span></label><button className="primary" type="button" disabled={!approvalConsent[order.publicId] || approving === order.publicId} onClick={() => approvePacking(order)}>{approving === order.publicId ? "Approving…" : "Approve for dispatch"}</button></div>}
 
-              <OrderCelebrationMessages
-                key={`${accountId}:${order.publicId}`}
-                accountId={accountId}
-                orderId={order.publicId}
-                unreadCount={unreadCounts[order.publicId] || 0}
-                onRead={handleMessageRead}
-              />
-
               <footer className="customerOrderFooter">
                 <small>Last update: {new Date(order.updatedAt).toLocaleString("en-IN")}</small>
                 {individual && !["paid", "verified"].includes(order.paymentStatus) && order.status === "payment_verification_pending" && <Link className="primary" href={`${routes.paymentReturn}?order_id=${encodeURIComponent(order.publicId)}`}>Check / continue payment</Link>}
                 {canCancel && <button className="secondary danger" type="button" disabled={cancelling === order.publicId} onClick={() => cancelOrder(order)}>{cancelling === order.publicId ? "Cancelling…" : "Cancel order"}</button>}
+                <Link className="secondary" href={`/notifications?order=${encodeURIComponent(order.publicId)}`} prefetch={false}>Chat about order</Link>
                 <a className="secondary" href={supportWhatsappUrl(supportMessage, settings.whatsapp)} target="_blank" rel="noreferrer">WhatsApp support</a>
               </footer>
             </article>

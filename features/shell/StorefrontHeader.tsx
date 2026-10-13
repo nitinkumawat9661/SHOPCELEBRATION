@@ -5,6 +5,7 @@ import { supportWhatsappUrl } from "../../lib/domain/support"
 import type { StoreSettings } from "../../lib/server/store-settings"
 import { StoreIcon } from "./StoreIcon"
 import { CartLink } from "../cart/AddToCart"
+import { NotificationLink } from "./NotificationLink"
 import { HeaderScrollBehavior } from "./HeaderScrollBehavior"
 
 export function StorefrontHeader({ settings, onCreate, showAccount = true, searchQuery = "" }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean; searchQuery?: string }) {
@@ -23,6 +24,7 @@ export function StorefrontHeader({ settings, onCreate, showAccount = true, searc
         <div className="celebrationHeaderActions">
           {showAccount && <Link href={routes.account} className="celebrationIconLink" aria-label="My Celebration account" prefetch={false}><StoreIcon name="account" /><span>My account</span></Link>}
           {onCreate && <button className="celebrationIconLink" onClick={onCreate} type="button" aria-label="Build your hamper"><StoreIcon name="gift" /><span>My hamper</span></button>}
+          <NotificationLink />
           <CartLink />
         </div>
       </div>
