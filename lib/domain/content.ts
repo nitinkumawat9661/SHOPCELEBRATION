@@ -63,12 +63,12 @@ const customerUi = {
     details: {
       ...ui.builder.details,
       title: "2. Where should we send it?",
-      body: "Add the delivery details and the date you need it by.",
+      body: "Add delivery details and your preferred date. This is a request, not a guaranteed courier arrival date.",
       fields: {
         customerName: ["Your name *", "Full name"],
         phone: ["Mobile / WhatsApp *", "10-digit number"],
         receiverName: ["Gift for *", "Receiver name"],
-        requiredDate: ["Needed by *", ""],
+        requiredDate: ["Preferred delivery date *", ""],
         occasion: ["Occasion", ""],
         pincode: ["Pincode *", "6 digits"],
         address: ["Delivery address *", "House / street / area"],
@@ -87,7 +87,7 @@ const customerUi = {
       box: "Size",
       occasion: "Occasion",
       products: "Curated gifts",
-      requiredBy: "Needed by",
+      requiredBy: "Requested delivery date",
       notSet: "Not added",
       curate: "Choose for me",
       note: "If a major item needs to change because of stock or presentation, we’ll confirm it with you first."

@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 
 const read=(file)=>readFile(new URL(`../${file}`,import.meta.url),"utf8")
-const [builder,styles,imports,budget,discovery,tail,details,packageRaw]=await Promise.all([
+const [builder,styles,imports,budget,discovery,tail,details,packageRaw,orderSummary,customerCopy]=await Promise.all([
   "features/builder/HamperBuilder.tsx",
   "styles/hamper-builder-selection-preview-20261012.css",
   "app/globals.css",
@@ -10,7 +10,9 @@ const [builder,styles,imports,budget,discovery,tail,details,packageRaw]=await Pr
   "features/home/StorefrontDiscovery.tsx",
   "features/home/StorefrontTail.tsx",
   "features/builder/steps/DetailsStep.tsx",
-  "package.json"
+  "package.json",
+  "features/builder/components/OrderSummary.tsx",
+  "lib/domain/content.ts"
 ].map(read))
 
 assert(builder.includes('className="quickHamperSummary quickHamperSummary--premium"'),"Quick-selected hamper preview is shown only after a chosen budget")
@@ -51,4 +53,12 @@ assert(imports.trimEnd().endsWith('@import "../styles/jewelry-two-column-scroll-
   "Keep protected jewelry collection layout CSS ordering")
 assert(packageRaw.includes("test-home-quick-hamper-summary-20261012.mjs"),
   "Always run summary and step-navigation regression checks during PR and VPS audit")
+assert(orderSummary.includes('Chosen by Celebration') && !orderSummary.includes('tier.maxChoices} items'),
+  "Curated hamper summary must not claim a fixed item count that was never verified")
+assert(orderSummary.includes('formatMoney(tier.price)') && orderSummary.includes('checkout.requiredDate'),
+  "Pricing and preferred date still use real order fields")
+assert(customerCopy.includes('requiredBy: "Requested delivery date"') &&
+ customerCopy.includes('Preferred delivery date *') &&
+ customerCopy.includes('not a guaranteed courier arrival date'),
+  "Requested gift date must not be advertised as a courier delivery guarantee")
 console.log("Quick hamper builder UI safety passed: real selected budget/occasion/size, unchanged delivery/payment events, accessible mobile summary, protected store cards.")
