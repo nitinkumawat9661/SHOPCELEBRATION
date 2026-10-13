@@ -20,13 +20,14 @@ const response=(data,status=200)=>({status,contentType:"application/json",header
 async function mockDevice(width,who){
   const context=await browser.newContext({viewport:{width,height:820},deviceScaleFactor:1})
   const orderId="CEL-DEMO-"+who
+  const messages=[...conversations[who]]
   let unread=1
   await context.route("**/api/account/me",route=>route.fulfill(response({ok:true,account:{id:"demo-"+who,displayName:"Browser QA",phoneVerified:true}})))
   await context.route("**/api/account/orders/message-unread",route=>route.fulfill(response({ok:true,unread:unread?[{publicId:orderId,unreadCount:unread}]:[]})))
   await context.route("**/api/account/notifications",route=>route.fulfill(response({ok:true,threads:[{
     orderId,title:"Premium Jewelry",orderType:"individual",createdAt:time,
-    unreadCount:unread,lastBody:conversations[who].at(-1)?.body||null,
-    lastSender:conversations[who].at(-1)?.sender||null,lastAt:time
+    unreadCount:unread,lastBody:messages.at(-1)?.body||null,
+    lastSender:messages.at(-1)?.sender||null,lastAt:time
   }]})))
   await context.route("**/api/account/orders/**",async route=>{
     const path=new URL(route.request().url()).pathname
@@ -35,11 +36,11 @@ async function mockDevice(width,who){
     if(path.endsWith("/send")){
       const body=route.request().postDataJSON()
       const message={id:body.requestId,sender:"customer",body:body.text,sentAt:time,readAt:null}
-      conversations[who].push(message)
+      messages.push(message)
       return route.fulfill(response({ok:true,message}))
     }
     if(route.request().method()==="POST"){unread=0;return route.fulfill(response({ok:true,acknowledged:1}))}
-    return route.fulfill(response({ok:true,orderId,messages:conversations[who],unreadCount:unread}))
+    return route.fulfill(response({ok:true,orderId,messages,unreadCount:unread}))
   })
   await context.route("**/api/**",async route=>{
     const m=route.request().method()
