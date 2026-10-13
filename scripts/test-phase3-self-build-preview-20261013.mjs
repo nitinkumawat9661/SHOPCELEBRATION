@@ -49,7 +49,7 @@ assert(ui.includes('data.requestPrompt')&&ui.includes('maxLength={1200}'),"Admin
 assert(ui.includes('const units = chosen.reduce')&&ui.includes('const distinct = chosen.length'))
 assert(ui.includes('disabled={units === 0 || exceedsMax}'),"Require at least one within maximum total selections")
 assert(ui.includes('Design preview only')&&ui.includes('No order, quote or payment is created'),"Preview must not simulate order submission")
-assert(ui.includes('celebration')&&ui.includes('Thoughtfully chosen.')&&ui.includes('Beautifully yours.'))
+assert(ui.includes('celebration')&&ui.includes('Create your hamper')&&ui.includes('Choose a hamper, then select the gift categories'))
 assert(ui.includes('aria-label="Your hamper preview summary"')&&ui.includes('aria-label="Hamper design steps"'))
 assert(css.includes('.sbPreviewPage{')&&css.includes('--sb-serif:')&&css.includes('var(--font-shopping-display)'),"Use Celebration typography")
 assert(css.includes('@media (max-width:520px)')&&css.includes('@media (max-width:360px)'))
