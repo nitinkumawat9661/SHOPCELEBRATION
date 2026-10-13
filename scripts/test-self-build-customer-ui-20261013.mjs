@@ -78,7 +78,7 @@ assert(orderFactory.includes("getSelfBuildTierLimits(chosenTier)")&&
  orderFactory.includes("limits.ceilingPaise") &&
  orderFactory.includes("countSelfBuildPieces(choices)>limits.maxItems"),
  "Checkout rechecks server-side hard monetary cap and total quantity")
-assert(draftService.includes("countSelfBuildPieces(clean.selections)>getSelfBuildTierLimits(tier).maxItems"),
+assert(draftService.includes("countSelfBuildPieces(clean.selections)>limits.maxItems"),
  "Draft API cannot be used to bypass tier total count")
 assert(ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
  ui.includes("Maximum {maxUnits} pieces")&&ui.includes("selectedUnits>=maxUnits")&&
