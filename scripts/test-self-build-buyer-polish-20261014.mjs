@@ -21,11 +21,11 @@ assert.match(draft,/customer_enabled===true/)
 // Presentation may group public labels, but must not re-key payload or alter
 // original server-side selection, unit quantities, budget, or payment gate.
 for(const text of [
- 'sections=new Map<string,typeof grouped>()',
- 'sections.get(title)||[]',
- 'section.push(item)',
- 'groupedSections.map(section=>',
- 'section.choices.map(item=>',
+ 'grouped.map(item=>',
+ 'sbBuyerFlatChoices',
+ 'sbBuyerChoiceText',
+ 'setBuyerStep("select")',
+ 'sbBuyerUpgradeDialog',
  'sbBuyerChoiceActive',
  'selectedUnits>=maxUnits',
  'const now=Object.values(v).reduce',
@@ -37,8 +37,8 @@ for(const text of [
  if(text==="selfBuildShippingPaise")continue
  assert.ok(ui.includes(text),"Missing safe UI contract: "+text)
 }
-assert.ok(ui.includes('aria-label="Hamper pieces selected"'))
-assert.ok(ui.includes('aria-valuenow={Math.min(selectedUnits,maxUnits)}'))
+assert.ok(!ui.includes('aria-label="Hamper pieces selected"'))
+assert.ok(!ui.includes('aria-valuenow={Math.min(selectedUnits,maxUnits)}'))
 assert.ok(ui.includes('aria-label="Your selected gifts"'))
 assert.ok(ui.includes('labelOf(data,item)'))
 assert.ok(ui.includes('role="status" aria-live="polite"'))
@@ -46,11 +46,11 @@ assert.ok(ui.includes('inputMode={name==="pincode"?"numeric":undefined}'))
 assert.ok(ui.includes('maxLength={name==="pincode"?6:name==="address"?240:100}'))
 assert.ok(!ui.includes('There is no SKU mapping and no per-piece price.'))
 assert.ok(!ui.includes('unitBudgetPaise')&&!ui.includes('targetPaise')&&!ui.includes('internalSpentPaise'))
-assert.ok(!ui.includes('hamperFinalPriceRupees(t.price)')&&ui.includes('hamperFinalPriceRupees(tier.price)'))
+assert.ok(ui.includes('hamperFinalPriceRupees(t.price)')&&ui.includes('hamperFinalPriceRupees(tier.price)'))
 assert.ok(!ui.includes("<small>Delivery</small>"))
 assert.ok(price.includes("HAMPER_DELIVERY_FEE_PAISE = SELF_BUILD_DELIVERY_FEE_PAISE"))
 assert.ok(ui.includes('two days after actual delivery'))
-for(const selector of [".sbBuyerChoiceSection",".sbBuyerChoiceActive",".sbBuyerSelectionProgress",
+for(const selector of [".sbBuyerFlatChoices",".sbBuyerChoiceActive",".sbBuyerChosenTier",
  ".sbBuyerSelected",".sbBuyerQty button"])assert.ok(css.includes(selector),"Missing polished style: "+selector)
 assert.ok(css.includes("min-height:44px")&&css.includes("@media(max-width:650px)"))
 assert.ok(css.includes(":focus-visible")&&css.includes("prefers-reduced-motion:reduce"))
