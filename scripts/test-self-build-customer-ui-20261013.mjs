@@ -38,6 +38,10 @@ assert(ui.includes("sessionStorage.setItem")&&ui.includes("paymentStatus")&&
  ui.includes("Check payment status"),"Pending/redirect payment can be resumed without double order")
 assert(ui.includes("validateCheckoutDetails")&&ui.includes("policyAccepted:true")&&
  ui.includes("policyVersion:orderConfig.policyVersion"),"Delivery details and accepted policy are validated")
+assert(ui.includes("Up to {t.maxChoices} items")&&
+ ui.includes("totalPieces>=maxPieces")&&
+ ui.includes("totalPieces} / {maxPieces} items selected")&&
+ ui.includes("withinPieceLimit"),"Every physical piece including same-category repeats counts against tier cap")
 assert(ui.includes("two days after actual delivery")&&
  !ui.includes("self_build_category_capacity")&&!ui.includes("reserveSelfBuild"),
  "Retention is delivery + 48h and customer code has NO inventory dependency")
