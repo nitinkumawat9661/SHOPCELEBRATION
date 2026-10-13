@@ -53,7 +53,7 @@ const { createOrder } = requireCompiled(join(output, 'lib/server/orders/create.j
 const { listOrders, findOrderByTrackingToken } = requireCompiled(join(output, 'lib/server/orders/read.js'))
 const { createCustomerAccount, listCustomerOrders } = requireCompiled(join(output, 'lib/server/customer-accounts.js'))
 const { reservePaymentAttempt, bindPaymentAttempt, failPaymentAttempt, applyProviderPaymentResult, getPaymentOrder } = requireCompiled(join(output, 'lib/server/payments/store.js'))
-const { recordTelegramOrderReply, listCustomerOrderMessages, acknowledgeCustomerOrderMessages } = requireCompiled(join(output, 'lib/server/telegram-order-messages.js'))
+const { recordTelegramOrderReply, listCustomerOrderMessages, acknowledgeCustomerOrderMessages, sendCustomerOrderMessage } = requireCompiled(join(output, 'lib/server/telegram-order-messages.js'))
 const control = new pg.Client({ connectionString, ssl: false })
 await control.connect()
 try {
@@ -145,6 +145,42 @@ try {
   const ack = await acknowledgeCustomerOrderMessages(created.publicId, account.id)
   assert.equal(ack.acknowledged, 1)
   assert.equal((await listCustomerOrderMessages(created.publicId, account.id)).unreadCount, 0)
+
+  // Real isolated PostgreSQL: private customer -> Telegram outbox -> owner
+  // replies to that notification -> correct buyer sees response in inbox.
+  const clientId = randomUUID()
+  assert.equal((await sendCustomerOrderMessage(created.publicId, otherAccount.id, 'I cannot access this order', randomUUID())).reason, 'ORDER_NOT_FOUND')
+  const outgoing = await sendCustomerOrderMessage(created.publicId, account.id, 'Please confirm my parcel.', clientId)
+  assert.equal(outgoing.ok, true)
+  assert.equal(outgoing.message.sender, 'customer')
+  const outgoingReplay = await sendCustomerOrderMessage(created.publicId, account.id, 'Please confirm my parcel.', clientId)
+  assert.equal(outgoingReplay.ok, true)
+  assert.equal(outgoingReplay.message.id, outgoing.message.id)
+  const customerAlert = await control.query(
+    `SELECT q.id,q.telegram_message_id FROM telegram_notification_outbox q
+     JOIN orders o ON o.id=q.order_id
+     WHERE o.public_id=$1 AND q.source='customer_message'`, [created.publicId])
+  assert.equal(customerAlert.rows.length, 1, 'Customer message must enqueue owner alert once')
+  assert.equal(customerAlert.rows[0].telegram_message_id, null)
+  await control.query(`UPDATE telegram_notification_outbox
+    SET telegram_message_id=712345681,sent_at=now()
+    WHERE id=$1`,[customerAlert.rows[0].id])
+  const responseToCustomer = await recordTelegramOrderReply({
+    updateId: 812345681, messageId: 712345682,
+    replyToMessageId: 712345681, text:'Your parcel is being prepared.'
+  })
+  assert.equal(responseToCustomer.ok, true)
+  assert.equal(responseToCustomer.publicId, created.publicId)
+  const conversation = await listCustomerOrderMessages(created.publicId,account.id)
+  assert.equal(conversation.messages.length, 3)
+  assert.equal(conversation.messages[1].sender, 'customer')
+  assert.equal(conversation.messages[2].sender, 'celebration_support')
+  assert.equal(conversation.unreadCount, 1, 'Buyer outgoing messages cannot count as unread')
+  assert.equal(await listCustomerOrderMessages(created.publicId,otherAccount.id), null)
+  assert.equal((await acknowledgeCustomerOrderMessages(created.publicId,account.id)).acknowledged, 1)
+  assert.equal((await listCustomerOrderMessages(created.publicId,account.id)).unreadCount, 0)
+  assert.equal((await sendCustomerOrderMessage(created.publicId,account.id,'',randomUUID())).ok, false)
+  assert.equal((await sendCustomerOrderMessage(created.publicId,account.id,'Bad id', 'not-a-uuid')).ok, false)
 
   const saved = (await control.query('SELECT order_type,line_items,tier_id,amount_paise FROM orders WHERE public_id=$1', [created.publicId])).rows[0]
   assert.equal(saved.order_type, 'individual')
@@ -252,7 +288,7 @@ try {
   await assert.rejects(bindPaymentAttempt(confirmationReserved.attemptId, { provider: 'razorpay', mode: 'test', providerOrderId: 'order_local_confirm_race', keyId: 'rzp_test_fixture', amountPaise: confirmationRace.pricing.payablePaise, currency: 'INR' }), /PAYMENT_ALREADY_CONFIRMED/)
   await assert.rejects(control.query(`UPDATE orders SET order_type='individual' WHERE public_id='LOCALTEST-LEGACY'`), { code: '23514' })
   await assert.rejects(control.query('UPDATE orders SET line_items=$1::jsonb WHERE public_id=$2', ['{}', created.publicId]), { code: '23514' })
-  console.log('TELEGRAM_POSTGRES_CHECKS_PASSED: new order snapshot, paid events, reply-to mapping, replay deduplication, customer isolation, read receipts')
+  console.log('TELEGRAM_POSTGRES_CHECKS_PASSED: payment, owner reply, customer chat, durable owner outbox, idempotency, A/B isolation and read receipts')
   console.log('REAL_POSTGRES_CHECKS_PASSED: migrations001..009, legacyhamper, individualsnapshot, staleprice, pausedavailability, samecartretry, changedcartreject, ownermismatch, concurrentidempotency, catalogpublishlock, individualmanualrejected, hampermanualpreserved, customer/admin/trackingreads, provideramountmismatch, duplicatepaidwebhook, verifiedpaymentpreserved, cancelledretryblocked, cancelledbindingrace, confirmedbindingrace, DBconstraints')
 } finally { await control.end() }
 } finally {

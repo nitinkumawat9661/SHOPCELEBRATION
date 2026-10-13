@@ -9,6 +9,7 @@ on:
       - 'db/migrations/100_telegram_notification_outbox.sql'
       - 'db/migrations/101_telegram_order_messaging_and_courier.sql'
       - 'db/migrations/102_telegram_courier_watch.sql'
+      - 'db/migrations/103_telegram_customer_two_way_chat.sql'
       - 'features/account/**'
       - 'lib/server/telegram-order-messages.ts'
       - 'scripts/test-telegram-*.mjs'
