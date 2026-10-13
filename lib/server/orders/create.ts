@@ -35,6 +35,8 @@ type ExistingOrder = {
 type CreateOrderOptions = {
   paymentProvider?: PaymentProviderName | null
   shippingPaise?: number
+  // Explicitly used by no-inventory Self-Build only; curated hampers stay unchanged.
+  selfBuildShippingPaise?: number
 }
 
 function existingPricing(row: ExistingOrder): OrderPricing & { shippingPaise: number } {
@@ -90,9 +92,12 @@ export async function createOrderWithClient(
     requireEnv("businessTimezone"), normalizeCatalogConfig(currentCatalog.rows[0].payload), { requirePaymentReference: !options.paymentProvider })
 
   const productPricing = await resolveOrderPricing(client, offerQuoteId, customerAccountId, input)
-  const shippingPaise = input.orderType === "individual" ? options.shippingPaise : 0
-  if (input.orderType === "individual" && (typeof shippingPaise !== "number" || !Number.isSafeInteger(shippingPaise) || shippingPaise < 0)) {
-    throw new OrderValidationError("SHIPPING_QUOTE_REQUIRED")
+  const shippingPaise = input.orderType === "individual"
+    ? options.shippingPaise
+    : (options.selfBuildShippingPaise ?? 0)
+  if (typeof shippingPaise !== "number" || !Number.isSafeInteger(shippingPaise) || shippingPaise < 0) {
+    throw new OrderValidationError(input.orderType === "individual"
+      ? "SHIPPING_QUOTE_REQUIRED" : "INVALID_SELF_BUILD_SHIPPING")
   }
   const payablePaise = productPricing.payablePaise + (shippingPaise || 0)
   if (!Number.isSafeInteger(payablePaise) || payablePaise > 2_147_483_647) throw new OrderValidationError("CART_AMOUNT_TOO_LARGE")
