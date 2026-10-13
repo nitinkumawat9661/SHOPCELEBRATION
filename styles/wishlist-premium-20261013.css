@@ -40,6 +40,20 @@
 .wishlistPrivacyNote{font-size:11px;text-align:center;color:#a08b88;line-height:1.6;margin:2px 0 0}
 .celebrationWishlistHeaderLink{position:relative}
 .celebrationWishlistCount{position:absolute;top:-3px;right:1px;z-index:2;display:grid;place-items:center;min-width:19px;height:19px;border:2px solid #fff;border-radius:99px;padding:1px 5px;background:#8a3550;color:#fff;font-size:10px;line-height:1;pointer-events:none}
+/* At laptop widths the desktop search and four icon+label actions otherwise
+   exceed the available header grid, causing 1024px document overflow.
+   Use the site's existing tablet icon-only presentation a little earlier. */
+@media(min-width:1001px) and (max-width:1150px){
+ .celebrationHeader .celebrationHeaderTop{
+   grid-template-columns:minmax(0,1fr) minmax(200px,320px) auto;
+   gap:15px;
+   min-height:80px;
+ }
+ .celebrationHeader .celebrationBrand>span{font-size:30px}
+ .celebrationHeader .celebrationHeaderActions{gap:5px}
+ .celebrationHeader .celebrationIconLink{padding:4px 6px}
+ .celebrationHeader .celebrationIconLink span{display:none}
+}
 @media(max-width:900px){.wishlistProductGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.wishlistHero{min-height:0;padding:26px 23px}.wishlistHeroArt{flex-basis:115px}.wishlistHeroArtFrame{width:105px;height:105px;border-radius:30px}.wishlistHeroArtFrame>span{font-size:57px}.wishlistHeroArtFrame small{font-size:6px}.wishlistProductGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
 @media(max-width:420px){.wishlistHeroArt{display:none}.wishlistHero{padding:26px 19px}.wishlistCollectionTop h2{font-size:24px}.wishlistShowcase .wishlistSyncNotice{padding:12px 11px}.wishlistCollectionPanel{padding:20px 11px 25px}.wishlistCategoryChips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity}.wishlistCategoryChips button{flex:0 0 auto;scroll-snap-align:start}}
