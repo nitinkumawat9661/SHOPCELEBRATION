@@ -5,6 +5,7 @@ import { catalogImageVariant, catalogSpriteImage, isIndividualListing, isIndivid
 import { productBadge, productSavingLabel } from "../../lib/domain/catalog-badges"
 import { AddToCart } from "../cart/AddToCart"
 import { formatMoney } from "../../lib/domain/money"
+import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 import { SafeCatalogImage } from "./SafeCatalogImage"
 import { catalogCardTreatment } from "../../lib/domain/catalog-card-presentation"
 import { WishlistToggle } from "./WishlistToggle"
@@ -54,7 +55,7 @@ export function CatalogCard({ product, imageVariant = "thumb" }: { product: Gift
           {product.note && <p>{product.note}</p>}
           {product.retail?.warrantyOrGuarantee && <small className="catalogGuarantee">✓ 6-month anti-tarnish guarantee</small>}
           {product.prepackagedRetail && <small className="catalogLegalHint">Product declarations available in details</small>}
-          <div className="catalogCardPrice"><span>{soldOut ? "Currently sold out" : listed ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(listed ? product.salePricePaise! / 100 : product.minTier)}</strong>{listed && mrpPaise && product.salePricePaise && mrpPaise > product.salePricePaise ? <small><s>MRP {formatMoney(mrpPaise / 100)}</s>{savings && badge?.kind !== "discount" ? ` · ${savings}` : null}</small> : null}</div>
+          <div className="catalogCardPrice"><span>{soldOut ? "Currently sold out" : listed ? "Individual item" : "In hampers from"}</span><strong>{formatMoney(listed ? product.salePricePaise! / 100 : hamperFinalPriceRupees(product.minTier))}</strong>{listed && mrpPaise && product.salePricePaise && mrpPaise > product.salePricePaise ? <small><s>MRP {formatMoney(mrpPaise / 100)}</s>{savings && badge?.kind !== "discount" ? ` · ${savings}` : null}</small> : null}</div>
         </div>
       </Link>
       {individual && <AddToCart productId={product.id} productName={product.name} productCategory={product.category} pricePaise={product.salePricePaise} maxQuantity={product.stockAvailable ?? 1} />}
