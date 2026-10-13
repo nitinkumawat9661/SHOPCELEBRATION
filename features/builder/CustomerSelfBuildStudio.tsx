@@ -299,10 +299,13 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
       {paid?<section className="sbBuyerCard sbBuyerSuccess"><h2>Payment confirmed</h2><p>Your personalised hamper order has been placed.</p>
         <p>Order: <strong>{orderId}</strong></p><Link href={trackingPath||"/account"}>Track your order →</Link>
       </section>:<>
-      <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>01</span><div><h2>Choose your hamper size</h2><p>Choose a complete hamper at its final price.</p></div></div>
+      <section className="sbBuyerTierSection" aria-label="Choose your hamper">
+        <h2 className="sbBuyerTierHeading">Choose your hamper</h2>
         <div className="sbBuyerTiers">{tiers.map(t=><button key={t.id} type="button" disabled={disabled}
+          className={tierId===t.id?"sbBuyerTierBar sbBuyerTierBar--active":"sbBuyerTierBar"}
           aria-pressed={tierId===t.id} onClick={()=>setTierId(t.id)}>
-          <b>{t.name}</b><span>{formatMoney(hamperFinalPriceRupees(t.price))}</span><small>A hamper made to match your budget.</small>
+          <span className="sbBuyerTierName">{t.name}</span>
+          <strong className="sbBuyerTierPrice">{formatMoney(hamperFinalPriceRupees(t.price))}</strong>
         </button>)}</div>
       </section>
       <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
