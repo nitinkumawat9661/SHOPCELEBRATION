@@ -156,15 +156,20 @@ async function cashfree(path, options = {}) {
 }
 
 async function webhook(req, res) {
-  let text = ""
+  // Preserve exact raw bytes for Cashfree's timestamp + body HMAC. Converting
+  // each TCP chunk to UTF-8 separately can corrupt split multibyte sequences.
+  const chunks = []
+  let length = 0
   for await (const chunk of req) {
-    text += chunk.toString("utf8")
-    if (Buffer.byteLength(text) > MAX_WEBHOOK_BYTES) {
+    length += chunk.length
+    if (length > MAX_WEBHOOK_BYTES) {
       invalidCount++
       reply(res, 413, { ok: false })
       return
     }
+    chunks.push(chunk)
   }
+  const text = Buffer.concat(chunks).toString("utf8")
   let event
   try {
     // Uses Celebration's actual payment-provider HMAC verifier with its
