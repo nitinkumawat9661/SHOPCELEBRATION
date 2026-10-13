@@ -1,0 +1,55 @@
+name: Celebration Delete Delivered Self-Build Photos (48h)
+
+on:
+  schedule:
+    # Every hour; no earlier than 48 hours AFTER the verified delivery timestamp.
+    # GitHub scheduled workflows may be delayed. Each iteration rechecks DB.
+    - cron: '18 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-delivered-self-build-photo-retention
+  cancel-in-progress: false
+
+jobs:
+  delivery-photo-cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure authenticated production SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            test -n "${!key:-}" || { echo "Missing production SSH configuration: $key" >&2; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration-photos"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration-photos" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/celebration-photos" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+      - name: Delete eligible private order photos from current Celebration release
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration-photos" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
+          set -euo pipefail
+          test "$(id -un)" = nitin
+          APP_ROOT=/var/www/celebration
+          RELEASE="$(readlink -f "$APP_ROOT/current")"
+          case "$RELEASE" in "$APP_ROOT"/releases/github-*) ;; *) echo "Unexpected release location" >&2; exit 1 ;; esac
+          test -f "$RELEASE/scripts/cleanup-self-build-delivered-photos.mjs"
+          test -f "$RELEASE/.env.production"
+          cd "$RELEASE"
+          node -e "require('@next/env').loadEnvConfig(process.cwd(), false); import('./scripts/cleanup-self-build-delivered-photos.mjs').then(m=>m.run()).catch(e=>{console.error('Delivery photo cleanup failed:',e.message);process.exitCode=1})"
+          REMOTE
