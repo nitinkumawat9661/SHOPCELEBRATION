@@ -23,6 +23,7 @@ Object.assign(process.env, {
   DATABASE_URL: connectionString, DATABASE_SSL_MODE: 'disable', BUSINESS_TIMEZONE: 'Asia/Kolkata',
   ORDER_ID_PREFIX: 'LOCALTEST', TRACKING_TOKEN_SECRET: 'local-test-tracking-secret-that-is-long-enough-2026',
   ADMIN_SESSION_SECRET: 'local-test-admin-secret-that-is-long-enough-2026',
+  ISSUE_REPORT_WINDOW_HOURS: '48',
   PAYMENT_PROVIDER: 'razorpay', PAYMENT_MODE: 'test', APP_BASE_URL: 'http://127.0.0.1:3060',
   RAZORPAY_KEY_ID: 'rzp_test_local_fixture', RAZORPAY_KEY_SECRET: 'local-test-key',
   RAZORPAY_WEBHOOK_SECRET: 'local-test-webhook-secret'
