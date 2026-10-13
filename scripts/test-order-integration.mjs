@@ -50,6 +50,7 @@ const { defaultCatalog } = requireCompiled(join(output, 'lib/domain/catalog.js')
 const { normalizeOrderInput } = requireCompiled(join(output, 'lib/domain/order.js'))
 const { orderConfig } = requireCompiled(join(output, 'config/order.js'))
 const { createOrder } = requireCompiled(join(output, 'lib/server/orders/create.js'))
+const { createStagedSelfBuildOrder } = requireCompiled(join(output, 'lib/server/orders/self-build-create.js'))
 const { listOrders, findOrderByTrackingToken } = requireCompiled(join(output, 'lib/server/orders/read.js'))
 const { createCustomerAccount, listCustomerOrders } = requireCompiled(join(output, 'lib/server/customer-accounts.js'))
 const { reservePaymentAttempt, bindPaymentAttempt, failPaymentAttempt, applyProviderPaymentResult, getPaymentOrder } = requireCompiled(join(output, 'lib/server/payments/store.js'))
@@ -288,6 +289,99 @@ try {
   await assert.rejects(bindPaymentAttempt(confirmationReserved.attemptId, { provider: 'razorpay', mode: 'test', providerOrderId: 'order_local_confirm_race', keyId: 'rzp_test_fixture', amountPaise: confirmationRace.pricing.payablePaise, currency: 'INR' }), /PAYMENT_ALREADY_CONFIRMED/)
   await assert.rejects(control.query(`UPDATE orders SET order_type='individual' WHERE public_id='LOCALTEST-LEGACY'`), { code: '23514' })
   await assert.rejects(control.query('UPDATE orders SET line_items=$1::jsonb WHERE public_id=$2', ['{}', created.publicId]), { code: '23514' })
+  // REAL staged Self-Build order/reservation integration: disposable PostgreSQL
+  // ONLY. Production checkout remains blocked by a DB CHECK constraint.
+  const stagedDraftId = randomUUID()
+  await control.query(`INSERT INTO self_build_drafts
+    (id,customer_account_id,tier_id,selections,other_request_text,expires_at)
+    VALUES ($1,$2,'t499',$3::jsonb,'Wrap it carefully',now()+interval '1 day')`,
+    [stagedDraftId, account.id, JSON.stringify([{kind:'category',id:'bangles',quantity:1}])])
+  const selfBuildKey=randomUUID()
+  const stagedInput={
+    accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
+    customerDetails:{...body,idempotencyKey:selfBuildKey,occasion:'Birthday'}
+  }
+  await assert.rejects(createStagedSelfBuildOrder(stagedInput),{code:'SELF_BUILD_NOT_LIVE'})
+  assert.equal((await control.query('SELECT COUNT(*)::int AS n FROM orders WHERE idempotency_key=$1',[selfBuildKey])).rows[0].n,0,
+    'Closed customer gate must prevent creating an order or Telegram outbox event')
+  // Enable staged schema only inside loopback /celebration_individual_test.
+  // Never relax the production CHECK(customer_enabled=false).
+  const stagingConstraint=await control.query(`SELECT conname FROM pg_constraint
+    WHERE conrelid='self_build_configuration'::regclass
+      AND pg_get_constraintdef(oid) ILIKE '%customer_enabled%'`)
+  assert.equal(stagingConstraint.rows.length,1)
+  assert(/^[a-z_]+$/.test(stagingConstraint.rows[0].conname))
+  await control.query('ALTER TABLE self_build_configuration DROP CONSTRAINT "'+stagingConstraint.rows[0].conname+'"')
+  await control.query("UPDATE self_build_configuration SET customer_enabled=true WHERE id='primary'")
+  await control.query(`INSERT INTO self_build_category_capacity(category_id,available_units,verified)
+     VALUES ('bangles',2,true)`)
+  await control.query(`INSERT INTO self_build_tier_allowances(tier_id,allowance_paise,enabled)
+     VALUES ('t499',20000,true)`)
+  const staged=await createStagedSelfBuildOrder(stagedInput)
+  assert.equal(staged.created,true)
+  assert.equal(staged.payablePaise,49900)
+  assert.equal(staged.reservationStatus,'reserved')
+  const storedStaged=await control.query(`SELECT o.id,o.payment_status,o.order_type,o.selected_product_ids,
+    b.status,s.other_request_text, s.selections
+    FROM orders o
+    JOIN self_build_order_reservation_batches b ON b.order_id=o.id
+    JOIN self_build_order_snapshots s ON s.order_id=o.id
+    WHERE o.public_id=$1`,[staged.orderId])
+  assert.equal(storedStaged.rows[0].payment_status,'pending')
+  assert.equal(storedStaged.rows[0].order_type,'hamper')
+  assert.deepEqual(storedStaged.rows[0].selected_product_ids,[],'No catalogue SKU mapping')
+  assert.equal(storedStaged.rows[0].other_request_text,'Wrap it carefully')
+  assert.equal(storedStaged.rows[0].selections[0].id,'bangles')
+  assert.equal(storedStaged.rows[0].status,'reserved')
+  const retryStaged=await createStagedSelfBuildOrder(stagedInput)
+  assert.equal(retryStaged.created,false)
+  assert.equal(retryStaged.orderId,staged.orderId)
+  assert.equal((await control.query(`SELECT COUNT(*)::int AS n FROM self_build_order_reservation_items WHERE order_id=$1`,
+    [storedStaged.rows[0].id])).rows[0].n,1,'Idempotent retry never double-reserves')
+  assert.equal((await control.query("SELECT reserved_units FROM self_build_category_capacity WHERE category_id='bangles'")).rows[0].reserved_units,1)
+  const notice=await control.query(`SELECT COUNT(*)::int AS n FROM telegram_notification_outbox
+    WHERE order_id=$1 AND event_type='order_created'`,[storedStaged.rows[0].id])
+  assert.equal(notice.rows[0].n,1,'One durable owner notification, no duplicate')
+  await assert.rejects(createStagedSelfBuildOrder({...stagedInput,accountId:otherAccount.id}),{
+    code:'SELF_BUILD_DRAFT_NOT_FOUND'
+  })
+  await control.query(`UPDATE self_build_drafts SET other_request_text='A different gift'
+    WHERE id=$1`,[stagedDraftId])
+  await assert.rejects(createStagedSelfBuildOrder(stagedInput),{
+    code:'RESERVATION_PAYLOAD_MISMATCH'
+  })
+  await control.query(`UPDATE self_build_drafts SET other_request_text='Wrap it carefully',
+     selections=$2::jsonb WHERE id=$1`,
+    [stagedDraftId,JSON.stringify([{kind:'category',id:'bangles',quantity:2}])])
+  const overbookKey=randomUUID()
+  await assert.rejects(createStagedSelfBuildOrder({
+    ...stagedInput,customerDetails:{...stagedInput.customerDetails,idempotencyKey:overbookKey}
+  }),{code:'INSUFFICIENT_VERIFIED_CATEGORY_CAPACITY'})
+  assert.equal((await control.query('SELECT COUNT(*)::int AS n FROM orders WHERE idempotency_key=$1',
+    [overbookKey])).rows[0].n,0,'Insufficient stock rolls back order + notification + reservation together')
+  const curatedKey=randomUUID()
+  const curatedEmpty=normalizeOrderInput({...body,orderType:'hamper',tierId:'t499',
+    selectedProductIds:[],occasion:'Birthday',idempotencyKey:curatedKey},'Asia/Kolkata',catalog,
+    {requirePaymentReference:false})
+  await createOrder(curatedEmpty,account.id,undefined,auto)
+  await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb
+    WHERE id=$1`,[stagedDraftId,JSON.stringify([{kind:'category',id:'bangles',quantity:1}])])
+  await assert.rejects(createStagedSelfBuildOrder({
+    ...stagedInput,customerDetails:{...stagedInput.customerDetails,idempotencyKey:curatedKey}
+  }),{code:'SELF_BUILD_IDEMPOTENCY_COLLISION'})
+  const photoDraftId=randomUUID()
+  await control.query(`INSERT INTO self_build_drafts
+    (id,customer_account_id,tier_id,selections,other_request_text,expires_at)
+    VALUES ($1,$2,'t499',$3::jsonb,'photo gift',now()+interval '1 day')`,
+    [photoDraftId,otherAccount.id,JSON.stringify([{kind:'category',id:'personalised-photos',quantity:1}])])
+  await assert.rejects(createStagedSelfBuildOrder({
+    accountId:otherAccount.id,draftId:photoDraftId,paymentProvider:'razorpay',
+    customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
+  }),{code:'SELF_BUILD_PHOTO_ORDER_RETENTION_NOT_READY'})
+  // No provider checkout requests, phone numbers, private budgets or photos
+  // are sent over the network in any of these local DB fixtures.
+  console.log('SELF_BUILD_ATOMIC_ORDER_POSTGRES_PASSED: disabled production gate, buyer ownership, order+capacity+Telegram atomicity, price, idempotency, no SKU mapping, insufficient-stock rollback, curated-key collision and photo-retention gate')
+
   console.log('TELEGRAM_POSTGRES_CHECKS_PASSED: payment, owner reply, customer chat, durable owner outbox, idempotency, A/B isolation and read receipts')
   console.log('REAL_POSTGRES_CHECKS_PASSED: migrations001..009, legacyhamper, individualsnapshot, staleprice, pausedavailability, samecartretry, changedcartreject, ownermismatch, concurrentidempotency, catalogpublishlock, individualmanualrejected, hampermanualpreserved, customer/admin/trackingreads, provideramountmismatch, duplicatepaidwebhook, verifiedpaymentpreserved, cancelledretryblocked, cancelledbindingrace, confirmedbindingrace, DBconstraints')
 } finally { await control.end() }
