@@ -170,3 +170,67 @@
 @media(prefers-reduced-motion:reduce){
   .sbBuyerTiers .sbBuyerTierBar{transition:none}
 }
+
+
+/* 2026-10-14 natural Celebration palette shared with admin design preview */
+/* The tier bars still show just the published name and inclusive final price.
+   Wine / ivory contrast matches the live Celebration catalog and avoids
+   the arbitrary gold-to-magenta gradients from the previous mockup. */
+.sbBuyerPage{background:#fcf8f1}
+.sbBuyerTierHeading{color:#34241e}
+.sbBuyerTiers{gap:8px}
+.sbBuyerTiers .sbBuyerTierBar,
+.sbBuyerTiers .sbBuyerTierBar:nth-child(2n){
+  min-height:71px;display:flex;align-items:center;justify-content:space-between;
+  padding:13px clamp(17px,2.5vw,26px);
+  background:#fffdfa;color:#34241e;
+  border:1px solid #e5d7c9;border-radius:10px;
+  box-shadow:none;isolation:auto;transform:none;
+  transition:background-color .15s ease,border-color .15s ease
+}
+.sbBuyerTiers .sbBuyerTierBar::before{content:none}
+.sbBuyerTiers .sbBuyerTierBar:hover:not(:disabled):not([aria-pressed=true]){
+  background:#f8f0e7;border-color:#c5aa9b
+}
+.sbBuyerTiers .sbBuyerTierBar[aria-pressed=true],
+.sbBuyerTiers .sbBuyerTierBar:nth-child(2n)[aria-pressed=true]{
+  color:#fffaf4;background:#7b1420;border-color:#7b1420;
+  box-shadow:inset 0 0 0 2px #f5ece3;transform:none
+}
+.sbBuyerTiers .sbBuyerTierBar .sbBuyerTierName{
+  font:650 clamp(19px,2.4vw,27px)/1.14 Georgia,serif;color:inherit;
+  letter-spacing:-.035em
+}
+.sbBuyerTiers .sbBuyerTierBar .sbBuyerTierPrice{
+  font:750 clamp(21px,2.7vw,30px)/1.1 Georgia,serif;
+  color:#7b1420;white-space:nowrap;font-variant-numeric:tabular-nums
+}
+.sbBuyerTiers .sbBuyerTierBar[aria-pressed=true] .sbBuyerTierPrice{color:#fffaf4}
+.sbBuyerTierSection .sbBuyerTierBar:focus-visible{
+  outline:3px solid #c78b73;outline-offset:3px
+}
+.sbBuyerCard{border-color:#e8d9c8;background:#fffdfa;box-shadow:0 5px 20px #4730250b}
+.sbBuyerChoice{border-color:#e9dacb;background:#fffdfa}
+.sbBuyerChoiceActive{background:#fcf0eb;border-color:#ad7374}
+.sbBuyerChoiceSectionHead{border-bottom-color:#e9dacb}
+.sbBuyerChoiceSectionHead h3{color:#34241e}
+.sbBuyerQty button{color:#7b1420;background:#fbf5ee;border-color:#dfc9bc}
+.sbBuyerQty button:hover:not(:disabled){background:#f3e5db}
+.sbBuyerSelected{border-color:#e9dacb;background:#fffdfa}
+.sbBuyerSelectionProgress span{background:#7b1420}
+@media(max-width:650px){
+  .sbBuyerTiers .sbBuyerTierBar,
+  .sbBuyerTiers .sbBuyerTierBar:nth-child(2n){
+    min-height:65px;padding:12px 14px;gap:12px
+  }
+  .sbBuyerTiers .sbBuyerTierBar .sbBuyerTierName{font-size:clamp(18px,5.2vw,24px)}
+  .sbBuyerTiers .sbBuyerTierBar .sbBuyerTierPrice{font-size:clamp(20px,5.9vw,27px)}
+}
+@media(max-width:360px){
+  .sbBuyerTiers .sbBuyerTierBar,.sbBuyerTiers .sbBuyerTierBar:nth-child(2n){padding:11px}
+  .sbBuyerTiers .sbBuyerTierBar .sbBuyerTierName{font-size:18px}
+  .sbBuyerTiers .sbBuyerTierBar .sbBuyerTierPrice{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sbBuyerTiers .sbBuyerTierBar{transition:none}
+}
