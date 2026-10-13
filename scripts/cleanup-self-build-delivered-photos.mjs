@@ -28,7 +28,7 @@ export async function removeDeliveredSelfBuildOrderPhotos(client, remove, limit=
           FROM self_build_order_photos p
           JOIN orders o ON o.id=p.order_id
          WHERE p.deleted_at IS NULL AND p.object_key IS NOT NULL
-           AND o.status='delivered'
+           AND o.status IN ('delivered','issue_reported','refund_or_replacement_resolved')
            AND o.delivered_at IS NOT NULL
            AND o.delivered_at<=now()-interval '48 hours'
            AND o.payment_status IN ('paid','verified')
