@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 const read = path => readFile(new URL("../"+path,import.meta.url),"utf8")
-const [hook,button,card,list,page,detail,collection,css,globals,api,migration,account] = await Promise.all([
+const [hook,button,card,list,page,detail,collection,legacyCss,globals,api,migration,account] = await Promise.all([
  "features/catalog/useWishlist.ts","features/catalog/WishlistToggle.tsx","features/catalog/CatalogCard.tsx",
  "features/catalog/WishlistCollection.tsx","app/wishlist/page.tsx","app/jewelry/[id]/page.tsx",
  "features/catalog/CatalogCollection.tsx","styles/phase2-wishlist-20261012.css","app/globals.css",
@@ -21,10 +21,13 @@ assert(card.includes('<WishlistToggle productId={product.id} productName={produc
 assert(!card.includes('href="/wishlist"') && card.includes('<Link href={`/jewelry/${encodeURIComponent(product.id)}`}'),"Exact SKU card link unchanged")
 assert(list.includes('availableById.get(id)') && list.includes('active !== false') && list.includes('<CatalogCard key={product.id} product={product} />'))
 assert(list.includes('mode === "account"') && list.includes('href="/account"') && list.includes('Retry sync'))
+assert(!list.includes("wishlistSyncNotice") && !list.includes("Your saved pieces are synced to your Celebration account"),"Remove redundant account sync banner")
+assert(list.includes("Sign in to sync across devices"),"Keep unobtrusive guest sign-in affordance")
+assert(!premium.includes(".wishlistSyncNotice") && !legacyCss.includes(".wishlistSyncNotice"),"Remove dead banner styling")
 assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in or create an account'),"Wishlist account sync/help survives removal of the hero")
 assert(detail.includes('<WishlistToggle productId={product.id} productName={product.name} />'))
 assert(!collection.includes('wishlistBrowseLink'),"Redundant saved collection shortcut was replaced by the shared header")
-assert(css.includes(".wishlistToggle:focus-visible") && css.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
+assert(legacyCss.includes(".wishlistToggle:focus-visible") && legacyCss.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
 assert(api.includes('getCustomerSession()') && !api.includes('body.accountId') && api.includes('enforceSameOrigin(request)') && api.includes('consumeRequestRateLimit'))
 assert(api.includes('headers:noStore') && api.includes('AUTH_REQUIRED'))
 assert(migration.includes("REFERENCES customer_accounts(id) ON DELETE CASCADE") && migration.includes('PRIMARY KEY (account_id, product_id)'))

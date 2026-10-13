@@ -16,7 +16,5 @@
 .wishlistSummary,.wishlistLoading,.wishlistUnavailable{font-size:12px;color:#705047;line-height:1.6;margin:0 0 18px}
 .wishlistUnavailable{margin-top:20px}
 .wishlistContinue{font-size:12px;color:#762c3b}
-.wishlistSyncNotice{border:1px solid #ead6c7;background:#fff7ef;border-radius:9px;padding:12px 15px;margin:0 0 20px;color:#6e4a3e;font-size:12px;line-height:1.65}
-.wishlistSyncNotice p{margin:0}.wishlistSyncNotice a{color:#762c3b;font-weight:700;text-underline-offset:3px}
 .wishlistPage .collectionEmpty button{min-height:44px;padding:10px 20px;cursor:pointer}
 @media(max-width:620px){.catalogCard>.wishlistControl--compact{right:6px;top:6px}.wishlistControl--compact .wishlistToggle{width:40px;height:40px}.wishlistDetailRow{gap:10px}.wishlistPage .collectionGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
