@@ -77,7 +77,7 @@ try{
   }
   const {context,page}=await mockDevice(390,"B")
   await page.goto(base+"/notifications",{waitUntil:"domcontentloaded"})
-  await page.getByText("Your own order is confirmed.").waitFor({timeout:15000})
+  await page.locator(".notificationBubble.fromCelebration").getByText("Your own order is confirmed.",{exact:true}).waitFor({timeout:15000})
   assert.equal(await page.getByText("Your bracelet is being packed.").count(),0,"Buyer B cannot view A mock conversation")
   await context.close()
   console.log("TELEGRAM_NOTIFICATION_INBOX_BROWSER_QA_PASSED")
