@@ -9,7 +9,7 @@ import { NotificationLink } from "./NotificationLink"
 import { WishlistHeaderLink } from "./WishlistHeaderLink"
 import { HeaderScrollBehavior } from "./HeaderScrollBehavior"
 
-export function StorefrontHeader({ settings, onCreate, showAccount = true, searchQuery = "" }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean; searchQuery?: string }) {
+export function StorefrontHeader({ settings, onCreate, showAccount = true, searchQuery = "", showSelfBuild = false }: { settings: StoreSettings; onCreate?: () => void; showAccount?: boolean; searchQuery?: string; showSelfBuild?: boolean }) {
   const supportUrl = supportWhatsappUrl(settings.supportMessage, settings.whatsapp)
   return <>
     <header className="celebrationHeader">
@@ -31,7 +31,7 @@ export function StorefrontHeader({ settings, onCreate, showAccount = true, searc
         </div>
       </div>
       <nav className="celebrationNav wrap" aria-label="Store navigation">
-        <a href="/#budgets">Hampers</a><Link href="/jewelry" prefetch={false}>Jewelry</Link><Link href="/jewelry?view=all" prefetch={false}>All Gifts</Link><a href="/#occasions">Occasions</a><a href="/#budgets">Budget</a><a href="/#trust">Why Celebration</a>
+        <a href="/#budgets">Hampers</a>{showSelfBuild && <Link href="/self-build" prefetch={false}>Create your hamper</Link>}<Link href="/jewelry" prefetch={false}>Jewelry</Link><Link href="/jewelry?view=all" prefetch={false}>All Gifts</Link><a href="/#occasions">Occasions</a><a href="/#budgets">Budget</a><a href="/#trust">Why Celebration</a>
       </nav>
     </header>
     <HeaderScrollBehavior />
