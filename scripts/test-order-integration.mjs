@@ -588,6 +588,65 @@ try {
     {code:'SELF_BUILD_NOT_LIVE'})
   await control.query("UPDATE self_build_configuration SET customer_enabled=true WHERE id='primary'")
 
+  // Exercise EXISTING signed-provider persistence and callbacks against
+  // this REAL no-stock Self-Build mode, never the old stock-reservation code.
+  // This uses locally synthesized verified gateway event fixtures ONLY.
+  const paymentStockSnapshot = (await control.query(`
+    SELECT category_id,available_units,reserved_units,verified
+    FROM self_build_category_capacity ORDER BY category_id`)).rows
+  const providerNoStockOrder=await createSelfBuildNoInventoryOrder({
+    ...noStockInput,customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
+  })
+  const newAttempt=await reservePaymentAttempt(providerNoStockOrder.orderId,account.id,'razorpay')
+  assert.equal(newAttempt.attemptNo,1)
+  await bindPaymentAttempt(newAttempt.attemptId,{
+    provider:'razorpay',mode:'test',providerOrderId:'order_no_stock_paid',
+    keyId:'rzp_test_fixture',amountPaise:providerNoStockOrder.payablePaise,currency:'INR'
+  })
+  const signedPaymentFixture={
+    ...providerResult,providerOrderId:'order_no_stock_paid',
+    providerPaymentId:'pay_no_stock_paid',amountPaise:providerNoStockOrder.payablePaise,
+    eventId:'evt_no_stock_paid'
+  }
+  await assert.rejects(applyProviderPaymentResult({...signedPaymentFixture,amountPaise:1}),
+    /PAYMENT_AMOUNT_MISMATCH/,'Wrong gateway charge must be rejected')
+  await applyProviderPaymentResult(signedPaymentFixture)
+  await applyProviderPaymentResult(signedPaymentFixture)
+  const livePaid=await getPaymentOrder(providerNoStockOrder.orderId,account.id)
+  assert.equal(livePaid.paymentStatus,'paid')
+  assert.equal(livePaid.status,'payment_verified')
+  const currentEventCount=await control.query(`
+    SELECT COUNT(*)::int AS n FROM payment_events
+    WHERE provider_event_id='evt_no_stock_paid'`)
+  assert.equal(currentEventCount.rows[0].n,1,'Provider replay cannot duplicate paid records')
+  assert.deepEqual((await control.query(`
+    SELECT category_id,available_units,reserved_units,verified
+    FROM self_build_category_capacity ORDER BY category_id`)).rows,paymentStockSnapshot,
+    'Self-Build payment must NEVER touch category inventory/capacity')
+  const noStockFailed=await createSelfBuildNoInventoryOrder({
+    ...noStockInput,customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
+  })
+  const failedAttempt=await reservePaymentAttempt(noStockFailed.orderId,account.id,'razorpay')
+  await bindPaymentAttempt(failedAttempt.attemptId,{
+    provider:'razorpay',mode:'test',providerOrderId:'order_no_stock_failed',
+    keyId:'rzp_test_fixture',amountPaise:noStockFailed.payablePaise,currency:'INR'
+  })
+  const failedPaymentFixture={
+    ...providerResult,providerOrderId:'order_no_stock_failed',
+    providerPaymentId:null,status:'failed',amountPaise:noStockFailed.payablePaise,
+    eventId:'evt_no_stock_failed',eventType:'payment.failed'
+  }
+  await applyProviderPaymentResult(failedPaymentFixture)
+  await applyProviderPaymentResult(failedPaymentFixture)
+  assert.equal((await getPaymentOrder(noStockFailed.orderId,account.id)).paymentStatus,'failed')
+  const recoveryAttempt=await reservePaymentAttempt(noStockFailed.orderId,account.id,'razorpay')
+  assert.equal(recoveryAttempt.attemptNo,2,'Buyer can retry same failed Self-Build order')
+  assert.deepEqual((await control.query(`
+    SELECT category_id,available_units,reserved_units,verified
+    FROM self_build_category_capacity ORDER BY category_id`)).rows,paymentStockSnapshot,
+    'Failed payment and retry must never change inventory')
+  console.log('SELF_BUILD_NO_STOCK_PROVIDER_POSTGRES_PASSED: verified paid, replay, bad amount, failed payment and same-order retry with zero inventory writes')
+
   // Live money transfer is never simulated; tests only validate a durable
   // reconciliation queue on the isolated database's payment/status rows.
   await control.query("UPDATE orders SET payment_status='paid' WHERE id=$1",[noStockInternal.id])
