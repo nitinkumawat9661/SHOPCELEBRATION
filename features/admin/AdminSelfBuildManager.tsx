@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { SelfBuildAdminState, SelfBuildCategory, SelfBuildOption } from "../../lib/server/self-build-admin"
+import { AdminSelfBuildCapacity } from "./AdminSelfBuildCapacity"
 
-type Group = "categories" | "options" | "settings"
+type Group = "categories" | "options" | "settings" | "capacity"
 type Message = { kind: "success" | "error"; text: string }
 const kindNames: Record<SelfBuildCategory["selectionKind"], string> = {
   group: "Folder / group", category: "Choose category + quantity",
@@ -160,6 +161,7 @@ export function AdminSelfBuildManager() {
         <button className={section==="categories"?"active":""} onClick={()=>setSection("categories")}>Categories</button>
         <button className={section==="options"?"active":""} onClick={()=>setSection("options")}>Sizes &amp; options</button>
         <button className={section==="settings"?"active":""} onClick={()=>setSection("settings")}>Rules &amp; notes</button>
+        <button className={section==="capacity"?"active":""} onClick={()=>setSection("capacity")}>Availability &amp; budgets</button>
       </div>
       <div className="sbAdminStatus">{loading?"Loading…":state?`DB version ${state.version}`:"Not loaded"}{dirty&&<b> · Unsaved edits</b>}</div>
     </div>
@@ -218,6 +220,7 @@ export function AdminSelfBuildManager() {
         <div className="sbAdminNotice"><strong>Safety locks:</strong> Customer Self-Build checkout: OFF · Internal prices shown to customers: NEVER. These are secured database-level protections, not admin toggles.</div>
       </div>
     </div>}
-    {state&&<div className="sbAdminFooter"><button type="button" className="sbAdminSave" onClick={()=>void save()} disabled={loading||saving||!dirty}>{saving?"Saving…":"Save Self-Build settings"}</button><button type="button" className="secondary" disabled={saving||loading||!dirty} onClick={discard}>Discard changes</button><span>Edits are atomic and version-protected.</span></div>}
+    {section==="capacity"&&<div className="sbAdminBody"><AdminSelfBuildCapacity /></div>}
+    {state&&section!=="capacity"&&<div className="sbAdminFooter"><button type="button" className="sbAdminSave" onClick={()=>void save()} disabled={loading||saving||!dirty}>{saving?"Saving…":"Save Self-Build settings"}</button><button type="button" className="secondary" disabled={saving||loading||!dirty} onClick={discard}>Discard changes</button><span>Edits are atomic and version-protected.</span></div>}
   </section>
 }

@@ -1,0 +1,117 @@
+name: Verify Phase 3 Category Capacity and Private Budget
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - db/migrations/050_self_build_category_capacity_and_tier_allowances.sql
+      - lib/server/self-build-capacity.ts
+      - lib/server/self-build-quote.ts
+      - lib/server/self-build-admin.ts
+      - app/api/admin/self-build/capacity/route.ts
+      - features/admin/AdminSelfBuildCapacity.tsx
+      - scripts/test-phase3-self-build-capacity-and-budget.mjs
+      - .github/workflows/phase3-self-build-capacity-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated_capacity_test
+          POSTGRES_DB: isolated_capacity_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGDATABASE: isolated_capacity_test
+      PGUSER: postgres
+      PGPASSWORD: isolated_capacity_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Run source and real TypeScript quote checks
+        run: |
+          npm ci
+          node scripts/test-phase3-self-build-capacity-and-budget.mjs
+      - name: Verify additive PostgreSQL 16 schema and zero-stock default
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+          psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts(id text PRIMARY KEY); CREATE TABLE orders(id text PRIMARY KEY);'
+          psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/049_self_build_category_only_no_sku_mapping.sql
+          psql -v ON_ERROR_STOP=1 -f db/migrations/050_self_build_category_capacity_and_tier_allowances.sql
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF (SELECT version FROM self_build_capacity_control WHERE id='primary')<>1
+              THEN RAISE EXCEPTION 'Capacity version missing'; END IF;
+            IF EXISTS (SELECT 1 FROM self_build_category_capacity) OR
+               EXISTS (SELECT 1 FROM self_build_option_capacity) OR
+               EXISTS (SELECT 1 FROM self_build_tier_allowances)
+              THEN RAISE EXCEPTION 'Unsafe seeded stock or tier allowance'; END IF;
+            IF (SELECT customer_enabled OR show_item_prices FROM self_build_configuration WHERE id='primary')
+              THEN RAISE EXCEPTION 'Self-Build customer privacy gate must remain closed'; END IF;
+            IF to_regclass('self_build_catalog_product_rules') IS NOT NULL
+              THEN RAISE EXCEPTION 'SKU mapping unexpectedly restored'; END IF;
+          END $$;
+          INSERT INTO self_build_category_capacity(category_id,available_units,verified)
+            VALUES ('premium-necklaces',5,true),('personalised-photos',3,true);
+          INSERT INTO self_build_option_capacity(option_id,available_units,verified)
+            VALUES ('chocolate-extra-100',12,true);
+          INSERT INTO self_build_tier_allowances(tier_id,allowance_paise,enabled)
+            VALUES ('test-tier',40000,false);
+          -- Updating a category or option must preserve its verified capacity.
+          UPDATE self_build_categories SET label='Premium Necklaces Edited' WHERE id='premium-necklaces';
+          UPDATE self_build_options SET label='Starter Edited' WHERE id='chocolate-extra-100';
+          DO $$
+          BEGIN
+            IF (SELECT available_units FROM self_build_category_capacity WHERE category_id='premium-necklaces')<>5
+              OR (SELECT verified FROM self_build_category_capacity WHERE category_id='premium-necklaces') IS NOT TRUE
+              OR (SELECT available_units FROM self_build_option_capacity WHERE option_id='chocolate-extra-100')<>12
+              THEN RAISE EXCEPTION 'Admin edit erased verified capacity'; END IF;
+            BEGIN
+              UPDATE self_build_category_capacity SET available_units=-1 WHERE category_id='premium-necklaces';
+              RAISE EXCEPTION 'Negative inventory unexpectedly accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              UPDATE self_build_option_capacity SET reserved_units=13 WHERE option_id='chocolate-extra-100';
+              RAISE EXCEPTION 'Reserved units > available unexpectedly accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              UPDATE self_build_tier_allowances SET allowance_paise=-1 WHERE tier_id='test-tier';
+              RAISE EXCEPTION 'Negative private tier allowance accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+          END $$;
+          DELETE FROM self_build_options WHERE id='chocolate-extra-100';
+          DELETE FROM self_build_categories WHERE id='premium-necklaces';
+          DO $$
+          BEGIN
+            IF EXISTS (SELECT 1 FROM self_build_option_capacity WHERE option_id='chocolate-extra-100')
+              OR EXISTS (SELECT 1 FROM self_build_category_capacity WHERE category_id='premium-necklaces')
+              THEN RAISE EXCEPTION 'Removed category/option must remove its capacity'; END IF;
+          END $$;
+          SQL
+          echo 'PostgreSQL 16: capacity default-zero, verification, FK cleanup, price privacy and tier allowance constraints passed.'
