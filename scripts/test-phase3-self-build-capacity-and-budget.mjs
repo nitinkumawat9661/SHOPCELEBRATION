@@ -71,7 +71,7 @@ const capacity={
     {id:"starter",label:"Starter",groupLabel:"Chocolates",active:true,availableUnits:5,reservedUnits:0,verified:true},
     {id:"large",label:"Large",groupLabel:"Chocolates",active:true,availableUnits:1,reservedUnits:0,verified:true}
   ],
-  tiers:[{id:"tier-x",label:"Test tier",sellingPricePaise:79900,allowancePaise:50000,enabled:true}]
+  tiers:[{id:"tier-x",label:"Test tier",sellingPricePaise:79900,allowancePaise:80000,enabled:true}]
 }
 const item=(kind,id,quantity)=>({kind,id,quantity})
 const test=(name,selection,expected,r=rules,c=capacity)=>{
@@ -83,5 +83,40 @@ const safe=test("category quantity and photo unit consumption",[
   item("category","premium-necklaces",2),item("category","viral-bangles",1),
   item("category","photos",3),item("option","starter",1)
 ],"WITHIN_PRIVATE_BUDGET")
-assert.equal(safe.internalSpentPaise,52000-2000,"2×₹60 + ₹150 + 3×₹50 + ₹100 = ₹520 internally")
-// baseline tier budget ₹500 currently, example selected ₹520 must fail before reaching above.
+assert.equal(safe.internalSpentPaise,52000,"2×₹60 + ₹150 + 3×₹50 + ₹100 = ₹520 internally")
+assert.equal(safe.allowancePaise,80000)
+const copy=(value)=>structuredClone(value)
+const withTierBudget=(value)=>{
+ const next=copy(capacity);next.tiers[0].allowancePaise=value;return next
+}
+test("budget overrun", [item("option","large",2)],"TIER_BUDGET_EXCEEDED",rules,withTierBudget(80000))
+// Note: Large has 1 unit verified; availability must block double quantity
+test("capacity bound", [item("option","large",2)],"INSUFFICIENT_VERIFIED_CATEGORY_CAPACITY")
+test("valid single large", [item("option","large",1)],"WITHIN_PRIVATE_BUDGET")
+test("category not product SKU", [item("category","not-a-product",1)],"CATEGORY_UNAVAILABLE")
+test("group not selectable", [item("category","jewellery",1)],"CATEGORY_UNAVAILABLE")
+test("notes not purchasable", [item("category","notes",1)],"CATEGORY_UNAVAILABLE")
+test("unknown option", [item("option","other",1)],"OPTION_UNAVAILABLE")
+test("negative quantity", [item("category","photos",-1)],"INVALID_SELECTION")
+test("decimal quantity", [item("category","photos",1.5)],"INVALID_SELECTION")
+test("zero quantity", [item("category","photos",0)],"INVALID_SELECTION")
+test("duplicate selection", [item("category","photos",1),item("category","photos",1)],"DUPLICATE_SELECTION")
+const under=withTierBudget(10000)
+test("tier budget insufficient", [item("category","viral-bangles",1)],"TIER_BUDGET_EXCEEDED",rules,under)
+const unconfigured=copy(capacity);unconfigured.tiers[0].enabled=false
+test("disabled tier", [item("category","photos",1)],"TIER_NOT_CONFIGURED",rules,unconfigured)
+const unver=copy(capacity);unver.categories[2].verified=false
+test("unverified photo capacity", [item("category","photos",1)],"INSUFFICIENT_VERIFIED_CATEGORY_CAPACITY",rules,unver)
+const reserved=copy(capacity);reserved.categories[2].reservedUnits=4
+test("reservations count against free category units", [item("category","photos",2)],"INSUFFICIENT_VERIFIED_CATEGORY_CAPACITY",rules,reserved)
+const stale=copy(capacity);stale.settingsVersion=4
+test("stale rules", [item("category","photos",1)],"STALE_SELF_BUILD_RULES",rules,stale)
+const noMulti=copy(rules);noMulti.config.allowMultipleQuantities=false
+test("multiple quantities setting", [item("category","photos",2)],"MULTIPLE_QUANTITIES_DISABLED",noMulti,capacity)
+const disabledParent=copy(rules);disabledParent.categories[0].active=false
+test("parent group disabled", [item("category","premium-necklaces",1)],"CATEGORY_UNAVAILABLE",disabledParent,capacity)
+const disabledOption=copy(rules);disabledOption.options[0].active=false
+test("inactive option", [item("option","starter",1)],"OPTION_UNAVAILABLE",disabledOption,capacity)
+const overflow=copy(rules);overflow.options[0].unitBudgetPaise=2_147_483_647
+test("integer-safe private budget overflow", [item("option","starter",2)],"INVALID_INTERNAL_BUDGET",overflow,capacity)
+console.log("Phase 3 capacity source, admin privacy and real TS server quote tests passed.")
