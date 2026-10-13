@@ -81,7 +81,7 @@ export function OrderCelebrationMessages({ accountId, orderId, unreadCount, onRe
     const controller = new AbortController()
     void markRead(controller.signal)
     return () => controller.abort()
-  }, [expanded, state, unreadLoaded, ackState, markRead])
+  }, [expanded, state, unreadLoaded, markRead])
 
   const badge = unreadCount > 0 ? unreadCount : (state === "ready" ? unreadLoaded : 0)
 
