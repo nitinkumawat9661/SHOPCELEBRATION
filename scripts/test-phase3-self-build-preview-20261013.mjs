@@ -37,19 +37,19 @@ assert(!ui.includes("Premium Feature Necklaces")&&!ui.includes("chocolate-extra-
 assert(!/unitBudgetPaise|totalInternalBudget|catalog_config|ProductStep|selectedProductIds|fetch\(|window\.open|\/api\/payments|\/api\/orders/.test(ui),"UI must not use private prices, retail SKUs or call checkout")
 assert(ui.includes('function QuantityControl')&&ui.includes('Add one')&&ui.includes('Remove one')&&ui.includes('aria-live="polite"'))
 assert(ui.includes('setQuantities')&&ui.includes('Math.max(0, count - 1)'),"Quantity controls must support multi-selection")
-assert(ui.includes('MAXIMUM PIECES')&&ui.includes('{units} <span>/ {maxItems}</span>')&&
- ui.includes('Repeating one category also counts'),"Admin sees total max-per-tier pieces on upper card")
-assert(ui.includes('const units = chosen.reduce')&&ui.includes("canAdd={!atMax}")&&
- ui.includes('maxItems-others'),"Repeats count toward global tier max; prevents over-selection")
-assert(ui.includes('sortedCategories.filter(item => item.parentId === (openId ?? null)')&&ui.includes('setOpenId(category.id)'),"Category-first navigation required")
-assert(ui.includes('category.selectionKind === "group" || category.selectionKind === "variant"'))
-assert(ui.includes('currentCategory?.selectionKind === "variant"')&&ui.includes("childOptions.map"))
+assert(!ui.includes('MAXIMUM PIECES')&&!ui.includes('{units} <span>/ {maxItems}</span>')&&
+ !ui.includes('Repeating one category also counts'),"No visible piece capacity limit")
+assert(ui.includes('const units = chosen.reduce')&&ui.includes('setUpgradeOpen(true)')&&
+ ui.includes('maxItems-others'),"Server-style quantity cap remains enforced via upgrade dialog")
+assert(ui.includes('availableChoices.map(choice=>')&&ui.includes('walk(root,[])')&&
+ !ui.includes('setOpenId(category.id)'),"All categories and options render in one continuous list")
+assert(ui.includes('category.selectionKind==="variant"')&&ui.includes('sortedOptions.filter(o=>o.categoryId===category.id)'))
 assert(ui.includes('kind === "category" || kind === "photo"')&&ui.includes('category:${category.id}'),"Photos must retain their existing quantity control")
 assert(ui.includes('data.requestPrompt')&&ui.includes('maxLength={1200}'),"Admin text prompt must be rendered and bounded")
 assert(ui.includes('const units = chosen.reduce')&&ui.includes('const distinct = chosen.length'))
 assert(ui.includes('disabled={units === 0 || exceedsMax}'),"Require at least one within maximum total selections")
 assert(ui.includes('Design preview only')&&ui.includes('No order, quote or payment is created'),"Preview must not simulate order submission")
-assert(ui.includes('celebration')&&ui.includes('Create your hamper')&&ui.includes('Choose a hamper, then select the gift categories'))
+assert(ui.includes('celebration')&&ui.includes('Choose your hamper')&&ui.includes('Select a hamper to explore the full gift collection.'))
 assert(ui.includes('aria-label="Your hamper preview summary"')&&ui.includes('aria-label="Hamper design steps"'))
 assert(css.includes('.sbPreviewPage{')&&css.includes('--sb-serif:')&&css.includes('var(--font-shopping-display)'),"Use Celebration typography")
 assert(css.includes('@media (max-width:520px)')&&css.includes('@media (max-width:360px)'))
