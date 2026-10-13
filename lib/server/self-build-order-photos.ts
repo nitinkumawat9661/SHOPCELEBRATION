@@ -86,8 +86,7 @@ export async function readSelfBuildOrderPhotoForAdmin(publicId:string,photoId:st
     JOIN orders o ON o.id=p.order_id
     WHERE o.public_id=$1 AND p.id=$2::uuid AND p.deleted_at IS NULL
       AND p.object_key IS NOT NULL
-      AND (o.status<>'delivered' OR
-           (o.delivered_at IS NOT NULL AND o.delivered_at>now()-interval '48 hours'))
+      AND (o.delivered_at IS NULL OR o.delivered_at>now()-interval '48 hours')
     LIMIT 1`,[publicId,photoId])
   const key=rows.rows[0]?.object_key
   if(!key)return null
