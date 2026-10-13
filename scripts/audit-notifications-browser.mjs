@@ -28,7 +28,7 @@ async function mockDevice(width,who){
     unreadCount:unread,lastBody:conversations[who].at(-1)?.body||null,
     lastSender:conversations[who].at(-1)?.sender||null,lastAt:time
   }]})))
-  await context.route("**/api/account/orders/*/messages*",async route=>{
+  await context.route("**/api/account/orders/**",async route=>{
     const path=new URL(route.request().url()).pathname
     if(!path.includes(orderId))return route.fulfill(response({ok:false,error:"ORDER_NOT_FOUND"},404))
     if(path.endsWith("/send")){
@@ -42,8 +42,10 @@ async function mockDevice(width,who){
   })
   await context.route("**/api/**",async route=>{
     const m=route.request().method()
-    if(m!=="GET"&&m!=="HEAD")return route.abort("blockedbyclient")
-    return route.continue()
+    const path=new URL(route.request().url()).pathname
+    if(m==="GET"||m==="HEAD"||(m==="POST"&&path.startsWith("/api/account/orders/")&&path.includes("/messages")))
+      return route.fallback()
+    return route.abort("blockedbyclient")
   })
   return {context,orderId,page:await context.newPage()}
 }
