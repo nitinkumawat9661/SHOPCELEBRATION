@@ -131,7 +131,7 @@ export function SelfBuildDesignPreview({ data, tiers }: {
         <section className="sbSelection" aria-label="Self-build hamper designer">
           <div className="sbPreviewTierStage" role="group" aria-label="Choose your hamper by final price">
             <div className="sbPreviewTierBars">
-              {tiers.map(item=><button key={item.id} type="button"
+              {tiers.map(item=><button key={item.id} type="button" data-tier-id={item.id}
                 className={tierId===item.id?"sbPreviewTierBar sbPreviewTierBar--active":"sbPreviewTierBar"}
                 aria-pressed={tierId===item.id} onClick={()=>setTierId(item.id)}>
                 <span className="sbPreviewTierName">{item.name}</span>
