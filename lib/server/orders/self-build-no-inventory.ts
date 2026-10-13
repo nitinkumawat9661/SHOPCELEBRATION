@@ -104,17 +104,29 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
       "SELECT allowance_paise,enabled FROM self_build_tier_allowances WHERE tier_id=$1",[saved.tier_id])
   ])
   if(tier.rows[0]?.enabled!==true)reject("SELF_BUILD_BUDGET_NOT_CONFIGURED")
-  const checkedChoices=evaluateCategoriesOnly(choices,cats.rows,opts.rows,
-    config.allow_multiple_quantities,tier.rows[0].allowance_paise)
-
   const catalog=await client.query<{payload:unknown}>(
     "SELECT payload FROM catalog_config WHERE id='primary' FOR SHARE")
   if(!catalog.rows[0])reject("CATALOG_NOT_INITIALIZED")
+  const currentCatalog=normalizeCatalogConfig(catalog.rows[0].payload)
+  const chosenTier=currentCatalog.tiers.find(t=>t.id===saved.tier_id&&t.active!==false)
+  if(!chosenTier||!Number.isSafeInteger(chosenTier.maxChoices)||chosenTier.maxChoices<1)
+    reject("SELF_BUILD_TIER_NOT_CONFIGURED")
+  // Every physical piece counts towards the tier limit, including repeats
+  // of the same category. Internal unit costs remain server-private.
+  const totalPieces=choices.reduce((count,choice)=>count+choice.quantity,0)
+  if(totalPieces>chosenTier.maxChoices)reject("SELF_BUILD_MAX_ITEMS_EXCEEDED")
+  const allowedPolicyPaise=Math.floor(chosenTier.price*100*
+    (chosenTier.price>=1999?0.80:0.85))
+  if(tier.rows[0].allowance_paise>allowedPolicyPaise)
+    reject("SELF_BUILD_TIER_BUDGET_POLICY_MISMATCH")
+  const checkedChoices=evaluateCategoriesOnly(choices,cats.rows,opts.rows,
+    config.allow_multiple_quantities,tier.rows[0].allowance_paise)
+
   const normalized=normalizeOrderInput({
     ...input.customerDetails,
     orderType:"hamper",tierId:saved.tier_id,selectedProductIds:[],
     phone:account.rows[0].phone,paymentReference:null
-  },requireEnv("businessTimezone"),normalizeCatalogConfig(catalog.rows[0].payload),
+  },requireEnv("businessTimezone"),currentCatalog,
   {requirePaymentReference:false,checkExpectedSubtotal:false})
 
   // Existing hamper createOrderWithClient DOES NOT invoke retail inventory;
