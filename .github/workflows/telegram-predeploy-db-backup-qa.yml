@@ -65,7 +65,7 @@ jobs:
           const sourceConn=process.env.DATABASE_URL
           const dbConnection=name=>{const target=new URL(sourceConn);target.pathname="/"+name;return target.toString()}
           const ssl=process.env.DATABASE_SSL_MODE==="disable"?false:{rejectUnauthorized:true}
-          let scratchCreated=false
+          let scratchCreated=false, reusedDedicated=false, scratchDb=safeName
           ;(async()=>{
             const admin=new Client({connectionString:dbConnection("postgres"),ssl})
             try{
@@ -75,11 +75,28 @@ jobs:
               console.log("BACKUP_SIZE_BYTES="+statSync(backup).size)
               await admin.connect()
               const perms=await admin.query("SELECT rolcreatedb OR rolsuper AS allowed FROM pg_roles WHERE rolname=CURRENT_USER")
-              if(!perms.rows[0]?.allowed)throw Error("Database role cannot create an isolated restore DB; deployment remains BLOCKED")
-              await admin.query('CREATE DATABASE "'+safeName+'"')
-              scratchCreated=true
-              command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--dbname",safeName,backup])
-              const scratch=new Client({connectionString:dbConnection(safeName),ssl})
+              if(perms.rows[0]?.allowed){
+                await admin.query('CREATE DATABASE "'+safeName+'"')
+                scratchCreated=true
+              }else{
+                // The integration suite explicitly designates this as its disposable,
+                // loopback-only database. Never reset a customer or live DB.
+                const exists=await admin.query("SELECT datname FROM pg_database WHERE datname='celebration_individual_test'")
+                if(!exists.rows.length)throw Error("No permitted scratch database exists; deployment BLOCKED")
+                const activity=await admin.query("SELECT COUNT(*)::int AS n FROM pg_stat_activity WHERE datname='celebration_individual_test'")
+                if(activity.rows[0].n!==0)throw Error("Isolated test database has active sessions; deployment BLOCKED")
+                scratchDb="celebration_individual_test"
+                const prepare=new Client({connectionString:dbConnection(scratchDb),ssl})
+                await prepare.connect()
+                try{
+                  const identity=await prepare.query("SELECT current_database() AS db")
+                  if(identity.rows[0].db!=="celebration_individual_test")throw Error("Unsafe scratch identity")
+                  await prepare.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public")
+                }finally{await prepare.end()}
+                reusedDedicated=true
+              }
+              command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--dbname",scratchDb,backup])
+              const scratch=new Client({connectionString:dbConnection(scratchDb),ssl})
               await scratch.connect()
               try{
                 const before=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
@@ -109,6 +126,16 @@ jobs:
               if(scratchCreated){
                 await admin.query('DROP DATABASE "'+safeName+'" WITH (FORCE)')
                 console.log("TEMP_DB_REMOVED=YES")
+              }
+              if(reusedDedicated){
+                const cleanup=new Client({connectionString:dbConnection("celebration_individual_test"),ssl})
+                await cleanup.connect()
+                try{
+                  const identity=await cleanup.query("SELECT current_database() AS db")
+                  if(identity.rows[0].db!=="celebration_individual_test")throw Error("Unsafe cleanup identity")
+                  await cleanup.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public")
+                  console.log("DISPOSABLE_SCHEMA_CLEARED=YES")
+                }finally{await cleanup.end()}
               }
               await admin.end().catch(()=>{})
             }
