@@ -80,7 +80,8 @@ try {
   assert.deepEqual(legacy, { order_type: 'hamper', line_items: [], tier_id: 't499', amount_paise: 49900 })
   const fixtureProducts = [
     { id: 'test-bracelet', name: 'Test Bracelet (Local fixture)', category: 'Jewelry', minTier: 0, points: 1, note: 'Local verification fixture. Never published to production.', active: true, sellIndividually: true, salePricePaise: 34950 },
-    { id: 'test-ring', name: 'Test Ring (Local fixture)', category: 'Jewelry', minTier: 0, points: 1, note: 'Local verification fixture. Never published to production.', active: true, sellIndividually: true, salePricePaise: 25000 }
+    { id: 'test-ring', name: 'Test Ring (Local fixture)', category: 'Jewelry', minTier: 0, points: 1, note: 'Local verification fixture. Never published to production.', active: true, sellIndividually: true, salePricePaise: 25000 },
+    { id: 'test-hamper-card', name: 'Test Hamper Card (Local fixture)', category: 'Gift Extras', minTier: 0, points: 1, note: 'Local hamper-only fixture. Never published to production.', active: true, sellIndividually: false }
   ]
   const catalog = { ...defaultCatalog, products: [...defaultCatalog.products, ...fixtureProducts] }
   const publish = async (next) => control.query(`INSERT INTO catalog_config(id,payload,version) VALUES('primary',$1::jsonb,1) ON CONFLICT(id) DO UPDATE SET payload=EXCLUDED.payload,version=catalog_config.version+1`, [JSON.stringify(next)])
@@ -182,12 +183,12 @@ try {
   await publish(catalog)
   const manual = normalizeOrderInput({ ...body, idempotencyKey: randomUUID(), paymentReference: 'LOCALUPITEST01' }, 'Asia/Kolkata', catalog)
   await assert.rejects(createOrder(manual, account.id), { code: 'MANUAL_PAYMENT_NOT_SUPPORTED' })
-  const hamperInput = normalizeOrderInput({ ...body, orderType: 'hamper', tierId: 't499', selectedProductIds: ['custom-card'], occasion: 'Birthday', idempotencyKey: randomUUID() }, 'Asia/Kolkata', catalog, { requirePaymentReference: false })
+  const hamperInput = normalizeOrderInput({ ...body, orderType: 'hamper', tierId: 't499', selectedProductIds: ['test-hamper-card'], occasion: 'Birthday', idempotencyKey: randomUUID() }, 'Asia/Kolkata', catalog, { requirePaymentReference: false })
   const hamper = await createOrder(hamperInput, account.id, undefined, auto)
   const hamperRetry = await createOrder(hamperInput, account.id, undefined, auto)
   assert.equal(hamper.publicId, hamperRetry.publicId)
   assert.equal(hamper.pricing.payablePaise, 49900)
-  const manualHamperInput = normalizeOrderInput({ ...body, orderType: 'hamper', tierId: 't499', selectedProductIds: ['custom-card'], occasion: 'Birthday', idempotencyKey: randomUUID(), paymentReference: 'LOCALUPIHAMPER01' }, 'Asia/Kolkata', catalog)
+  const manualHamperInput = normalizeOrderInput({ ...body, orderType: 'hamper', tierId: 't499', selectedProductIds: ['test-hamper-card'], occasion: 'Birthday', idempotencyKey: randomUUID(), paymentReference: 'LOCALUPIHAMPER01' }, 'Asia/Kolkata', catalog)
   const manualHamper = await createOrder(manualHamperInput, account.id)
   const manualRow = (await control.query('SELECT payment_status,payment_reference FROM orders WHERE public_id=$1', [manualHamper.publicId])).rows[0]
   assert.equal(manualRow.payment_status, 'verification_pending')
