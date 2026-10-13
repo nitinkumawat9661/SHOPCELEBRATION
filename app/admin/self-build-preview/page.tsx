@@ -3,7 +3,7 @@ import { AdminLogin } from "../../../features/admin/AdminLogin"
 import { SelfBuildDesignPreview } from "../../../features/builder/SelfBuildDesignPreview"
 import { isAdminRequest } from "../../../lib/security/admin-session"
 import { getSelfBuildVisualData } from "../../../lib/server/self-build-preview"
-import { getCatalogConfig } from "../../../lib/server/catalog"
+import { getSelfBuildPublishedCatalog } from "../../../lib/server/self-build-published-tiers"
 import "../../../styles/self-build-preview-20261013.css"
 
 export const dynamic = "force-dynamic"
@@ -15,8 +15,8 @@ export default async function SelfBuildPreviewPage() {
     return <main className="sbPreviewAuth"><div className="wrap adminWrap"><p>Admin access required</p><AdminLogin /></div></main>
   }
   try {
-    const [data, catalog] = await Promise.all([getSelfBuildVisualData(),getCatalogConfig()])
-    const tiers=catalog.catalog.tiers.filter(t=>t.active!==false).map(t=>({
+    const [data, catalog] = await Promise.all([getSelfBuildVisualData(),getSelfBuildPublishedCatalog()])
+    const tiers=catalog.tiers.map(t=>({
       id:t.id,name:t.name,maxChoices:t.maxChoices
     }))
     return <SelfBuildDesignPreview data={data} tiers={tiers} />
