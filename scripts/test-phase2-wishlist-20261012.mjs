@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 const read = path => readFile(new URL("../"+path,import.meta.url),"utf8")
-const [hook,button,card,list,page,detail,collection,css,globals,api,migration,account] = await Promise.all([
+const [hook,button,card,list,page,detail,collection,legacyCss,globals,api,migration,account] = await Promise.all([
  "features/catalog/useWishlist.ts","features/catalog/WishlistToggle.tsx","features/catalog/CatalogCard.tsx",
  "features/catalog/WishlistCollection.tsx","app/wishlist/page.tsx","app/jewelry/[id]/page.tsx",
  "features/catalog/CatalogCollection.tsx","styles/phase2-wishlist-20261012.css","app/globals.css",
@@ -21,10 +21,13 @@ assert(card.includes('<WishlistToggle productId={product.id} productName={produc
 assert(!card.includes('href="/wishlist"') && card.includes('<Link href={`/jewelry/${encodeURIComponent(product.id)}`}'),"Exact SKU card link unchanged")
 assert(list.includes('availableById.get(id)') && list.includes('active !== false') && list.includes('<CatalogCard key={product.id} product={product} />'))
 assert(list.includes('mode === "account"') && list.includes('href="/account"') && list.includes('Retry sync'))
-assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in or create an account'),"Wishlist account sync/help survives removal of the hero")
+assert(!list.includes("wishlistSyncNotice") && !list.includes("Your saved pieces are synced to your Celebration account"),"Remove redundant account sync banner")
+assert(list.includes("Sign in to sync across devices"),"Keep unobtrusive guest sign-in affordance")
+assert(!legacyCss.includes(".wishlistSyncNotice"),"Remove obsolete legacy banner styling")
+assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in to sync across devices'),"Keep guest sign-in link and saved-items display without sync banner")
 assert(detail.includes('<WishlistToggle productId={product.id} productName={product.name} />'))
 assert(!collection.includes('wishlistBrowseLink'),"Redundant saved collection shortcut was replaced by the shared header")
-assert(css.includes(".wishlistToggle:focus-visible") && css.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
+assert(legacyCss.includes(".wishlistToggle:focus-visible") && legacyCss.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
 assert(api.includes('getCustomerSession()') && !api.includes('body.accountId') && api.includes('enforceSameOrigin(request)') && api.includes('consumeRequestRateLimit'))
 assert(api.includes('headers:noStore') && api.includes('AUTH_REQUIRED'))
 assert(migration.includes("REFERENCES customer_accounts(id) ON DELETE CASCADE") && migration.includes('PRIMARY KEY (account_id, product_id)'))
@@ -43,6 +46,7 @@ assert(!accountPage.includes('href="/wishlist"'),"Remove redundant account wishl
 assert(!collectionUI.includes("wishlistBrowseLink"),"Remove redundant browse-page shortcut")
 assert(list.includes("wishlistCategoryChips") && list.includes("availableById.get(id)") &&
  list.includes('<CatalogCard key={product.id} product={product} />'),"Scoped category filter and exact SKU cards preserved")
+assert(!premium.includes(".wishlistSyncNotice") && !premium.includes(".wishlistSyncSymbol"),"Remove obsolete premium banner styling")
 assert(premium.includes("@media(max-width:375px)") && premium.includes("grid-template-columns:repeat(2,minmax(0,1fr))"),"Narrow header and 2-column mobile saved list")
 assert(premium.includes("@media(min-width:1001px) and (max-width:1150px)") && premium.includes(".celebrationIconLink span{display:none}"),"Laptop header avoids 1024px overflow")
 const wishlistPage = await read("app/wishlist/page.tsx")

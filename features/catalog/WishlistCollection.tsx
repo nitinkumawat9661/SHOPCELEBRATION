@@ -34,12 +34,6 @@ export function WishlistCollection({ products, available }: { products: GiftProd
   </div>
 
   return <div className="wishlistShowcase">
-    <div className="wishlistSyncNotice" role="status">
-      <span className="wishlistSyncSymbol" aria-hidden="true">{mode === "account" ? "✓" : "♡"}</span>
-      <p>{mode === "account"
-        ? "Your saved pieces are synced to your Celebration account. They'll follow you across your devices."
-        : <>Your favorites are saved on this device. <Link href="/account">Sign in or create an account</Link> to sync across devices. Guest pieces will be imported safely.</>}</p>
-    </div>
     {notice && <p className="wishlistUnavailable" role="status">{notice}</p>}
 
     <div className="wishlistCollectionPanel">
@@ -47,7 +41,7 @@ export function WishlistCollection({ products, available }: { products: GiftProd
         <div>
           <span className="wishlistEyebrow">YOUR PERSONAL EDIT</span>
           <h1>My saved pieces <span aria-label={`${saved.length} saved pieces`}>{saved.length}</span></h1>
-          <p className="wishlistSummary" role="status">{saved.length} {saved.length === 1 ? "piece" : "pieces"} saved {mode === "account" ? "to your account" : "on this device"}.</p>
+          <p className="wishlistSummary" role="status">{saved.length} {saved.length === 1 ? "piece" : "pieces"} saved {mode === "account" ? "to your account" : "on this device"}.{mode !== "account" && <> <Link href="/account">Sign in to sync across devices</Link></>}</p>
         </div>
         {saved.length > 0 && <Link className="wishlistShopMore" href="/jewelry?view=all">Discover more <span aria-hidden="true">↗</span></Link>}
       </div>
