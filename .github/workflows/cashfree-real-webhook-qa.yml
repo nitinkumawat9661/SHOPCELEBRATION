@@ -1,0 +1,68 @@
+name: Cashfree REAL Sandbox Webhook Delivery (Disposable)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-disposable-real-cashfree-webhook
+  cancel-in-progress: false
+
+jobs:
+  webhook-observer:
+    name: Isolated real payment webhooks via temporary HTTPS tunnel
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 23
+    environment: cashfree-sandbox
+    env:
+      CASHFREE_TEST_APP_ID: ${{ secrets.CASHFREE_TEST_APP_ID }}
+      CASHFREE_TEST_SECRET_KEY: ${{ secrets.CASHFREE_TEST_SECRET_KEY }}
+      CASHFREE_WEBHOOK_LIVE_QA_APPROVED: "true"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Isolate test-only environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/main
+          test -n "$CASHFREE_TEST_APP_ID"
+          test -n "$CASHFREE_TEST_SECRET_KEY"
+          test ! -e .env
+          test ! -e .env.production
+          npm ci
+          node --check scripts/run-cashfree-real-webhook-qa.mjs
+          node scripts/run-cashfree-real-webhook-qa.mjs --self-test
+      - name: Download pinned official cloudflared binary with SHA-256 verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 \
+            https://github.com/cloudflare/cloudflared/releases/download/2026.10.0/cloudflared-linux-amd64 \
+            --output /tmp/celebration-qa-cloudflared
+          echo "77e26d8d900e0b8469f416239d14b5f296525fdf79fee6f511ef55609e3fbac2  /tmp/celebration-qa-cloudflared" | sha256sum --check --status
+          chmod +x /tmp/celebration-qa-cloudflared
+      - name: Receive REAL signed Cashfree SANDBOX webhooks (no website DB)
+        shell: bash
+        run: |
+          set -euo pipefail
+          /tmp/celebration-qa-cloudflared tunnel --no-autoupdate \
+            --url http://127.0.0.1:33777 >/tmp/celebration-quicktunnel.log 2>&1 &
+          TUNNEL_PID=$!
+          trap 'kill "$TUNNEL_PID" 2>/dev/null || true' EXIT
+          TUNNEL_URL=""
+          for i in {1..30}; do
+            TUNNEL_URL="$(grep -Eo 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/celebration-quicktunnel.log | head -1 || true)"
+            if [ -n "$TUNNEL_URL" ]; then break; fi
+            if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then echo "Tunnel terminated"; exit 1; fi
+            sleep 2
+          done
+          test -n "$TUNNEL_URL" || { echo "Failed to allocate isolated HTTPS tunnel"; exit 1; }
+          export CASHFREE_SANDBOX_WEBHOOK_BASE="$TUNNEL_URL/"
+          node scripts/run-cashfree-real-webhook-qa.mjs
