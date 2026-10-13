@@ -4,6 +4,7 @@ import type { SelfBuildSelection } from "./self-build-quote"
 import { getCatalogConfig } from "./catalog"
 import { deleteSelfBuildPrivatePhoto } from "./r2"
 import { countSelfBuildPieces, getSelfBuildTierLimits } from "./self-build-tier-limits"
+import { evaluatePrivateSelfBuildChoices, type PrivateCategory, type PrivateOption } from "./self-build-private-budget"
 
 const ID=/^[a-z0-9][a-z0-9-]{0,59}$/
 const MAX_SELECTIONS=100
@@ -54,7 +55,8 @@ export async function saveSelfBuildDraft(accountId:string,input:unknown){
   const {catalog}=await getCatalogConfig()
   const tier=catalog.tiers.find(t=>t.id===clean.tierId&&t.active!==false)
   if(!tier)reject("TIER_UNAVAILABLE")
-  if(countSelfBuildPieces(clean.selections)>getSelfBuildTierLimits(tier).maxItems)
+  const limits=getSelfBuildTierLimits(tier)
+  if(countSelfBuildPieces(clean.selections)>limits.maxItems)
     reject("SELF_BUILD_MAX_ITEMS_EXCEEDED")
   // A draft is NOT a quote, purchase or a promise of category inventory.
   // Reject unknown/deactivated category IDs but NEVER derive retail product IDs.
@@ -62,10 +64,10 @@ export async function saveSelfBuildDraft(accountId:string,input:unknown){
     const settings=await client.query<{allow_multiple_quantities:boolean;customer_enabled:boolean}>(
       "SELECT allow_multiple_quantities,customer_enabled FROM self_build_configuration WHERE id='primary' FOR SHARE")
     if(settings.rows[0]?.customer_enabled!==true)reject("SELF_BUILD_NOT_LIVE",403)
-    const cats=await client.query<{id:string;parent_id:string|null;selection_kind:string;active:boolean}>(
-      "SELECT id,parent_id,selection_kind,active FROM self_build_categories")
-    const options=await client.query<{id:string;category_id:string;active:boolean}>(
-      "SELECT id,category_id,active FROM self_build_options")
+    const cats=await client.query<PrivateCategory>(
+      "SELECT id,parent_id,selection_kind,charge_mode,unit_budget_paise,label,active FROM self_build_categories")
+    const options=await client.query<PrivateOption>(
+      "SELECT id,category_id,unit_budget_paise,label,active FROM self_build_options")
     const byId=new Map(cats.rows.map(c=>[c.id,c]))
     const byOpt=new Map(options.rows.map(o=>[o.id,o]))
     for(const chosen of clean.selections){
@@ -79,6 +81,15 @@ export async function saveSelfBuildDraft(accountId:string,input:unknown){
         const p=o?byId.get(o.category_id):null
         if(!o||!o.active||!p||!p.active||p.selection_kind!=="variant")reject("OPTION_UNAVAILABLE")
       }
+    }
+    // Validate private amounts at SAVE time as well as at PURCHASE time.
+    // The buyer receives only a generic error code; costs and unit budgets
+    // are never serialized. No stock/capacity/SKU tables are consulted.
+    try{
+      evaluatePrivateSelfBuildChoices(clean.selections,cats.rows,options.rows,
+        settings.rows[0].allow_multiple_quantities,limits.ceilingPaise)
+    }catch(error){
+      reject(error instanceof Error?error.message:"SELF_BUILD_PRIVATE_BUDGET_INVALID")
     }
     // Id is preserved across saves so uploaded private photos can stay linked.
     const existing=await client.query<{id:string;expires_at:Date}>(
