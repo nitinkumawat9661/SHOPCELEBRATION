@@ -13,7 +13,7 @@ await mkdir(out, { recursive: true })
 try {
   await cp(join(root, "config"), join(out, "config"), { recursive: true })
   await cp(join(root, "content"), join(out, "content"), { recursive: true })
-  const sources = ["features/admin/AdminOrderCard.tsx", "features/admin/AdminOrderVideo.tsx", "features/admin/AdminShippingPanel.tsx", "features/tracking/PackingApprovalCard.tsx", "lib/domain/catalog.ts", "lib/domain/money.ts", "lib/domain/payment.ts", "lib/domain/order-status.ts", "lib/domain/content.ts", "lib/domain/storage.ts", "config/routes.ts", "config/payment.ts", "config/validation.ts", "config/storage.ts"]
+  const sources = ["features/admin/AdminOrderCard.tsx", "features/admin/AdminSelfBuildOrderPhotos.tsx", "features/admin/AdminOrderVideo.tsx", "features/admin/AdminShippingPanel.tsx", "features/tracking/PackingApprovalCard.tsx", "lib/domain/catalog.ts", "lib/domain/money.ts", "lib/domain/payment.ts", "lib/domain/order-status.ts", "lib/domain/content.ts", "lib/domain/storage.ts", "config/routes.ts", "config/payment.ts", "config/validation.ts", "config/storage.ts"]
   for (const source of sources) {
     const output = ts.transpileModule(await readFile(join(root, source), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } })
     const target = join(out, source.replace(/\.tsx?$/, ".js"))

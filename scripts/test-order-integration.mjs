@@ -52,6 +52,7 @@ const { orderConfig } = requireCompiled(join(output, 'config/order.js'))
 const { createOrder } = requireCompiled(join(output, 'lib/server/orders/create.js'))
 const { createStagedSelfBuildOrder } = requireCompiled(join(output, 'lib/server/orders/self-build-create.js'))
 const { settleStagedSelfBuildPaymentWithClient } = requireCompiled(join(output, 'lib/server/self-build-payment-settlement.js'))
+const { removeDeliveredSelfBuildOrderPhotos } = await import('./cleanup-self-build-delivered-photos.mjs')
 const { listOrders, findOrderByTrackingToken } = requireCompiled(join(output, 'lib/server/orders/read.js'))
 const { createCustomerAccount, listCustomerOrders } = requireCompiled(join(output, 'lib/server/customer-accounts.js'))
 const { reservePaymentAttempt, bindPaymentAttempt, failPaymentAttempt, applyProviderPaymentResult, getPaymentOrder } = requireCompiled(join(output, 'lib/server/payments/store.js'))
@@ -370,15 +371,78 @@ try {
   await assert.rejects(createStagedSelfBuildOrder({
     ...stagedInput,customerDetails:{...stagedInput.customerDetails,idempotencyKey:curatedKey}
   }),{code:'SELF_BUILD_IDEMPOTENCY_COLLISION'})
+  // Delivery-linked private photo retention. Fake object keys stay in
+  // disposable loopback DB; R2 mock proves the exact verified deletion time.
   const photoDraftId=randomUUID()
   await control.query(`INSERT INTO self_build_drafts
     (id,customer_account_id,tier_id,selections,other_request_text,expires_at)
     VALUES ($1,$2,'t499',$3::jsonb,'photo gift',now()+interval '1 day')`,
     [photoDraftId,otherAccount.id,JSON.stringify([{kind:'category',id:'personalised-photos',quantity:1}])])
-  await assert.rejects(createStagedSelfBuildOrder({
+  await control.query(`INSERT INTO self_build_category_capacity(category_id,available_units,verified)
+    VALUES ('personalised-photos',3,true)`)
+  const makePhotoOrder=(key)=>createStagedSelfBuildOrder({
     accountId:otherAccount.id,draftId:photoDraftId,paymentProvider:'razorpay',
-    customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
-  }),{code:'SELF_BUILD_PHOTO_ORDER_RETENTION_NOT_READY'})
+    customerDetails:{...body,idempotencyKey:key,occasion:'Birthday'}
+  })
+  const firstPhotoOrderKey=randomUUID()
+  await assert.rejects(makePhotoOrder(firstPhotoOrderKey),
+    {code:'SELF_BUILD_ORDER_PHOTO_COUNT_MISMATCH'})
+  assert.equal((await control.query("SELECT COUNT(*)::int AS n FROM orders WHERE idempotency_key=$1",
+    [firstPhotoOrderKey])).rows[0].n,0,'Missing photo rolls back staged order')
+  const firstPhotoId=randomUUID(),firstObjectKey=`self-build/private/${photoDraftId}/${firstPhotoId}.webp`
+  await control.query(`INSERT INTO self_build_draft_photos
+    (id,draft_id,customer_account_id,object_key,image_bytes)
+    VALUES($1::uuid,$2,$3,$4,421)`,[firstPhotoId,photoDraftId,otherAccount.id,firstObjectKey])
+  const stagedPhoto=await makePhotoOrder(firstPhotoOrderKey)
+  const stagedPhotoRetry=await makePhotoOrder(firstPhotoOrderKey)
+  assert.equal(stagedPhotoRetry.created,false,'Photo order retry is idempotent')
+  assert.equal(stagedPhotoRetry.orderId,stagedPhoto.orderId)
+  const photoOrderId=(await control.query("SELECT id FROM orders WHERE public_id=$1",[stagedPhoto.orderId])).rows[0].id
+  assert.equal((await control.query("SELECT COUNT(*)::int AS n FROM self_build_draft_photos WHERE draft_id=$1",
+    [photoDraftId])).rows[0].n,0,'Draft cleanup cannot remove a photo transferred to order')
+  assert.equal((await control.query("SELECT source_draft_id,deleted_at,object_key FROM self_build_order_photos WHERE order_id=$1",
+    [photoOrderId])).rows[0].source_draft_id,photoDraftId)
+  const dryDeletes=[]
+  const mockRemove=async key=>{dryDeletes.push(key)}
+  assert.equal(await removeDeliveredSelfBuildOrderPhotos(control,mockRemove),0,
+    'Photo must remain during initial payment/shipping lifecycle')
+  await control.query(`UPDATE orders SET status='shipped',payment_status='paid',
+    delivered_at=now()-interval '50 hours' WHERE id=$1`,[photoOrderId])
+  assert.equal(await removeDeliveredSelfBuildOrderPhotos(control,mockRemove),0,
+    'Shipment and even a stale delivered_at cannot trigger delete before delivered state')
+  await control.query(`UPDATE orders SET status='delivered',
+    delivered_at=now()-interval '47 hours' WHERE id=$1`,[photoOrderId])
+  assert.equal(await removeDeliveredSelfBuildOrderPhotos(control,mockRemove),0,
+    '47 hours after delivery is too early')
+  await control.query(`UPDATE orders SET delivered_at=now()-interval '49 hours' WHERE id=$1`,[photoOrderId])
+  assert.equal(await removeDeliveredSelfBuildOrderPhotos(control,mockRemove),1,
+    'Delete only 48+ hours after actual delivered status')
+  assert.deepEqual(dryDeletes,[firstObjectKey])
+  assert.equal(await removeDeliveredSelfBuildOrderPhotos(control,mockRemove),0,
+    'Repeated cron runs must be idempotent')
+  const erasedPhoto=(await control.query(`
+    SELECT object_key,deleted_at FROM self_build_order_photos WHERE id=$1::uuid`,
+    [firstPhotoId])).rows[0]
+  assert.equal(erasedPhoto.object_key,null,'R2 key is removed from database after deletion')
+  assert.ok(erasedPhoto.deleted_at,'Deleted-at audit evidence preserved')
+
+  // Separate delayed R2 failure must preserve DB reference for safe retry.
+  const secondPhotoId=randomUUID(),secondObjectKey=`self-build/private/${photoDraftId}/${secondPhotoId}.webp`
+  await control.query(`INSERT INTO self_build_draft_photos
+    (id,draft_id,customer_account_id,object_key,image_bytes)
+    VALUES($1::uuid,$2,$3,$4,281)`,[secondPhotoId,photoDraftId,otherAccount.id,secondObjectKey])
+  const secondPhotoOrder=await makePhotoOrder(randomUUID())
+  const secondPhotoOrderId=(await control.query(
+    "SELECT id FROM orders WHERE public_id=$1",[secondPhotoOrder.orderId])).rows[0].id
+  await control.query(`UPDATE orders SET status='delivered',
+    payment_status='paid',delivered_at=now()-interval '49 hours' WHERE id=$1`,[secondPhotoOrderId])
+  await assert.rejects(removeDeliveredSelfBuildOrderPhotos(control,async ()=>{throw Error('SIMULATED_R2_OUTAGE')}),/SIMULATED_R2_OUTAGE/)
+  assert.equal((await control.query("SELECT COUNT(*)::int AS n FROM self_build_order_photos WHERE id=$1::uuid AND deleted_at IS NULL",
+    [secondPhotoId])).rows[0].n,1,'R2 failure leaves metadata queued')
+  assert.equal(await removeDeliveredSelfBuildOrderPhotos(control,mockRemove),1,'Storage recovery retries unfinished photo')
+  assert.deepEqual(dryDeletes,[firstObjectKey,secondObjectKey])
+  console.log('SELF_BUILD_DELIVERY_PHOTO_RETENTION_POSTGRES_PASSED: transfer ownership, missing photo rollback, shipping guard, 47h wait, 49h deletion, R2 retry, metadata scrub, and idempotency')
+
   // No provider checkout requests, phone numbers, private budgets or photos
   // are sent over the network in any of these local DB fixtures.
   // Payment reconciliation tests execute the ACTUAL settlement service against
@@ -471,7 +535,7 @@ try {
     "SELECT available_units,reserved_units FROM self_build_category_capacity WHERE category_id='bangles'")).rows[0].available_units,1)
 
   console.log('SELF_BUILD_PAYMENT_SETTLEMENT_POSTGRES_PASSED: provider-event required, price verified, atomic commit, duplicate paid replay, current failed release, duplicate failed replay, late paid needs review, expired paid freeze, curated isolation')
-  console.log('SELF_BUILD_ATOMIC_ORDER_POSTGRES_PASSED: disabled production gate, buyer ownership, order+capacity+Telegram atomicity, price, idempotency, no SKU mapping, insufficient-stock rollback, curated-key collision and photo-retention gate')
+  console.log('SELF_BUILD_ATOMIC_ORDER_POSTGRES_PASSED: disabled production gate, buyer ownership, order+capacity+Telegram atomicity, price, idempotency, no SKU mapping, insufficient-stock rollback, curated-key collision and private photo order ownership')
 
   console.log('TELEGRAM_POSTGRES_CHECKS_PASSED: payment, owner reply, customer chat, durable owner outbox, idempotency, A/B isolation and read receipts')
   console.log('REAL_POSTGRES_CHECKS_PASSED: migrations001..009, legacyhamper, individualsnapshot, staleprice, pausedavailability, samecartretry, changedcartreject, ownermismatch, concurrentidempotency, catalogpublishlock, individualmanualrejected, hampermanualpreserved, customer/admin/trackingreads, provideramountmismatch, duplicatepaidwebhook, verifiedpaymentpreserved, cancelledretryblocked, cancelledbindingrace, confirmedbindingrace, DBconstraints')

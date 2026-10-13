@@ -83,3 +83,17 @@
 .sbAdminOrderSnapshotNote b{font-size:11px}
 .sbAdminOrderSnapshotNote p{font-size:12px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0}
 .sbAdminOrderSnapshotDisclaimer{margin:14px 0 0}
+
+/* Staff-only personalised photos — intentionally simple and collapsed by default.
+   Images are served with no-store and stop being accessible 48h after delivery. */
+.sbAdminPrivatePhotos{border-top:1px solid #e9dedd;padding:12px 0 4px;margin-top:12px}
+.sbAdminPrivatePhotos summary{cursor:pointer;color:#572f42;font-size:12px;font-weight:750;min-height:40px;padding:8px 0;list-style:revert}
+.sbAdminPrivatePhotos summary small{font-size:10px;font-weight:400;color:#957982;margin-left:8px}
+.sbAdminPrivatePhotos p{color:#8a6b75;font-size:11px;line-height:1.5;margin:7px 0}
+.sbAdminPrivatePhotos button{min-height:36px;font-size:11px}
+.sbAdminPrivatePhotoGrid{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:11px;margin:13px 0;padding:0}
+.sbAdminPrivatePhotoGrid li{display:grid;gap:5px;min-width:0}
+.sbAdminPrivatePhotoGrid img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border:1px solid #e8dad7;border-radius:9px;background:#fff9f5}
+.sbAdminPrivatePhotoGrid small{font-size:10px;color:#947a80}
+.sbAdminPrivateDeleted{display:grid;place-items:center;min-height:88px;font-size:10px;text-align:center;color:#795e69;background:#f7f0ee;border-radius:9px}
+@media(max-width:430px){.sbAdminPrivatePhotoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}

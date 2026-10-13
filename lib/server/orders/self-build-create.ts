@@ -14,6 +14,7 @@ import { transaction } from "../db"
 import { parseDraftBody } from "../self-build-drafts"
 import { reserveSelfBuildForOrderWithClient, SelfBuildReservationError } from "../self-build-reservations"
 import { createOrderWithClient } from "./create"
+import { transferSelfBuildPhotosToOrderWithClient } from "../self-build-order-photos"
 
 type StageInput = {
   accountId: string
@@ -64,11 +65,11 @@ export async function createStagedSelfBuildOrderWithClient(client: PoolClient, i
   const photo=await client.query<{id:string}>(`
     SELECT id FROM self_build_categories
     WHERE id=ANY($1::text[]) AND selection_kind='photo'`,[chosenCategoryIds])
-  if(photo.rows.length){
-    // An order must not outlive private draft-photo retention. Photo delivery
-    // ownership/lifetime migration is NOT implemented, so fail closed.
-    fail("SELF_BUILD_PHOTO_ORDER_RETENTION_NOT_READY")
-  }
+  const photoCategories=new Set(photo.rows.map(row=>row.id))
+  const expectedPhotoCount=selections.reduce((count,selection)=>
+    selection.kind==="category"&&photoCategories.has(selection.id)
+      ?count+selection.quantity:count,0)
+  if(expectedPhotoCount>40)fail("SELF_BUILD_ORDER_PHOTO_COUNT_MISMATCH")
   const catalog=await client.query<{payload:unknown}>(
     "SELECT payload FROM catalog_config WHERE id='primary' FOR SHARE")
   if(!catalog.rows[0])fail("CATALOG_NOT_INITIALIZED")
@@ -108,6 +109,13 @@ export async function createStagedSelfBuildOrderWithClient(client: PoolClient, i
     selections,
     note:saved.other_request_text,
     expiresAt:new Date(Date.now()+15*60*1000)
+  })
+  // Transfer private draft-photo ownership to the order in this SAME
+  // transaction. R2 bytes remain private and will be deleted only after
+  // actual delivery completion + 48h, never on shipment/label creation.
+  await transferSelfBuildPhotosToOrderWithClient(client,{
+    orderId:row.rows[0].id,draftId:input.draftId,accountId:input.accountId,
+    expectedCount:expectedPhotoCount,created:order.created
   })
   return {
     orderId:order.publicId,
