@@ -54,6 +54,8 @@ const mockRequire=name=>{
   if(name==="./db")return {query(){throw Error("mocked")},transaction(){throw Error("mocked")}}
   if(name==="./catalog")return {getCatalogConfig(){throw Error("mocked")}}
   if(name==="./r2")return {deleteSelfBuildPrivatePhoto(){throw Error("mocked")}}
+  if(name==="./self-build-tier-limits")return {countSelfBuildPieces(){throw Error("mocked")},getSelfBuildTierLimits(){throw Error("mocked")}}
+  if(name==="./self-build-private-budget")return {evaluatePrivateSelfBuildChoices(){throw Error("mocked")}}
   throw Error("UNEXPECTED_MOCK_IMPORT:"+name)
 }
 const {runInNewContext}=await import("node:vm")
