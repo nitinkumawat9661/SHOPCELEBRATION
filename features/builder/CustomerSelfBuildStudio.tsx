@@ -301,12 +301,14 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
       </section>:<>
       <section className="sbBuyerTierSection" aria-label="Choose your hamper">
         <h2 className="sbBuyerTierHeading">Choose your hamper</h2>
-        <div className="sbBuyerTiers">{tiers.map(t=><button key={t.id} type="button" disabled={disabled}
+        <div className="sbBuyerTiers" role="group" aria-label="Hamper names">{tiers.map(t=><button key={t.id} type="button" disabled={disabled}
           className={tierId===t.id?"sbBuyerTierBar sbBuyerTierBar--active":"sbBuyerTierBar"}
           aria-pressed={tierId===t.id} onClick={()=>setTierId(t.id)}>
-          <span className="sbBuyerTierName">{t.name}</span>
-          <strong className="sbBuyerTierPrice">{formatMoney(hamperFinalPriceRupees(t.price))}</strong>
+          {t.name}
         </button>)}</div>
+        <p className="sbBuyerTierTotal" role="status" aria-live="polite">
+          Final hamper price <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong>
+        </p>
       </section>
       <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
         <p>Explore the gift categories below. You can choose the same type more than once.</p></div></div>
@@ -322,14 +324,12 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
         <div className="sbBuyerChoiceSections">{groupedSections.map(section=><section className="sbBuyerChoiceSection" key={section.title}
           aria-label={section.title}>
           <div className="sbBuyerChoiceSectionHead">
-            <h3>{section.title}</h3><span>{section.choices.length} option{section.choices.length===1?"":"s"}</span>
+            <h3>{section.title}</h3>
           </div>
           <div className="sbBuyerChoices">{section.choices.map(item=>{
             const count=quantity[item.key]||0
             return <div className={count>0?"sbBuyerChoice sbBuyerChoiceActive":"sbBuyerChoice"} key={item.key}>
-              <div><strong>{item.label}</strong>
-                {item.kind==="photo"&&<small>One photo upload for each selected piece</small>}
-              </div>
+              <div><strong>{item.label}</strong></div>
               <div className="sbBuyerQty">
                 <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
                   onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
