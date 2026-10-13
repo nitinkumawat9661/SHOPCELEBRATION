@@ -48,3 +48,21 @@
 @media(max-width:760px){.sbAdminHero{flex-direction:column;gap:15px}.sbAdminFields,.sbAdminAddGrid{grid-template-columns:minmax(0,1fr) minmax(90px,1fr)}.sbAdminFields label:first-child{grid-column:1/-1}.sbAdminToolbar{align-items:flex-start;flex-direction:column}.sbAdminRow[style]{margin-left:min(10px,3vw)!important}}
 @media(max-width:430px){.sbAdminFields,.sbAdminAddGrid{grid-template-columns:minmax(0,1fr)}.sbAdminAddGrid label,.sbAdminFields label:first-child{grid-column:auto}.sbAdminBody{padding:14px}.sbAdminRow{padding:13px}.sbAdminFooter{align-items:stretch;flex-direction:column}.sbAdminFooter>button{width:100%}}
 @media(prefers-reduced-motion:reduce){.sbAdmin *{transition:none!important;animation:none!important}}
+
+/* Private category-capacity and per-tier allowance editor */
+.sbAdminCapacity{min-width:0}
+.sbCapacitySection{margin-top:27px}
+.sbCapacityTitle{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--sb-line);flex-wrap:wrap}
+.sbCapacityTitle h4{font:400 25px/1.2 var(--font-shopping-display),Georgia,serif;margin:0}
+.sbCapacityTitle span,.sbCapacityHint{font-size:11px;color:var(--sb-muted);line-height:1.75}
+.sbCapacityHint{max-width:660px;margin:13px 0 18px}
+.sbCapacityList{display:grid;gap:7px;margin-top:14px}
+.sbCapacityRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(114px,155px) minmax(99px,120px);align-items:center;gap:14px;padding:13px 15px;background:#fff;border:1px solid var(--sb-line);border-radius:7px}
+.sbCapacityLabel{min-width:0;display:flex;flex-direction:column;gap:5px}
+.sbCapacityLabel strong{font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.sbCapacityLabel small{font-size:10px;color:var(--sb-muted);line-height:1.5}
+.sbCapacityQuantity{display:flex;flex-direction:column;gap:5px;color:#685850;font-size:10px;font-weight:600}
+.sbCapacityQuantity input{min-height:40px!important}
+.sbCapacityRow .sbAdminToggle{justify-content:flex-end;min-height:43px}
+@media(max-width:700px){.sbCapacityRow{grid-template-columns:minmax(0,1fr) minmax(100px,140px);gap:11px}.sbCapacityLabel{grid-column:1/-1}.sbCapacityRow .sbAdminToggle{justify-content:flex-start}}
+@media(max-width:380px){.sbCapacityRow{padding:12px}.sbCapacityTitle h4{font-size:22px}}

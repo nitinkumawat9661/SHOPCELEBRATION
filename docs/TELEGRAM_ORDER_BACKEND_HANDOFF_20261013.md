@@ -12,11 +12,11 @@ notification should be stored under that specific order and accessible **only
 to its logged-in customer** in the future `My Orders` UI.
 
 ## Backend implemented (in feature branch, NOT live)
-- `050_telegram_notification_outbox.sql`: persistent outbox on existing order
+- `100_telegram_notification_outbox.sql`: persistent outbox on existing order
   and gateway payment event inserts; unique source-event ID.
-- `051_telegram_order_messaging_and_courier.sql`: event-time snapshots, payment
+- `101_telegram_order_messaging_and_courier.sql`: event-time snapshots, payment
   status transition events, reply storage and courier observation deduplication.
-- `052_telegram_courier_watch.sql`: bounded periodic carrier polling state.
+- `102_telegram_courier_watch.sql`: bounded periodic carrier polling state.
 - `scripts/telegram-notification-worker.mjs`: owner-only Telegram delivery,
   retries, event-time order amount/payment, product details, cancellation info,
   courier updates. Inflight Telegram successes cannot be absolutely guaranteed
@@ -74,7 +74,7 @@ to its logged-in customer** in the future `My Orders` UI.
 
 ## Required pre-production checks (not yet executed)
 1. Verify latest default `main` and production release, maintain backup and
-   inspect live PostgreSQL schema; verify SQL 050-052 against an isolated DB.
+   inspect live PostgreSQL schema; verify SQL 100-102 against an isolated DB (main's self-build capacity SQL is migration 050).
 2. Run `npm run audit`, `npm run typecheck`,
    `node scripts/test-telegram-backend.mjs` and order integration regression
    tests using **dedicated local test DB only**.

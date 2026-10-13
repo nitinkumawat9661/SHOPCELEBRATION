@@ -231,15 +231,19 @@ export async function saveSelfBuildAdminState(value: unknown) {
     )
     if (!locked.rows[0]) throw new Error("SELF_BUILD_MIGRATION_NOT_APPLIED")
     if (locked.rows[0].version !== data.version) invalid("STALE_SELF_BUILD_CONFIGURATION")
-    // All labels, amounts, category types, option sizes and display order are
-    // DB-driven. No retail catalogue, SKU or individual-item images involved.
-    await client.query("DELETE FROM self_build_options")
-    await client.query("DELETE FROM self_build_categories")
+    // Preserve stable category/option IDs and any verified capacity rows across
+    // price/name/sort edits. Old full DELETE+INSERT would erase capacity via FK
+    // CASCADE, so upsert all surviving IDs before removing truly deleted ones.
     for (const c of data.categories) {
       await client.query(
         `INSERT INTO self_build_categories
           (id,parent_id,label,selection_kind,charge_mode,unit_budget_paise,display_order,active)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         ON CONFLICT (id) DO UPDATE SET
+           parent_id=EXCLUDED.parent_id,label=EXCLUDED.label,
+           selection_kind=EXCLUDED.selection_kind,charge_mode=EXCLUDED.charge_mode,
+           unit_budget_paise=EXCLUDED.unit_budget_paise,
+           display_order=EXCLUDED.display_order,active=EXCLUDED.active,updated_at=now()`,
         [c.id,c.parentId,c.label,c.selectionKind,c.chargeMode,c.unitBudgetPaise,c.displayOrder,c.active]
       )
     }
@@ -247,10 +251,19 @@ export async function saveSelfBuildAdminState(value: unknown) {
       await client.query(
         `INSERT INTO self_build_options
           (id,category_id,label,unit_budget_paise,display_order,active)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
+         VALUES ($1,$2,$3,$4,$5,$6)
+         ON CONFLICT (id) DO UPDATE SET
+           category_id=EXCLUDED.category_id,label=EXCLUDED.label,
+           unit_budget_paise=EXCLUDED.unit_budget_paise,
+           display_order=EXCLUDED.display_order,active=EXCLUDED.active,updated_at=now()`,
         [o.id,o.categoryId,o.label,o.unitBudgetPaise,o.displayOrder,o.active]
       )
     }
+    // Only explicit removals delete availability; all other edits retain stock.
+    await client.query("DELETE FROM self_build_options WHERE NOT (id = ANY($1::text[]))",
+      [data.options.map(o => o.id)])
+    await client.query("DELETE FROM self_build_categories WHERE NOT (id = ANY($1::text[]))",
+      [data.categories.map(c => c.id)])
     await client.query(
       `UPDATE self_build_configuration SET version=version+1,
          customer_enabled=false,show_item_prices=false,

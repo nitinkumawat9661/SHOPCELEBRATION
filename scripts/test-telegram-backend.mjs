@@ -4,8 +4,8 @@ import vm from "node:vm"
 
 const read = (file) => readFile(new URL("../" + file, import.meta.url), "utf8")
 const files = await Promise.all([
-  "db/migrations/050_telegram_notification_outbox.sql",
-  "db/migrations/051_telegram_order_messaging_and_courier.sql",
+  "db/migrations/100_telegram_notification_outbox.sql",
+  "db/migrations/101_telegram_order_messaging_and_courier.sql",
   "scripts/telegram-notification-worker.mjs",
   "lib/server/telegram-order-messages.ts",
   "app/api/integrations/telegram/webhook/route.ts",
@@ -21,7 +21,7 @@ assert(first.includes("order_id text NOT NULL REFERENCES orders(id)"))
 assert(first.includes("source_event_id text NOT NULL"))
 assert(second.split("order_id text NOT NULL REFERENCES orders(id)").length - 1 === 2)
 assert(second.includes("gen_random_uuid()::text"))
-assert((await read("db/migrations/052_telegram_courier_watch.sql"))
+assert((await read("db/migrations/102_telegram_courier_watch.sql"))
   .includes("order_id text PRIMARY KEY REFERENCES orders(id)"))
 
 for (const table of ["telegram_notification_outbox", "telegram_order_messages", "order_courier_observations"])
