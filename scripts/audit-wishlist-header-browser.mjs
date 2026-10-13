@@ -11,7 +11,7 @@ if(!browserPath)throw Error("Chrome not installed")
 const browser=await chromium.launch({headless:true,executablePath:browserPath,args:["--no-sandbox","--disable-dev-shm-usage"]})
 await mkdir("artifacts/wishlist-header-premium",{recursive:true})
 try{
- for(const width of [320,375,390,768,1280]){
+ for(const width of [320,375,390,768,1024,1280]){
   const ctx=await browser.newContext({viewport:{width,height:840},reducedMotion:"reduce"})
   await ctx.route("**/api/**",route=>{
     if(["GET","HEAD"].includes(route.request().method()))return route.continue()
