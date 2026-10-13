@@ -243,171 +243,138 @@
 .sbPreviewLimitError{color:#9e423e;font-size:11px;margin:-15px 0 19px}
 @media(max-width:520px){.sbPreviewLimitBar{align-items:stretch;flex-direction:column;gap:11px}.sbPreviewLimitBar>div{text-align:left;justify-items:start}}
 
-/* 2026-10-14 competitor-aligned redesign: Celebration cream / wine editorial surfaces */
-/* Research: BoxUp, HappyGifts, Angroos and FNP. Structure over effects:
-   obvious browse/action affordance, legible headings, clean selections.
-   No stock photography or invented images for category-only options. */
+/* 2026-10-14 / NAME-ONLY SELECTORS
+   No decorative hamper cards or category tiles. Keep only selectable labels,
+   soft active underlines, readable quantity controls and the actual tier total.
+   Original order/budget/payment flows remain unchanged. */
 .sbPreviewPage{
-  --sb-paper:#fcf8f1;
-  --sb-white:#fffdfa;
-  --sb-sand:#f7efe5;
-  --sb-ink:#34241e;
-  --sb-muted:#756459;
-  --sb-line:#e8d9c8;
-  --sb-rose:#861524;
-  --sb-rose-dark:#6d1020;
+  --sb-paper:#fcf8f1;--sb-white:#fffdfa;--sb-sand:#f7efe5;
+  --sb-ink:#34241e;--sb-muted:#756459;--sb-line:#e8d9c8;
+  --sb-rose:#7b1420;--sb-rose-dark:#6d1020;
   background:var(--sb-paper)
 }
-/* Hamper TIER bars: no unrelated gradient palette, only name + final price. */
-.sbPreviewPage .sbPreviewTierStage{
-  padding:0;margin:0 0 16px;background:transparent;
-  border:0;box-shadow:none
+.sbPreviewPage .sbIntro{padding:31px 0 20px}
+.sbPreviewPage .sbIntro h1{font:600 clamp(33px,4.7vw,53px)/1.08 var(--sb-serif);margin:0 0 10px;letter-spacing:-.045em}
+.sbPreviewPage .sbIntro p{font-size:13px;line-height:1.6}
+.sbPreviewPage .sbSelection{padding-top:22px}
+.sbPreviewPage .sbSelectionHeading{margin:22px 0 18px}
+.sbPreviewPage .sbSelectionHeading h2{font-size:clamp(25px,3vw,34px);margin:0 0 8px}
+.sbPreviewPage .sbSelectionHeading p{font-size:12px;line-height:1.55}
+.sbPreviewPage .sbPreviewTierStage{margin:0 0 14px;padding:0;background:none;border:0;box-shadow:none}
+.sbPreviewPage .sbPreviewTierBars{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 24px;padding:0;border-bottom:1px solid #e8d9c8}
+.sbPreviewPage .sbPreviewTierBar{
+  display:inline-block;flex:none;width:auto;min-width:0;min-height:44px;
+  padding:10px 1px 11px;color:#725c53;background:transparent;
+  border:0;border-radius:0;box-shadow:none;
+  font:600 clamp(15px,1.8vw,19px)/1.3 var(--sb-sans);
+  text-align:left;white-space:normal;overflow-wrap:anywhere;
+  text-decoration:none;text-underline-offset:8px;transform:none;
+  transition:color .15s ease
 }
-.sbPreviewPage .sbPreviewTierBars{
-  display:grid;grid-template-columns:minmax(0,1fr);gap:8px
-}
-.sbPreviewPage .sbPreviewTierBar,
-.sbPreviewPage .sbPreviewTierBar:nth-child(4n + 2),
-.sbPreviewPage .sbPreviewTierBar:nth-child(4n + 3){
-  display:flex;align-items:center;justify-content:space-between;
-  min-height:70px;padding:14px clamp(17px,2.4vw,28px);gap:16px;
-  background:#fffdfa;color:var(--sb-ink);
-  border:1px solid #e5d7c9;border-radius:10px;box-shadow:none;
-  transform:none;transition:border-color .15s ease,background .15s ease;
-}
-.sbPreviewPage .sbPreviewTierBar:hover:not(.sbPreviewTierBar--active){
-  background:#f8f0e7;border-color:#c5aa9b
-}
+.sbPreviewPage .sbPreviewTierBar:hover{color:#7b1420;background:transparent;box-shadow:none}
 .sbPreviewPage .sbPreviewTierBar--active,
 .sbPreviewPage .sbPreviewTierBar--active:nth-child(n){
-  color:#fffaf4;background:#7b1420;border-color:#7b1420;
-  box-shadow:0 0 0 2px #f5ece3 inset;transform:none
+  background:transparent;color:#7b1420;border:0;box-shadow:inset 0 -3px #7b1420;
+  transform:none
 }
-.sbPreviewPage .sbPreviewTierBar .sbPreviewTierName{
-  font:650 clamp(20px,2.2vw,27px)/1.13 var(--sb-serif);
-  letter-spacing:-.035em;min-width:0;overflow-wrap:anywhere
+.sbPreviewPage .sbPreviewTierBar:focus-visible{outline:2px solid #ab7d79;outline-offset:3px}
+.sbPreviewPage .sbPreviewTierTotal{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  margin:12px 0 0;color:#756459;font-size:12px
 }
-.sbPreviewPage .sbPreviewTierBar .sbPreviewTierPrice{
-  font:750 clamp(22px,2.5vw,30px)/1.1 var(--sb-serif);
-  letter-spacing:-.035em;color:#7b1420;
-  white-space:nowrap;font-variant-numeric:tabular-nums
+.sbPreviewPage .sbPreviewTierTotal strong{
+  font:700 19px/1.2 var(--sb-serif);color:#7b1420
 }
-.sbPreviewPage .sbPreviewTierBar--active .sbPreviewTierPrice{color:#fffaf4}
-.sbPreviewPage .sbPreviewTierBar:focus-visible{
-  outline:3px solid #c78b73;outline-offset:3px
+.sbPreviewPage .sbPreviewTierStage+.sbPreviewLimitBar{
+  background:transparent;border:0;border-bottom:1px solid #e8d9c8;
+  margin:0 0 22px;padding:9px 0 14px;box-shadow:none
 }
-.sbPreviewPage .sbPreviewTierStage + .sbPreviewLimitBar{
-  background:#f7efe5;border:1px solid #e8d9c8;border-radius:9px;
-  padding:11px 17px;box-shadow:none;margin:0 0 28px
+.sbPreviewPage .sbPreviewTierStage+.sbPreviewLimitBar>div{
+  display:flex;align-items:center;justify-content:flex-start;justify-items:unset;
+  text-align:left;gap:12px;flex-wrap:wrap;width:100%
 }
-/* Category navigation: editorial grid with clear hierarchy and target arrow.
-   No fake product imagery; these represent actual public category labels. */
-.sbPreviewPage .sbChoiceGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sbPreviewPage .sbPreviewTierStage+.sbPreviewLimitBar strong{font-size:18px}
+.sbPreviewPage .sbPreviewTierStage+.sbPreviewLimitBar p{margin-left:auto;text-align:left}
+.sbPreviewPage .sbChoiceGrid{
+  display:flex;flex-direction:column;gap:0;grid-template-columns:none;
+  width:100%;padding:0;border-top:1px solid #e8d9c8
+}
 .sbPreviewPage .sbExploreCard{
-  position:relative;min-width:0;min-height:178px;padding:20px 22px;
-  border:1px solid #e8d9c8;border-radius:14px;background:#fffdfa;
-  color:#34241e;box-shadow:none;
-  display:flex;flex-direction:column;align-items:stretch;text-align:left;
-  transition:border-color .15s ease,background .15s ease
+  min-height:58px;width:100%;padding:13px 0;display:flex;
+  flex-direction:row;align-items:center;justify-content:space-between;
+  gap:15px;text-align:left;color:#34241e;
+  background:transparent;border:0;border-bottom:1px solid #e8d9c8;
+  border-radius:0;box-shadow:none;transform:none;
+  transition:color .15s ease,background-color .15s ease
 }
-.sbPreviewPage .sbExploreCard:hover,
-.sbPreviewPage .sbExploreCard:focus-visible{
-  background:#f9f0e7;border-color:#bfa298;transform:none;
-  box-shadow:none
+.sbPreviewPage .sbExploreCard:hover,.sbPreviewPage .sbExploreCard:focus-visible{
+  background:#f7efe5;color:#7b1420;transform:none;
+  border-color:#e8d9c8;box-shadow:none
 }
-.sbPreviewPage .sbExploreCardTop{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:12px;min-height:0
-}
-.sbPreviewPage .sbExploreCard .sbIndex{
-  font:700 11px/1.3 var(--sb-sans);letter-spacing:.09em;
-  color:#8c2631;background:#f8ece5;border-radius:5px;padding:6px 8px
-}
-.sbPreviewPage .sbExploreKind{
-  color:#9b8171;font:650 9px/1.3 var(--sb-sans);
-  letter-spacing:.1em
-}
-.sbPreviewPage .sbExploreCardBottom{padding:0 42px 0 0;margin:auto 0 0}
-.sbPreviewPage .sbExploreCard h3{
-  font:650 clamp(23px,2.4vw,31px)/1.13 var(--sb-serif);
-  margin:15px 0 7px;letter-spacing:-.035em;overflow-wrap:anywhere;color:#34241e
-}
-.sbPreviewPage .sbExploreCard p{
-  font:450 11px/1.55 var(--sb-sans);color:#826b5d;
-  margin:0
+.sbPreviewPage .sbExploreName{
+  font:600 clamp(19px,2.4vw,25px)/1.27 var(--sb-serif);
+  color:inherit;letter-spacing:-.025em;overflow-wrap:anywhere
 }
 .sbPreviewPage .sbExploreArrow{
-  position:absolute;inset:auto 18px 16px auto;
-  width:36px;height:36px;border:1px solid #e3d0c2;border-radius:50%;
-  display:grid;place-items:center;font:600 20px/1 var(--sb-sans);
-  color:#851d2b;background:#fffaf4;transform:none;
-  transition:background .15s ease,color .15s ease
+  flex:0 0 28px;display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:32px;padding:0;position:static;
+  background:transparent;border:0;border-radius:0;
+  color:#7b1420;font:500 22px/1 var(--sb-sans);
+  transition:transform .15s ease
 }
 .sbPreviewPage .sbExploreCard:hover .sbExploreArrow{
-  color:#fff;background:#7b1420;transform:none
+  background:transparent;color:#7b1420;transform:translateX(3px)
 }
-/* Category/size choices use the same design language and more usable
-   quantity controls, without exposing per-item prices or budgets. */
 .sbPreviewPage .sbChoiceCard{
-  display:flex;min-width:0;min-height:179px;flex-direction:column;
-  background:#fffdfa;color:#34241e;padding:18px 20px;
-  border:1px solid #e8d9c8;border-radius:14px;box-shadow:none;
-  transition:border-color .15s ease,background .15s ease
+  width:100%;min-width:0;min-height:62px;padding:10px 0;
+  display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  gap:14px;background:transparent;border:0;border-bottom:1px solid #e8d9c8;
+  border-radius:0;box-shadow:none;transition:background-color .15s ease
 }
 .sbPreviewPage .sbChoiceCard--selected{
-  border-color:#a55e66;background:#fcf1ed;box-shadow:inset 4px 0 #7b1420
+  background:#f7efe5;border-color:#e8d9c8;box-shadow:none;
+  padding-left:10px;padding-right:4px
 }
-.sbPreviewPage .sbChoiceCardTop{min-height:0;display:flex;align-items:center;justify-content:space-between;gap:9px}
-.sbPreviewPage .sbChoiceCard .sbIndex{font-weight:700;color:#997c6a}
-.sbPreviewPage .sbChoiceCardTag{
-  font:700 9px/1.4 var(--sb-sans);letter-spacing:.11em;
-  color:#8b7668;text-align:right
-}
-.sbPreviewPage .sbChoiceCard--selected .sbChoiceCardTag{color:#851b2b}
-.sbPreviewPage .sbChoiceCardBody{flex:1;padding:10px 0 17px}
 .sbPreviewPage .sbChoiceCard h3{
-  font:650 clamp(21px,2.2vw,28px)/1.16 var(--sb-serif);
-  letter-spacing:-.035em;color:#34241e;margin:5px 0
+  min-width:0;overflow-wrap:anywhere;margin:0;
+  font:600 clamp(17px,2.1vw,22px)/1.25 var(--sb-serif);
+  color:#34241e;letter-spacing:-.018em
 }
-.sbPreviewPage .sbChoiceCardBody p{font-size:11px;color:#806d61;line-height:1.5;margin:6px 0 0}
-.sbPreviewPage .sbChoiceCardFoot{
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:nowrap;gap:12px;padding-top:11px;border-top:1px solid #eadbcf
+.sbPreviewPage .sbQty{
+  flex:0 0 auto;height:44px;min-width:126px;width:auto;display:flex;
+  justify-content:space-between;background:transparent;border:1px solid #e2d4c7;
+  border-radius:6px;box-shadow:none
 }
-.sbPreviewPage .sbChoiceCardFoot>span{font-size:11px;color:#7c645b}
-.sbPreviewPage .sbQty{height:44px;width:auto;background:#fffdfa;border-radius:8px;border-color:#dfc9bc;min-width:126px}
-.sbPreviewPage .sbQty button{width:44px;min-width:44px;height:44px;min-height:44px;color:#7b1420;font-size:22px}
-.sbPreviewPage .sbQty output{min-width:32px;font-weight:750}
-.sbPreviewPage .sbQty--active{border-color:#b77f7a}
-/* Summary remains readable rather than introducing a competing saturated panel. */
-.sbPreviewPage .sbSummaryIn{background:#f7f0e7;border-color:#e7d7c5}
-.sbPreviewPage .sbIntro h1 em,.sbPreviewPage .sbSummary h2 em{color:#7b1420}
+.sbPreviewPage .sbQty button{
+  min-height:42px;height:42px;min-width:42px;width:42px;padding:0;
+  background:transparent;border:0;color:#7b1420
+}
+.sbPreviewPage .sbQty output{font-weight:700;min-width:30px}
+.sbPreviewPage .sbSummaryIn{background:#f9f4ed;border:1px solid #e8d9c8}
 @media(max-width:780px){
-  .sbPreviewPage .sbChoiceGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .sbPreviewPage .sbChoiceGrid{display:flex;flex-direction:column;gap:0}
 }
-@media(max-width:600px){
-  .sbPreviewPage .sbChoiceGrid{grid-template-columns:minmax(0,1fr);gap:11px}
-  .sbPreviewPage .sbExploreCard{min-height:150px;padding:17px 18px}
-  .sbPreviewPage .sbExploreCardBottom{padding-right:39px}
-  .sbPreviewPage .sbExploreCard h3{font-size:clamp(22px,6.5vw,28px);margin:13px 0 5px}
-  .sbPreviewPage .sbChoiceCard{min-height:158px;padding:16px}
-  .sbPreviewPage .sbChoiceCard h3{font-size:clamp(22px,6vw,27px)}
-  .sbPreviewPage .sbChoiceCardFoot{flex-wrap:nowrap}
-  .sbPreviewPage .sbQty{width:auto}
-  .sbPreviewPage .sbPreviewTierBar,
-  .sbPreviewPage .sbPreviewTierBar:nth-child(4n + 2),
-  .sbPreviewPage .sbPreviewTierBar:nth-child(4n + 3){min-height:62px;padding:12px 14px;gap:11px}
-  .sbPreviewPage .sbPreviewTierBar .sbPreviewTierName{font-size:clamp(19px,5.3vw,24px)}
-  .sbPreviewPage .sbPreviewTierBar .sbPreviewTierPrice{font-size:clamp(21px,5.8vw,27px)}
+@media(max-width:520px){
+  .sbPreviewPage .sbIntro{padding:24px 0 16px}
+  .sbPreviewPage .sbIntro h1{font-size:32px}
+  .sbPreviewPage .sbSelectionHeading{margin:18px 0 13px}
+  .sbPreviewPage .sbChoiceGrid{display:flex;flex-direction:column;gap:0}
+  .sbPreviewPage .sbExploreCard{min-height:55px;padding:12px 0}
+  .sbPreviewPage .sbExploreName{font-size:19px}
+  .sbPreviewPage .sbChoiceCard{padding:10px 0}
+  .sbPreviewPage .sbChoiceCard h3{font-size:17px}
+  .sbPreviewPage .sbQty{width:auto;min-width:122px}
+  .sbPreviewPage .sbPreviewTierBar{font-size:15px;min-height:44px}
+  .sbPreviewPage .sbPreviewTierStage+.sbPreviewLimitBar p{margin-left:0}
 }
 @media(max-width:360px){
-  .sbPreviewPage .sbExploreCard{min-height:148px;padding:14px}
-  .sbPreviewPage .sbChoiceCard{padding:14px}
-  .sbPreviewPage .sbChoiceCardFoot{gap:6px}
-  .sbPreviewPage .sbChoiceCardFoot>span{font-size:10px}
-  .sbPreviewPage .sbQty{min-width:121px}
+  .sbPreviewPage .sbChoiceGrid{gap:0}
+  .sbPreviewPage .sbChoiceCard{gap:8px}
+  .sbPreviewPage .sbQty{min-width:118px}
+  .sbPreviewPage .sbQty button{min-width:40px;width:40px}
+  .sbPreviewPage .sbChoiceCard h3{font-size:16px}
 }
 @media(prefers-reduced-motion:reduce){
-  .sbPreviewPage .sbExploreCard,.sbPreviewPage .sbExploreArrow,
-  .sbPreviewPage .sbPreviewTierBar,.sbPreviewPage .sbChoiceCard{transition:none}
+  .sbPreviewPage .sbPreviewTierBar,.sbPreviewPage .sbExploreCard,
+  .sbPreviewPage .sbExploreArrow,.sbPreviewPage .sbChoiceCard{transition:none}
 }

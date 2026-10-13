@@ -62,11 +62,12 @@ try {
       // default mini tier intentionally caps at 2, including repeated items.
       const tierBar=page.locator('.sbPreviewTierBar[data-tier-id="t1499"]')
       await tierBar.click()
-      add(width + " tier name and final price only",
+      add(width + " name-only hamper choice; price shown separately",
         await tierBar.getAttribute("aria-pressed")==="true" &&
-        await tierBar.locator(".sbPreviewTierName").count()===1 &&
-        await tierBar.locator(".sbPreviewTierPrice").innerText().then(x=>x.includes("1,549")) &&
-        await tierBar.locator("small,p,img,svg,select").count()===0)
+        (await tierBar.innerText()).trim().length>0 &&
+        !/(₹|Rs\.|pieces|Delivery)/.test(await tierBar.innerText()) &&
+        await tierBar.locator("small,p,img,svg,select,strong").count()===0 &&
+        await page.locator(".sbPreviewTierTotal").innerText().then(x=>x.includes("1,549")))
       add(width + " large tier advertises 7 physical items",
         await page.locator(".sbPreviewLimitBar").innerText().then(x=>x.includes("/ 7")))
 

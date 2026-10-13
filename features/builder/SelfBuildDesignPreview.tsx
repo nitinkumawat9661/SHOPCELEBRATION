@@ -17,26 +17,18 @@ function QuantityControl({ label, count, canAdd, onChange }: { label: string; co
   </div>
 }
 
-function SelectionCard({ title, eyebrow, secondary, index, count, canAdd, onChange }: {
+// No illustrated category/product cards: each public option is a selectable name
+// with quantity controls. This is presentation-only; IDs and limits are unchanged.
+function SelectionCard({ title, count, canAdd, onChange }: {
   title: string
-  eyebrow: string
-  secondary?: string
-  index: number
   count: number
   canAdd: boolean
   onChange: (count: number) => void
 }) {
-  return <article className={count ? "sbChoiceCard sbChoiceCard--selected" : "sbChoiceCard"}>
-    <div className="sbChoiceCardTop">
-      <span className="sbIndex">{String(index + 1).padStart(2, "0")}</span>
-      <span className="sbChoiceCardTag">{count ? "SELECTED" : eyebrow}</span>
-    </div>
-    <div className="sbChoiceCardBody"><h3>{title}</h3>{secondary && <p>{secondary}</p>}</div>
-    <div className="sbChoiceCardFoot">
-      <span>{count ? "In your hamper" : "Select pieces"}</span>
-      <QuantityControl label={title} count={count} canAdd={canAdd} onChange={onChange} />
-    </div>
-  </article>
+  return <div className={count ? "sbChoiceCard sbChoiceCard--selected" : "sbChoiceCard"}>
+    <h3>{title}</h3>
+    <QuantityControl label={title} count={count} canAdd={canAdd} onChange={onChange} />
+  </div>
 }
 
 function isSelectable(kind: string): kind is Choice["kind"] {
@@ -120,9 +112,8 @@ export function SelfBuildDesignPreview({ data, tiers }: {
     <div className="sbPreviewLayout">
       <div className="sbPreviewMain">
         <div className="sbIntro">
-          <div className="sbIntroRule"><span>01 / GIFT SOMETHING PERSONAL</span><span>MADE WITH INTENTION</span></div>
-          <h1>Thoughtfully chosen.<br /><em>Beautifully yours.</em></h1>
-          <p>Choose the kinds of little joys you&apos;d love to include. Celebration will thoughtfully curate the pieces for your hamper.</p>
+          <h1>Create your hamper</h1>
+          <p>Choose a hamper, then select the gift categories you want.</p>
         </div>
 
         <nav className="sbSteps" aria-label="Hamper design steps">
@@ -135,15 +126,17 @@ export function SelfBuildDesignPreview({ data, tiers }: {
         </nav>
 
         <section className="sbSelection" aria-label="Self-build hamper designer">
-          <div className="sbPreviewTierStage" role="group" aria-label="Choose your hamper by final price">
+          <div className="sbPreviewTierStage" role="group" aria-label="Choose your hamper">
             <div className="sbPreviewTierBars">
               {tiers.map(item=><button key={item.id} type="button" data-tier-id={item.id}
                 className={tierId===item.id?"sbPreviewTierBar sbPreviewTierBar--active":"sbPreviewTierBar"}
                 aria-pressed={tierId===item.id} onClick={()=>setTierId(item.id)}>
-                <span className="sbPreviewTierName">{item.name}</span>
-                <strong className="sbPreviewTierPrice">{formatMoney(hamperFinalPriceRupees(item.price))}</strong>
+                {item.name}
               </button>)}
             </div>
+            <p className="sbPreviewTierTotal" role="status" aria-live="polite">
+              Final hamper price <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong>
+            </p>
           </div>
           <div className="sbPreviewLimitBar" role="status" aria-live="polite">
             <div><small>MAXIMUM PIECES</small><strong>{units} <span>/ {maxItems}</span></strong>
@@ -152,7 +145,6 @@ export function SelfBuildDesignPreview({ data, tiers }: {
           {exceedsMax&&<p className="sbPreviewLimitError" role="alert">Reduce your selections to {maxItems} pieces for this tier.</p>}
           <div className="sbSelectionHeading">
             <div>
-              <span className="sbEyebrow">{step === "choose" ? currentCategory ? "EXPLORE THE COLLECTION" : "YOUR HAMPER BEGINS HERE" : step === "personalise" ? "THE FINISHING TOUCH" : "CURATED AROUND YOU"}</span>
               <h2>{title}</h2>
               <p>{description}</p>
             </div>
@@ -163,38 +155,25 @@ export function SelfBuildDesignPreview({ data, tiers }: {
             {currentCategory && <div className="sbBreadcrumb"><button type="button" onClick={() => setOpenId(null)}>All categories</button><span aria-hidden="true">/</span><b>{currentCategory.label}</b></div>}
             {childCategories.length === 0 && childOptions.length === 0 && <div className="sbNoChoices"><b>Nothing to choose here yet.</b><p>This category will appear once options are enabled by Celebration.</p><button type="button" onClick={goBack}>Explore categories</button></div>}
             <div className="sbChoiceGrid">
-              {childCategories.map((category: SelfBuildVisualCategory, index) => {
+              {childCategories.map((category: SelfBuildVisualCategory) => {
                 if (category.selectionKind === "group" || category.selectionKind === "variant") {
-                  const total = category.selectionKind === "group"
-                    ? sortedCategories.filter(item => item.parentId === category.id && item.selectionKind !== "notes").length
-                    : sortedOptions.filter(item => item.categoryId === category.id).length
-                  return <button className="sbExploreCard" type="button" key={category.id} onClick={() => setOpenId(category.id)}
-                    aria-label={`Explore ${category.label}`}>
-                    <div className="sbExploreCardTop">
-                      <span className="sbIndex">{String(index + 1).padStart(2, "0")}</span>
-                      <span className="sbExploreKind">GIFT COLLECTION</span>
-                    </div>
-                    <div className="sbExploreCardBottom">
-                      <h3>{category.label}</h3>
-                      <p>{total} {category.selectionKind === "group" ? "categories" : "options"} to explore</p>
-                    </div>
+                  return <button className="sbExploreCard" type="button" key={category.id}
+                    onClick={() => setOpenId(category.id)} aria-label={`Explore ${category.label}`}>
+                    <span className="sbExploreName">{category.label}</span>
                     <span className="sbExploreArrow" aria-hidden="true">→</span>
                   </button>
                 }
                 const quantityId = `category:${category.id}`
-                return <SelectionCard key={category.id} index={index} title={category.label}
-                  eyebrow={category.selectionKind === "photo" ? "PERSONALISED MEMORIES" : "CATEGORY SELECTION"}
-                  secondary={category.selectionKind === "photo" ? "One photo for each selected piece." : "Curated by Celebration."}
+                return <SelectionCard key={category.id} title={category.label}
                   count={quantities[quantityId] ?? 0} canAdd={!atMax} onChange={count => changeQuantity(quantityId,count)} />
               })}
-              {childOptions.map((option: SelfBuildVisualOption, index) => {
+              {childOptions.map((option: SelfBuildVisualOption) => {
                 const quantityId = `option:${option.id}`
-                return <SelectionCard key={option.id} index={index} title={option.label} eyebrow="CHOOSE YOUR SIZE"
-                  secondary="Choose one or more." count={quantities[quantityId] ?? 0}
+                return <SelectionCard key={option.id} title={option.label} count={quantities[quantityId] ?? 0}
                   canAdd={!atMax} onChange={count => changeQuantity(quantityId,count)} />
               })}
             </div>
-            {childCategories.length > 0 && !currentCategory && <p className="sbGentleNote">Every hamper is assembled by our team. Individual jewellery designs are selected by Celebration within your chosen categories.</p>}
+            {childCategories.length > 0 && !currentCategory && <p className="sbGentleNote">We'll choose the final pieces for the categories you select.</p>}
           </div>}
 
           {step === "personalise" && <div className="sbPersonalise">
