@@ -76,8 +76,11 @@ export async function settleStagedSelfBuildPaymentWithClient(
 
   if (active.status === "committed")
     return { status: "committed", changed: false }
-  if (active.status === "released")
+  if (active.status === "released") {
+    if (input.result.status === "failed")
+      return { status: "released", changed: false }
     return { status: "needs_manual_review", changed: false, code: "RESERVATION_ALREADY_RELEASED" }
+  }
 
   const paid = isPaymentConfirmed(order.payment_status, order.status)
   if (input.result.status === "paid") {
