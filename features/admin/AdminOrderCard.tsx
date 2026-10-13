@@ -7,6 +7,7 @@ import { adminAllowedTransitions, orderStatusLabels, type OrderStatus } from "..
 import { uiContent } from "../../lib/domain/content"
 import { AdminOrderVideo } from "./AdminOrderVideo"
 import { AdminShippingPanel } from "./AdminShippingPanel"
+import { AdminSelfBuildOrderPhotos } from "./AdminSelfBuildOrderPhotos"
 import type { AdminOrder } from "./types"
 
 export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
@@ -80,6 +81,7 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
         {order.selfBuild.otherRequestText && <div className="sbAdminOrderSnapshotNote">
           <b>Customer's special request</b><p>{order.selfBuild.otherRequestText}</p>
         </div>}
+        <AdminSelfBuildOrderPhotos publicId={order.publicId} />
         <p className="sbAdminOrderSnapshotDisclaimer">Category selection is not an individual SKU promise. No internal budget is displayed in the customer order.</p>
       </section>}
 
