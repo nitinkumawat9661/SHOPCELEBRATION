@@ -28,7 +28,7 @@ for(const text of [
  'sbBuyerUpgradeDialog',
  'sbBuyerChoiceActive',
  'selectedUnits>=maxUnits',
- 'const now=Object.values(v).reduce',
+ 'const total=Object.values(v).reduce',
  'kind,id:choiceId,quantity:value',
  'selections:items',
  'photos.length===photoQuantity',
