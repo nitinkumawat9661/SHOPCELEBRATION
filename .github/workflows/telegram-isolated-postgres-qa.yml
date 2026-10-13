@@ -11,6 +11,8 @@ on:
       - 'db/migrations/102_telegram_courier_watch.sql'
       - 'db/migrations/103_telegram_customer_two_way_chat.sql'
       - 'lib/server/orders/self-build-create.ts'
+      - 'lib/server/self-build-payment-settlement.ts'
+      - 'lib/server/self-build-reservations.ts'
       - 'lib/server/orders/create.ts'
       - 'scripts/test-order-integration.mjs'
       - 'features/account/**'

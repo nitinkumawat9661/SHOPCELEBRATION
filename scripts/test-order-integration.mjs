@@ -51,6 +51,7 @@ const { normalizeOrderInput } = requireCompiled(join(output, 'lib/domain/order.j
 const { orderConfig } = requireCompiled(join(output, 'config/order.js'))
 const { createOrder } = requireCompiled(join(output, 'lib/server/orders/create.js'))
 const { createStagedSelfBuildOrder } = requireCompiled(join(output, 'lib/server/orders/self-build-create.js'))
+const { settleStagedSelfBuildPaymentWithClient } = requireCompiled(join(output, 'lib/server/self-build-payment-settlement.js'))
 const { listOrders, findOrderByTrackingToken } = requireCompiled(join(output, 'lib/server/orders/read.js'))
 const { createCustomerAccount, listCustomerOrders } = requireCompiled(join(output, 'lib/server/customer-accounts.js'))
 const { reservePaymentAttempt, bindPaymentAttempt, failPaymentAttempt, applyProviderPaymentResult, getPaymentOrder } = requireCompiled(join(output, 'lib/server/payments/store.js'))
@@ -380,6 +381,96 @@ try {
   }),{code:'SELF_BUILD_PHOTO_ORDER_RETENTION_NOT_READY'})
   // No provider checkout requests, phone numbers, private budgets or photos
   // are sent over the network in any of these local DB fixtures.
+  // Payment reconciliation tests execute the ACTUAL settlement service against
+  // disposable loopback Postgres: no gateway API calls or live customer orders.
+  const settleTest = async (orderId,result) => {
+    await control.query('BEGIN')
+    try {
+      const outcome = await settleStagedSelfBuildPaymentWithClient(control,{orderId,result})
+      await control.query('COMMIT')
+      return outcome
+    } catch (error) {
+      await control.query('ROLLBACK')
+      throw error
+    }
+  }
+  const attachSignedEventFixture = async (orderId, status, suffix) => {
+    const providerOrderId = 'order_staging_'+suffix
+    const eventId = 'evt_staging_'+suffix
+    const providerPaymentId = 'pay_staging_'+suffix
+    await control.query(`UPDATE orders SET
+      payment_provider='razorpay',provider_order_id=$2,payment_status=$3
+      WHERE id=$1`,[orderId,providerOrderId,status])
+    await control.query(`INSERT INTO payment_attempts
+      (id,order_id,attempt_no,provider,provider_order_id,provider_payment_id,status)
+      VALUES ($1,$2,1,'razorpay',$3,$4,$5)`,
+      [randomUUID(),orderId,providerOrderId,providerPaymentId,status])
+    await control.query(`INSERT INTO payment_events
+      (id,provider,provider_event_id,order_id,event_type,payload)
+      VALUES ($1,'razorpay',$2,$3,$4,'{}'::jsonb)`,
+      [randomUUID(),eventId,orderId,status==='paid'?'payment.captured':'payment.failed'])
+    return {provider:'razorpay',providerOrderId,providerPaymentId,status,amountPaise:49900,
+      eventId,eventType:status==='paid'?'payment.captured':'payment.failed',payload:{localFixture:true}}
+  }
+
+  // Curated hamster orders must never be interpreted as category reservations.
+  const curatedInternalId=(await control.query('SELECT id FROM orders WHERE public_id=$1',[manualHamper.publicId])).rows[0].id
+  assert.equal((await settleTest(curatedInternalId,{
+    provider:'razorpay',providerOrderId:'unused',status:'pending',
+    eventId:'unrecognized',eventType:'payment.pending',amountPaise:49900,payload:{}
+  })).status,'not_self_build','Legacy curated checkout is not touched')
+
+  const stageId=storedStaged.rows[0].id
+  const paidSelfBuild=await attachSignedEventFixture(stageId,'paid','paid_one')
+  await assert.rejects(settleTest(stageId,{...paidSelfBuild,eventId:'missing-event'}),
+    /SELF_BUILD_PAYMENT_EVENT_NOT_RECORDED/)
+  await assert.rejects(settleTest(stageId,{...paidSelfBuild,amountPaise:1}),
+    /SELF_BUILD_PAYMENT_AMOUNT_MISMATCH/)
+  const paidStockBefore=(await control.query(
+    "SELECT available_units,reserved_units FROM self_build_category_capacity WHERE category_id='bangles'")).rows[0]
+  assert.equal(paidStockBefore.available_units,2)
+  assert.equal(paidStockBefore.reserved_units,1)
+  const settled=await settleTest(stageId,paidSelfBuild)
+  assert.deepEqual(settled,{status:'committed',changed:true})
+  assert.deepEqual(await settleTest(stageId,paidSelfBuild),{status:'committed',changed:false},
+    'Verified repeated webhook never double-consumes capacity')
+  const postPaidStock=(await control.query(
+    "SELECT available_units,reserved_units FROM self_build_category_capacity WHERE category_id='bangles'")).rows[0]
+  assert.equal(postPaidStock.available_units,1)
+  assert.equal(postPaidStock.reserved_units,0)
+
+  // A real recorded current provider failure releases reserved capacity once.
+  const failedKey=randomUUID()
+  const failedOrder=await createStagedSelfBuildOrder({
+    ...stagedInput,customerDetails:{...stagedInput.customerDetails,idempotencyKey:failedKey}
+  })
+  const failedId=(await control.query('SELECT id FROM orders WHERE public_id=$1',[failedOrder.orderId])).rows[0].id
+  const failedSelfBuild=await attachSignedEventFixture(failedId,'failed','failed_one')
+  const failedReleased=await settleTest(failedId,failedSelfBuild)
+  assert.deepEqual(failedReleased,{status:'released',changed:true})
+  assert.deepEqual(await settleTest(failedId,failedSelfBuild),{status:'released',changed:false},
+    'Provider failure replay remains idempotently released')
+  assert.equal((await control.query(
+    "SELECT reserved_units FROM self_build_category_capacity WHERE category_id='bangles'")).rows[0].reserved_units,0)
+  assert.deepEqual(await settleTest(failedId,{...failedSelfBuild,status:'paid'}),
+    {status:'needs_manual_review',changed:false,code:'RESERVATION_ALREADY_RELEASED'},
+    'Late paid callback after release requires reconciliation, never charge as delivered')
+
+  // Paid-after-reservation-expiry must never consume inventory without fresh
+  // verification. The hold stays visible for manual payment reconciliation.
+  const expiredOrder=await createStagedSelfBuildOrder({
+    ...stagedInput,customerDetails:{...stagedInput.customerDetails,idempotencyKey:randomUUID()}
+  })
+  const expiredId=(await control.query('SELECT id FROM orders WHERE public_id=$1',[expiredOrder.orderId])).rows[0].id
+  const expiredPayment=await attachSignedEventFixture(expiredId,'paid','expired_one')
+  await control.query("UPDATE self_build_order_reservation_batches SET expires_at=now()-interval '1 minute' WHERE order_id=$1",[expiredId])
+  assert.deepEqual(await settleTest(expiredId,expiredPayment),
+    {status:'needs_manual_review',changed:false,code:'PAID_AFTER_RESERVATION_EXPIRY'})
+  assert.equal((await control.query("SELECT status FROM self_build_order_reservation_batches WHERE order_id=$1",[expiredId])).rows[0].status,'reserved')
+  assert.equal((await control.query(
+    "SELECT available_units,reserved_units FROM self_build_category_capacity WHERE category_id='bangles'")).rows[0].available_units,1)
+
+  console.log('SELF_BUILD_PAYMENT_SETTLEMENT_POSTGRES_PASSED: provider-event required, price verified, atomic commit, duplicate paid replay, current failed release, duplicate failed replay, late paid needs review, expired paid freeze, curated isolation')
   console.log('SELF_BUILD_ATOMIC_ORDER_POSTGRES_PASSED: disabled production gate, buyer ownership, order+capacity+Telegram atomicity, price, idempotency, no SKU mapping, insufficient-stock rollback, curated-key collision and photo-retention gate')
 
   console.log('TELEGRAM_POSTGRES_CHECKS_PASSED: payment, owner reply, customer chat, durable owner outbox, idempotency, A/B isolation and read receipts')
