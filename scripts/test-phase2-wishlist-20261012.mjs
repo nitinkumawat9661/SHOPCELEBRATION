@@ -21,7 +21,7 @@ assert(card.includes('<WishlistToggle productId={product.id} productName={produc
 assert(!card.includes('href="/wishlist"') && card.includes('<Link href={`/jewelry/${encodeURIComponent(product.id)}`}'),"Exact SKU card link unchanged")
 assert(list.includes('availableById.get(id)') && list.includes('active !== false') && list.includes('<CatalogCard key={product.id} product={product} />'))
 assert(list.includes('mode === "account"') && list.includes('href="/account"') && list.includes('Retry sync'))
-assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && page.includes('Sign in with your Celebration account'))
+assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in or create an account'),"Wishlist account sync/help survives removal of the hero")
 assert(detail.includes('<WishlistToggle productId={product.id} productName={product.name} />'))
 assert(!collection.includes('wishlistBrowseLink'),"Redundant saved collection shortcut was replaced by the shared header")
 assert(css.includes(".wishlistToggle:focus-visible") && css.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
