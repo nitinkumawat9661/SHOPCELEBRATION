@@ -44,5 +44,6 @@ assert(!collectionUI.includes("wishlistBrowseLink"),"Remove redundant browse-pag
 assert(list.includes("wishlistCategoryChips") && list.includes("availableById.get(id)") &&
  list.includes('<CatalogCard key={product.id} product={product} />'),"Scoped category filter and exact SKU cards preserved")
 assert(premium.includes("@media(max-width:375px)") && premium.includes("grid-template-columns:repeat(2,minmax(0,1fr))"),"Narrow header and 2-column mobile saved list")
+assert(premium.includes("@media(min-width:1001px) and (max-width:1150px)") && premium.includes(".celebrationIconLink span{display:none}"),"Laptop header avoids 1024px overflow")
 assert(globals.includes('wishlist-premium-20261013.css'),"Ship standalone premium wishlist")
 console.log("Account wishlist checks passed: signed-in DB sync, anonymous guest mode, merge, privacy, SKU links, controls, server CSRF and limits.")
