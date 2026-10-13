@@ -51,7 +51,11 @@ export async function getSelfBuildDraft(accountId:string) {
 export async function saveSelfBuildDraft(accountId:string,input:unknown){
   const clean=parseDraftBody(input)
   const {catalog}=await getCatalogConfig()
-  if(!catalog.tiers.some(t=>t.id===clean.tierId&&t.active!==false))reject("TIER_UNAVAILABLE")
+  const currentTier=catalog.tiers.find(t=>t.id===clean.tierId&&t.active!==false)
+  if(!currentTier)reject("TIER_UNAVAILABLE")
+  // Repeats of the same category count as distinct physical gift pieces.
+  if(clean.selections.reduce((n,choice)=>n+choice.quantity,0)>currentTier.maxChoices)
+    reject("SELF_BUILD_MAX_ITEMS_EXCEEDED")
   // A draft is NOT a quote, purchase or a promise of category inventory.
   // Reject unknown/deactivated category IDs but NEVER derive retail product IDs.
   return transaction(async client=>{
