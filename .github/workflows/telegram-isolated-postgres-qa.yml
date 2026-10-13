@@ -14,6 +14,8 @@ on:
       - 'lib/server/orders/self-build-no-inventory.ts'
       - 'lib/server/self-build-payment-reviews.ts'
       - 'db/migrations/105_self_build_payment_refund_reviews_no_inventory.sql'
+      - 'db/migrations/106_self_build_private_tier_percent_allowances.sql'
+      - 'lib/server/self-build-drafts.ts'
       - 'app/api/payments/self-build/**'
       - 'app/api/admin/self-build/payment-reviews/**'
       - 'features/admin/AdminSelfBuildPaymentReviews.tsx'
