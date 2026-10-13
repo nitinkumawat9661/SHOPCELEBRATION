@@ -23,10 +23,26 @@ assert(list.includes('availableById.get(id)') && list.includes('active !== false
 assert(list.includes('mode === "account"') && list.includes('href="/account"') && list.includes('Retry sync'))
 assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && page.includes('Sign in with your Celebration account'))
 assert(detail.includes('<WishlistToggle productId={product.id} productName={product.name} />'))
-assert(collection.includes('href="/wishlist"'))
+assert(!collection.includes('wishlistBrowseLink'),"Redundant saved collection shortcut was replaced by the shared header")
 assert(css.includes(".wishlistToggle:focus-visible") && css.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
 assert(api.includes('getCustomerSession()') && !api.includes('body.accountId') && api.includes('enforceSameOrigin(request)') && api.includes('consumeRequestRateLimit'))
 assert(api.includes('headers:noStore') && api.includes('AUTH_REQUIRED'))
 assert(migration.includes("REFERENCES customer_accounts(id) ON DELETE CASCADE") && migration.includes('PRIMARY KEY (account_id, product_id)'))
 assert(account.includes('new Event("celebration:auth-changed")'))
+const [header,headerLink,accountPage,premium,collectionUI] = await Promise.all([
+ "features/shell/StorefrontHeader.tsx","features/shell/WishlistHeaderLink.tsx",
+ "features/account/CustomerAccountPage.tsx","styles/wishlist-premium-20261013.css",
+ "features/catalog/CatalogCollection.tsx"
+].map(read))
+assert(header.includes("<WishlistHeaderLink />") && header.includes("<NotificationLink />") &&
+ header.indexOf("<WishlistHeaderLink />") < header.indexOf("<NotificationLink />") &&
+ header.indexOf("<NotificationLink />") < header.indexOf("<CartLink />"),"Wishlist, notifications, cart in header")
+assert(headerLink.includes('href="/wishlist"') && headerLink.includes("useWishlist()") &&
+ headerLink.includes("ids.length"),"Saved count uses actual shared wishlist hook")
+assert(!accountPage.includes('href="/wishlist"'),"Remove redundant account wishlist button")
+assert(!collectionUI.includes("wishlistBrowseLink"),"Remove redundant browse-page shortcut")
+assert(list.includes("wishlistCategoryChips") && list.includes("availableById.get(id)") &&
+ list.includes('<CatalogCard key={product.id} product={product} />'),"Scoped category filter and exact SKU cards preserved")
+assert(premium.includes("@media(max-width:375px)") && premium.includes("grid-template-columns:repeat(2,minmax(0,1fr))"),"Narrow header and 2-column mobile saved list")
+assert(globals.includes('wishlist-premium-20261013.css'),"Ship standalone premium wishlist")
 console.log("Account wishlist checks passed: signed-in DB sync, anonymous guest mode, merge, privacy, SKU links, controls, server CSRF and limits.")

@@ -21,16 +21,26 @@ export default async function WishlistPage() {
     getStoreSettings().catch(() => null)
   ])
   const verified = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
-  return <main className="collectionPage">
+  return <main className="collectionPage celebrationWishlistPage">
     <TrustStrip />
     <StorefrontHeader settings={settings?.settings || defaultStoreSettings} />
-    <section className="collectionSection wishlistPage">
+    <section className="collectionSection wishlistPage wishlistPresentation">
       <div className="wrap collectionContainer">
-        <div className="collectionBreadcrumb"><Link href="/">Home</Link><span aria-hidden="true">›</span><Link href="/jewelry?view=all">Jewellery</Link><span aria-hidden="true">›</span><span>Saved pieces</span></div>
-        <header className="wishlistHeading">
-          <span className="collectionEyebrow">YOUR SHORTLIST</span>
-          <h1>Saved pieces</h1>
-          <p>Keep the pieces you love in one place. Sign in with your Celebration account to access saved pieces on your phone, laptop and other devices.</p>
+        <nav className="wishlistBreadcrumb" aria-label="Breadcrumb">
+          <Link href="/">Home</Link><span aria-hidden="true">/</span>
+          <Link href="/jewelry?view=all">Jewelry</Link><span aria-hidden="true">/</span>
+          <span aria-current="page">Saved pieces</span>
+        </nav>
+        <header className="wishlistHeading wishlistHero">
+          <div className="wishlistHeroCopy">
+            <span className="wishlistEyebrow">CELEBRATION · YOUR COLLECTION</span>
+            <h1>Pieces you <em>love.</em></h1>
+            <p>Every little favorite, beautifully kept in one place. Sign in with your Celebration account to see saved pieces on your phone, laptop and other devices.</p>
+            <Link href="/jewelry?view=all" className="wishlistHeroBrowse">Explore more jewelry <span aria-hidden="true">↗</span></Link>
+          </div>
+          <div className="wishlistHeroArt" aria-hidden="true">
+            <span className="wishlistHeroArtFrame"><span>♡</span><small>CURATED BY YOU</small></span>
+          </div>
         </header>
         <WishlistCollection products={verified?.products || []} available={Boolean(catalog)} />
       </div>

@@ -1,0 +1,41 @@
+name: Celebration Wishlist Header Premium Browser QA
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Celebration Production"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  wishlist-premium-browser:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Prepare Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Read-only browser test 320 / 375 / 390 / 768 / 1280 and save snapshots
+        env:
+          BASE_URL: https://shopcelebration.in
+        run: node scripts/audit-wishlist-header-browser.mjs
+      - name: Store design screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wishlist-header-premium-${{ github.run_id }}
+          path: artifacts/wishlist-header-premium/
+          if-no-files-found: warn
+          retention-days: 14

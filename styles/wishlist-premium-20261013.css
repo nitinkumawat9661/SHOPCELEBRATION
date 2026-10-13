@@ -1,0 +1,54 @@
+/* Saved Pieces redesign: cosmetic, isolated from checkout, product grid and Telegram chat. */
+.celebrationWishlistPage .wishlistPresentation{padding:20px 0 55px;background:radial-gradient(ellipse at 94% 6%,#f8e8e1,transparent 29%),linear-gradient(180deg,#fffaf6,#fffdfa 59%,#fff7f2)}
+.wishlistBreadcrumb{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 18px;font-size:11px;color:#9a8178}
+.wishlistBreadcrumb a{color:#845766;text-decoration:none}.wishlistBreadcrumb a:hover{text-decoration:underline}
+.wishlistHero{min-height:260px;position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:30px;overflow:hidden;border:1px solid #e6d4d1;border-radius:22px;padding:clamp(24px,4vw,48px);background:radial-gradient(circle at 86% 28%,#f9dfd5 0,transparent 26%),linear-gradient(115deg,#fffdfb 3%,#f8eae4 100%);box-shadow:0 15px 48px #683a440d;margin:0 0 23px}
+.wishlistHero::after{content:"";position:absolute;width:235px;height:235px;border:1px solid #ead4d0;border-radius:50%;right:4%;top:-93px;z-index:-1;pointer-events:none}
+.wishlistEyebrow{display:block;font-size:10px;letter-spacing:.16em;font-weight:800;color:#a27469;line-height:1.5}
+.wishlistHeroCopy{max-width:610px;min-width:0}
+.wishlistHero h1{font:600 clamp(34px,4.5vw,52px)/1.12 'Playfair Display',Georgia,serif;margin:10px 0;color:#5f2334;letter-spacing:-.04em}
+.wishlistHero h1 em{font-weight:400;color:#ab7278}
+.wishlistHero p{margin:0 0 21px;max-width:550px;font-size:13px;line-height:1.74;color:#886c6d}
+.wishlistHeroBrowse,.wishlistShopMore{display:inline-flex;align-items:center;gap:13px;min-height:44px;color:#691f38;text-decoration:none;font-weight:800;font-size:11px}
+.wishlistHeroBrowse{border-bottom:1px solid #b48f85}
+.wishlistHeroBrowse:hover,.wishlistShopMore:hover{color:#ae6871}
+.wishlistHeroBrowse:focus-visible,.wishlistShopMore:focus-visible,.wishlistCategoryChips button:focus-visible{outline:3px solid #b17f79;outline-offset:3px}
+.wishlistHeroArt{flex:0 0 175px;display:grid;place-items:center}
+.wishlistHeroArtFrame{display:grid;place-items:center;align-content:center;gap:8px;width:156px;height:156px;border-radius:45px;transform:rotate(-8deg);background:linear-gradient(145deg,#fffefd,#f2d9d1);border:1px solid #dfc0bc;box-shadow:0 15px 36px #6735461c,inset 0 0 0 8px #fffaf995}
+.wishlistHeroArtFrame>span{font:400 86px/.98 Georgia,serif;color:#8c3b57;transform:rotate(8deg)}
+.wishlistHeroArtFrame small{color:#9d7373;letter-spacing:.14em;font-size:8px;font-weight:700;transform:rotate(8deg)}
+.wishlistShowcase{display:grid;gap:15px}
+.wishlistShowcase .wishlistSyncNotice{display:flex;align-items:center;gap:13px;padding:13px 17px;margin:0;border:1px solid #e8d7d0;background:#fffdfb;border-radius:15px;color:#76535c;box-shadow:0 5px 20px #74434c08;font-size:12px}
+.wishlistShowcase .wishlistSyncNotice p{line-height:1.6}
+.wishlistSyncSymbol{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border-radius:13px;background:#f6e9e4;color:#813b56;font-size:18px;font-weight:800}
+.wishlistCollectionPanel{padding:25px clamp(14px,2.8vw,32px) 35px;border-radius:21px;border:1px solid #e9d8d2;background:#fff;box-shadow:0 13px 37px #7141520b;min-width:0}
+.wishlistCollectionTop{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid #f0e3de;padding-bottom:19px;margin-bottom:20px}
+.wishlistCollectionTop h2{font:600 clamp(23px,2.5vw,31px)/1.22 'Playfair Display',Georgia,serif;color:#542535;margin:6px 0 9px;letter-spacing:-.03em}
+.wishlistCollectionTop h2 span{display:inline-grid;place-items:center;vertical-align:middle;min-width:28px;height:28px;border:1px solid #ead2cf;border-radius:99px;padding:3px 8px;color:#884c60;background:#fff6f2;font:800 11px Arial,sans-serif;letter-spacing:0;margin-left:5px}
+.wishlistCollectionTop .wishlistSummary{margin:0;color:#907b79;font-size:11px}
+.wishlistCategoryChips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.wishlistCategoryChips button{display:inline-flex;align-items:center;gap:9px;border:1px solid #ead9d3;background:#fff9f6;color:#785864;border-radius:100px;min-height:42px;padding:8px 13px;font-size:11px;font-weight:700;cursor:pointer;max-width:100%}
+.wishlistCategoryChips button span{display:grid;place-items:center;min-width:19px;height:19px;border-radius:99px;padding:1px 4px;background:#eee1dc;font-size:10px;color:#79525c}
+.wishlistCategoryChips button[aria-pressed="true"]{background:#762740;color:#fff;border-color:#762740}
+.wishlistCategoryChips button[aria-pressed="true"] span{background:#a9697e;color:#fff}
+.wishlistProductGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,2vw,22px)}
+.wishlistProductGrid .catalogCard{border-color:#ead7d2;background:#fffdfa;border-radius:16px;box-shadow:0 8px 23px #6b334411}
+.wishlistProductGrid .catalogCard:hover{box-shadow:0 13px 32px #6b33441c}
+.wishlistCollectionPanel .wishlistEmpty{background:radial-gradient(circle at 50% 9%,#fbede7 0,transparent 49%),#fffaf7;border:1px dashed #dec3c2;border-radius:18px;margin-top:0;padding:58px 16px}
+.wishlistCollectionPanel .wishlistEmpty h2{font:600 clamp(25px,3vw,34px)/1.22 'Playfair Display',Georgia,serif;color:#64263d;margin:14px 0}
+.wishlistCollectionPanel .wishlistEmpty>a{border-radius:10px;background:#6c243b;color:#fff;font-weight:700;padding:10px 20px;text-decoration:none}
+.wishlistPrivacyNote{font-size:11px;text-align:center;color:#a08b88;line-height:1.6;margin:2px 0 0}
+.celebrationWishlistHeaderLink{position:relative}
+.celebrationWishlistCount{position:absolute;top:-3px;right:1px;z-index:2;display:grid;place-items:center;min-width:19px;height:19px;border:2px solid #fff;border-radius:99px;padding:1px 5px;background:#8a3550;color:#fff;font-size:10px;line-height:1;pointer-events:none}
+@media(max-width:900px){.wishlistProductGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.wishlistHero{min-height:0;padding:26px 23px}.wishlistHeroArt{flex-basis:115px}.wishlistHeroArtFrame{width:105px;height:105px;border-radius:30px}.wishlistHeroArtFrame>span{font-size:57px}.wishlistHeroArtFrame small{font-size:6px}.wishlistProductGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+@media(max-width:420px){.wishlistHeroArt{display:none}.wishlistHero{padding:26px 19px}.wishlistCollectionTop h2{font-size:24px}.wishlistShowcase .wishlistSyncNotice{padding:12px 11px}.wishlistCollectionPanel{padding:20px 11px 25px}.wishlistCategoryChips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity}.wishlistCategoryChips button{flex:0 0 auto;scroll-snap-align:start}}
+/* Five possible header actions including Build Hamper remain 44px tap targets.
+   On narrow phones, place quick actions on their own row rather than compressing the brand. */
+@media(max-width:375px){
+ .celebrationHeader .celebrationHeaderTop{grid-template-columns:minmax(0,1fr);row-gap:3px}
+ .celebrationHeader .celebrationBrand{grid-column:1;grid-row:1}
+ .celebrationHeader .celebrationHeaderActions{grid-column:1;grid-row:2;justify-self:end;justify-content:flex-end;gap:2px}
+ .celebrationHeader .celebrationSearch{grid-column:1;grid-row:3}
+}
+@media(prefers-reduced-motion:reduce){.wishlistProductGrid .catalogCard{transition:none}}
