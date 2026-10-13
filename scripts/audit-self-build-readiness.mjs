@@ -37,7 +37,7 @@ export function evaluateLaunchReadiness({ config, categories, options, tiers, op
   }
 }
 
-async function run() {
+export async function run() {
   if (!process.env.DATABASE_URL) throw new Error("Missing production database connection")
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
