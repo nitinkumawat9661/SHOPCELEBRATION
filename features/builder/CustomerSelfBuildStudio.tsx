@@ -310,7 +310,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
           Final hamper price <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong>
         </p>
       </section>
-      <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
+      <section className="sbBuyerCard sbBuyerSelectionsSection"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
         <p>Explore the gift categories below. You can choose the same type more than once.</p></div></div>
         <div className={tooManyItems?"sbBuyerCountBar sbBuyerCountBarOver":"sbBuyerCountBar"} role="status" aria-live="polite">
           <div><small>TOTAL PIECES IN YOUR HAMPER</small><strong>{selectedUnits} <span>/ {maxUnits}</span></strong></div>
