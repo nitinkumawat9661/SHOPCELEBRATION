@@ -30,6 +30,7 @@ async function mockDevice(width,who){
   }]})))
   await context.route("**/api/account/orders/**",async route=>{
     const path=new URL(route.request().url()).pathname
+    if(path==="/api/account/orders/message-unread")return route.fallback()
     if(!path.includes(orderId))return route.fulfill(response({ok:false,error:"ORDER_NOT_FOUND"},404))
     if(path.endsWith("/send")){
       const body=route.request().postDataJSON()
