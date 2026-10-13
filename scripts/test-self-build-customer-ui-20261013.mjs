@@ -85,12 +85,12 @@ assert(draftService.includes("countSelfBuildPieces(clean.selections)>limits.maxI
 assert(ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
  ui.includes("Maximum {maxUnits} pieces")&&ui.includes("selectedUnits>=maxUnits")&&
  ui.includes("selectedUnits>maxUnits")&&
- ui.includes('className="sbBuyerTierName"')&&
- ui.includes('className="sbBuyerTierPrice"')&&
+ ui.includes('className="sbBuyerTierBar sbBuyerTierBar--active"')&&
+ ui.includes('className="sbBuyerTierTotal"')&&
  !ui.includes("Up to {t.maxChoices} pieces"),
  "Visible upper selection card max counter includes repeated category pieces")
 assert(deliveryConfig.includes("SELF_BUILD_DELIVERY_FEE_PAISE = 5000")&&
- ui.includes("hamperFinalPriceRupees(t.price)")&&
+ !ui.includes("hamperFinalPriceRupees(t.price)")&&
  ui.includes("hamperFinalPriceRupees(tier.price)")&&
  ui.includes("<small>Final price</small>")&&
  !ui.includes("<small>Delivery</small>")&&
