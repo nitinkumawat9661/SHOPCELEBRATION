@@ -32,7 +32,7 @@ for(const restricted of ["unitBudgetPaise","salePricePaise","defaultCatalogItemB
   assert(!optionWhitelist.includes(restricted),"Private/property leaked in option visual data: "+restricted)
 }
 assert(ui.startsWith('"use client"'))
-assert(ui.includes('data.categories')&&ui.includes('data.options'),"UI must be data-driven from DB")
+assert(ui.includes('buildSelfBuildGiftSections(data)')&&ui.includes('data.categories'),"UI must be data-driven from published categories and variants")
 assert(!ui.includes("Premium Feature Necklaces")&&!ui.includes("chocolate-extra-100")&&!ui.includes("viral-bangles"),"No hardcoded DB category names or IDs")
 assert(!/unitBudgetPaise|totalInternalBudget|catalog_config|ProductStep|selectedProductIds|fetch\(|window\.open|\/api\/payments|\/api\/orders/.test(ui),"UI must not use private prices, retail SKUs or call checkout")
 assert(ui.includes('function QuantityControl')&&ui.includes('Add one')&&ui.includes('Remove one')&&ui.includes('aria-live="polite"'))
