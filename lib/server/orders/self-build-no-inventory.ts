@@ -102,7 +102,7 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
     "SELECT payload FROM catalog_config WHERE id='primary' FOR SHARE")
   if(!catalog.rows[0])reject("CATALOG_NOT_INITIALIZED")
   const published=normalizeCatalogConfig(catalog.rows[0].payload)
-  const chosenTier=published.catalog.tiers.find(t=>t.id===saved.tier_id&&t.active!==false)
+  const chosenTier=published.tiers.find(t=>t.id===saved.tier_id&&t.active!==false)
   if(!chosenTier)reject("SELF_BUILD_TIER_UNAVAILABLE")
   const limits=getSelfBuildTierLimits(chosenTier)
   if(countSelfBuildPieces(choices)>limits.maxItems)reject("SELF_BUILD_MAX_ITEMS_EXCEEDED")
