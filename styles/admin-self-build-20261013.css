@@ -97,3 +97,16 @@
 .sbAdminPrivatePhotoGrid small{font-size:10px;color:#947a80}
 .sbAdminPrivateDeleted{display:grid;place-items:center;min-height:88px;font-size:10px;text-align:center;color:#795e69;background:#f7f0ee;border-radius:9px}
 @media(max-width:430px){.sbAdminPrivatePhotoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Self-Build payment reconciliation; no inventory management or external refund. */
+.sbAdminPaymentReviews{margin-top:16px;padding:24px;border:1px solid #ead8d3;border-radius:16px;background:#fffdfb}
+.sbAdminPaymentReviews p{font-size:12px;line-height:1.6;color:#77616b}
+.sbAdminPaymentReviewItem{padding:16px 0;border-top:1px solid #efdfda}
+.sbAdminPaymentReviewItem>div:first-child{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sbAdminPaymentReviewItem>div:first-child b{font-weight:800;font-size:12px;color:#682d44}
+.sbAdminPaymentReviewItem>div:first-child span{font-size:11px;color:#8b6573}
+.sbAdminPaymentReviewForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
+.sbAdminPaymentReviewForm label{display:grid;gap:6px;font-weight:650;font-size:11px;color:#765962}
+.sbAdminPaymentReviewForm input{width:100%;min-width:0;min-height:43px;border:1px solid #e9d9d4;border-radius:8px;padding:10px 12px;background:#fff}
+.sbAdminPaymentReviewForm button{grid-column:1/-1;min-height:43px;border:0;border-radius:9px;background:#72324d;color:#fff;cursor:pointer;font-size:12px;font-weight:700}
+@media(max-width:650px){.sbAdminPaymentReviewForm{grid-template-columns:minmax(0,1fr)}}
