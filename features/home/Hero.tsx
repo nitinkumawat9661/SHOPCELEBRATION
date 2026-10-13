@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Tier } from "../../lib/domain/catalog"
 import { formatMoney } from "../../lib/domain/money"
+import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 import { StoreIcon } from "../shell/StoreIcon"
 
 export function Hero({ tiers }: { tiers: Tier[] }) {
@@ -17,7 +18,7 @@ export function Hero({ tiers }: { tiers: Tier[] }) {
         <h1 id="gift-hero-title">Jewelry to wear.<br />Hampers to <em>give.</em></h1>
         <p>Browse necklaces, rings and bracelets. For a custom hamper, start with a budget and tell us the occasion.</p>
         <div className="celebrationHeroActions"><a className="celebrationButton" href="#budgets">Shop Hampers <StoreIcon name="arrow" size={17} /></a><Link className="celebrationButton light" href="/jewelry" prefetch={false}>Explore Jewelry</Link></div>
-        {minPrice !== null && <small className="celebrationHeroFoot">Custom hampers from {formatMoney(minPrice)}.</small>}
+        {minPrice !== null && <small className="celebrationHeroFoot">Custom hampers from {formatMoney(hamperFinalPriceRupees(minPrice))}.</small>}
       </div>
     </div>
     <div className="celebrationHeroNote" aria-hidden="true">Celebration<br /><em>Gifts &amp; Jewelry</em></div>
