@@ -49,7 +49,7 @@ BEGIN
   INSERT INTO telegram_notification_outbox
     (order_id, source, source_event_id, event_type, payload, snapshot)
   VALUES (
-    NEW.id, 'payment_status', gen_random_uuid(), 'payment_status_changed',
+    NEW.id, 'payment_status', gen_random_uuid()::text, 'payment_status_changed',
     jsonb_build_object(
       'from', OLD.payment_status,
       'to', NEW.payment_status,
@@ -78,7 +78,7 @@ EXECUTE FUNCTION telegram_record_payment_change();
 -- Telegram admin replies bound to the original order, never to a typed order ID.
 CREATE TABLE telegram_order_messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  order_id text NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   sender text NOT NULL DEFAULT 'celebration_support' CHECK (sender = 'celebration_support'),
   body text NOT NULL CHECK (char_length(body) BETWEEN 1 AND 2000),
   telegram_update_id bigint NOT NULL UNIQUE,
@@ -94,7 +94,7 @@ CREATE INDEX telegram_order_messages_order_idx
 -- New observations also create normal order_events and use the same outbox.
 CREATE TABLE order_courier_observations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  order_id text NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   fingerprint text NOT NULL,
   provider text NOT NULL,
   code text NOT NULL,
