@@ -21,6 +21,8 @@ jobs:
       VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
       VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
     steps:
+      - name: Check out exactly reviewed migration
+        uses: actions/checkout@v5
       - name: Configure exact-host SSH without disclosing credentials
         run: |
           set -euo pipefail
@@ -32,13 +34,23 @@ jobs:
           printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/celebration" "$HOME/.ssh/known_hosts"
           ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
-      - name: Dump live DB, restore to DISTINCT throwaway database, test migrations 100–102
+      - name: Stage migration 103 in nonpublic VPS temp file
         shell: bash
         run: |
           set -euo pipefail
-          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
+          test -f db/migrations/103_telegram_customer_two_way_chat.sql
+          scp -P "$VPS_PORT" -i "$HOME/.ssh/celebration" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes db/migrations/103_telegram_customer_two_way_chat.sql "$VPS_USER@$VPS_HOST:/tmp/celebration-telegram-103-${GITHUB_SHA}.sql"
+      - name: Dump live DB and test only pending 103 on an isolated restore
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s -- "/tmp/celebration-telegram-103-${GITHUB_SHA}.sql" <<'REMOTE'
           set -euo pipefail
           umask 077
+          TELEGRAM_MIGRATION_SQL="$1"
+          test -f "$TELEGRAM_MIGRATION_SQL"
+          export TELEGRAM_MIGRATION_SQL
+          trap 'rm -f -- "$TELEGRAM_MIGRATION_SQL"' EXIT
           APP_ROOT=/var/www/celebration
           LIVE="$(readlink -f "$APP_ROOT/current")"
           case "$LIVE" in "$APP_ROOT"/releases/*) ;; *) echo "Unrecognized release"; exit 1 ;; esac
@@ -109,20 +121,21 @@ jobs:
               try{
                 const before=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
                 const already=await scratch.query("SELECT name FROM schema_migrations WHERE name LIKE '10%telegram%'")
-                if(already.rows.length)throw Error("Telegram schema already applied to restored copy; reconcile before deployment")
-                for(const file of [
-                  "100_telegram_notification_outbox.sql",
-                  "101_telegram_order_messaging_and_courier.sql",
-                  "102_telegram_courier_watch.sql"
-                ]){
-                  const sql=readFileSync(path.join("/var/www/celebration/releases/telegram-f589a91cfd30/db/migrations",file),"utf8")
-                  await scratch.query("BEGIN")
-                  try{
-                    await scratch.query(sql)
-                    await scratch.query("INSERT INTO schema_migrations(name) VALUES($1)",[file])
-                    await scratch.query("COMMIT")
-                  }catch(e){await scratch.query("ROLLBACK");throw e}
+                const applied=new Set(already.rows.map(row=>row.name))
+                for(const file of ["100_telegram_notification_outbox.sql","101_telegram_order_messaging_and_courier.sql","102_telegram_courier_watch.sql"]){
+                  if(!applied.has(file))throw Error("Existing Telegram production migration is missing: "+file)
                 }
+                const file="103_telegram_customer_two_way_chat.sql"
+                if(applied.has(file))throw Error("Migration 103 already applied; reconcile before production merge")
+                const sql=readFileSync(process.env.TELEGRAM_MIGRATION_SQL,"utf8")
+                await scratch.query("BEGIN")
+                try{
+                  await scratch.query(sql)
+                  await scratch.query("INSERT INTO schema_migrations(name) VALUES($1)",[file])
+                  await scratch.query("COMMIT")
+                }catch(e){await scratch.query("ROLLBACK");throw e}
+                const metadata=await scratch.query("SELECT column_name,is_nullable FROM information_schema.columns WHERE table_name='telegram_order_messages' AND column_name IN ('client_message_id','telegram_message_id')")
+                if(metadata.rows.length!==2)throw Error("Customer chat migration columns absent")
                 const after=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
                 if(before.rows[0].n!==after.rows[0].n)throw Error("Unexpected order count change")
                 const tables=await scratch.query("SELECT to_regclass('telegram_notification_outbox') IS NOT NULL AS outbox, to_regclass('telegram_order_messages') IS NOT NULL AS messages")

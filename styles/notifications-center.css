@@ -1,0 +1,91 @@
+/* Central Celebration notifications and two-way order conversation. No changes to checkout/tracking. */
+.celebrationNotificationsPage{padding:40px 0 65px;min-height:70vh;background:radial-gradient(circle at 90% 8%,#f7e8e2 0,transparent 28%),linear-gradient(180deg,#fffaf5,#fffdfb 55%,#fff7f0)}
+.notificationCenter{width:min(1120px,100%);margin:auto}
+.notificationIntro{position:relative;padding:13px 0 26px}
+.notificationEyebrow{color:#9e6f59;font-size:10px;font-weight:800;letter-spacing:.14em}
+.notificationIntro h1{font:600 clamp(32px,4.2vw,51px)/1.12 'Playfair Display',Georgia,serif;color:#5a1b2b;letter-spacing:-.035em;margin:9px 0 10px}
+.notificationIntro h1 span{font-style:italic;font-weight:400;color:#986b68}
+.notificationIntro p{color:#866b69;font-size:13px;line-height:1.7;margin:0;max-width:600px}
+.notificationUnreadPill{position:absolute;right:0;bottom:27px;border:1px solid #edd2d1;background:#fff;color:#741e35;padding:8px 11px;border-radius:99px;font-size:11px}
+.notificationWorkspace{display:grid;grid-template-columns:310px minmax(0,1fr);background:white;border:1px solid #ead8d3;border-radius:22px;overflow:hidden;box-shadow:0 16px 52px rgba(76,29,45,.07);min-height:540px}
+.notificationSidebar{min-width:0;background:#fffaf7;border-right:1px solid #ecdeda;display:flex;flex-direction:column}
+.notificationSidebarHeading{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 20px 17px;border-bottom:1px solid #f0e6e0}
+.notificationSidebarHeading h2{font:600 19px/1.24 'Playfair Display',Georgia,serif;color:#5a1b2b;margin:6px 0 0}
+.notificationThreadCount{background:#f1e5df;color:#875a60;border-radius:99px;padding:6px 10px;font-size:11px;font-weight:800}
+.notificationThreadButtons{display:grid;align-content:start;gap:6px;padding:12px;max-height:610px;overflow-y:auto}
+.notificationThread{width:100%;display:flex;align-items:flex-start;text-align:left;gap:11px;min-height:94px;border:1px solid transparent;border-radius:14px;padding:13px 10px;background:transparent;color:#3f2730;cursor:pointer;min-width:0;font:inherit}
+.notificationThread:hover{background:#f7efec}
+.notificationThread.isSelected{background:#fff;border-color:#e8c9c3;box-shadow:0 7px 18px rgba(100,48,56,.06)}
+.notificationThread:focus-visible,.notificationRefresh:focus-visible,.notificationComposer button:focus-visible,.notificationEmpty button:focus-visible{outline:3px solid #a76b69;outline-offset:2px}
+.notificationThreadIcon{flex:0 0 34px;width:34px;height:34px;border:1px solid #ead8d1;border-radius:12px;background:#fff;color:#8f596a;display:grid;place-items:center}
+.notificationThread.isSelected .notificationThreadIcon{background:#691e35;color:white;border-color:#691e35}
+.notificationThreadDetail{display:grid;gap:4px;min-width:0;flex:1}
+.notificationThreadDetail strong{font-weight:800;font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.notificationThreadDetail small{font-size:10px;color:#927e79;overflow-wrap:anywhere}
+.notificationThreadDetail>span{font-size:11px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;color:#927e79}
+.notificationThreadUnread{flex:0 0 auto;border-radius:99px;background:#791e37;color:white;font-size:10px;min-width:20px;min-height:20px;display:grid;place-items:center;padding:2px 5px}
+.notificationSidebarError,.notificationNoOrders{padding:17px;font-size:12px;color:#6e5961;line-height:1.6}
+.notificationSidebarError button,.notificationNoOrders a,.notificationEmpty button{display:inline-flex;align-items:center;justify-content:center;margin-top:8px;min-height:36px;border:1px solid #e5cbc5;border-radius:9px;background:#fff;color:#691e35;padding:7px 12px;font-weight:800;font-size:11px;text-decoration:none;cursor:pointer}
+.notificationLoading{font-size:12px;color:#8a7775;padding:18px}
+.notificationChatArea{min-width:0;min-height:500px;display:flex}
+.notificationConversation{display:flex;flex-direction:column;min-width:0;width:100%}
+.notificationConversationTop{display:flex;gap:12px;align-items:center;padding:16px 22px;border-bottom:1px solid #f0e6e2;background:#fff;min-width:0}
+.notificationTeamAvatar{flex:0 0 42px;width:42px;height:42px;border-radius:15px;background:linear-gradient(145deg,#79253c,#50152b);color:#fff;display:grid;place-items:center;font:600 27px/1 'Playfair Display',Georgia,serif}
+.notificationConversationIdentity{min-width:0;display:grid;gap:4px;flex:1}
+.notificationConversationIdentity strong{font-size:14px;color:#462634}
+.notificationConversationIdentity span{font-size:11px;color:#927f7b;overflow-wrap:anywhere}
+.notificationRefresh{min-width:40px;min-height:40px;border:1px solid #eee0d9;border-radius:50%;background:#fffaf7;color:#741e35;font-size:22px;cursor:pointer}
+.notificationConversationNote{padding:10px 20px;background:#fbf5f0;border-bottom:1px solid #f1e6de;text-align:center;color:#8c7370;font-size:10px;line-height:1.5}
+.notificationMessagesScroll{flex:1;min-width:0;min-height:300px;height:365px;max-height:54vh;overflow:auto;padding:20px;overscroll-behavior:contain;background:radial-gradient(circle at 15% 10%,rgba(253,238,228,.35),transparent 38%),#fffdfb}
+.notificationBubbles{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:15px}
+.notificationBubble{display:grid;gap:5px;align-self:flex-start;max-width:min(78%,470px);padding:11px 14px 9px;border-radius:15px 15px 15px 3px;background:#f4eae6;border:1px solid #ecdeda;color:#58333d;min-width:0}
+.notificationBubble.fromCustomer{align-self:flex-end;border-color:#641e35;background:#641e35;color:#fff;border-radius:15px 15px 3px 15px}
+.notificationBubbleSender{font-size:10px;font-weight:800;opacity:.85}
+.notificationBubble p{margin:0;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}
+.notificationBubble time{justify-self:end;font-size:9px;opacity:.7}
+.notificationComposer{padding:13px 19px 14px;border-top:1px solid #f0e4df;background:#fff;display:grid;gap:8px}
+.notificationComposer>label{font-size:11px;font-weight:800;color:#633947}
+.notificationComposerRow{display:flex;align-items:stretch;gap:9px}
+.notificationComposer textarea{flex:1;min-width:0;min-height:68px;max-height:160px;resize:vertical;font:inherit;font-size:13px;line-height:1.5;padding:11px 13px;color:#3d2633;border:1px solid #e2d1cb;border-radius:12px;background:#fffcfa}
+.notificationComposer textarea:focus-visible{outline:2px solid #ad7775;outline-offset:0}
+.notificationComposer button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:75px;min-height:48px;border:0;border-radius:12px;background:#671d35;color:white;font-size:10px;font-weight:800;cursor:pointer}
+.notificationComposer button span:first-child{font-size:19px}
+.notificationComposer button:disabled{opacity:.48;cursor:not-allowed}
+.notificationComposer>small{font-size:10px;color:#947d76}
+.notificationSendNotice{margin:0;padding:9px 19px;background:#fff0ed;color:#8f283f;font-size:11px}
+.notificationEmpty{display:grid;place-content:center;justify-items:center;text-align:center;gap:8px;color:#8a7575;min-height:260px;max-width:400px;margin:auto}
+.notificationEmpty strong{color:#602439;font:600 24px/1.2 'Playfair Display',Georgia,serif}
+.notificationEmpty p{margin:0;font-size:12px;line-height:1.65}
+.notificationWelcomeSymbol{font-size:31px;color:#a97471}
+.notificationNoConversation{display:grid;place-content:center;justify-items:center;gap:11px;text-align:center;margin:auto;padding:25px}
+.notificationNoConversation>span{font-size:32px;color:#ba9797}
+.notificationNoConversation h2{font:600 24px 'Playfair Display',Georgia,serif;color:#602439;margin:0}
+.notificationNoConversation p{font-size:12px;color:#987e7b;margin:0}
+.notificationPrivacyFooter{font-size:11px;color:#9a8480;text-align:center;line-height:1.6;margin:19px 0 0}
+.notificationPageState{border:1px solid #f0dfd8;padding:28px;border-radius:18px;background:white;text-align:center}
+.notificationSignin{max-width:580px;margin:auto;display:grid;gap:10px}
+.notificationSignin .notificationIntro{text-align:center}
+.celebrationNotificationLink{position:relative}
+.celebrationNotificationCount{position:absolute;right:1px;top:-3px;display:grid;place-items:center;min-width:19px;height:19px;padding:2px 5px;border-radius:99px;background:#781e36;color:white;font-size:10px;line-height:1;border:2px solid white;pointer-events:none}
+@media(max-width:760px){
+ .celebrationNotificationsPage{padding:22px 0 42px}
+ .notificationWorkspace{grid-template-columns:1fr;border-radius:17px;min-height:0}
+ .notificationSidebar{border-right:0;border-bottom:1px solid #edddd6}
+ .notificationSidebarHeading{padding:16px 15px 11px}
+ .notificationThreadButtons{display:flex;align-items:stretch;gap:8px;padding:10px;max-height:none;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+ .notificationThread{flex:0 0 min(70vw,225px);min-height:90px;scroll-snap-align:start}
+ .notificationMessagesScroll{height:360px;max-height:48vh;min-height:260px;padding:15px}
+ .notificationConversationTop{padding:12px 15px}
+ .notificationComposer{padding:11px 13px}
+ .notificationUnreadPill{position:static;display:inline-block;margin-top:13px}
+ .notificationIntro{padding-bottom:19px}
+}
+@media(max-width:360px){
+ .notificationIntro h1{font-size:30px}
+ .notificationBubble{max-width:89%}
+ .notificationComposer button{min-width:62px}
+ .celebrationHeader .celebrationHeaderTop{padding-inline:9px;column-gap:2px}
+ .celebrationHeader .celebrationBrand>span{font-size:19px;letter-spacing:-.05em}
+ .celebrationHeader .celebrationBrand small{font-size:7.5px}
+}
+@media(prefers-reduced-motion:reduce){.notificationThread,.notificationComposer button{transition:none}}

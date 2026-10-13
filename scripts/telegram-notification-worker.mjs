@@ -91,6 +91,19 @@ function productSummary(row) {
 }
 
 function composeMessage(row) {
+  if (row.source === "customer_message") {
+    const body = typeof row.payload?.body === "string" ? row.payload.body.trim() : "";
+    return [
+      "💬 CUSTOMER MESSAGE • CELEBRATION",
+      "Order: " + str(row.public_id),
+      "Customer: " + str(row.customer_name),
+      "Received: " + time(row.occurred_at),
+      "",
+      body.slice(0, 1200),
+      "",
+      "↩ Reply to THIS Telegram message to answer the customer on the website."
+    ].join("\n");
+  }
   // Financial, payment and shipment fields MUST match the event transaction,
   // not the latest order row when a delayed notification is finally sent.
   const snapshot = row.event_snapshot && typeof row.event_snapshot === "object"
