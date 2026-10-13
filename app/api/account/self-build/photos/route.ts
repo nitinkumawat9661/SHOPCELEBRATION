@@ -25,7 +25,7 @@ async function customer(){
 export async function GET(){
   try{
     const person=await customer()
-    if("error" in person)return fail(person.error,person.status)
+    if("error" in person)return fail(person.error || "AUTH_REQUIRED",person.status || 401)
     return NextResponse.json({ok:true,photos:await listSelfBuildPhotos(person.accountId)},{headers:privateHeaders})
   }catch(e){return handle(e)}
 }
@@ -33,7 +33,7 @@ export async function POST(request:Request){
   try{
     enforceSameOrigin(request)
     const person=await customer()
-    if("error" in person)return fail(person.error,person.status)
+    if("error" in person)return fail(person.error || "AUTH_REQUIRED",person.status || 401)
     const allowed=await consumeRequestRateLimit("customer-self-build-photo",request,validation.rateLimits.customerMutation)
     if(!allowed)return fail("RATE_LIMITED",429)
     const type=request.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase()||""
