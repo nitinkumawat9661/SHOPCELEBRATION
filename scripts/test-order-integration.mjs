@@ -751,7 +751,7 @@ try {
     'Cashfree webhook replay wrote duplicate provider event')
   const cfAttempts=await control.query(`
     SELECT attempt_no,provider,provider_order_id,status FROM payment_attempts
-    WHERE order_id=$1 ORDER BY attempt_no`,[cfOrder.orderId])
+    WHERE order_id=(SELECT id FROM orders WHERE public_id=$1) ORDER BY attempt_no`,[cfOrder.orderId])
   assert.equal(cfAttempts.rows.length,2,'Payment retry duplicated the WEBSITE order attempt')
   assert.equal(cfAttempts.rows[0].status,'failed')
   assert.equal(cfAttempts.rows[1].status,'paid')
