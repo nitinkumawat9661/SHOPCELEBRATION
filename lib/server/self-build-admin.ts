@@ -259,6 +259,18 @@ export async function saveSelfBuildAdminState(value: unknown) {
         [o.id,o.categoryId,o.label,o.unitBudgetPaise,o.displayOrder,o.active]
       )
     }
+    // A category/option with pending order holds must not disappear: FK
+    // cascades would otherwise delete the capacity row but keep its ledger.
+    const busyCategories=await client.query<{category_id:string}>(`
+      SELECT category_id FROM self_build_category_capacity
+       WHERE reserved_units>0 AND NOT (category_id=ANY($1::text[])) LIMIT 1`,
+      [data.categories.map(c=>c.id)])
+    const busyOptions=await client.query<{option_id:string}>(`
+      SELECT option_id FROM self_build_option_capacity
+       WHERE reserved_units>0 AND NOT (option_id=ANY($1::text[])) LIMIT 1`,
+      [data.options.map(o=>o.id)])
+    if(busyCategories.rows.length||busyOptions.rows.length)
+      invalid("CATEGORY_HAS_ACTIVE_RESERVATIONS")
     // Only explicit removals delete availability; all other edits retain stock.
     await client.query("DELETE FROM self_build_options WHERE NOT (id = ANY($1::text[]))",
       [data.options.map(o => o.id)])
