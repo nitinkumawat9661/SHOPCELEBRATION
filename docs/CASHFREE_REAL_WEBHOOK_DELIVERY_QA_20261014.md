@@ -9,9 +9,11 @@
 - Two unique Cashfree **test** orders ₹549 (₹499 gift + ₹50 delivery), separate checkout pages served by isolated process.
 - Payment webhooks are accepted only if: HMAC is valid; order ID belongs to this job; paid/failed payment amount ₹549; its payment ID and status match a fresh Cashfree sandbox Get Payments response. Replayed callbacks do not double-process. No DB writes.
 - **NEVER** calls `shopcelebration.in`, its payment webhook route, production PostgreSQL, R2, courier APIs, or inventory. Live checkout remains OFF.
-- Cloudflare client `2026.10.0` downloaded from the official releases with pinned SHA-256: `77e26d8d900e0b8469f416239d14b5f296525fdf79fee6f511ef55609e3fbac2`.
+- Cloudflare client `2026.10.0` downloaded from the official releases with pinned SHA-256: `d33ff2d14475178d2012c2c56beba87389ac5ded27649519f198a7d3134a99db`.
 
-## Run in PowerShell (interactive real sandbox QA)
+## Diagnosed and corrected first-run setup failure
+
+The first manual run \`38454036769\` failed in the Cloudflare release asset verification step, **before any real webhook test or checkout ran**. The version existed but its SHA-256 in the workflow was incorrect. The original hash was not from the upstream release. Replaced it with Cloudflare's published \`cloudflared-linux-amd64\` SHA-256 \`d33ff2d14475178d2012c2c56beba87389ac5ded27649519f198a7d3134a99db\`, removed suppressed hash-check output and added an independent no-secrets PR download+verify job. Only rerun after that job passes.\n\n## Run in PowerShell (interactive real sandbox QA)
 
 ```powershell
 $repo = "nitinkumawat9661/SHOPCELEBRATION"
