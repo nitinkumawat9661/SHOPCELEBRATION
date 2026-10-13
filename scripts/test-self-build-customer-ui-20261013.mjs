@@ -48,6 +48,14 @@ assert(gate.includes("customer_enabled===true")&&
  "Every draft/photo/payment API maintains identical customer hard gate")
 assert(css.includes("@media(max-width:650px)")&&css.includes(":focus-visible"),
  "Responsive accessible design at narrow mobile widths")
+const [siteHeader,homePage,homeStore]=await Promise.all([
+  "features/shell/StorefrontHeader.tsx","app/page.tsx","features/home/Storefront.tsx"
+].map(read))
+assert(siteHeader.includes("showSelfBuild = false")&&siteHeader.includes("showSelfBuild && <Link"),
+ "No public Self-Build nav until the hard launch gate says enabled")
+assert(homePage.includes("getCachedSelfBuildEnabled().catch(() => false)")&&
+ homeStore.includes("showSelfBuild={initialSelfBuildEnabled}"),
+ "Gated homepage link is cached and fail-closed")
 assert(provider.includes("verifyProviderWebhook")&&provider.includes("PAYMENT_WEBHOOK_SIGNATURE_INVALID"),
  "Signed provider verification unchanged")
 console.log("SELF_BUILD_CUSTOMER_UI_SOURCE_CHECKS_PASSED: no-stock builder, auth, draft/photos, payment and redirect recovery, live-hard-gate, privacy, mobile")
