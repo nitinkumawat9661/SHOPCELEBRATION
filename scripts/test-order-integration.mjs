@@ -3,7 +3,7 @@ import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/pr
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
-import { randomUUID } from 'node:crypto'
+import { randomUUID, createHmac } from 'node:crypto'
 import pg from 'pg'
 
 // This disposable database is isolated from every configured production environment.
@@ -693,6 +693,54 @@ try {
     FROM self_build_category_capacity ORDER BY category_id`)).rows,paymentStockSnapshot,
     'Failed payment and retry must never change inventory')
 
+  // Exercise the ACTUAL Cashfree raw-body signature verifier before any
+  // database settlement. These secrets and signatures are disposable CI
+  // fixtures only; no real Cashfree keys or payments are used here.
+  const cfProviderModule={exports:{}}
+  const cfProviderSource=await readFile(join(repo,'lib/server/payments/provider.ts'),'utf8')
+  const cfProviderJs=ts.transpileModule(cfProviderSource,{
+    compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}
+  }).outputText
+  const cfWebhookSecret='local-isolated-cashfree-signature-key'
+  const cfPaymentCfg={
+    provider:'cashfree',mode:'test',appBaseUrl:'http://127.0.0.1:3060',
+    cashfree:{appId:'fixture',secretKey:'fixture',webhookSecret:cfWebhookSecret,apiVersion:'2025-01-01'}
+  }
+  new Function('require','module','exports',cfProviderJs)(
+    name=>{
+      if(name==='node:crypto')return requireRepo('node:crypto')
+      if(name==='../../../config/payment-gateway')return{
+        paymentGatewayConfig:cfPaymentCfg,requirePaymentGateway:()=>cfPaymentCfg
+      }
+      throw Error('UNEXPECTED_PROVIDER_REQUIRE')
+    },cfProviderModule,cfProviderModule.exports
+  )
+  const cfVerifyWebhook=cfProviderModule.exports.verifyProviderWebhook
+  function cfSignedWebhook(type,providerOrderId,paymentId,paymentStatus,rupees=549){
+    const raw=JSON.stringify({
+      type,data:{
+        order:{order_id:providerOrderId,order_amount:549},
+        payment:{cf_payment_id:paymentId,payment_status:paymentStatus,
+          payment_amount:rupees,payment_message:paymentStatus==='FAILED'?'Sandbox failure':undefined}
+      }
+    })
+    const timestamp='1700000000000'
+    const signature=createHmac('sha256',cfWebhookSecret)
+      .update(timestamp+raw).digest('base64')
+    const headers=new Headers({'x-webhook-timestamp':timestamp,
+      'x-webhook-signature':signature})
+    const result=cfVerifyWebhook('cashfree',raw,headers)
+    assert.throws(
+      ()=>cfVerifyWebhook('cashfree',raw.replace('"payment_amount":'+rupees,'"payment_amount":1'),headers),
+      /PAYMENT_WEBHOOK_SIGNATURE_INVALID/,
+      'Tampered Cashfree webhook body was accepted')
+    assert.throws(()=>cfVerifyWebhook('cashfree',raw,new Headers()),
+      /PAYMENT_WEBHOOK_SIGNATURE_INVALID/,
+      'Unsigned Cashfree webhook accepted')
+    assert.deepEqual(cfVerifyWebhook('cashfree',raw,headers),result,
+      'Cashfree signed webhook replay was not deterministic')
+    return result
+  }
   // Real Cashfree merchant Sandbox separately confirmed: paid, failed,
   // and failed -> paid on the SAME gateway order. This isolated PostgreSQL
   // contract checks the WEBSITE's persisted retry, callback replay and
@@ -707,12 +755,9 @@ try {
     provider:'cashfree',mode:'test',providerOrderId:'sbqa_pg_cf_first',
     paymentSessionId:'session_pg_cf_first',amountPaise:cfOrder.payablePaise,currency:'INR'
   })
-  const cfFailed={
-    provider:'cashfree',providerOrderId:'sbqa_pg_cf_first',
-    providerPaymentId:'cf_fixture_failed',status:'failed',
-    amountPaise:cfOrder.payablePaise,eventId:'PAYMENT_FAILED_WEBHOOK:cf_fixture_failed',
-    eventType:'PAYMENT_FAILED_WEBHOOK',payload:{testFixture:true}
-  }
+  const cfFailed=cfSignedWebhook('PAYMENT_FAILED_WEBHOOK','sbqa_pg_cf_first',
+    'cf_fixture_failed','FAILED')
+  assert.equal(cfFailed.amountPaise,cfOrder.payablePaise)
   await assert.rejects(applyProviderPaymentResult({...cfFailed,amountPaise:49900}),
     /PAYMENT_AMOUNT_MISMATCH/,'Cashfree amount excluding shipping MUST NOT settle')
   await applyProviderPaymentResult(cfFailed)
@@ -725,16 +770,14 @@ try {
     provider:'cashfree',mode:'test',providerOrderId:'sbqa_pg_cf_retry',
     paymentSessionId:'session_pg_cf_retry',amountPaise:cfOrder.payablePaise,currency:'INR'
   })
-  const cfSuccess={
-    ...cfFailed,providerOrderId:'sbqa_pg_cf_retry',providerPaymentId:'cf_fixture_success',
-    status:'paid',eventId:'PAYMENT_SUCCESS_WEBHOOK:cf_fixture_success',
-    eventType:'PAYMENT_SUCCESS_WEBHOOK'
-  }
+  const cfSuccess=cfSignedWebhook('PAYMENT_SUCCESS_WEBHOOK','sbqa_pg_cf_retry',
+    'cf_fixture_success','SUCCESS')
   await applyProviderPaymentResult(cfSuccess)
   await applyProviderPaymentResult(cfSuccess)
   // Delayed duplicate failure from attempt 1 must never undo attempt 2 success.
-  await applyProviderPaymentResult({...cfFailed,
-    eventId:'PAYMENT_FAILED_WEBHOOK:cf_fixture_failed_delayed'})
+  const cfDelayed=cfSignedWebhook('PAYMENT_FAILED_WEBHOOK',
+    'sbqa_pg_cf_first','cf_fixture_failed_delayed','FAILED')
+  await applyProviderPaymentResult(cfDelayed)
   const cfSettled=await getPaymentOrder(cfOrder.orderId,account.id)
   assert.equal(cfSettled.paymentStatus,'paid','Delayed failed Cashfree webhook downgraded paid order')
   assert.equal(cfSettled.status,'payment_verified','Cashfree success did not verify Self-Build order')
@@ -759,6 +802,41 @@ try {
     SELECT category_id,available_units,reserved_units,verified
     FROM self_build_category_capacity ORDER BY category_id`)).rows,paymentStockSnapshot,
     'Cashfree Self-Build retry/replay must NEVER change category inventory')
+
+  // A valid signed success AFTER customer cancellation is a reconciliation
+  // case, never permission to recreate a cancelled order or auto-refund money.
+  const cfCancelled=await createSelfBuildNoInventoryOrder({
+    ...noStockInput,customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
+  })
+  const cfCancelAttempt=await reservePaymentAttempt(cfCancelled.orderId,account.id,'cashfree')
+  await bindPaymentAttempt(cfCancelAttempt.attemptId,{
+    provider:'cashfree',mode:'test',providerOrderId:'sbqa_pg_cf_cancelled',
+    paymentSessionId:'session_pg_cf_cancelled',amountPaise:cfCancelled.payablePaise,currency:'INR'
+  })
+  await control.query("UPDATE orders SET status='cancelled' WHERE public_id=$1",
+    [cfCancelled.orderId])
+  const cfPaidLate=cfSignedWebhook('PAYMENT_SUCCESS_WEBHOOK',
+    'sbqa_pg_cf_cancelled','cf_fixture_late_success','SUCCESS')
+  await applyProviderPaymentResult(cfPaidLate)
+  await applyProviderPaymentResult(cfPaidLate)
+  const cfLateOrder=await getPaymentOrder(cfCancelled.orderId,account.id)
+  assert.equal(cfLateOrder.status,'cancelled',
+    'Cashfree late captured payment must NOT reactivate a cancelled order')
+  assert.equal(cfLateOrder.paymentStatus,'paid',
+    'Cashfree late paid transaction must be tracked for human refund review')
+  const cfLateReview=await control.query(`
+    SELECT review_status,external_ref FROM self_build_payment_reviews
+    WHERE order_id=(SELECT id FROM orders WHERE public_id=$1)
+      AND reason='LATE_PAYMENT_AFTER_CANCELLATION'`,[cfCancelled.orderId])
+  assert.equal(cfLateReview.rows.length,1,'Cashfree late success did not queue refund review')
+  assert.equal(cfLateReview.rows[0].review_status,'open')
+  assert.equal(cfLateReview.rows[0].external_ref,null,
+    'Test must never fake a completed gateway refund')
+  assert.deepEqual((await control.query(`
+    SELECT category_id,available_units,reserved_units,verified
+    FROM self_build_category_capacity ORDER BY category_id`)).rows,paymentStockSnapshot,
+    'Cashfree late payment must NEVER modify existing category inventory')
+  console.log('CASHFREE_SIGNED_WEBHOOK_REFUND_REVIEW_POSTGRES_PASSED: HMAC and tamper guard, ₹549, replay, cancelled+late-success manual refund queue, no inventory changes')
   console.log('CASHFREE_SELF_BUILD_ISOLATED_POSTGRES_PASSED: ₹549, mismatch rejected, failure, retry, paid, signed-provider event replay and stale failure preserved paid without inventory writes')
 
   console.log('SELF_BUILD_NO_STOCK_PROVIDER_POSTGRES_PASSED: verified paid, replay, bad amount, failed payment and same-order retry with zero inventory writes')
