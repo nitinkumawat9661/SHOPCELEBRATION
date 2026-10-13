@@ -24,7 +24,7 @@ assert(list.includes('mode === "account"') && list.includes('href="/account"') &
 assert(!list.includes("wishlistSyncNotice") && !list.includes("Your saved pieces are synced to your Celebration account"),"Remove redundant account sync banner")
 assert(list.includes("Sign in to sync across devices"),"Keep unobtrusive guest sign-in affordance")
 assert(!legacyCss.includes(".wishlistSyncNotice"),"Remove obsolete legacy banner styling")
-assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in or create an account'),"Wishlist account sync/help survives removal of the hero")
+assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in to sync across devices'),"Keep guest sign-in link and saved-items display without sync banner")
 assert(detail.includes('<WishlistToggle productId={product.id} productName={product.name} />'))
 assert(!collection.includes('wishlistBrowseLink'),"Redundant saved collection shortcut was replaced by the shared header")
 assert(legacyCss.includes(".wishlistToggle:focus-visible") && legacyCss.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
