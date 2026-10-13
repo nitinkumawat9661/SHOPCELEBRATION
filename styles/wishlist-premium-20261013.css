@@ -12,8 +12,8 @@
 .wishlistSyncSymbol{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border-radius:13px;background:#f6e9e4;color:#813b56;font-size:18px;font-weight:800}
 .wishlistCollectionPanel{padding:25px clamp(14px,2.8vw,32px) 35px;border-radius:21px;border:1px solid #e9d8d2;background:#fff;box-shadow:0 13px 37px #7141520b;min-width:0}
 .wishlistCollectionTop{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid #f0e3de;padding-bottom:19px;margin-bottom:20px}
-.wishlistCollectionTop h2{font:600 clamp(23px,2.5vw,31px)/1.22 'Playfair Display',Georgia,serif;color:#542535;margin:6px 0 9px;letter-spacing:-.03em}
-.wishlistCollectionTop h2 span{display:inline-grid;place-items:center;vertical-align:middle;min-width:28px;height:28px;border:1px solid #ead2cf;border-radius:99px;padding:3px 8px;color:#884c60;background:#fff6f2;font:800 11px Arial,sans-serif;letter-spacing:0;margin-left:5px}
+.wishlistCollectionTop h1{font:600 clamp(23px,2.5vw,31px)/1.22 'Playfair Display',Georgia,serif;color:#542535;margin:6px 0 9px;letter-spacing:-.03em}
+.wishlistCollectionTop h1 span{display:inline-grid;place-items:center;vertical-align:middle;min-width:28px;height:28px;border:1px solid #ead2cf;border-radius:99px;padding:3px 8px;color:#884c60;background:#fff6f2;font:800 11px Arial,sans-serif;letter-spacing:0;margin-left:5px}
 .wishlistCollectionTop .wishlistSummary{margin:0;color:#907b79;font-size:11px}
 .wishlistCategoryChips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
 .wishlistCategoryChips button{display:inline-flex;align-items:center;gap:9px;border:1px solid #ead9d3;background:#fff9f6;color:#785864;border-radius:100px;min-height:42px;padding:8px 13px;font-size:11px;font-weight:700;cursor:pointer;max-width:100%}
@@ -45,7 +45,7 @@
 }
 @media(max-width:900px){.wishlistProductGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.wishlistProductGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
-@media(max-width:420px){.wishlistCollectionTop h2{font-size:24px}.wishlistShowcase .wishlistSyncNotice{padding:12px 11px}.wishlistCollectionPanel{padding:20px 11px 25px}.wishlistCategoryChips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity}.wishlistCategoryChips button{flex:0 0 auto;scroll-snap-align:start}}
+@media(max-width:420px){.wishlistCollectionTop h1{font-size:24px}.wishlistShowcase .wishlistSyncNotice{padding:12px 11px}.wishlistCollectionPanel{padding:20px 11px 25px}.wishlistCategoryChips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity}.wishlistCategoryChips button{flex:0 0 auto;scroll-snap-align:start}}
 /* Five possible header actions including Build Hamper remain 44px tap targets.
    On narrow phones, place quick actions on their own row rather than compressing the brand. */
 @media(max-width:375px){
