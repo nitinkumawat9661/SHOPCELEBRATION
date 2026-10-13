@@ -23,7 +23,7 @@ assert(list.includes('availableById.get(id)') && list.includes('active !== false
 assert(list.includes('mode === "account"') && list.includes('href="/account"') && list.includes('Retry sync'))
 assert(!list.includes("wishlistSyncNotice") && !list.includes("Your saved pieces are synced to your Celebration account"),"Remove redundant account sync banner")
 assert(list.includes("Sign in to sync across devices"),"Keep unobtrusive guest sign-in affordance")
-assert(!premium.includes(".wishlistSyncNotice") && !legacyCss.includes(".wishlistSyncNotice"),"Remove dead banner styling")
+assert(!legacyCss.includes(".wishlistSyncNotice"),"Remove obsolete legacy banner styling")
 assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in or create an account'),"Wishlist account sync/help survives removal of the hero")
 assert(detail.includes('<WishlistToggle productId={product.id} productName={product.name} />'))
 assert(!collection.includes('wishlistBrowseLink'),"Redundant saved collection shortcut was replaced by the shared header")
@@ -46,6 +46,7 @@ assert(!accountPage.includes('href="/wishlist"'),"Remove redundant account wishl
 assert(!collectionUI.includes("wishlistBrowseLink"),"Remove redundant browse-page shortcut")
 assert(list.includes("wishlistCategoryChips") && list.includes("availableById.get(id)") &&
  list.includes('<CatalogCard key={product.id} product={product} />'),"Scoped category filter and exact SKU cards preserved")
+assert(!premium.includes(".wishlistSyncNotice") && !premium.includes(".wishlistSyncSymbol"),"Remove obsolete premium banner styling")
 assert(premium.includes("@media(max-width:375px)") && premium.includes("grid-template-columns:repeat(2,minmax(0,1fr))"),"Narrow header and 2-column mobile saved list")
 assert(premium.includes("@media(min-width:1001px) and (max-width:1150px)") && premium.includes(".celebrationIconLink span{display:none}"),"Laptop header avoids 1024px overflow")
 const wishlistPage = await read("app/wishlist/page.tsx")
