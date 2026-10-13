@@ -87,6 +87,10 @@ The editor displays unsaved status, discarding confirmation, per-field validatio
 
 **Important limitation:** This phase edits future category offers and unit budget assumptions, not actual warehouse availability. **Category-level inventory, stock reservations, payment quoting, buyer checkout and order fulfilment integrations remain separate future phases (§3).** Editing an active checkbox here only controls design preview visibility, not safe sellable stock or public launch.
 
+## Phase 3.6 — Admin order operations & scheduled expired-draft cleanup (13 October 2026)
+
+Read [PHASE3_SELF_BUILD_ORDER_OPERATIONS_20261013.md](./PHASE3_SELF_BUILD_ORDER_OPERATIONS_20261013.md) for precise scope and outstanding launch gates. Existing authenticated admin order cards are ready to show future self-build category/option selections, quantities, owner notes and reservation status. **Neither internal unit costs nor photo storage keys** are included in those responses. Daily scheduled private-R2 expired-draft cleanup added using protected VPS SSH access; expired payment holds are reported and deliberately not automatically released until payment gateway reconciliation exists. Existing manual/gateway checkout explicitly refuse staged Self-Build payloads. **No customer checkout, real self-build order placement or gateway integration is enabled yet.**
+
 ## 4. Verified acceptance checklist for this UI milestone
 
 - [x] Consolidated all past work and future implementation roadmap **in this GitHub file before writing UI code** (first branch commit `dcac8536f83ee7e967ddae79d327e8f1d6dbcb15`).
