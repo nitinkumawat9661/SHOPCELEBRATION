@@ -87,7 +87,9 @@ assert(!ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
  ui.includes("selectedUnits>maxUnits")&&
  ui.includes('className="sbBuyerTierBar"')&&
  ui.includes('className="sbBuyerTierPrice"')&&
- ui.includes('setBuyerStep("select")')&&
+ ui.includes('setBuyerStep("categories")')&&
+ ui.includes('visibleSections.map(section=>')&&
+ ui.includes('sbBuyerCategoryList')&&
  ui.includes('sbBuyerFlatChoices')&&
  !ui.includes("Up to {t.maxChoices} pieces"),
  "Show name + inclusive price then step forward, all options flat and cap private")
