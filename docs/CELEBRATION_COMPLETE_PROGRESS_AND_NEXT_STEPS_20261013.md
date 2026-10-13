@@ -165,3 +165,11 @@ Only when `self_build_configuration.customer_enabled=true` does the customer pag
 ### Phase 3.11 — NO-INVENTORY launch readiness monitor correction
 
 User confirmed that the Self-Build hamper does **not** require stock monitoring or inventory touches. The production read-only prelaunch check no longer selects category/option stock or reservations, and it never reports missing stock as a buyer-launch gate. It observes only active owner-defined choices, **counts** of owner-approved private tier budget allowances, abandoned draft backlog, and the immutable customer-disabled safety gate. Merchant provider sandbox, manual refund verification and real private-photo retention E2E remain pending owner sign-offs; never treat zero stock entries as a defect. No existing jewellery SKU inventory tables, capacity records, or paid orders were modified.
+
+
+## Owner-approved Self-Build budget and item caps (13 October 2026)
+- **Normal hampers priced below ₹1,999**: nominal product spend target **80%** of advertised tier price; occasional variation within **±5 percentage points** is acceptable. Private checkout ceiling set to **85%**, never visible to customers.
+- **Larger/premium hampers priced ₹1,999 or above**: target **75%**, with ceiling **80%**. This boundary is the current implementable interpretation of “larger hampers”, and may be adjusted if the owner specifies an alternative size boundary.
+- Tier price comes from the published server catalog. Migration `106_self_build_private_tier_percent_allowances.sql` updates **only** `self_build_tier_allowances` and ensures multiple category quantities are permitted; does not query or write retail inventory, category stock, or reservation tables.
+- **Max items**: retain each published tier’s `maxChoices` as the physical-piece total (including repeats of the SAME choice). The upper tier card shows `Up to N items`; the selection panel shows selected N / maximum N. The draft save and no-inventory order checkout enforce this same cap server-side; switching to a smaller tier requires removing extra pieces. Personalised photos still require one file per piece.
+- Separate hard launch gate remains `customer_enabled=false`. Internal consumption costs/nominal targets never appear in the customer UI. No invented quantities or product SKU mapping.
