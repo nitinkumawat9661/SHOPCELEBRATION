@@ -51,6 +51,8 @@ const { normalizeOrderInput } = requireCompiled(join(output, 'lib/domain/order.j
 const { orderConfig } = requireCompiled(join(output, 'config/order.js'))
 const { createOrder } = requireCompiled(join(output, 'lib/server/orders/create.js'))
 const { createStagedSelfBuildOrder } = requireCompiled(join(output, 'lib/server/orders/self-build-create.js'))
+const { createSelfBuildNoInventoryOrder } = requireCompiled(join(output,'lib/server/orders/self-build-no-inventory.js'))
+const { listSelfBuildPaymentReviews,documentSelfBuildRefundReference } = requireCompiled(join(output,'lib/server/self-build-payment-reviews.js'))
 const { settleStagedSelfBuildPaymentWithClient } = requireCompiled(join(output, 'lib/server/self-build-payment-settlement.js'))
 const { removeDeliveredSelfBuildOrderPhotos } = await import('./cleanup-self-build-delivered-photos.mjs')
 const { listOrders, findOrderByTrackingToken } = requireCompiled(join(output, 'lib/server/orders/read.js'))
@@ -533,6 +535,95 @@ try {
   assert.equal((await control.query("SELECT status FROM self_build_order_reservation_batches WHERE order_id=$1",[expiredId])).rows[0].status,'reserved')
   assert.equal((await control.query(
     "SELECT available_units,reserved_units FROM self_build_category_capacity WHERE category_id='bangles'")).rows[0].available_units,1)
+
+  // New owner-requested category-only Self-Build mode: no stock ever changes.
+  // The former capacity/reservation stage above remains untouched for legacy
+  // test coverage; this new order path never calls that inventory code.
+  const inventoryBefore=(await control.query(`
+    SELECT category_id,available_units,reserved_units,verified
+    FROM self_build_category_capacity ORDER BY category_id`)).rows
+  const optionBefore=(await control.query(`
+    SELECT option_id,available_units,reserved_units,verified
+    FROM self_build_option_capacity ORDER BY option_id`)).rows
+  const noStockKey=randomUUID()
+  const noStockInput={
+    accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
+    customerDetails:{...body,idempotencyKey:noStockKey,occasion:'Birthday'}
+  }
+  const noStockOrder=await createSelfBuildNoInventoryOrder(noStockInput)
+  assert.equal(noStockOrder.created,true)
+  assert.equal(noStockOrder.payablePaise,49900)
+  const noStockReplay=await createSelfBuildNoInventoryOrder(noStockInput)
+  assert.equal(noStockReplay.created,false)
+  assert.equal(noStockReplay.orderId,noStockOrder.orderId)
+  const noStockInternal=(await control.query(`
+    SELECT o.id,s.selections,s.total_internal_budget_paise,
+      s.tier_budget_paise,s.other_request_text
+    FROM orders o JOIN self_build_order_snapshots s ON s.order_id=o.id
+    WHERE o.public_id=$1`,[noStockOrder.orderId])).rows[0]
+  assert.equal(noStockInternal.total_internal_budget_paise,15000)
+  assert.equal(noStockInternal.tier_budget_paise,20000)
+  assert.equal(noStockInternal.selections[0].id,'bangles')
+  assert.equal((await control.query(`
+    SELECT COUNT(*)::int AS n FROM self_build_order_reservation_batches
+    WHERE order_id=$1`,[noStockInternal.id])).rows[0].n,0,
+    'No inventory/category reservation rows created')
+  assert.deepEqual((await control.query(`
+    SELECT category_id,available_units,reserved_units,verified
+    FROM self_build_category_capacity ORDER BY category_id`)).rows,inventoryBefore,
+    'No category inventory read-write change')
+  assert.deepEqual((await control.query(`
+    SELECT option_id,available_units,reserved_units,verified
+    FROM self_build_option_capacity ORDER BY option_id`)).rows,optionBefore,
+    'No option inventory changes')
+  await assert.rejects(createSelfBuildNoInventoryOrder({...noStockInput,accountId:otherAccount.id}),
+    {code:'SELF_BUILD_DRAFT_NOT_FOUND'})
+  await control.query("UPDATE self_build_drafts SET other_request_text='Modified after purchase' WHERE id=$1",[stagedDraftId])
+  await assert.rejects(createSelfBuildNoInventoryOrder(noStockInput),
+    {code:'SELF_BUILD_IDEMPOTENCY_PAYLOAD_MISMATCH'})
+  await control.query("UPDATE self_build_drafts SET other_request_text='Wrap it carefully' WHERE id=$1",[stagedDraftId])
+  await control.query("UPDATE self_build_configuration SET customer_enabled=false WHERE id='primary'")
+  await assert.rejects(createSelfBuildNoInventoryOrder({...noStockInput,
+    customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}}),
+    {code:'SELF_BUILD_NOT_LIVE'})
+  await control.query("UPDATE self_build_configuration SET customer_enabled=true WHERE id='primary'")
+
+  // Live money transfer is never simulated; tests only validate a durable
+  // reconciliation queue on the isolated database's payment/status rows.
+  await control.query("UPDATE orders SET payment_status='paid' WHERE id=$1",[noStockInternal.id])
+  await control.query("UPDATE orders SET status='cancelled' WHERE id=$1",[noStockInternal.id])
+  const reviews=await listSelfBuildPaymentReviews()
+  assert.equal(reviews.filter(x=>x.publicOrderId===noStockOrder.orderId&&
+    x.reason==='PAID_ORDER_CANCELLED').length,1,
+    'Paid cancellation must create one manual refund review')
+  await control.query("UPDATE orders SET status='cancelled' WHERE id=$1",[noStockInternal.id])
+  assert.equal((await control.query("SELECT COUNT(*)::int AS n FROM self_build_payment_reviews WHERE order_id=$1",
+    [noStockInternal.id])).rows[0].n,1,'Identical events cannot create duplicate refund tasks')
+  await assert.rejects(documentSelfBuildRefundReference({
+    publicOrderId:noStockOrder.orderId,reason:'PAID_ORDER_CANCELLED',
+    externalReference:'bad',note:'done'
+  }),/INVALID_REFUND_DOCUMENTATION/)
+  assert.deepEqual(await documentSelfBuildRefundReference({
+    publicOrderId:noStockOrder.orderId,reason:'PAID_ORDER_CANCELLED',
+    externalReference:'refund_TEST_2026',note:'Verified manually in gateway panel'
+  }),{documented:true})
+  assert.equal((await control.query("SELECT payment_status FROM orders WHERE id=$1",
+    [noStockInternal.id])).rows[0].payment_status,'paid',
+    'Documenting a reference does not fake a gateway refund or change money state')
+
+  const late=await createSelfBuildNoInventoryOrder({...noStockInput,
+    customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}})
+  const lateId=(await control.query("SELECT id FROM orders WHERE public_id=$1",[late.orderId])).rows[0].id
+  await control.query("UPDATE orders SET status='cancelled' WHERE id=$1",[lateId])
+  await control.query("UPDATE orders SET payment_status='paid' WHERE id=$1",[lateId])
+  assert.equal((await control.query(`
+    SELECT COUNT(*)::int AS n FROM self_build_payment_reviews
+    WHERE order_id=$1 AND reason='LATE_PAYMENT_AFTER_CANCELLATION'`,
+    [lateId])).rows[0].n,1,'Paid after cancellation needs separate gateway reconciliation')
+  assert.equal((await control.query(`
+    SELECT COUNT(*)::int AS n FROM self_build_order_reservation_batches
+    WHERE order_id IN ($1,$2)`,[noStockInternal.id,lateId])).rows[0].n,0)
+  console.log('SELF_BUILD_NO_INVENTORY_CHECKOUT_POSTGRES_PASSED: no capacity/stock changes, category-only trusted price, idempotency, own draft, altered draft rejection, hard customer gate, cancelled paid review, late paid review, manual reference without auto refund')
 
   console.log('SELF_BUILD_PAYMENT_SETTLEMENT_POSTGRES_PASSED: provider-event required, price verified, atomic commit, duplicate paid replay, current failed release, duplicate failed replay, late paid needs review, expired paid freeze, curated isolation')
   console.log('SELF_BUILD_ATOMIC_ORDER_POSTGRES_PASSED: disabled production gate, buyer ownership, order+capacity+Telegram atomicity, price, idempotency, no SKU mapping, insufficient-stock rollback, curated-key collision and private photo order ownership')
