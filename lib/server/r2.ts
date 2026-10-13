@@ -166,3 +166,33 @@ export async function readReviewPhoto(key: string) {
   if (file.ContentType !== "image/webp" || !file.Body) throw new Error("REVIEW_PHOTO_UNAVAILABLE")
   return Buffer.from(await file.Body.transformToByteArray())
 }
+
+// Self-Build PERSONAL photos are PRIVATE, never part of catalog/media/CDN.
+// Always strip metadata upstream (sharp) and never expose object keys in URLs.
+export function isSelfBuildPrivatePhotoKey(key:string){
+  return /^self-build\/private\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/.test(key)
+}
+export async function uploadSelfBuildPrivatePhoto(key:string,body:Buffer){
+  if(!isSelfBuildPrivatePhotoKey(key)||body.length<1||body.length>3*1024*1024)
+    throw new Error("INVALID_SELF_BUILD_PHOTO")
+  await client().send(new PutObjectCommand({
+    Bucket:requireEnv("r2Bucket"),Key:key,Body:body,ContentLength:body.length,
+    ContentType:"image/webp",CacheControl:"private, no-store"
+  }))
+}
+export async function readSelfBuildPrivatePhoto(key:string){
+  if(!isSelfBuildPrivatePhotoKey(key))throw new Error("INVALID_SELF_BUILD_PHOTO")
+  const result=await client().send(new GetObjectCommand({
+    Bucket:requireEnv("r2Bucket"),Key:key
+  }))
+  if(result.ContentType!=="image/webp"||!result.Body)throw new Error("SELF_BUILD_PHOTO_MISSING")
+  const content=Buffer.from(await result.Body.transformToByteArray())
+  if(content.length<1||content.length>3*1024*1024)throw new Error("INVALID_SELF_BUILD_PHOTO")
+  return content
+}
+export async function deleteSelfBuildPrivatePhoto(key:string){
+  if(!isSelfBuildPrivatePhotoKey(key))throw new Error("INVALID_SELF_BUILD_PHOTO")
+  await client().send(new DeleteObjectCommand({
+    Bucket:requireEnv("r2Bucket"),Key:key
+  }))
+}

@@ -23,6 +23,13 @@ export async function POST(request: Request) {
     if (!allowed) return NextResponse.json({ ok: false, error: "RATE_LIMITED" }, { status: 429 })
 
     const body = await readJsonBody<CreateOrderInput>(request)
+    // Self-Build must use a future dedicated atomic order+reservation path.
+    // Never silently treat a submitted category basket as a curated hamper.
+    const payload = body as unknown as Record<string, unknown>
+    if (payload.selfBuildDraftId !== undefined || payload.selfBuildSelections !== undefined ||
+        payload.selfBuild === true || payload.orderType === "self-build") {
+      return NextResponse.json({ ok: false, error: "SELF_BUILD_NOT_LIVE" }, { status: 403 })
+    }
     if (body.orderType === "individual") return NextResponse.json({ ok: false, error: "MANUAL_PAYMENT_NOT_SUPPORTED" }, { status: 422 })
     if (!publicEnv.upiId || !publicEnv.upiName) return NextResponse.json({ ok: false, error: "PAYMENT_NOT_CONFIGURED" }, { status: 503 })
     const { catalog } = await getCatalogConfig()

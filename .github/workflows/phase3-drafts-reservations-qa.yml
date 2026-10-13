@@ -1,0 +1,83 @@
+name: Phase 3 Private Drafts and Reservation Integration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - db/migrations/051_self_build_account_drafts_photos_and_reservations.sql
+      - lib/server/self-build-drafts.ts
+      - lib/server/self-build-photos.ts
+      - lib/server/self-build-reservations.ts
+      - lib/server/r2.ts
+      - app/api/account/self-build/**
+      - scripts/test-phase3-reservation-postgres.mjs
+      - scripts/test-phase3-drafts-photos-reservations.mjs
+      - .github/workflows/phase3-drafts-reservations-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-reservation-test
+          POSTGRES_DB: selfbuild_stage_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGDATABASE: selfbuild_stage_test
+      PGUSER: postgres
+      PGPASSWORD: isolated-reservation-test
+      DATABASE_URL: postgresql://postgres:isolated-reservation-test@127.0.0.1:5432/selfbuild_stage_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install app and verify dormant customer/photos/reservation code
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/test-phase3-drafts-photos-reservations.mjs
+      - name: Prepare isolated PostgreSQL 16; run real migration history
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+          psql -v ON_ERROR_STOP=1 -c "CREATE TABLE customer_accounts(id text PRIMARY KEY); CREATE TABLE orders(id text PRIMARY KEY,customer_account_id text,order_type text,tier_id text,payment_status text);"
+          for file in db/migrations/047_self_build_hamper_draft_architecture.sql db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql db/migrations/049_self_build_category_only_no_sku_mapping.sql db/migrations/050_self_build_category_capacity_and_tier_allowances.sql db/migrations/051_self_build_account_drafts_photos_and_reservations.sql; do
+            psql -v ON_ERROR_STOP=1 -f "$file"
+          done
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF (SELECT customer_enabled OR show_item_prices FROM self_build_configuration WHERE id='primary') THEN
+              RAISE EXCEPTION 'Staging buyer gate must remain closed';
+            END IF;
+            IF to_regclass('self_build_catalog_product_rules') IS NOT NULL THEN
+              RAISE EXCEPTION 'Unexpected SKU mapping';
+            END IF;
+            IF EXISTS (SELECT 1 FROM self_build_order_reservation_batches)
+              OR EXISTS (SELECT 1 FROM self_build_draft_photos) THEN
+              RAISE EXCEPTION 'Fake reservation or photo seed';
+            END IF;
+          END $$;
+          SQL
+      - name: Execute real transaction code under concurrent PostgreSQL clients
+        run: |
+          set -euo pipefail
+          node scripts/test-phase3-reservation-postgres.mjs
