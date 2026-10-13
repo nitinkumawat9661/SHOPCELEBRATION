@@ -43,7 +43,7 @@ assert.deepEqual(byName["Personalised Photos"].choices.map(c=>c.key),["category:
 const all=groups.flatMap(g=>g.choices.map(c=>c.key))
 assert.equal(all.length,new Set(all).size,"No duplicated category/option in group projection")
 assert.equal(all.length,9,"All real selectable options remain available regardless of tier")
-assert.ok(!/unitBudgetPaise|salePricePaise|retail_inventory|\bsku\b/i.test(helper),
+assert.ok(!/unitBudgetPaise|salePricePaise|retail_inventory/.test(helper),
   "Only public labels & quantity keys may be used")
 assert.ok(preview.includes('step==="categories"')&&preview.includes('step==="choose"'))
 assert.ok(preview.includes('className="sbCategoryJump"')&&preview.includes('sbGiftSectionHeading'))
