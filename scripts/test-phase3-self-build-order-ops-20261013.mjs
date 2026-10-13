@@ -21,6 +21,7 @@ assert(styles.includes(".sbAdminOrderSnapshot")&&styles.includes(".sbAdminOrderS
 assert(adminRoute.includes("await isAdminRequest()"),"Admin order route remains authenticated")
 assert(!customerOrders.includes("self_build_order_snapshots")&&!customerTrack.includes("self_build_order_snapshots"),"Customer-facing read cannot access private snapshots")
 assert(!manualOrder.includes("self-build-reservations")&&!paymentCreate.includes("self-build-reservations"),"Existing shopping checkout isolated from prelaunch staging")
+for(const route of [manualOrder,paymentCreate])assert(route.includes('payload.selfBuildDraftId !== undefined')&&route.includes('SELF_BUILD_NOT_LIVE'),"Explicit self-build fields must not be silently reinterpreted as curated orders")
 assert(cleaner.includes("pg_try_advisory_lock"),"Cron instances serialize")
 assert(cleaner.includes("WHERE expires_at<now()")&&cleaner.includes("FOR UPDATE"),"Only expired and locked draft records")
 assert(cleaner.includes("DeleteObjectCommand")&&cleaner.includes("DELETE FROM self_build_drafts"),"Delete private R2 bytes and DB metadata")
