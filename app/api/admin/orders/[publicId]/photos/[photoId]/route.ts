@@ -18,7 +18,7 @@ export async function GET(_request:Request, context:{params:Promise<{publicId:st
     }})
   }catch(error){
     // No private R2 object key or byte payload is included in responses.
-    console.error("admin-private-order-photo",error instanceof Error?error.message:"ERROR")
+    console.error("admin-private-order-photos-unavailable")
     return NextResponse.json({ok:false,error:"PRIVATE_PHOTO_UNAVAILABLE"},{status:503,headers:privateHeaders})
   }
 }
