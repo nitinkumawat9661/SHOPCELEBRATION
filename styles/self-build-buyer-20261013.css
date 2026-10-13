@@ -53,3 +53,8 @@
 @media(max-width:900px){.sbBuyerTiers{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.sbBuyer{margin:20px auto 45px}.sbBuyerChoices{grid-template-columns:minmax(0,1fr)}.sbBuyerForm{grid-template-columns:minmax(0,1fr)}.sbBuyerForm .sbBuyerField:nth-child(3),.sbBuyerForm .sbBuyerField:last-child{grid-column:auto}.sbBuyerPay{align-items:stretch;flex-direction:column}.sbBuyerPhotoPicker{display:flex;flex-direction:column;gap:9px}.sbBuyerPhotoPicker input{margin:0}}
 @media(max-width:380px){.sbBuyerTiers{gap:7px}.sbBuyerTiers button{padding:10px 8px}.sbBuyerCard{padding:14px}}
+
+/* Compact count above product selectors; internal budgets never enter HTML. */
+.sbBuyerPieceCounter{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 18px;padding:13px 14px;margin-bottom:13px;border:1px solid #e7d5d0;background:#fff7f4;border-radius:10px;color:#6b344a}
+.sbBuyerPieceCounter strong{font-size:13px;font-weight:800}
+.sbBuyerPieceCounter small{color:#846771;font-size:11px;line-height:1.5}
