@@ -47,9 +47,9 @@ jobs:
           const {loadEnvConfig}=require("@next/env")
           loadEnvConfig(process.cwd(),false)
           const {Client}=require("pg")
-          const {readFileSync,statSync}=require("node:fs")
+          const {readFileSync,statSync,readdirSync,existsSync,mkdtempSync,rmSync}=require("node:fs")
           const {spawnSync}=require("node:child_process")
-          const {randomBytes}=require("node:crypto")
+          const {randomBytes,randomInt}=require("node:crypto")
           const path=require("node:path")
           const url=new URL(process.env.DATABASE_URL || "")
           if(decodeURIComponent(url.pathname.slice(1))!=="celebration")throw Error("Refusing non-Celebration source DB")
@@ -66,6 +66,8 @@ jobs:
           const dbConnection=name=>{const target=new URL(sourceConn);target.pathname="/"+name;return target.toString()}
           const ssl=process.env.DATABASE_SSL_MODE==="disable"?false:{rejectUnauthorized:true}
           let scratchCreated=false, scratchDb=safeName
+          let isolatedRoot=null, isolatedBin=null, isolatedStarted=false
+          let isolatedDbOpts=null
           ;(async()=>{
             const admin=new Client({connectionString:dbConnection("postgres"),ssl})
             try{
@@ -75,17 +77,34 @@ jobs:
               console.log("BACKUP_SIZE_BYTES="+statSync(backup).size)
               await admin.connect()
               const perms=await admin.query("SELECT rolcreatedb OR rolsuper AS allowed FROM pg_roles WHERE rolname=CURRENT_USER")
+              let scratch
               if(perms.rows[0]?.allowed){
                 await admin.query('CREATE DATABASE "'+safeName+'"')
+                scratchCreated=true
+                command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--dbname",scratchDb,backup])
+                scratch=new Client({connectionString:dbConnection(scratchDb),ssl})
               }else{
-                // The live DB user lacks CREATEDB. Use noninteractive local
-                // postgres admin to create a DISTINCT disposable DB owned by
-                // the app role; never reset an existing test or production DB.
-                command("sudo",["-n","-u","postgres","createdb","--owner",opts.PGUSER,safeName])
+                // The app role cannot create a database. Start an entirely
+                // separate unprivileged PostgreSQL instance on a 0700 UNIX socket.
+                // No production DB writes, no network port, no customer-data export.
+                const version=readdirSync("/usr/lib/postgresql").filter(v=>/^\\d+$/.test(v)).sort((x,y)=>Number(y)-Number(x))
+                  .find(v=>existsSync("/usr/lib/postgresql/"+v+"/bin/initdb"))
+                if(!version)throw Error("No unprivileged initdb binary available; rollout BLOCKED")
+                isolatedBin="/usr/lib/postgresql/"+version+"/bin"
+                isolatedRoot=mkdtempSync("/tmp/celebration-telegram-restore-")
+                const dataDir=path.join(isolatedRoot,"data")
+                const port=String(randomInt(40000,49000))
+                const user=spawnSync("id",["-un"],{encoding:"utf8"}).stdout.trim()
+                command(path.join(isolatedBin,"initdb"),["-D",dataDir,"--auth-local=trust","--auth-host=reject","--no-instructions"],{...process.env,PGPASSWORD:""})
+                command(path.join(isolatedBin,"pg_ctl"),["-D",dataDir,"-l",path.join(isolatedRoot,"postgres.log"),
+                  "-o","-c listen_addresses='' -k "+isolatedRoot+" -p "+port,"-w","start"],{...process.env,PGPASSWORD:""})
+                isolatedStarted=true
+                isolatedDbOpts={host:isolatedRoot,port:Number(port),user,database:"postgres",ssl:false}
+                command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--host",isolatedRoot,
+                  "--port",port,"--username",user,"--dbname","postgres",backup],{...process.env,PGPASSWORD:"",PGSSLMODE:"disable"})
+                scratch=new Client(isolatedDbOpts)
+                console.log("ISOLATED_RESTORE_ENGINE=private_unix_socket")
               }
-              scratchCreated=true
-              command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--dbname",scratchDb,backup])
-              const scratch=new Client({connectionString:dbConnection(scratchDb),ssl})
               await scratch.connect()
               try{
                 const before=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
@@ -116,6 +135,12 @@ jobs:
                 await admin.query('DROP DATABASE "'+safeName+'" WITH (FORCE)')
                 console.log("TEMP_DB_REMOVED=YES")
               }
+              if(isolatedStarted){
+                command(path.join(isolatedBin,"pg_ctl"),["-D",path.join(isolatedRoot,"data"),"-m","fast","-w","stop"],{...process.env,PGPASSWORD:""})
+                isolatedStarted=false
+                console.log("ISOLATED_POSTGRES_STOPPED=YES")
+              }
+              if(isolatedRoot&&!isolatedStarted)rmSync(isolatedRoot,{recursive:true,force:true})
               await admin.end().catch(()=>{})
             }
           })().catch(error=>{console.error("SAFE_CHECK_FAILED:",error.message);process.exitCode=1})
