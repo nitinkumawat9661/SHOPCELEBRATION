@@ -21,7 +21,7 @@ assert(card.includes('<WishlistToggle productId={product.id} productName={produc
 assert(!card.includes('href="/wishlist"') && card.includes('<Link href={`/jewelry/${encodeURIComponent(product.id)}`}'),"Exact SKU card link unchanged")
 assert(list.includes('availableById.get(id)') && list.includes('active !== false') && list.includes('<CatalogCard key={product.id} product={product} />'))
 assert(list.includes('mode === "account"') && list.includes('href="/account"') && list.includes('Retry sync'))
-assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && page.includes('Sign in with your Celebration account'))
+assert(page.includes('getCatalogConfig()') && page.includes('<WishlistCollection') && list.includes('Sign in or create an account'),"Wishlist account sync/help survives removal of the hero")
 assert(detail.includes('<WishlistToggle productId={product.id} productName={product.name} />'))
 assert(!collection.includes('wishlistBrowseLink'),"Redundant saved collection shortcut was replaced by the shared header")
 assert(css.includes(".wishlistToggle:focus-visible") && css.includes("min-height:44px") && globals.includes("phase2-wishlist-20261012.css"))
@@ -45,5 +45,12 @@ assert(list.includes("wishlistCategoryChips") && list.includes("availableById.ge
  list.includes('<CatalogCard key={product.id} product={product} />'),"Scoped category filter and exact SKU cards preserved")
 assert(premium.includes("@media(max-width:375px)") && premium.includes("grid-template-columns:repeat(2,minmax(0,1fr))"),"Narrow header and 2-column mobile saved list")
 assert(premium.includes("@media(min-width:1001px) and (max-width:1150px)") && premium.includes(".celebrationIconLink span{display:none}"),"Laptop header avoids 1024px overflow")
+const wishlistPage = await read("app/wishlist/page.tsx")
+assert(list.includes("<h1>My saved pieces"),"Only the compact Saved Pieces collection heading remains")
+assert(!wishlistPage.includes("wishlistHero") &&
+ !wishlistPage.includes("CURATED BY YOU") &&
+ !wishlistPage.includes("Pieces you"),"No wishlist marketing hero")
+assert(wishlistPage.includes("<WishlistCollection") && wishlistPage.includes("wishlistBreadcrumb"),"Keep saved pieces list and breadcrumb")
+assert(!premium.includes(".wishlistHero") && !premium.includes(".wishlistHeroArt"),"Remove unused hero styling entirely")
 assert(globals.includes('wishlist-premium-20261013.css'),"Ship standalone premium wishlist")
 console.log("Account wishlist checks passed: signed-in DB sync, anonymous guest mode, merge, privacy, SKU links, controls, server CSRF and limits.")

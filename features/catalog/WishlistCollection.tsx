@@ -46,7 +46,7 @@ export function WishlistCollection({ products, available }: { products: GiftProd
       <div className="wishlistCollectionTop">
         <div>
           <span className="wishlistEyebrow">YOUR PERSONAL EDIT</span>
-          <h2>My saved pieces <span aria-label={`${saved.length} saved pieces`}>{saved.length}</span></h2>
+          <h1>My saved pieces <span aria-label={`${saved.length} saved pieces`}>{saved.length}</span></h1>
           <p className="wishlistSummary" role="status">{saved.length} {saved.length === 1 ? "piece" : "pieces"} saved {mode === "account" ? "to your account" : "on this device"}.</p>
         </div>
         {saved.length > 0 && <Link className="wishlistShopMore" href="/jewelry?view=all">Discover more <span aria-hidden="true">↗</span></Link>}
