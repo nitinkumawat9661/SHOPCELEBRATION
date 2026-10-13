@@ -20,16 +20,17 @@ type StorefrontProps = {
   initialSocialProof?: TierSocialProof | null
   initialSettings: StoreSettings
   initialCategoryMedia: Record<string, string>
+  initialSelfBuildEnabled?: boolean
 }
 
-export function Storefront({ initialCatalog, initialSocialProof = null, initialSettings, initialCategoryMedia }: StorefrontProps) {
+export function Storefront({ initialCatalog, initialSocialProof = null, initialSettings, initialCategoryMedia, initialSelfBuildEnabled = false }: StorefrontProps) {
   const tiers = initialCatalog.tiers.filter((item) => item.active !== false)
   const visibleProof = isPublicHamperOrderProof(initialSocialProof, tiers) ? initialSocialProof : null
 
   return (
     <div className="celebrationHome">
         <TrustStrip />
-        <StorefrontHeader settings={initialSettings} />
+        <StorefrontHeader settings={initialSettings} showSelfBuild={initialSelfBuildEnabled} />
         <div className="celebrationHomeHeaderSpacer" aria-hidden="true" />
       <main id="main-content">
         <Hero tiers={tiers} />
