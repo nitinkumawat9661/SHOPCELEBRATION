@@ -31,5 +31,11 @@ ON CONFLICT (tier_id) DO UPDATE
   SET allowance_paise=EXCLUDED.allowance_paise,
       enabled=true,updated_at=now();
 
+-- The owner expressly allows multiple units of ONE category up to the
+-- published per-tier piece maximum; do not create per-SKU stock restrictions.
+UPDATE self_build_configuration
+ SET allow_multiple_quantities=true,version=version+1,updated_at=now()
+ WHERE id='primary' AND allow_multiple_quantities IS DISTINCT FROM true;
+
 -- No touching category capacity, retail SKU inventory, physical quantities,
 -- order reservations, account data, catalog tiers, or customerEnabled.
