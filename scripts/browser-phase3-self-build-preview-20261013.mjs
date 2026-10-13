@@ -58,6 +58,12 @@ try {
       add(width + " no internal private fields in HTML",
         !/(unitBudgetPaise|defaultCatalogItemBudgetPaise|productRules|catalogCategory|salePricePaise)/.test(html))
       add(width + " preview expressly not live", await page.getByText("No orders or payments", { exact: false }).count() >= 1)
+      // Six selected pieces in this scenario need Grand Plus (7 slots);
+      // default mini tier intentionally caps at 2, including repeated items.
+      await page.locator("#sb-preview-tier").selectOption("t1499")
+      add(width + " large tier advertises 7 physical items",
+        await page.locator(".sbPreviewLimitBar").innerText().then(x=>x.includes("/ 7")))
+
       add(width + " category-first entry", await page.getByRole("heading", { name: "Choose your categories" }).count() === 1)
       add(width + " no retail product UI", await page.locator(".catalogCard,.productCard,.productStep").count() === 0)
       const initial = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth])
