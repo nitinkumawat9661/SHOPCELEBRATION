@@ -46,6 +46,7 @@ assert(list.includes("wishlistCategoryChips") && list.includes("availableById.ge
 assert(premium.includes("@media(max-width:375px)") && premium.includes("grid-template-columns:repeat(2,minmax(0,1fr))"),"Narrow header and 2-column mobile saved list")
 assert(premium.includes("@media(min-width:1001px) and (max-width:1150px)") && premium.includes(".celebrationIconLink span{display:none}"),"Laptop header avoids 1024px overflow")
 const wishlistPage = await read("app/wishlist/page.tsx")
+assert(list.includes("<h1>My saved pieces"),"Only the compact Saved Pieces collection heading remains")
 assert(!wishlistPage.includes("wishlistHero") &&
  !wishlistPage.includes("CURATED BY YOU") &&
  !wishlistPage.includes("Pieces you"),"No wishlist marketing hero")
