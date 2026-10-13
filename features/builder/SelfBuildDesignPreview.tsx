@@ -81,7 +81,11 @@ export function SelfBuildDesignPreview({ data, tiers }: {
     setQuantities(previous=>{
       const existing=previous[id]||0
       const others=Object.values(previous).reduce((sum,value)=>sum+value,0)-existing
-      const next=Math.max(0,Math.min(100,Math.trunc(count),Math.max(0,maxItems-others)))
+      const requested=Math.max(0,Math.min(100,Math.trunc(count)))
+      // If a smaller tier is selected, allow one-at-a-time decrement rather
+      // than abruptly erasing all of a previously selected category.
+      const next=requested<=existing?requested:
+        Math.min(requested,Math.max(0,maxItems-others))
       return {...previous,[id]:next}
     })
   }
