@@ -13,7 +13,7 @@ export async function GET(_request:Request, context:{params:Promise<{publicId:st
     if(photos===null)return NextResponse.json({ok:false,error:"NOT_FOUND"},{status:404,headers:privateHeaders})
     return NextResponse.json({ok:true,photos},{headers:privateHeaders})
   }catch(error){
-    console.error("admin-private-order-photos",error instanceof Error?error.message:"ERROR")
+    console.error("admin-private-order-photos-unavailable")
     return NextResponse.json({ok:false,error:"PRIVATE_PHOTOS_UNAVAILABLE"},{status:503,headers:privateHeaders})
   }
 }
