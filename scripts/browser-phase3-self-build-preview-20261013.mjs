@@ -58,52 +58,62 @@ try {
       add(width + " no internal private fields in HTML",
         !/(unitBudgetPaise|defaultCatalogItemBudgetPaise|productRules|catalogCategory|salePricePaise)/.test(html))
       add(width + " preview expressly not live", await page.getByText("No orders or payments", { exact: false }).count() >= 1)
-      // Six selected pieces in this scenario need Grand Plus (7 slots);
-      // default mini tier intentionally caps at 2, including repeated items.
+      // First screen is names + all-inclusive final prices. A click must
+      // advance directly to one continuous list; no category drill-down.
       const tierBar=page.locator('.sbPreviewTierBar[data-tier-id="t1499"]')
+      add(width + " tier shows its name and inclusive price",
+        (await tierBar.innerText()).includes("1,549") &&
+        await tierBar.locator(".sbPreviewTierName").count()===1 &&
+        await tierBar.locator(".sbPreviewTierPrice").count()===1)
+      add(width + " gifting choices hidden on tier screen",
+        await page.locator(".sbChoiceCard:visible").count()===0)
+      const tierWidth=await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth])
+      add(width + " tier page no horizontal overflow",
+        tierWidth[0] <= tierWidth[1]+2,tierWidth.join("/"))
+      await page.screenshot({path:resolve(output,"tier-"+width+".png"),fullPage:true,animations:"disabled"})
       await tierBar.click()
-      add(width + " name-only hamper choice; price shown separately",
-        await tierBar.getAttribute("aria-pressed")==="true" &&
-        (await tierBar.innerText()).trim().length>0 &&
-        !/(₹|Rs\.|pieces|Delivery)/.test(await tierBar.innerText()) &&
-        await tierBar.locator("small,p,img,svg,select,strong").count()===0 &&
-        await page.locator(".sbPreviewTierTotal").innerText().then(x=>x.includes("1,549")))
-      add(width + " large tier advertises 7 physical items",
-        await page.locator(".sbPreviewLimitBar").innerText().then(x=>x.includes("/ 7")))
-
-      add(width + " category-first entry", await page.getByRole("heading", { name: "Choose your categories" }).count() === 1)
-      add(width + " no retail product UI", await page.locator(".catalogCard,.productCard,.productStep").count() === 0)
-      const initial = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth])
-      add(width + " initial no overflow", initial[0] <= initial[1] + 2, initial.join("/"))
-      await page.screenshot({ path: resolve(output, "categories-" + width + ".png"), fullPage: true, animations: "disabled" })
-
-      // Nested category navigation must show owner-confirmed eight groups, no SKUs.
-      await page.locator(".sbExploreCard").filter({ hasText: "Jewellery" }).click()
-      add(width + " eight jewellery category choices", await page.locator(".sbChoiceCard").count() === 8)
-      for (const label of ["Premium Feature Necklaces", "Premium Necklaces", "Necklace & Stud Sets",
-        "Korean Earrings", "Indian Trending Earrings", "Minimal Rings", "Viral Bangles", "Korean Bangles"]) {
-        add(width + " label " + label, await page.locator(".sbChoiceCard h3").getByText(label, { exact: true }).count() === 1)
+      await page.getByRole("heading",{name:"Choose your gifts"}).waitFor({state:"visible"})
+      add(width + " selecting hamper advances to gifts screen",
+        await page.locator(".sbChosenTierLine").innerText().then(x=>x.includes("1,549")))
+      add(width + " no displayed piece allowance",
+        await page.locator(".sbPreviewLimitBar:visible").count()===0 &&
+        !(await page.locator(".sbPreviewPage").innerText()).includes("MAXIMUM PIECES"))
+      add(width + " all gift options available in one continuous list",
+        await page.locator(".sbExploreCard:visible,.sbBreadcrumb:visible").count()===0 &&
+        await page.locator(".sbChoiceCard:visible").count()>=14)
+      add(width + " no retail product UI",
+        await page.locator(".catalogCard,.productCard,.productStep").count()===0)
+      for(const label of ["Premium Feature Necklaces","Premium Necklaces","Necklace & Stud Sets",
+        "Korean Earrings","Indian Trending Earrings","Minimal Rings","Viral Bangles","Korean Bangles"]){
+        add(width+" jewellery gift "+label,
+          await page.locator(".sbChoiceCard h3").getByText(label,{exact:true}).count()===1)
       }
-      const firstCard = page.locator(".sbChoiceCard").first()
-      await firstCard.getByRole("button", { name: /Add one/ }).click()
-      await firstCard.getByRole("button", { name: /Add one/ }).click()
-      add(width + " multi-quantity jewellery ×2", await firstCard.locator("output").innerText() === "2")
-      await page.screenshot({ path: resolve(output, "jewellery-" + width + ".png"), fullPage: true, animations: "disabled" })
-      await page.locator(".sbBreadcrumb button").click()
-
-      // Chocolates are DB option labels, not a synthetic catalogue product wall.
-      await page.locator(".sbExploreCard").filter({ hasText: "Chocolates" }).click()
-      add(width + " Chocolate Starter + four sizes", await page.locator(".sbChoiceCard").count() === 5)
-      add(width + " Starter label", await page.locator(".sbChoiceCard h3").getByText("Starter", { exact: true }).count() === 1)
-      await page.locator(".sbChoiceCard").filter({ hasText: "Starter" }).getByRole("button", { name: /Add one/ }).click()
-      await page.locator(".sbBreadcrumb button").click()
-
-      // Photo amount is private; buyer preview only chooses a photo count.
-      const photos = page.locator(".sbChoiceCard").filter({ hasText: "Personalised Photos" })
-      await photos.getByRole("button", { name: /Add one/ }).click()
-      await photos.getByRole("button", { name: /Add one/ }).click()
-      await photos.getByRole("button", { name: /Add one/ }).click()
-      add(width + " three personalised photos", await photos.locator("output").innerText() === "3")
+      const first=page.locator(".sbChoiceCard").filter({
+        has:page.getByRole("heading",{name:"Premium Feature Necklaces",exact:true})
+      })
+      await first.getByRole("button",{name:/Add one/}).click()
+      await first.getByRole("button",{name:/Add one/}).click()
+      add(width+" repeated jewellery choice x2",await first.locator("output").innerText()==="2")
+      const starter=page.locator(".sbChoiceCard").filter({
+        has:page.getByRole("heading",{name:"Starter",exact:true})
+      })
+      add(width+" chocolates variants visible without navigation",await starter.count()===1)
+      await starter.getByRole("button",{name:/Add one/}).click()
+      const photos=page.locator(".sbChoiceCard").filter({
+        has:page.getByRole("heading",{name:"Personalised Photos",exact:true})
+      })
+      for(let n=0;n<3;n++)await photos.getByRole("button",{name:/Add one/}).click()
+      add(width+" three personalised photos",await photos.locator("output").innerText()==="3")
+      await page.screenshot({path:resolve(output,"gifts-"+width+".png"),fullPage:true,animations:"disabled"})
+      await photos.getByRole("button",{name:/Add one/}).click()
+      await photos.getByRole("button",{name:/Add one/}).click()
+      add(width+" capacity offers upgrade popup, not numeric max",await page.getByRole("dialog",{
+        name:"Choose a larger hamper"
+      }).isVisible())
+      await page.getByRole("button",{name:"Keep my hamper"}).click()
+      await photos.getByRole("button",{name:/Remove one/}).click()
+      const initial=await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth])
+      add(width+" gifts page no overflow",initial[0] <= initial[1]+2,initial.join("/"))
       await page.getByRole("button", { name: /Continue to personalise/ }).click()
       add(width + " personalisation step", await page.getByRole("heading", { name: "Add your personal touch" }).count() === 1)
       await page.locator("#sb-custom-note").fill("Please contact us about an additional greeting.")
