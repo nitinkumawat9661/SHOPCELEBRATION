@@ -100,7 +100,7 @@ export async function run() {
 
 if(process.argv[1]&&import.meta.url===new URL("file://"+process.argv[1]).href){
   run().catch(e=>{
-    console.error("SELF_BUILD_DELIVERED_PHOTOS_CLEANUP_FAILED",e instanceof Error?e.message:"ERROR")
+    console.error("SELF_BUILD_DELIVERED_PHOTOS_CLEANUP_FAILED")
     process.exitCode=1
   })
 }
