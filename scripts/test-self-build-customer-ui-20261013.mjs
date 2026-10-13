@@ -92,7 +92,7 @@ assert(deliveryConfig.includes("SELF_BUILD_DELIVERY_FEE_PAISE = 5000")&&
  ui.includes("SELF_BUILD_DELIVERY_FEE_PAISE/100")&&
  ui.includes("Hamper price")&&ui.includes("Total to pay")&&
  orderFactory.includes("selfBuildShippingPaise:SELF_BUILD_DELIVERY_FEE_PAISE")&&
- createEngine.includes("options.selfBuildShippingPaise ?? 0")&&
+ createEngine.includes("HAMPER_DELIVERY_FEE_PAISE")&&
  createEngine.includes("pricing.shippingPaise")&&
  createEngine.includes("pricing.payablePaise"),
  "Fixed ₹50 delivery must display in Self-Build checkout and be frozen server-side in the order and payment amount")

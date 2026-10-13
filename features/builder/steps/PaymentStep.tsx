@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { publicEnv } from "../../../config/public-env"
 import { routes } from "../../../config/routes"
+import { HAMPER_DELIVERY_FEE_PAISE } from "../../../config/self-build-delivery"
 import type { OfferQuote } from "../../../lib/domain/campaign"
 import { buildUpiUrl } from "../../../lib/domain/payment"
 import { formatMoney, type Tier } from "../../../lib/domain/catalog"
@@ -86,7 +87,10 @@ export function PaymentStep({
   const selectedKey = useMemo(() => individual?.itemKey || [...selectedProductIds].sort().join(","), [selectedProductIds, individual?.itemKey])
   const subtotalPaise = individual?.subtotalPaise ?? Math.round((tier?.price || 0) * 100)
   const productPayablePaise = quote?.payablePaise ?? subtotalPaise
-  const payablePaise = created?.payablePaise ?? orderTotalPaise ?? productPayablePaise
+  // Curated hamper manual UPI and automated gateways must show the same
+  // server-calculated ₹50 delivery amount before payment is initiated.
+  const deliveryPaise = individual ? (shippingPaise ?? 0) : HAMPER_DELIVERY_FEE_PAISE
+  const payablePaise = created?.payablePaise ?? orderTotalPaise ?? (productPayablePaise + deliveryPaise)
   const discountPaise = quote?.discountPaise ?? 0
   const upiUrl = manualPaymentReady ? buildUpiUrl({
     upiId: publicEnv.upiId,
@@ -236,7 +240,13 @@ export function PaymentStep({
           {customerAccount && quote && <div className="checkoutOfferCard" role="status">
             <div className="checkoutOfferBadge">{quote.badge}</div>
             <div className="checkoutOfferCopy"><b>{quote.campaignTitle}</b><span>{quote.message}</span><small>Offer quote valid until {reservedUntil}</small></div>
-            <div className="checkoutOfferPrice"><span>Subtotal {formatMoney(quote.subtotalPaise / 100)}</span><strong>{formatMoney(quote.payablePaise / 100)}</strong><span>Applied discount {formatMoney(quote.discountPaise / 100)}</span>{individual ? <span>Delivery included</span> : null}</div>
+            <div className="checkoutOfferPrice"><span>Subtotal {formatMoney(quote.subtotalPaise / 100)}</span><strong>{formatMoney(quote.payablePaise / 100)}</strong><span>Applied discount {formatMoney(quote.discountPaise / 100)}</span>{individual ? <span>Delivery included</span> : <span>+ {formatMoney(HAMPER_DELIVERY_FEE_PAISE / 100)} delivery at checkout</span>}</div>
+          </div>}
+          {!individual && tier && <div className="checkoutPriceNote" aria-label="Hamper price breakdown">
+            <span>Hamper {formatMoney(subtotalPaise / 100)}</span>
+            {discountPaise > 0 && <span> · Discount −{formatMoney(discountPaise / 100)}</span>}
+            <span> · Delivery {formatMoney(deliveryPaise / 100)}</span>
+            <strong> · Total {formatMoney(payablePaise / 100)}</strong>
           </div>}
           {customerAccount && quoteError && <div className="checkoutPriceNote">{quoteError}</div>}
           {customerAccount && <div className="checkoutCoupon">

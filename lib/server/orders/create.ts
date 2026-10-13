@@ -2,6 +2,7 @@ import type { PoolClient } from "pg"
 import { createHash, randomUUID } from "node:crypto"
 import { orderEvents } from "../../../config/order-events"
 import { orderConfig } from "../../../config/order"
+import { HAMPER_DELIVERY_FEE_PAISE } from "../../../config/self-build-delivery"
 import { securityConfig } from "../../../config/security"
 import { validation } from "../../../config/validation"
 import { requireEnv } from "../../../config/env"
@@ -35,7 +36,7 @@ type ExistingOrder = {
 type CreateOrderOptions = {
   paymentProvider?: PaymentProviderName | null
   shippingPaise?: number
-  // Explicitly used by no-inventory Self-Build only; curated hampers stay unchanged.
+  // Legacy Self-Build call-site compatibility; must match the universal hamper delivery fee.
   selfBuildShippingPaise?: number
 }
 
@@ -92,9 +93,17 @@ export async function createOrderWithClient(
     requireEnv("businessTimezone"), normalizeCatalogConfig(currentCatalog.rows[0].payload), { requirePaymentReference: !options.paymentProvider })
 
   const productPricing = await resolveOrderPricing(client, offerQuoteId, customerAccountId, input)
+  // All hampers pay the same fixed delivery fee, including the existing
+  // curated/manual-UTR flow and the no-inventory Self-Build flow. This is
+  // calculated once here, *after* campaign discounts; never touch jewelry.
+  if (input.orderType === "hamper" &&
+      options.selfBuildShippingPaise != null &&
+      options.selfBuildShippingPaise !== HAMPER_DELIVERY_FEE_PAISE) {
+    throw new OrderValidationError("INVALID_HAMPER_SHIPPING")
+  }
   const shippingPaise = input.orderType === "individual"
     ? options.shippingPaise
-    : (options.selfBuildShippingPaise ?? 0)
+    : HAMPER_DELIVERY_FEE_PAISE
   if (typeof shippingPaise !== "number" || !Number.isSafeInteger(shippingPaise) || shippingPaise < 0) {
     throw new OrderValidationError(input.orderType === "individual"
       ? "SHIPPING_QUOTE_REQUIRED" : "INVALID_SELF_BUILD_SHIPPING")
