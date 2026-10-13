@@ -378,3 +378,113 @@
   .sbPreviewPage .sbPreviewTierBar,.sbPreviewPage .sbExploreCard,
   .sbPreviewPage .sbExploreArrow,.sbPreviewPage .sbChoiceCard{transition:none}
 }
+
+
+/* Owner-approved 2026-10-14 wizard: darker premium cream/wine, bold italic
+   serif headings, name + all-inclusive price, no SKU cards or visible limits. */
+.sbPreviewPage{
+  --sb-paper:#f8efe9;--sb-white:#fff9f4;--sb-ink:#331d24;
+  --sb-muted:#76565b;--sb-line:#dec8c4;--sb-rose:#741e38;
+  --sb-rose-dark:#4d1028;--sb-sand:#f1e0dc;
+  background:var(--sb-paper)
+}
+.sbPreviewLayout--tier{grid-template-columns:minmax(0,1fr);max-width:1040px}
+.sbPreviewPage .sbIntro{padding:33px 0 25px;border-bottom-color:#dec8c4}
+.sbPreviewPage .sbIntro h1{font:italic 800 clamp(41px,6vw,67px)/1.1 var(--sb-serif);letter-spacing:-.045em;color:#501d34}
+.sbPreviewPage .sbIntro>p{font-weight:500;color:#6c4e54}
+.sbPreviewPage .sbSteps{border-color:#d9bdbb}
+.sbPreviewPage .sbStep--current b{color:#741e38;font-weight:800}
+.sbPreviewPage .sbTierPageTitle{
+  font:italic 750 clamp(24px,3vw,35px)/1.25 var(--sb-serif);
+  color:#511b34;margin:0 0 18px
+}
+.sbPreviewPage .sbPreviewTierStage{margin:5px 0 30px}
+.sbPreviewPage .sbPreviewTierBars{
+  display:flex;flex-direction:column;gap:0;align-items:stretch;
+  border-top:2px solid #8f5061;border-bottom:0
+}
+.sbPreviewPage .sbPreviewTierBar{
+  width:100%;min-height:77px;padding:15px 4px;display:flex;
+  flex-direction:row;align-items:center;justify-content:space-between;
+  gap:14px;border:0;border-bottom:1px solid #d5b8ba;
+  border-radius:0;background:transparent;color:#4b2637;box-shadow:none;
+  font:inherit;text-align:left;transform:none;
+  transition:background-color .15s ease,color .15s ease
+}
+.sbPreviewPage .sbPreviewTierBar:hover,
+.sbPreviewPage .sbPreviewTierBar:focus-visible{
+  background:#f0dbd6;color:#5b1735;box-shadow:none;transform:none
+}
+.sbPreviewPage .sbPreviewTierName{
+  min-width:0;flex:1;overflow-wrap:anywhere;
+  font:italic 800 clamp(23px,3.2vw,34px)/1.13 var(--sb-serif);
+  letter-spacing:-.035em
+}
+.sbPreviewPage .sbPreviewTierPrice{
+  flex:0 0 auto;color:#751a38;
+  font:800 clamp(21px,2.8vw,31px)/1.12 var(--sb-serif);
+  white-space:nowrap;font-variant-numeric:tabular-nums
+}
+.sbPreviewPage .sbPreviewTierArrow{
+  display:grid;place-items:center;flex:0 0 33px;width:33px;height:33px;
+  border-radius:50%;color:#fff8f4;background:#741e38;
+  font:700 18px/1 var(--sb-sans)
+}
+.sbPreviewPage .sbSelectionHeading h2{font:italic 800 clamp(29px,4vw,43px)/1.15 var(--sb-serif);color:#511b34}
+.sbPreviewPage .sbChosenTierLine{
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;
+  padding:14px 0;margin:0 0 5px;border-top:1px solid #d6bdbb;
+  border-bottom:1px solid #d6bdbb;color:#4b2537;
+  font:italic 700 20px/1.3 var(--sb-serif)
+}
+.sbPreviewPage .sbChosenTierLine strong{color:#751a38;font:800 21px/1.2 var(--sb-serif)}
+.sbPreviewPage .sbChosenTierLine button{
+  margin-left:auto;color:#741e38;background:transparent;border:0;
+  text-decoration:underline;font:650 12px/1.2 var(--sb-sans);min-height:44px
+}
+.sbPreviewPage .sbChoiceGrid{display:flex;flex-direction:column;gap:0}
+.sbPreviewPage .sbChoiceCard{
+  background:transparent;border-bottom:1px solid #dac3c1;
+  padding:12px 0;min-height:68px;box-shadow:none
+}
+.sbPreviewPage .sbChoiceCard--selected{background:#f0dddc;border-color:#d1afb1;padding-left:10px}
+.sbPreviewPage .sbChoiceLabel{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.sbPreviewPage .sbChoiceLabel h3{
+  font:italic 750 clamp(19px,2.4vw,25px)/1.19 var(--sb-serif);
+  color:#422136;letter-spacing:-.015em
+}
+.sbPreviewPage .sbChoiceLabel span{
+  font:550 10px/1.45 var(--sb-sans);
+  color:#886870;letter-spacing:.025em
+}
+.sbPreviewPage .sbQty{border-color:#cda9aa;background:#fff8f2}
+.sbPreviewPage .sbQty button{min-height:44px;height:44px;color:#6b1c37}
+.sbPreviewPage .sbSummaryIn{background:#f2e4df;border-color:#d8bdbb}
+.sbPreviewPage .sbSummaryStats strong{font:italic 750 clamp(19px,2vw,27px)/1.12 var(--sb-serif)}
+.sbPreviewPage .sbSummary h2{font-style:italic;font-weight:750;color:#521d35}
+.sbPreviewPage .sbUpgradeBackdrop{
+  position:fixed;inset:0;z-index:10000;display:grid;place-items:center;
+  background:#251019a8;padding:20px
+}
+.sbPreviewPage .sbUpgradeModal{
+  width:min(100%,425px);display:grid;gap:14px;padding:32px 29px;
+  background:#fffaf5;border:1px solid #d7b7ad;box-shadow:0 18px 56px #210c1f35
+}
+.sbPreviewPage .sbUpgradeModal h2{
+  font:italic 800 32px/1.15 var(--sb-serif);color:#541c36;margin:0
+}
+.sbPreviewPage .sbUpgradeModal p{color:#72565d;font:500 13px/1.6 var(--sb-sans);margin:0}
+.sbPreviewPage .sbUpgradeModal .sbPrimary{min-height:48px;width:100%;white-space:normal}
+.sbPreviewPage .sbUpgradeCancel{
+  min-height:44px;color:#6a3142;background:transparent;border:1px solid #dabdc0;
+  font-weight:650
+}
+@media(max-width:600px){
+  .sbPreviewPage .sbPreviewTierBar{min-height:66px;gap:9px;padding:11px 2px}
+  .sbPreviewPage .sbPreviewTierName{font-size:clamp(21px,6.1vw,28px)}
+  .sbPreviewPage .sbPreviewTierPrice{font-size:clamp(19px,5.8vw,27px)}
+  .sbPreviewPage .sbPreviewTierArrow{flex-basis:28px;width:28px;height:28px}
+  .sbPreviewPage .sbChoiceLabel h3{font-size:20px}
+  .sbPreviewPage .sbChoiceCard{min-height:66px}
+  .sbPreviewPage .sbChosenTierLine{font-size:17px}
+}

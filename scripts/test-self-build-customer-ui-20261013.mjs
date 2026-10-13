@@ -82,15 +82,17 @@ assert(orderFactory.includes("getSelfBuildTierLimits(chosenTier)")&&
  "Checkout rechecks server-side hard monetary cap and total quantity")
 assert(draftService.includes("countSelfBuildPieces(clean.selections)>limits.maxItems"),
  "Draft API cannot be used to bypass tier total count")
-assert(ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
- ui.includes("Maximum {maxUnits} pieces")&&ui.includes("selectedUnits>=maxUnits")&&
+assert(!ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
+ !ui.includes("Maximum {maxUnits} pieces")&&ui.includes("selectedUnits>=maxUnits")&&
  ui.includes("selectedUnits>maxUnits")&&
- ui.includes('tierId===t.id?"sbBuyerTierBar sbBuyerTierBar--active"')&&
- ui.includes('className="sbBuyerTierTotal"')&&
+ ui.includes('className="sbBuyerTierBar"')&&
+ ui.includes('className="sbBuyerTierPrice"')&&
+ ui.includes('setBuyerStep("select")')&&
+ ui.includes('sbBuyerFlatChoices')&&
  !ui.includes("Up to {t.maxChoices} pieces"),
- "Visible upper selection card max counter includes repeated category pieces")
+ "Show name + inclusive price then step forward, all options flat and cap private")
 assert(deliveryConfig.includes("SELF_BUILD_DELIVERY_FEE_PAISE = 5000")&&
- !ui.includes("hamperFinalPriceRupees(t.price)")&&
+ ui.includes("hamperFinalPriceRupees(t.price)")&&
  ui.includes("hamperFinalPriceRupees(tier.price)")&&
  ui.includes("<small>Final price</small>")&&
  !ui.includes("<small>Delivery</small>")&&

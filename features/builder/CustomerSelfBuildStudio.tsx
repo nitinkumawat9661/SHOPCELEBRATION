@@ -103,6 +103,8 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   const [tierId,setTierId]=useState(tiers[0]?.id||"")
   const [quantity,setQuantity]=useState<Record<string,number>>({})
   const [note,setNote]=useState("")
+  const [buyerStep,setBuyerStep]=useState<"tier"|"select">("tier")
+  const [upgradeOpen,setUpgradeOpen]=useState(false)
   const [draftId,setDraftId]=useState("")
   const [savedSignature,setSavedSignature]=useState("")
   const [photos,setPhotos]=useState<Photo[]>([])
@@ -147,18 +149,11 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
     return [...selectable,...options]
   },[data])
 
-  // Presentation-only grouping. Keep category IDs, selection quantities,
-  // pricing, and the saved draft payload completely unchanged.
-  const groupedSections=useMemo(()=>{
-    const sections=new Map<string,typeof grouped>()
-    for(const item of grouped){
-      const title=item.group||"Gift categories"
-      const section=sections.get(title)||[]
-      section.push(item)
-      sections.set(title,section)
-    }
-    return Array.from(sections,([title,choices])=>({title,choices}))
-  },[grouped])
+  // Keep every selectable category/variant visible in one continuous list.
+  // No category navigation and no extra nested page for teddy, jewellery, etc.
+  const upgradeTier=useMemo(()=>[...tiers]
+    .filter(t=>t.maxChoices>selectedUnits && t.maxChoices>maxUnits && t.price>(tier?.price||0))
+    .sort((a,b)=>a.price-b.price)[0],[tiers,selectedUnits,maxUnits,tier?.price])
   const change=(name:keyof CheckoutData,value:string)=>setDetails(previous=>({...previous,[name]:value}))
   async function loadPhotos(){
     const result=await fetch("/api/account/self-build/photos",{cache:"no-store",credentials:"same-origin"})
@@ -179,6 +174,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
         if(disposed||!r.ok||!data.ok)return
         if(data.draft){
           setDraftId(data.draft.id);setTierId(data.draft.tierId);setNote(data.draft.otherRequestText)
+          setBuyerStep("select")
           const restored=Object.fromEntries(data.draft.selections.map(x=>[`${x.kind}:${x.id}`,x.quantity]))
           setQuantity(restored)
           setSavedSignature(JSON.stringify({tierId:data.draft.tierId,
@@ -299,52 +295,56 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
       {paid?<section className="sbBuyerCard sbBuyerSuccess"><h2>Payment confirmed</h2><p>Your personalised hamper order has been placed.</p>
         <p>Order: <strong>{orderId}</strong></p><Link href={trackingPath||"/account"}>Track your order →</Link>
       </section>:<>
-      <section className="sbBuyerTierSection" aria-label="Choose your hamper">
+      {buyerStep==="tier"?<section className="sbBuyerTierSection" aria-label="Choose your hamper">
         <h2 className="sbBuyerTierHeading">Choose your hamper</h2>
-        <div className="sbBuyerTiers" role="group" aria-label="Hamper names">{tiers.map(t=><button key={t.id} type="button" disabled={disabled}
-          className={tierId===t.id?"sbBuyerTierBar sbBuyerTierBar--active":"sbBuyerTierBar"}
-          aria-pressed={tierId===t.id} onClick={()=>setTierId(t.id)}>
-          {t.name}
-        </button>)}</div>
-        <p className="sbBuyerTierTotal" role="status" aria-live="polite">
-          Final hamper price <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong>
-        </p>
-      </section>
+        <p className="sbBuyerTierHint">Select a hamper to see all the available gifts.</p>
+        <div className="sbBuyerTiers" role="group" aria-label="Hamper names">
+          {tiers.map(t=><button key={t.id} type="button" disabled={disabled}
+            className="sbBuyerTierBar" onClick={()=>{
+              if(selectedUnits>t.maxChoices){setUpgradeOpen(true);return}
+              setTierId(t.id);setBuyerStep("select")
+              window.scrollTo({top:0,behavior:"auto"})
+            }}>
+            <span className="sbBuyerTierName">{t.name}</span>
+            <strong className="sbBuyerTierPrice">{formatMoney(hamperFinalPriceRupees(t.price))}</strong>
+            <span className="sbBuyerTierArrow" aria-hidden="true">→</span>
+          </button>)}
+        </div>
+      </section>:<>
+        <div className="sbBuyerChosenTier">
+          <span>{tier?.name||"Hamper"} · <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong></span>
+          <button type="button" disabled={disabled} onClick={()=>setBuyerStep("tier")}>Change hamper</button>
+        </div>
       <section className="sbBuyerCard sbBuyerSelectionsSection"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
         <p>Explore the gift categories below. You can choose the same type more than once.</p></div></div>
-        <div className={tooManyItems?"sbBuyerCountBar sbBuyerCountBarOver":"sbBuyerCountBar"} role="status" aria-live="polite">
-          <div><small>TOTAL PIECES IN YOUR HAMPER</small><strong>{selectedUnits} <span>/ {maxUnits}</span></strong></div>
-          <p>Maximum {maxUnits} pieces. Repeat the same category as often as you like, within this total.</p>
-        </div>
-        <div className="sbBuyerSelectionProgress" role="progressbar" aria-label="Hamper pieces selected"
-          aria-valuemin={0} aria-valuemax={maxUnits} aria-valuenow={Math.min(selectedUnits,maxUnits)}>
-          <span style={{width:`${maxUnits?Math.min(100,Math.round(selectedUnits/maxUnits*100)):0}%`}} />
-        </div>
-        {tooManyItems&&<p className="sbBuyerCountError" role="alert">This hamper holds up to {maxUnits} pieces. Remove {selectedUnits-maxUnits} to continue.</p>}
-        <div className="sbBuyerChoiceSections">{groupedSections.map(section=><section className="sbBuyerChoiceSection" key={section.title}
-          aria-label={section.title}>
-          <div className="sbBuyerChoiceSectionHead">
-            <h3>{section.title}</h3>
-          </div>
-          <div className="sbBuyerChoices">{section.choices.map(item=>{
+        <div className="sbBuyerChoices sbBuyerFlatChoices" aria-label="All available gifts">
+          {grouped.map(item=>{
             const count=quantity[item.key]||0
             return <div className={count>0?"sbBuyerChoice sbBuyerChoiceActive":"sbBuyerChoice"} key={item.key}>
-              <div><strong>{item.label}</strong></div>
+              <div className="sbBuyerChoiceText"><strong>{item.label}</strong>
+                {item.group&&<small>{item.group}</small>}
+              </div>
               <div className="sbBuyerQty">
                 <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
                   onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
                 <output aria-label={`${item.label}: ${count} selected`}>{count}</output>
-                <button type="button" disabled={disabled||count>=100||selectedUnits>=maxUnits}
-                  aria-label={`Add ${item.label}`} onClick={()=>setQuantity(v=>{
-                    const now=Object.values(v).reduce((sum,value)=>sum+Math.max(0,value),0)
-                    return now>=maxUnits?v:{...v,[item.key]:Math.min(100,(v[item.key]||0)+1)}
-                  })}>+</button>
+                <button type="button" disabled={disabled||count>=100} aria-label={`Add ${item.label}`}
+                  onClick={()=>{
+                    if(selectedUnits>=maxUnits){setUpgradeOpen(true);return}
+                    setQuantity(v=>{
+                      const total=Object.values(v).reduce((sum,value)=>sum+Math.max(0,value),0)
+                      return total>=maxUnits?v:{...v,[item.key]:Math.min(100,(v[item.key]||0)+1)}
+                    })
+                  }}>+</button>
               </div>
             </div>
-          })}</div>
-        </section>)}</div>
+          })}
+        </div>
+        {tooManyItems&&<p className="sbBuyerCountError" role="alert">
+          This hamper cannot fit all your chosen gifts. Choose a larger hamper or remove some gifts.
+        </p>}
         {items.length>0&&<div className="sbBuyerSelected" aria-label="Your selected gifts">
-          <div className="sbBuyerSelectedHead"><strong>Your selected gifts</strong><span>{selectedUnits} of {maxUnits} pieces</span></div>
+          <div className="sbBuyerSelectedHead"><strong>Your selected gifts</strong></div>
           <ul>{items.map(item=><li key={`${item.kind}:${item.id}`}>
             <span>{labelOf(data,item)}</span><b>× {item.quantity}</b>
           </li>)}</ul>
@@ -405,7 +405,18 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
         {orderId&&<p className="sbBuyerPending">Order {orderId} saved. If money was deducted, verify your status before retrying.
           <button type="button" disabled={busy} onClick={()=>void refreshPayment()}>Check payment status</button></p>}
       </section>
+        </>}
       </>}
     </>}
+    {upgradeOpen&&<div className="sbBuyerUpgradeBackdrop">
+      <div className="sbBuyerUpgradeDialog" role="dialog" aria-modal="true" aria-labelledby="buyer-upgrade-heading">
+        <h2 id="buyer-upgrade-heading">Choose a larger hamper</h2>
+        <p>{upgradeTier?"Choose a larger hamper to add this gift.":"This hamper has reached its selection limit."}</p>
+        {upgradeTier&&<button type="button" onClick={()=>{
+          setTierId(upgradeTier.id);setUpgradeOpen(false);setBuyerStep("select")
+        }}>Choose {upgradeTier.name} · {formatMoney(hamperFinalPriceRupees(upgradeTier.price))}</button>}
+        <button type="button" onClick={()=>setUpgradeOpen(false)}>Keep my hamper</button>
+      </div>
+    </div>}
   </div>
 }
