@@ -13,6 +13,7 @@ import { AdminOrderCard } from "./AdminOrderCard"
 import { AdminOrderToolbar } from "./AdminOrderToolbar"
 import { AdminStoreSettings } from "./AdminStoreSettings"
 import { AdminSelfBuildManager } from "./AdminSelfBuildManager"
+import { AdminSelfBuildPaymentReviews } from "./AdminSelfBuildPaymentReviews"
 import "../../styles/admin-self-build-20261013.css"
 import { AdminReservationReview } from "./AdminReservationReview"
 import { AdminReviews } from "./AdminReviews"
@@ -238,7 +239,7 @@ export function AdminDashboard() {
         {(view === "tiers" || view === "products" || view === "occasions") && <AdminCatalogManager section={view} />}
         {view === "reviews" && <AdminReviews />}
         {view === "settings" && <AdminStoreSettings />}
-        {view === "selfBuild" && <AdminSelfBuildManager />}
+        {view === "selfBuild" && <><AdminSelfBuildManager /><AdminSelfBuildPaymentReviews /></>}
         {view === "history" && <AdminCatalogHistory />}
       </div>
     </div>
