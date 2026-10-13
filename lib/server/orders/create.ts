@@ -66,7 +66,7 @@ function validateExistingOrder(row: ExistingOrder, input: NormalizedOrder, custo
   if (input.orderType === "individual" && input.expectedSubtotalPaise !== row.subtotal_paise) throw new OrderValidationError("CART_PRICE_CHANGED")
 }
 
-async function insertOrder(
+export async function createOrderWithClient(
   client: PoolClient,
   input: NormalizedOrder,
   customerAccountId: string,
@@ -80,7 +80,7 @@ async function insertOrder(
   if (already) {
     validateExistingOrder(already, input, customerAccountId)
     if (input.orderType === "individual") await reserveInventoryForOrderWithClient(client, already.id, input.lineItems)
-    return { publicId: already.public_id, trackingToken, pricing: existingPricing(already) }
+    return { publicId: already.public_id, trackingToken, pricing: existingPricing(already), created: false as const }
   }
 
   // Hold the published catalog until the priced order is saved; a concurrent publish must wait.
@@ -164,7 +164,7 @@ async function insertOrder(
     if (!existing) throw new Error("IDEMPOTENCY_LOOKUP_FAILED")
     validateExistingOrder(existing, input, customerAccountId)
     if (input.orderType === "individual") await reserveInventoryForOrderWithClient(client, existing.id, input.lineItems)
-    return { publicId: existing.public_id, trackingToken, pricing: existingPricing(existing) }
+    return { publicId: existing.public_id, trackingToken, pricing: existingPricing(existing), created: false as const }
   }
 
   await client.query(`UPDATE orders SET shipping_paise = $1 WHERE id = $2`, [pricing.shippingPaise, internalId])
@@ -182,7 +182,7 @@ async function insertOrder(
     payablePaise: pricing.payablePaise,
     campaignId: pricing.campaignId
   })
-  return { publicId, trackingToken, pricing }
+  return { publicId, trackingToken, pricing, created: true as const }
 }
 
 export function createOrder(
@@ -191,5 +191,5 @@ export function createOrder(
   offerQuoteId?: unknown,
   options: CreateOrderOptions = {}
 ) {
-  return transaction((client) => insertOrder(client, input, customerAccountId, offerQuoteId, options))
+  return transaction((client) => createOrderWithClient(client, input, customerAccountId, offerQuoteId, options))
 }
