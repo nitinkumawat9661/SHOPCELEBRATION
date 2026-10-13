@@ -1,0 +1,148 @@
+name: Telegram Production Backup and Isolated Migration Dry Run
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/telegram-predeploy-db-backup-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safe-vps-backup-and-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure exact-host SSH without disclosing credentials
+        run: |
+          set -euo pipefail
+          for var in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!var:-}" ] || { echo "Missing SSH configuration: $var" >&2; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration" "$HOME/.ssh/known_hosts"
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+      - name: Dump live DB, restore to DISTINCT throwaway database, test migrations 100–102
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
+          set -euo pipefail
+          umask 077
+          APP_ROOT=/var/www/celebration
+          LIVE="$(readlink -f "$APP_ROOT/current")"
+          case "$LIVE" in "$APP_ROOT"/releases/*) ;; *) echo "Unrecognized release"; exit 1 ;; esac
+          cd "$LIVE"
+          node - <<'NODE'
+          const {loadEnvConfig}=require("@next/env")
+          loadEnvConfig(process.cwd(),false)
+          const {Client}=require("pg")
+          const {readFileSync,statSync,readdirSync,existsSync,mkdtempSync,rmSync}=require("node:fs")
+          const {spawnSync}=require("node:child_process")
+          const {randomBytes,randomInt}=require("node:crypto")
+          const path=require("node:path")
+          const url=new URL(process.env.DATABASE_URL || "")
+          if(decodeURIComponent(url.pathname.slice(1))!=="celebration")throw Error("Refusing non-Celebration source DB")
+          const opts={...process.env,PGHOST:url.hostname,PGPORT:url.port||"5432",PGUSER:decodeURIComponent(url.username),PGPASSWORD:decodeURIComponent(url.password),PGSSLMODE:process.env.DATABASE_SSL_MODE==="disable"?"disable":"require"}
+          if(!opts.PGHOST||!opts.PGUSER)throw Error("Missing DB host/user")
+          function command(exe,args,env=opts){
+            const r=spawnSync(exe,args,{env,encoding:"utf8",timeout:120000})
+            if(r.error||r.status!==0)throw Error(exe+" failed with exit="+r.status)
+          }
+          const sourceDb="celebration"
+          const safeName="celebration_telegram_restore_"+randomBytes(5).toString("hex")
+          const backup="/home/nitin/celebration-db-backups/celebration-before-telegram-"+new Date().toISOString().replace(/[-:.]/g,"").slice(0,15)+"Z.dump"
+          const sourceConn=process.env.DATABASE_URL
+          const dbConnection=name=>{const target=new URL(sourceConn);target.pathname="/"+name;return target.toString()}
+          const ssl=process.env.DATABASE_SSL_MODE==="disable"?false:{rejectUnauthorized:true}
+          let scratchCreated=false, scratchDb=safeName
+          let isolatedRoot=null, isolatedBin=null, isolatedStarted=false
+          let isolatedDbOpts=null
+          ;(async()=>{
+            const admin=new Client({connectionString:dbConnection("postgres"),ssl})
+            try{
+              command("pg_dump",["-Fc","--no-owner","--no-acl","--file",backup,"--dbname",sourceDb])
+              command("pg_restore",["--list",backup])
+              console.log("FRESH_BACKUP="+backup)
+              console.log("BACKUP_SIZE_BYTES="+statSync(backup).size)
+              await admin.connect()
+              const perms=await admin.query("SELECT rolcreatedb OR rolsuper AS allowed FROM pg_roles WHERE rolname=CURRENT_USER")
+              let scratch
+              if(perms.rows[0]?.allowed){
+                await admin.query('CREATE DATABASE "'+safeName+'"')
+                scratchCreated=true
+                command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--dbname",scratchDb,backup])
+                scratch=new Client({connectionString:dbConnection(scratchDb),ssl})
+              }else{
+                // The app role cannot create a database. Start an entirely
+                // separate unprivileged PostgreSQL instance on a 0700 UNIX socket.
+                // No production DB writes, no network port, no customer-data export.
+                const version=readdirSync("/usr/lib/postgresql").filter(v=>/^\d+$/.test(v)).sort((x,y)=>Number(y)-Number(x))
+                  .find(v=>existsSync("/usr/lib/postgresql/"+v+"/bin/initdb"))
+                if(!version)throw Error("No unprivileged initdb binary available; rollout BLOCKED")
+                isolatedBin="/usr/lib/postgresql/"+version+"/bin"
+                isolatedRoot=mkdtempSync("/tmp/celebration-telegram-restore-")
+                const dataDir=path.join(isolatedRoot,"data")
+                const port=String(randomInt(40000,49000))
+                const user=spawnSync("id",["-un"],{encoding:"utf8"}).stdout.trim()
+                command(path.join(isolatedBin,"initdb"),["-D",dataDir,"--auth-local=trust","--auth-host=reject","--no-instructions"],{...process.env,PGPASSWORD:""})
+                command(path.join(isolatedBin,"pg_ctl"),["-D",dataDir,"-l",path.join(isolatedRoot,"postgres.log"),
+                  "-o","-c listen_addresses='' -k "+isolatedRoot+" -p "+port,"-w","start"],{...process.env,PGPASSWORD:""})
+                isolatedStarted=true
+                isolatedDbOpts={host:isolatedRoot,port:Number(port),user,database:"postgres",ssl:false}
+                command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--host",isolatedRoot,
+                  "--port",port,"--username",user,"--dbname","postgres",backup],{...process.env,PGPASSWORD:"",PGSSLMODE:"disable"})
+                scratch=new Client(isolatedDbOpts)
+                console.log("ISOLATED_RESTORE_ENGINE=private_unix_socket")
+              }
+              await scratch.connect()
+              try{
+                const before=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
+                const already=await scratch.query("SELECT name FROM schema_migrations WHERE name LIKE '10%telegram%'")
+                if(already.rows.length)throw Error("Telegram schema already applied to restored copy; reconcile before deployment")
+                for(const file of [
+                  "100_telegram_notification_outbox.sql",
+                  "101_telegram_order_messaging_and_courier.sql",
+                  "102_telegram_courier_watch.sql"
+                ]){
+                  const sql=readFileSync(path.join("/var/www/celebration/releases/telegram-f589a91cfd30/db/migrations",file),"utf8")
+                  await scratch.query("BEGIN")
+                  try{
+                    await scratch.query(sql)
+                    await scratch.query("INSERT INTO schema_migrations(name) VALUES($1)",[file])
+                    await scratch.query("COMMIT")
+                  }catch(e){await scratch.query("ROLLBACK");throw e}
+                }
+                const after=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
+                if(before.rows[0].n!==after.rows[0].n)throw Error("Unexpected order count change")
+                const tables=await scratch.query("SELECT to_regclass('telegram_notification_outbox') IS NOT NULL AS outbox, to_regclass('telegram_order_messages') IS NOT NULL AS messages")
+                if(!tables.rows[0].outbox||!tables.rows[0].messages)throw Error("Telegram migration incomplete")
+                console.log("ISOLATED_RESTORE_AND_TELEGRAM_MIGRATION=PASSED")
+                console.log("ORDERS_PRESERVED="+after.rows[0].n)
+              }finally{await scratch.end()}
+            }finally{
+              if(scratchCreated){
+                await admin.query('DROP DATABASE "'+safeName+'" WITH (FORCE)')
+                console.log("TEMP_DB_REMOVED=YES")
+              }
+              if(isolatedStarted){
+                command(path.join(isolatedBin,"pg_ctl"),["-D",path.join(isolatedRoot,"data"),"-m","fast","-w","stop"],{...process.env,PGPASSWORD:""})
+                isolatedStarted=false
+                console.log("ISOLATED_POSTGRES_STOPPED=YES")
+              }
+              if(isolatedRoot&&!isolatedStarted)rmSync(isolatedRoot,{recursive:true,force:true})
+              await admin.end().catch(()=>{})
+            }
+          })().catch(error=>{console.error("SAFE_CHECK_FAILED:",error.message);process.exitCode=1})
+          NODE
+          REMOTE
