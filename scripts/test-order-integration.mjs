@@ -88,7 +88,9 @@ try {
   const requiredDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 7 * 86400000))
   const body = { orderType: 'individual', expectedSubtotalPaise: 94900, items: [{ productId: 'test-bracelet', quantity: 2 }, { productId: 'test-ring', quantity: 1 }], requiredDate, customerName: account.displayName, phone: account.phone, receiverName: 'Test Receiver', address: 'Local test delivery address', city: 'Sikar', state: 'Rajasthan', pincode: '332001', policyVersion: orderConfig.policyVersion, policyAccepted: true, idempotencyKey: randomUUID() }
   const normalize = (changes = {}, current = catalog) => normalizeOrderInput({ ...body, ...changes }, 'Asia/Kolkata', current, { requirePaymentReference: false, checkExpectedSubtotal: false })
-  const auto = { paymentProvider: 'razorpay' }
+  // Individual checkout requires an explicit verified shipping quote. A zero
+  // shipping amount is a valid local fixture; never contact live couriers.
+  const auto = { paymentProvider: 'razorpay', shippingPaise: 0 }
   const created = await createOrder(normalize(), account.id, undefined, auto)
   assert.equal(created.pricing.payablePaise, 94900)
 
