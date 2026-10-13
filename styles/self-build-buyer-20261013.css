@@ -211,3 +211,89 @@
 @media(prefers-reduced-motion:reduce){
   .sbBuyerTiers .sbBuyerTierBar,.sbBuyerChoice{transition:none}
 }
+
+
+/* Owner-approved Self-Build two-screen wizard: choose a named priced hamper,
+   then all real gift options in one scrollable continuous list. */
+.sbBuyerPage{background:#f8efe9}
+.sbBuyerTop h1{font:italic 800 clamp(33px,5vw,51px)/1.1 Georgia,serif;color:#4f1932}
+.sbBuyerTierHeading{font:italic 800 clamp(29px,4vw,40px)/1.14 Georgia,serif;color:#501931;margin-bottom:6px}
+.sbBuyerTierHint{font:500 13px/1.5 Arial,sans-serif;color:#76565b;margin:0 0 18px}
+.sbBuyerTiers{display:flex;flex-direction:column;align-items:stretch;gap:0;border-top:2px solid #8f5061}
+.sbBuyerTiers .sbBuyerTierBar,
+.sbBuyerTiers .sbBuyerTierBar:nth-child(2n),
+.sbBuyerTiers .sbBuyerTierBar[aria-pressed=true]{
+  display:flex;align-items:center;flex-direction:row;justify-content:space-between;
+  flex-wrap:nowrap;gap:13px;width:100%;min-width:0;min-height:78px;
+  padding:13px 5px;background:transparent;border:0;
+  border-bottom:1px solid #d5b8ba;border-radius:0;
+  color:#4b2637;box-shadow:none;transform:none
+}
+.sbBuyerTiers .sbBuyerTierBar:hover:not(:disabled){background:#f0dddb;color:#501931}
+.sbBuyerTiers .sbBuyerTierBar .sbBuyerTierName{
+  flex:1;min-width:0;font:italic 800 clamp(21px,3vw,33px)/1.14 Georgia,serif;
+  letter-spacing:-.02em;color:#4b2637;overflow-wrap:anywhere
+}
+.sbBuyerTiers .sbBuyerTierBar .sbBuyerTierPrice{
+  flex:0 0 auto;font:800 clamp(21px,2.7vw,30px)/1.12 Georgia,serif;
+  color:#741e38;white-space:nowrap
+}
+.sbBuyerTierArrow{
+  display:grid;place-items:center;flex:0 0 33px;width:33px;height:33px;
+  color:#fff9f3;background:#741e38;border-radius:50%;
+  font:700 17px/1 Arial,sans-serif
+}
+.sbBuyerChosenTier{
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;padding:12px 0;margin:18px 0;
+  border-top:1px solid #d5b8ba;border-bottom:1px solid #d5b8ba;
+  color:#4d2536;font:italic 700 20px/1.2 Georgia,serif
+}
+.sbBuyerChosenTier strong{color:#741e38}
+.sbBuyerChosenTier button{
+  min-height:44px;border:0;background:transparent;color:#741e38;
+  text-decoration:underline;font:650 12px/1.2 Arial,sans-serif
+}
+.sbBuyerSelectionsSection.sbBuyerCard{background:transparent;border:0;box-shadow:none;padding:0}
+.sbBuyerSelectionsSection .sbBuyerCardHead h2{
+  font:italic 800 clamp(25px,3.3vw,34px)/1.1 Georgia,serif;color:#4d1832
+}
+.sbBuyerFlatChoices{display:flex;flex-direction:column;gap:0}
+.sbBuyerFlatChoices .sbBuyerChoice{
+  min-height:70px;background:transparent;border:0;
+  border-bottom:1px solid #d9c1bf;border-radius:0;
+  padding:10px 2px;box-shadow:none
+}
+.sbBuyerFlatChoices .sbBuyerChoiceActive{background:#f0dddc;padding-left:10px}
+.sbBuyerChoiceText{min-width:0;display:flex;flex-direction:column;gap:3px}
+.sbBuyerFlatChoices .sbBuyerChoiceText strong{
+  font:italic 750 clamp(18px,2.4vw,23px)/1.18 Georgia,serif;
+  color:#4b2035;letter-spacing:-.015em
+}
+.sbBuyerFlatChoices .sbBuyerChoiceText small{
+  font:550 10px/1.4 Arial,sans-serif;color:#8b6774
+}
+.sbBuyerFlatChoices .sbBuyerQty button{
+  border-color:#cda9aa;background:#fff6f2;color:#6b1c37
+}
+.sbBuyerUpgradeBackdrop{position:fixed;inset:0;z-index:10000;
+  display:grid;place-items:center;background:#251019a8;padding:18px
+}
+.sbBuyerUpgradeDialog{
+  width:min(100%,430px);display:grid;gap:15px;padding:30px;
+  background:#fffaf5;border:1px solid #d7b7ad;box-shadow:0 20px 54px #26101d33
+}
+.sbBuyerUpgradeDialog h2{font:italic 800 30px/1.1 Georgia,serif;color:#521a34;margin:0}
+.sbBuyerUpgradeDialog p{font:500 13px/1.5 Arial,sans-serif;color:#75565c;margin:0}
+.sbBuyerUpgradeDialog button{min-height:45px;padding:11px;background:#741e38;color:#fff;border:1px solid #741e38}
+.sbBuyerUpgradeDialog button:last-child{background:transparent;color:#741e38;border-color:#cda9aa}
+@media(max-width:650px){
+  .sbBuyerTiers .sbBuyerTierBar,.sbBuyerTiers .sbBuyerTierBar:nth-child(2n){min-height:67px;padding:11px 0;gap:9px}
+  .sbBuyerTiers .sbBuyerTierBar .sbBuyerTierName{font-size:21px}
+  .sbBuyerTiers .sbBuyerTierBar .sbBuyerTierPrice{font-size:20px}
+  .sbBuyerTierArrow{flex-basis:28px;width:28px;height:28px}
+  .sbBuyerFlatChoices .sbBuyerChoiceText strong{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sbBuyerTiers .sbBuyerTierBar,.sbBuyerFlatChoices .sbBuyerChoice{transition:none}
+}
