@@ -6,6 +6,7 @@
 CREATE TABLE self_build_order_photos (
   id uuid PRIMARY KEY,
   order_id text NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+  source_draft_id text NOT NULL,
   object_key text UNIQUE CHECK (
     object_key IS NULL OR
     object_key ~ '^self-build/private/[0-9a-f-]{36}/[0-9a-f-]{36}\.webp$'
