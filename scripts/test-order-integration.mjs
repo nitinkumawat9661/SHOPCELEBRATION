@@ -85,6 +85,13 @@ try {
   const catalog = { ...defaultCatalog, products: [...defaultCatalog.products, ...fixtureProducts] }
   const publish = async (next) => control.query(`INSERT INTO catalog_config(id,payload,version) VALUES('primary',$1::jsonb,1) ON CONFLICT(id) DO UPDATE SET payload=EXCLUDED.payload,version=catalog_config.version+1`, [JSON.stringify(next)])
   await publish(catalog)
+  // The real checkout reserves stock for every individual item. Seed only
+  // disposable fixture SKUs with sufficient stock for the whole regression
+  // suite; the production inventory remains untouched.
+  await control.query(`INSERT INTO product_inventory (product_id, available_quantity)
+    VALUES ('test-bracelet', 1000), ('test-ring', 1000)
+    ON CONFLICT (product_id) DO UPDATE
+      SET available_quantity = EXCLUDED.available_quantity, updated_at = now()`)
   const requiredDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 7 * 86400000))
   const body = { orderType: 'individual', expectedSubtotalPaise: 94900, items: [{ productId: 'test-bracelet', quantity: 2 }, { productId: 'test-ring', quantity: 1 }], requiredDate, customerName: account.displayName, phone: account.phone, receiverName: 'Test Receiver', address: 'Local test delivery address', city: 'Sikar', state: 'Rajasthan', pincode: '332001', policyVersion: orderConfig.policyVersion, policyAccepted: true, idempotencyKey: randomUUID() }
   const normalize = (changes = {}, current = catalog) => normalizeOrderInput({ ...body, ...changes }, 'Asia/Kolkata', current, { requirePaymentReference: false, checkExpectedSubtotal: false })
