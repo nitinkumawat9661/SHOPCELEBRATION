@@ -62,8 +62,10 @@ for(const p of [299,499,999,1299,1499])assert.equal(pricing.hamperFinalPriceRupe
 assert.ok(limits.includes("targetPercent")&&limits.includes("tier.price")&&!buyer.includes("getSelfBuildTierLimits"),
   "Final display does not influence existing 80% / 75% budget calculation")
 for(const [css,klass] of [[buyerCss,".sbBuyerTierBar"],[previewCss,".sbPreviewTierBar"]]){
- assert.ok(css.includes(klass)&&css.includes("linear-gradient")&&css.includes("min-height:44px"),
-  "Show high-contrast maximalist bars and minimum accessible touch sizing")
+ assert.ok(css.includes(klass)&&css.includes("#7b1420")&&css.includes("#fffdfa")&&css.includes("min-height:44px"),
+  "Use Celebration wine/ivory colour system and minimum accessible touch sizing")
+ assert.ok(!css.includes("linear-gradient(116deg,#371020")&&!css.includes("linear-gradient(125deg,#3b102a"),
+  "The old dark-pink/gold mockup gradients must be removed, not merely obscured")
  assert.ok(css.includes("prefers-reduced-motion")&&css.includes(":focus-visible"),
   "Keep keyboard and motion accessibility")
 }
