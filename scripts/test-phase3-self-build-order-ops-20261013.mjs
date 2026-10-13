@@ -74,6 +74,18 @@ assert(settlement.includes("STALE_OR_UNKNOWN_PAYMENT_ATTEMPT")&&settlement.inclu
 assert(settlement.includes("amountPaise !== order.amount_paise"),"Verified payment amount must match frozen payable price")
 assert(!manualOrder.includes("settleStagedSelfBuildPaymentWithClient")&&!paymentCreate.includes("settleStagedSelfBuildPaymentWithClient"),"No new live payment gateway side effects")
 const noStock=await read("lib/server/orders/self-build-no-inventory.ts")
+const buyerDraft=await read("lib/server/self-build-drafts.ts")
+const budgetMigration=await read("db/migrations/106_self_build_private_tier_percent_allowances.sql")
+assert(noStock.includes("SELF_BUILD_MAX_ITEMS_EXCEEDED")&&
+ noStock.includes("totalPieces>chosenTier.maxChoices"),"Checkout must enforce physical piece count including repeat category")
+assert(buyerDraft.includes("SELF_BUILD_MAX_ITEMS_EXCEEDED")&&
+ buyerDraft.includes("currentTier.maxChoices"),"Draft API enforces same cap as payment")
+assert(noStock.includes("chosenTier.price>=1999?0.80:0.85"),"Allow only nominal 75/80 plus five percentage points")
+assert(budgetMigration.includes("self_build_tier_allowances")&&
+ budgetMigration.includes("0.80 ELSE 0.85")&&
+ !budgetMigration.includes("self_build_category_capacity")&&
+ !budgetMigration.includes("self_build_option_capacity"),"Budget migration changes private allowances only; no inventory")
+
 const noStockCheckout=await read("app/api/payments/self-build/create/route.ts")
 const reviewsDb=await read("db/migrations/105_self_build_payment_refund_reviews_no_inventory.sql")
 const reviewAdminApi=await read("app/api/admin/self-build/payment-reviews/route.ts")
