@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto"
 import { query, transaction } from "./db"
 import type { SelfBuildSelection } from "./self-build-quote"
 import { getCatalogConfig } from "./catalog"
+import { deleteSelfBuildPrivatePhoto } from "./r2"
 
 const ID=/^[a-z0-9][a-z0-9-]{0,59}$/
 const MAX_SELECTIONS=100
-const DRAFT_DAYS=14
 
 export class SelfBuildDraftError extends Error {
   constructor(public readonly code:string,public readonly status=422){super(code)}
@@ -77,8 +77,23 @@ export async function saveSelfBuildDraft(accountId:string,input:unknown){
       }
     }
     // Id is preserved across saves so uploaded private photos can stay linked.
-    const existing=await client.query<{id:string}>(
-      "SELECT id FROM self_build_drafts WHERE customer_account_id=$1 FOR UPDATE",[accountId])
+    const existing=await client.query<{id:string;expires_at:Date}>(
+      "SELECT id,expires_at FROM self_build_drafts WHERE customer_account_id=$1 FOR UPDATE",[accountId])
+    const existingId=existing.rows[0]?.id
+    if(existingId){
+      const photos=await client.query<{object_key:string}>(
+        "SELECT object_key FROM self_build_draft_photos WHERE draft_id=$1 FOR UPDATE",[existingId])
+      const selectedPhotoCount=clean.selections.reduce((n,item)=>{
+        const c=item.kind==="category"?byId.get(item.id):null
+        return c?.selection_kind==="photo"?n+item.quantity:n
+      },0)
+      if(existing.rows[0].expires_at<=new Date()){
+        for(const p of photos.rows)await deleteSelfBuildPrivatePhoto(p.object_key)
+        await client.query("DELETE FROM self_build_draft_photos WHERE draft_id=$1",[existingId])
+      }else if(photos.rows.length>selectedPhotoCount){
+        reject("REMOVE_EXCESS_DRAFT_PHOTOS_BEFORE_SAVING",409)
+      }
+    }
     const id=existing.rows[0]?.id||randomUUID()
     await client.query(`INSERT INTO self_build_drafts
       (id,customer_account_id,tier_id,selections,other_request_text,expires_at)
@@ -96,9 +111,18 @@ export async function saveSelfBuildDraft(accountId:string,input:unknown){
   })
 }
 export async function deleteSelfBuildDraft(accountId:string) {
-  // Files in private R2 storage require a separate lifecycle cleanup for
-  // cascading or abandoned draft photos; never expose object keys to buyers.
-  await query("DELETE FROM self_build_drafts WHERE customer_account_id=$1",[accountId])
+  // Customer deletion removes private R2 bytes as well as DB metadata.
+  await transaction(async client=>{
+    const draft=await client.query<{id:string}>(
+      "SELECT id FROM self_build_drafts WHERE customer_account_id=$1 FOR UPDATE",[accountId])
+    if(!draft.rows[0])return
+    const photos=await client.query<{object_key:string}>(`
+      SELECT object_key FROM self_build_draft_photos
+      WHERE draft_id=$1 AND customer_account_id=$2 FOR UPDATE`,
+      [draft.rows[0].id,accountId])
+    for(const p of photos.rows)await deleteSelfBuildPrivatePhoto(p.object_key)
+    await client.query("DELETE FROM self_build_drafts WHERE customer_account_id=$1",[accountId])
+  })
 }
 export async function countDraftPhotos(accountId:string,draftId:string){
   const result=await query<{count:string}>(`SELECT COUNT(*)::text AS count
