@@ -87,7 +87,7 @@ jobs:
                 // The app role cannot create a database. Start an entirely
                 // separate unprivileged PostgreSQL instance on a 0700 UNIX socket.
                 // No production DB writes, no network port, no customer-data export.
-                const version=readdirSync("/usr/lib/postgresql").filter(v=>/^\\d+$/.test(v)).sort((x,y)=>Number(y)-Number(x))
+                const version=readdirSync("/usr/lib/postgresql").filter(v=>/^\d+$/.test(v)).sort((x,y)=>Number(y)-Number(x))
                   .find(v=>existsSync("/usr/lib/postgresql/"+v+"/bin/initdb"))
                 if(!version)throw Error("No unprivileged initdb binary available; rollout BLOCKED")
                 isolatedBin="/usr/lib/postgresql/"+version+"/bin"
