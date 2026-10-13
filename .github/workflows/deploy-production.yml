@@ -5,6 +5,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      reinstall_category_art:
+        description: 'Explicitly reinstall verified category artwork'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -19,6 +25,7 @@ env:
   PM2_HOME: /home/nitin/.pm2
   RUNTIME_USER: nitin
   APP_PORT: "3040"
+  REINSTALL_CATEGORY_ART: ${{ inputs.reinstall_category_art || 'false' }}
   PUBLIC_HEALTH_URL: https://shopcelebration.in/api/health
 
 jobs:
@@ -94,9 +101,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s -- "$APP_ROOT" "$PM2_APP" "$PM2_HOME" "$RUNTIME_USER" "$APP_PORT" "$REMOTE_ARCHIVE" "$GITHUB_SHA" <<'REMOTE'
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s -- "$APP_ROOT" "$PM2_APP" "$PM2_HOME" "$RUNTIME_USER" "$APP_PORT" "$REMOTE_ARCHIVE" "$GITHUB_SHA" "$REINSTALL_CATEGORY_ART" <<'REMOTE'
           set -euo pipefail
-          APP_ROOT="$1"; PM2_APP="$2"; PM2_HOME="$3"; RUNTIME_USER="$4"; APP_PORT="$5"; ARCHIVE="$6"; SHA="$7"
+          APP_ROOT="$1"; PM2_APP="$2"; PM2_HOME="$3"; RUNTIME_USER="$4"; APP_PORT="$5"; ARCHIVE="$6"; SHA="$7"; REINSTALL_ART="$8"
           test "$APP_ROOT" = "/var/www/celebration"
           test "$PM2_APP" = "celebration-site"
           test "$RUNTIME_USER" = "nitin"
@@ -124,6 +131,8 @@ jobs:
           run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run typecheck && npm run build' _ "$NEW_RELEASE"
           echo "Applying idempotent database migrations"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/migrate.mjs\")"' _ "$NEW_RELEASE"
+          # Persistent R2/DB category media must not be reseeded on code-only deploys.
+          if [ "$REINSTALL_ART" = "true" ]; then
           echo "Preparing self-hosted real category photos before activating release"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/seed-home-category-photos.mjs\")"' _ "$NEW_RELEASE"
           echo "Creating authentic Celebration category art from verified exact-SKU photos"
@@ -138,6 +147,10 @@ jobs:
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/install-owner-category-art-v6.mjs\")"' _ "$NEW_RELEASE"
           echo "Installing final eight owner-provided category images, with empty Earrings navigation"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/install-owner-category-art-v7.mjs\")"' _ "$NEW_RELEASE"
+
+          else
+            echo "Preserving existing owner-approved category imagery."
+          fi
 
           start_release() {
             local release="$1"
