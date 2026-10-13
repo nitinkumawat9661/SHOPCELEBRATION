@@ -17,11 +17,11 @@ const [builder,styles,imports,budget,discovery,tail,details,packageRaw,orderSumm
 
 assert(builder.includes('className="quickHamperSummary quickHamperSummary--premium"'),"Quick-selected hamper preview is shown only after a chosen budget")
 assert(builder.includes("quickStart && <section"),"Do not duplicate the summary for the full builder")
-assert(builder.includes("{state.tier.name}")&&builder.includes("{formatMoney(state.tier.price)}")&&builder.includes("{state.checkout.occasion}")&&builder.includes("{state.tier.size}"),
+assert(builder.includes("{state.tier.name}")&&builder.includes("{formatMoney(hamperFinalPriceRupees(state.tier.price))}")&&builder.includes("{state.checkout.occasion}")&&builder.includes("{state.tier.size}"),
   "Selected hamper details must always be real tier/occasion data")
 assert(builder.includes("Complete hamper price, not just the box."),"Do not imply a budget represents packaging-only price")
-assert(builder.includes('<dl className="quickHamperFacts">')&&builder.includes("<dt>Budget</dt>")&&builder.includes("<dt>Occasion</dt>")&&builder.includes("<dt>Size</dt>"),
-  "Budget, occasion and size should be accessible description-list data")
+assert(builder.includes('<dl className="quickHamperFacts">')&&builder.includes("<dt>Final price</dt>")&&builder.includes("<dt>Occasion</dt>")&&builder.includes("<dt>Size</dt>"),
+  "Inclusive final price, occasion and size should be accessible description-list data")
 assert(builder.includes('onClick={changeBudget}')&&builder.includes('document.getElementById("budgets")?.scrollIntoView'),
   "Change budget must retain the existing scroll-based edit action")
 assert(builder.includes('quickStart ? "quickSteps quickSteps--premium" : "fourSteps"')&&builder.includes('quickStepNumber'),
@@ -55,7 +55,7 @@ assert(packageRaw.includes("test-home-quick-hamper-summary-20261012.mjs"),
   "Always run summary and step-navigation regression checks during PR and VPS audit")
 assert(orderSummary.includes('Chosen by Celebration') && !orderSummary.includes('tier.maxChoices} items'),
   "Curated hamper summary must not claim a fixed item count that was never verified")
-assert(orderSummary.includes('formatMoney(tier.price)') && orderSummary.includes('checkout.requiredDate'),
+assert(orderSummary.includes('formatMoney(hamperFinalPriceRupees(tier.price))') && orderSummary.includes('checkout.requiredDate'),
   "Pricing and preferred date still use real order fields")
 assert(customerCopy.includes('requiredBy: "Requested delivery date"') &&
  customerCopy.includes('Preferred delivery date *') &&
