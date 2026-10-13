@@ -1,6 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
+import { formatMoney } from "../../lib/domain/catalog"
 import { useMemo, useState } from "react"
 import type { SelfBuildVisualCategory, SelfBuildVisualData, SelfBuildVisualOption } from "../../lib/server/self-build-preview"
 
@@ -37,7 +39,7 @@ function isSelectable(kind: string): kind is Choice["kind"] {
 
 export function SelfBuildDesignPreview({ data, tiers }: {
   data: SelfBuildVisualData
-  tiers: {id:string;name:string;maxChoices:number}[]
+  tiers: {id:string;name:string;maxChoices:number;price:number}[]
 }) {
   const [step, setStep] = useState<Step>("choose")
   const [tierId,setTierId]=useState(tiers[0]?.id||"")
@@ -127,12 +129,17 @@ export function SelfBuildDesignPreview({ data, tiers }: {
         </nav>
 
         <section className="sbSelection" aria-label="Self-build hamper designer">
+          <div className="sbPreviewTierStage" role="group" aria-label="Choose your hamper by final price">
+            <div className="sbPreviewTierBars">
+              {tiers.map(item=><button key={item.id} type="button" data-tier-id={item.id}
+                className={tierId===item.id?"sbPreviewTierBar sbPreviewTierBar--active":"sbPreviewTierBar"}
+                aria-pressed={tierId===item.id} onClick={()=>setTierId(item.id)}>
+                <span className="sbPreviewTierName">{item.name}</span>
+                <strong className="sbPreviewTierPrice">{formatMoney(hamperFinalPriceRupees(item.price))}</strong>
+              </button>)}
+            </div>
+          </div>
           <div className="sbPreviewLimitBar" role="status" aria-live="polite">
-            <label htmlFor="sb-preview-tier">Hamper tier
-              <select id="sb-preview-tier" value={tier?.id||""} onChange={event=>setTierId(event.target.value)}>
-                {tiers.map(item=><option key={item.id} value={item.id}>{item.name} — up to {item.maxChoices} pieces</option>)}
-              </select>
-            </label>
             <div><small>MAXIMUM PIECES</small><strong>{units} <span>/ {maxItems}</span></strong>
               <p>Repeating one category also counts toward this total.</p></div>
           </div>

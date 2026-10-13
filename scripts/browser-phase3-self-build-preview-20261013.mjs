@@ -60,7 +60,13 @@ try {
       add(width + " preview expressly not live", await page.getByText("No orders or payments", { exact: false }).count() >= 1)
       // Six selected pieces in this scenario need Grand Plus (7 slots);
       // default mini tier intentionally caps at 2, including repeated items.
-      await page.locator("#sb-preview-tier").selectOption("t1499")
+      const tierBar=page.locator('.sbPreviewTierBar[data-tier-id="t1499"]')
+      await tierBar.click()
+      add(width + " tier name and final price only",
+        await tierBar.getAttribute("aria-pressed")==="true" &&
+        await tierBar.locator(".sbPreviewTierName").count()===1 &&
+        await tierBar.locator(".sbPreviewTierPrice").innerText().then(x=>x.includes("1,549")) &&
+        await tierBar.locator("small,p,img,svg,select").count()===0)
       add(width + " large tier advertises 7 physical items",
         await page.locator(".sbPreviewLimitBar").innerText().then(x=>x.includes("/ 7")))
 
@@ -119,5 +125,5 @@ try {
   writeFileSync(resolve(output, "report.json"), JSON.stringify({ checks, failures: checks.filter(x => !x.pass) }, null, 2))
 }
 const failures = checks.filter(x => !x.pass)
-console.log("Phase 3 self-build minimalist browser QA: " + checks.length + " checks, " + failures.length + " failures")
+console.log("Phase 3 self-build maximalist browser QA: " + checks.length + " checks, " + failures.length + " failures")
 if (failures.length) process.exitCode = 1

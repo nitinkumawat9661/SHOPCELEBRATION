@@ -85,7 +85,8 @@ assert(draftService.includes("countSelfBuildPieces(clean.selections)>limits.maxI
 assert(ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
  ui.includes("Maximum {maxUnits} pieces")&&ui.includes("selectedUnits>=maxUnits")&&
  ui.includes("selectedUnits>maxUnits")&&
- ui.includes("A hamper made to match your budget.")&&
+ ui.includes('className="sbBuyerTierName"')&&
+ ui.includes('className="sbBuyerTierPrice"')&&
  !ui.includes("Up to {t.maxChoices} pieces"),
  "Visible upper selection card max counter includes repeated category pieces")
 assert(deliveryConfig.includes("SELF_BUILD_DELIVERY_FEE_PAISE = 5000")&&

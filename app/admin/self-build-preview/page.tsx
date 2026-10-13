@@ -17,7 +17,7 @@ export default async function SelfBuildPreviewPage() {
   try {
     const [data, catalog] = await Promise.all([getSelfBuildVisualData(),getSelfBuildPublishedCatalog()])
     const tiers=catalog.tiers.map(t=>({
-      id:t.id,name:t.name,maxChoices:t.maxChoices
+      id:t.id,name:t.name,maxChoices:t.maxChoices,price:t.price
     }))
     return <SelfBuildDesignPreview data={data} tiers={tiers} />
   } catch (error) {
