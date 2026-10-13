@@ -63,7 +63,10 @@ jobs:
             await db.connect()
             try{
               const schema=await db.query("SELECT name FROM schema_migrations WHERE name LIKE '10%telegram%' ORDER BY name")
-              if(schema.rows.length!==3)throw Error("Telegram migrations 100-102 missing")
+              const applied=new Set(schema.rows.map(row=>row.name))
+              for(const required of ["100_telegram_notification_outbox.sql","101_telegram_order_messaging_and_courier.sql","102_telegram_courier_watch.sql","103_telegram_customer_two_way_chat.sql"]){
+                if(!applied.has(required))throw Error("Required Telegram schema is not applied: "+required)
+              }
               const tables=await db.query("SELECT to_regclass('telegram_notification_outbox') IS NOT NULL AS queue, to_regclass('telegram_order_messages') IS NOT NULL AS messages")
               if(!tables.rows[0].queue||!tables.rows[0].messages)throw Error("Telegram schema incomplete")
               console.log("TELEGRAM_SCHEMA=VERIFIED")
