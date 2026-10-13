@@ -6,6 +6,7 @@ on:
     paths:
       - features/builder/SelfBuildDesignPreview.tsx
       - app/admin/self-build-preview/page.tsx
+      - lib/server/self-build-published-tiers.ts
       - lib/server/self-build-preview.ts
       - styles/self-build-preview-20261013.css
       - scripts/browser-phase3-self-build-preview-20261013.mjs
@@ -54,7 +55,8 @@ jobs:
           command -v google-chrome || command -v google-chrome-stable || command -v chromium
           command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
           export PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=celebration_preview_test PGUSER=postgres PGPASSWORD=preview_only_db_pass
-          psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts(id text PRIMARY KEY); CREATE TABLE orders(id text PRIMARY KEY);'
+          psql -v ON_ERROR_STOP=1 -c 'CREATE TABLE customer_accounts(id text PRIMARY KEY); CREATE TABLE orders(id text PRIMARY KEY); CREATE TABLE catalog_config(id text PRIMARY KEY,payload jsonb NOT NULL,version integer NOT NULL DEFAULT 1);'
+          node -e 'const {Client}=require("pg");const payload=require("./content/catalog.json");(async()=>{const c=new Client({connectionString:process.env.DATABASE_URL});await c.connect();try{await c.query("INSERT INTO catalog_config(id,payload,version) VALUES($1,$2::jsonb,1)",["primary",JSON.stringify(payload)])}finally{await c.end()}})().catch(()=>{console.error("Isolated preview catalog fixture failed");process.exitCode=1})'
           psql -v ON_ERROR_STOP=1 -f db/migrations/034_admin_passkeys.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/047_self_build_hamper_draft_architecture.sql
           psql -v ON_ERROR_STOP=1 -f db/migrations/048_self_build_owner_confirmed_categories_and_rates.sql

@@ -11,9 +11,10 @@ import { transaction } from "../db"
 import { parseDraftBody } from "../self-build-drafts"
 import { transferSelfBuildPhotosToOrderWithClient } from "../self-build-order-photos"
 import { createOrderWithClient } from "./create"
+import { countSelfBuildPieces, getSelfBuildTierLimits } from "../self-build-tier-limits"
+import { evaluatePrivateSelfBuildChoices, type PrivateCategory, type PrivateOption } from "../self-build-private-budget"
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-type Choice={kind:"category"|"option";id:string;quantity:number}
 export class SelfBuildCheckoutError extends Error {
   constructor(public readonly code:string){super(code)}
 }
@@ -26,47 +27,6 @@ export type SelfBuildNoStockInput={
   paymentProvider:"razorpay"|"cashfree"
 }
 
-type Category={id:string;parent_id:string|null;selection_kind:string;charge_mode:string;unit_budget_paise:number|null;label:string;active:boolean}
-type Option={id:string;category_id:string;unit_budget_paise:number;label:string;active:boolean}
-
-function evaluateCategoriesOnly(selections:Choice[],cats:Category[],opts:Option[],allowMultiple:boolean,allowance:number) {
-  if(!selections.length||!Number.isSafeInteger(allowance)||allowance<=0)reject("SELF_BUILD_BUDGET_NOT_CONFIGURED")
-  const categories=new Map(cats.map(c=>[c.id,c]))
-  const options=new Map(opts.map(o=>[o.id,o]))
-  let spent=0,photoCount=0
-  const snap: {kind:Choice["kind"];id:string;label:string;quantity:number}[]=[]
-  for(const choice of selections) {
-    if(!allowMultiple && choice.quantity>1)reject("SELF_BUILD_MULTIPLE_QUANTITIES_DISABLED")
-    let unit:number|null
-    let label:string
-    if(choice.kind==="category"){
-      const category=categories.get(choice.id)
-      if(!category||!category.active||!["category","photo"].includes(category.selection_kind)||
-         (category.parent_id&&!categories.get(category.parent_id)?.active))
-        reject("SELF_BUILD_CATEGORY_UNAVAILABLE")
-      if(!["per_unit","once_per_category"].includes(category.charge_mode))
-        reject("SELF_BUILD_CATEGORY_UNAVAILABLE")
-      if(category.selection_kind==="photo")photoCount+=choice.quantity
-      unit=category.unit_budget_paise
-      label=category.label
-      if(category.charge_mode==="per_unit" && unit!==null)unit*=choice.quantity
-    }else{
-      const option=options.get(choice.id)
-      const parent=option?categories.get(option.category_id):null
-      if(!option||!option.active||!parent||!parent.active||parent.selection_kind!=="variant")
-        reject("SELF_BUILD_OPTION_UNAVAILABLE")
-      unit=option.unit_budget_paise*choice.quantity
-      label=option.label
-    }
-    if(unit===null||!Number.isSafeInteger(unit)||unit<0||unit>2147483647||
-       spent>2147483647-unit)reject("SELF_BUILD_PRIVATE_BUDGET_INVALID")
-    spent+=unit
-    if(spent>allowance)reject("SELF_BUILD_PRIVATE_BUDGET_EXCEEDED")
-    snap.push({kind:choice.kind,id:choice.id,label,quantity:choice.quantity})
-  }
-  if(photoCount>40)reject("SELF_BUILD_PHOTO_LIMIT")
-  return {spent,photoCount,snap}
-}
 
 export async function createSelfBuildNoInventoryWithClient(client:PoolClient,input:SelfBuildNoStockInput) {
   if(!input||typeof input.accountId!=="string"||!input.accountId||
@@ -95,26 +55,34 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
   const choices=parseDraftBody({tierId:saved.tier_id,selections:saved.selections,
     otherRequestText:saved.other_request_text}).selections
 
-  // Internal budgets are owner-defined category/option expenses, NOT stock.
-  // Never accept posted pricing, option labels, SKU IDs or costs.
-  const [cats,opts,tier]=await Promise.all([
-    client.query<Category>("SELECT id,parent_id,selection_kind,charge_mode,unit_budget_paise,label,active FROM self_build_categories ORDER BY id"),
-    client.query<Option>("SELECT id,category_id,unit_budget_paise,label,active FROM self_build_options ORDER BY id"),
-    client.query<{allowance_paise:number;enabled:boolean}>(
-      "SELECT allowance_paise,enabled FROM self_build_tier_allowances WHERE tier_id=$1",[saved.tier_id])
-  ])
-  if(tier.rows[0]?.enabled!==true)reject("SELF_BUILD_BUDGET_NOT_CONFIGURED")
-  const checkedChoices=evaluateCategoriesOnly(choices,cats.rows,opts.rows,
-    config.allow_multiple_quantities,tier.rows[0].allowance_paise)
-
+  // Trusted live tier selling price + tier maxChoices, never a posted
+  // price or owner stock figure. Private item budgets remain server-side only.
   const catalog=await client.query<{payload:unknown}>(
     "SELECT payload FROM catalog_config WHERE id='primary' FOR SHARE")
   if(!catalog.rows[0])reject("CATALOG_NOT_INITIALIZED")
+  const published=normalizeCatalogConfig(catalog.rows[0].payload)
+  const chosenTier=published.tiers.find(t=>t.id===saved.tier_id&&t.active!==false)
+  if(!chosenTier)reject("SELF_BUILD_TIER_UNAVAILABLE")
+  const limits=getSelfBuildTierLimits(chosenTier)
+  if(countSelfBuildPieces(choices)>limits.maxItems)reject("SELF_BUILD_MAX_ITEMS_EXCEEDED")
+  // Category & size costs are private budgets, not inventory or retail SKU
+  // prices. Allow the owner's 5-point tolerance above the standard target.
+  const [cats,opts]=await Promise.all([
+    client.query<PrivateCategory>("SELECT id,parent_id,selection_kind,charge_mode,unit_budget_paise,label,active FROM self_build_categories ORDER BY id"),
+    client.query<PrivateOption>("SELECT id,category_id,unit_budget_paise,label,active FROM self_build_options ORDER BY id")
+  ])
+  let checkedChoices:ReturnType<typeof evaluatePrivateSelfBuildChoices>
+  try {
+    checkedChoices=evaluatePrivateSelfBuildChoices(choices,cats.rows,opts.rows,
+      config.allow_multiple_quantities,limits.ceilingPaise)
+  }catch(error){
+    reject(error instanceof Error?error.message:"SELF_BUILD_PRIVATE_BUDGET_INVALID")
+  }
   const normalized=normalizeOrderInput({
     ...input.customerDetails,
     orderType:"hamper",tierId:saved.tier_id,selectedProductIds:[],
     phone:account.rows[0].phone,paymentReference:null
-  },requireEnv("businessTimezone"),normalizeCatalogConfig(catalog.rows[0].payload),
+  },requireEnv("businessTimezone"),published,
   {requirePaymentReference:false,checkExpectedSubtotal:false})
 
   // Existing hamper createOrderWithClient DOES NOT invoke retail inventory;
@@ -148,7 +116,7 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
     if(!match||!sameChoices||
        match.other_request_text!==saved.other_request_text.trim()||
        match.total_internal_budget_paise!==checkedChoices.spent||
-       match.tier_budget_paise!==tier.rows[0].allowance_paise)
+       match.tier_budget_paise!==limits.ceilingPaise)
       reject("SELF_BUILD_IDEMPOTENCY_PAYLOAD_MISMATCH")
   }else{
     await client.query(`
@@ -156,7 +124,7 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
       (order_id,rules_version,tier_id,selections,total_internal_budget_paise,tier_budget_paise,other_request_text)
       VALUES($1,$2,$3,$4::jsonb,$5,$6,$7)`,
       [orderId,config.version,saved.tier_id,JSON.stringify(checkedChoices.snap),
-       checkedChoices.spent,tier.rows[0].allowance_paise,saved.other_request_text.trim()])
+       checkedChoices.spent,limits.ceilingPaise,saved.other_request_text.trim()])
   }
   await transferSelfBuildPhotosToOrderWithClient(client,{
     orderId,draftId:input.draftId,accountId:input.accountId,

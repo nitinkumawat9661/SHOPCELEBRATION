@@ -7,26 +7,27 @@ import type { SelfBuildVisualCategory, SelfBuildVisualData, SelfBuildVisualOptio
 type Step = "choose" | "personalise" | "review"
 type Choice = { id: string; label: string; kind: "category" | "option" | "photo"; groupLabel: string }
 
-function QuantityControl({ label, count, onChange }: { label: string; count: number; onChange: (count: number) => void }) {
+function QuantityControl({ label, count, canAdd, onChange }: { label: string; count: number; canAdd: boolean; onChange: (count: number) => void }) {
   return <div className={count ? "sbQty sbQty--active" : "sbQty"} aria-label={`Quantity of ${label}`}>
     <button type="button" aria-label={`Remove one ${label}`} disabled={count === 0} onClick={() => onChange(Math.max(0, count - 1))}>−</button>
     <output aria-live="polite" aria-label={`${count} selected`}>{count}</output>
-    <button type="button" aria-label={`Add one ${label}`} onClick={() => onChange(count === Number.MAX_SAFE_INTEGER ? count : count + 1)}>+</button>
+    <button type="button" aria-label={`Add one ${label}`} disabled={!canAdd} onClick={() => onChange(count + 1)}>+</button>
   </div>
 }
 
-function SelectionCard({ title, eyebrow, secondary, index, count, onChange }: {
+function SelectionCard({ title, eyebrow, secondary, index, count, canAdd, onChange }: {
   title: string
   eyebrow: string
   secondary?: string
   index: number
   count: number
+  canAdd: boolean
   onChange: (count: number) => void
 }) {
   return <article className={count ? "sbChoiceCard sbChoiceCard--selected" : "sbChoiceCard"}>
     <div className="sbChoiceCardTop"><span className="sbIndex">{String(index + 1).padStart(2, "0")}</span><span className="sbChoiceGlyph" aria-hidden="true">✳</span></div>
     <div className="sbChoiceCardBody"><span className="sbMicro">{eyebrow}</span><h3>{title}</h3>{secondary && <p>{secondary}</p>}</div>
-    <div className="sbChoiceCardFoot"><span>{count ? "Added to your hamper" : "Choose quantity"}</span><QuantityControl label={title} count={count} onChange={onChange} /></div>
+    <div className="sbChoiceCardFoot"><span>{count ? "Added to your hamper" : "Choose quantity"}</span><QuantityControl label={title} count={count} canAdd={canAdd} onChange={onChange} /></div>
   </article>
 }
 
@@ -34,8 +35,12 @@ function isSelectable(kind: string): kind is Choice["kind"] {
   return kind === "category" || kind === "photo"
 }
 
-export function SelfBuildDesignPreview({ data }: { data: SelfBuildVisualData }) {
+export function SelfBuildDesignPreview({ data, tiers }: {
+  data: SelfBuildVisualData
+  tiers: {id:string;name:string;maxChoices:number}[]
+}) {
   const [step, setStep] = useState<Step>("choose")
+  const [tierId,setTierId]=useState(tiers[0]?.id||"")
   const [openId, setOpenId] = useState<string | null>(null)
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [message, setMessage] = useState("")
@@ -67,9 +72,22 @@ export function SelfBuildDesignPreview({ data }: { data: SelfBuildVisualData }) 
     .filter(choice => choice.quantity > 0), [availableChoices, quantities])
   const units = chosen.reduce((sum, choice) => sum + choice.quantity, 0)
   const distinct = chosen.length
+  const tier=tiers.find(item=>item.id===tierId)||tiers[0]
+  const maxItems=tier?.maxChoices||0
+  const atMax=units>=maxItems
+  const exceedsMax=units>maxItems
 
   function changeQuantity(id: string, count: number) {
-    setQuantities(previous => ({ ...previous, [id]: Math.max(0, Math.trunc(count)) }))
+    setQuantities(previous=>{
+      const existing=previous[id]||0
+      const others=Object.values(previous).reduce((sum,value)=>sum+value,0)-existing
+      const requested=Math.max(0,Math.min(100,Math.trunc(count)))
+      // If a smaller tier is selected, allow one-at-a-time decrement rather
+      // than abruptly erasing all of a previously selected category.
+      const next=requested<=existing?requested:
+        Math.min(requested,Math.max(0,maxItems-others))
+      return {...previous,[id]:next}
+    })
   }
 
   function goBack() {
@@ -109,6 +127,16 @@ export function SelfBuildDesignPreview({ data }: { data: SelfBuildVisualData }) 
         </nav>
 
         <section className="sbSelection" aria-label="Self-build hamper designer">
+          <div className="sbPreviewLimitBar" role="status" aria-live="polite">
+            <label htmlFor="sb-preview-tier">Hamper tier
+              <select id="sb-preview-tier" value={tier?.id||""} onChange={event=>setTierId(event.target.value)}>
+                {tiers.map(item=><option key={item.id} value={item.id}>{item.name} — up to {item.maxChoices} pieces</option>)}
+              </select>
+            </label>
+            <div><small>MAXIMUM PIECES</small><strong>{units} <span>/ {maxItems}</span></strong>
+              <p>Repeating one category also counts toward this total.</p></div>
+          </div>
+          {exceedsMax&&<p className="sbPreviewLimitError" role="alert">Reduce your selections to {maxItems} pieces for this tier.</p>}
           <div className="sbSelectionHeading">
             <div>
               <span className="sbEyebrow">{step === "choose" ? currentCategory ? "EXPLORE THE COLLECTION" : "YOUR HAMPER BEGINS HERE" : step === "personalise" ? "THE FINISHING TOUCH" : "CURATED AROUND YOU"}</span>
@@ -137,13 +165,13 @@ export function SelfBuildDesignPreview({ data }: { data: SelfBuildVisualData }) 
                 return <SelectionCard key={category.id} index={index} title={category.label}
                   eyebrow={category.selectionKind === "photo" ? "PERSONALISED MEMORIES" : "CATEGORY SELECTION"}
                   secondary={category.selectionKind === "photo" ? "Add how many photos you'd like. Upload will be available before launch." : "Our team selects the individual pieces for you."}
-                  count={quantities[quantityId] ?? 0} onChange={count => changeQuantity(quantityId,count)} />
+                  count={quantities[quantityId] ?? 0} canAdd={!atMax} onChange={count => changeQuantity(quantityId,count)} />
               })}
               {childOptions.map((option: SelfBuildVisualOption, index) => {
                 const quantityId = `option:${option.id}`
                 return <SelectionCard key={option.id} index={index} title={option.label} eyebrow="CHOOSE YOUR SIZE"
                   secondary="Add more than one if you'd like." count={quantities[quantityId] ?? 0}
-                  onChange={count => changeQuantity(quantityId,count)} />
+                  canAdd={!atMax} onChange={count => changeQuantity(quantityId,count)} />
               })}
             </div>
             {childCategories.length > 0 && !currentCategory && <p className="sbGentleNote">Every hamper is assembled by our team. Individual jewellery designs are selected by Celebration within your chosen categories.</p>}
@@ -165,7 +193,7 @@ export function SelfBuildDesignPreview({ data }: { data: SelfBuildVisualData }) 
           </div>}
 
           <div className="sbMainControls">
-            {step === "choose" && <button className="sbPrimary" type="button" disabled={units === 0} onClick={() => setStep("personalise")}>Continue to personalise <span aria-hidden="true">→</span></button>}
+            {step === "choose" && <button className="sbPrimary" type="button" disabled={units === 0 || exceedsMax} onClick={() => setStep("personalise")}>Continue to personalise <span aria-hidden="true">→</span></button>}
             {step === "personalise" && <button className="sbPrimary" type="button" onClick={() => setStep("review")}>Review my hamper <span aria-hidden="true">→</span></button>}
             {step === "review" && <button className="sbPrimary" type="button" onClick={() => { setStep("choose");setOpenId(null) }}>Edit categories <span aria-hidden="true">↗</span></button>}
             <span>{step === "choose" ? units ? "Add more categories or continue" : "Choose at least one category to continue" : step === "personalise" ? "Your note is optional" : "Ordering is disabled in this design review"}</span>
@@ -177,7 +205,7 @@ export function SelfBuildDesignPreview({ data }: { data: SelfBuildVisualData }) 
         <div className="sbSummaryIn"><div className="sbSummaryHead"><span>YOUR GIFT EDIT</span><span className="sbSummaryOrnament" aria-hidden="true">✳</span></div>
           <h2>Make it<br /><em>personal.</em></h2>
           <p>Each choice is a little part of their story.</p>
-          <div className="sbSummaryStats"><div><strong>{distinct.toString().padStart(2, "0")}</strong><span>Selections</span></div><div><strong>{units}</strong><span>Pieces</span></div></div>
+          <div className="sbSummaryStats"><div><strong>{distinct.toString().padStart(2, "0")}</strong><span>Selections</span></div><div><strong>{units}/{maxItems}</strong><span>Pieces</span></div></div>
           <div className="sbSummaryDivider"><span>YOUR CHOICES</span><span>{distinct} selected</span></div>
           {chosen.length ? <ul className="sbSummaryItems">{chosen.map(item => <li key={item.id}><span>{item.groupLabel && <small>{item.groupLabel}</small>}{item.label}</span><b>×{item.quantity}</b></li>)}</ul> : <div className="sbSummaryEmpty"><span aria-hidden="true">＋</span><p>Something lovely starts with one choice.</p></div>}
           <div className="sbSummaryPromise"><span aria-hidden="true">✦</span><div><b>Curated with care</b><p>We pick the individual pieces within the categories you select.</p></div></div>

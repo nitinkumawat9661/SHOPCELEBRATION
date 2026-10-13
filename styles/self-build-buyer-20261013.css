@@ -53,3 +53,15 @@
 @media(max-width:900px){.sbBuyerTiers{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.sbBuyer{margin:20px auto 45px}.sbBuyerChoices{grid-template-columns:minmax(0,1fr)}.sbBuyerForm{grid-template-columns:minmax(0,1fr)}.sbBuyerForm .sbBuyerField:nth-child(3),.sbBuyerForm .sbBuyerField:last-child{grid-column:auto}.sbBuyerPay{align-items:stretch;flex-direction:column}.sbBuyerPhotoPicker{display:flex;flex-direction:column;gap:9px}.sbBuyerPhotoPicker input{margin:0}}
 @media(max-width:380px){.sbBuyerTiers{gap:7px}.sbBuyerTiers button{padding:10px 8px}.sbBuyerCard{padding:14px}}
+
+/* Compact maximum-piece count. Quantity is the sum of all pieces, including
+   repeated choices; no internal category cost or budget is exposed. */
+.sbBuyerCountBar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:11px 15px;margin:0 0 15px;background:#faf3f0;border:1px solid #f0e1dc;border-radius:10px}
+.sbBuyerCountBar>div{display:flex;align-items:center;gap:10px;min-width:max-content}
+.sbBuyerCountBar small{font-size:9px;letter-spacing:.085em;color:#997e82;font-weight:700}
+.sbBuyerCountBar strong{font-size:20px;line-height:1.15;color:#713a4e;white-space:nowrap;font-weight:850}
+.sbBuyerCountBar strong span{font-size:12px;color:#a58c91;font-weight:650}
+.sbBuyerCountBar p{margin:0!important;font-size:11px!important;line-height:1.55!important;color:#866b74!important;text-align:right}
+.sbBuyerCountBarOver{background:#fff2ed;border-color:#e0b7ad}
+.sbBuyerCountError{font-size:11px!important;margin:0 0 14px!important;color:#973d39!important}
+@media(max-width:650px){.sbBuyerCountBar{align-items:flex-start;flex-direction:column;gap:5px}.sbBuyerCountBar p{text-align:left}}

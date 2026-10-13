@@ -134,11 +134,11 @@ export function AdminSelfBuildCapacity(){
       </div>
       <div className="sbCapacitySection">
         <div className="sbCapacityTitle"><h4>Private hamper budget allowances</h4><span>Separate from retail selling price</span></div>
-        <p className="sbCapacityHint">Enter how much internal item-budget a Self-Build hamper tier can consume. Do not automatically equate this with the customer selling price. Unconfigured tiers remain blocked by server validation.</p>
+        <p className="sbCapacityHint">Automatic private budget targets: 80% of the hamper price up to ₹999, and 75% from ₹1,299 upwards. A single selection may use up to 5 extra percentage points in total. These values follow published tier prices automatically. No inventory is needed or checked for Self-Build checkout.</p>
         <div className="sbCapacityList">{state.tiers.map(t=><div key={t.id} className="sbCapacityRow">
           <div className="sbCapacityLabel"><strong>{t.label}</strong><small>Customer hamper tier: ₹{fmt(t.sellingPricePaise)} · internal allowance is private</small></div>
-          <label className="sbCapacityQuantity">Internal allowance ₹<input aria-label={`Private allowance for ${t.label}`} inputMode="decimal" value={pending[`tier:${t.id}`]??fmt(t.allowancePaise)} onChange={event=>setTierAllowance(t.id,event.target.value)} /></label>
-          <label className="sbAdminToggle"><input type="checkbox" checked={t.enabled} onChange={event=>setTierEnabled(t.id,event.target.checked)}/><span>Configured</span></label>
+          <label className="sbCapacityQuantity">Internal allowance ₹<input aria-label={`Private allowance for ${t.label}`} inputMode="decimal" value={fmt(t.allowancePaise)} readOnly aria-readonly="true" title="Automatic from the published hamper price" /></label>
+          <label className="sbAdminToggle"><input type="checkbox" checked={t.enabled} disabled title="Automatic tier policy"/><span>Configured</span></label>
         </div>)}</div>
       </div>
       <div className="sbAdminFooter">

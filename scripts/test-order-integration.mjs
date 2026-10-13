@@ -320,7 +320,8 @@ try {
   await control.query(`INSERT INTO self_build_category_capacity(category_id,available_units,verified)
      VALUES ('bangles',2,true)`)
   await control.query(`INSERT INTO self_build_tier_allowances(tier_id,allowance_paise,enabled)
-     VALUES ('t499',20000,true)`)
+     VALUES ('t499',20000,true)
+     ON CONFLICT(tier_id) DO UPDATE SET allowance_paise=20000,enabled=true`)
   const staged=await createStagedSelfBuildOrder(stagedInput)
   assert.equal(staged.created,true)
   assert.equal(staged.payablePaise,49900)
@@ -545,6 +546,44 @@ try {
   const optionBefore=(await control.query(`
     SELECT option_id,available_units,reserved_units,verified
     FROM self_build_option_capacity ORDER BY option_id`)).rows
+  // Owner private target: ₹499×80%=₹399.20, one final selection may
+  // use the extra 5 percentage-point headroom (absolute ₹424.15 cap).
+  // Count ALL units including repeats: maxChoices=3 for t499.
+  await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1`,
+    [stagedDraftId,JSON.stringify([
+      {kind:'category',id:'bangles',quantity:2},
+      {kind:'option',id:'chocolate-extra-100',quantity:1}
+    ])])
+  const toleranceOrder=await createSelfBuildNoInventoryOrder({
+    accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
+    customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
+  })
+  const allowed=(await control.query(`SELECT s.total_internal_budget_paise,s.tier_budget_paise
+    FROM orders o JOIN self_build_order_snapshots s ON s.order_id=o.id
+    WHERE o.public_id=$1`,[toleranceOrder.orderId])).rows[0]
+  assert.equal(allowed.total_internal_budget_paise,40000,
+    '₹400 private cost is just above the ₹399.20 target but within approved tolerance')
+  assert.equal(allowed.tier_budget_paise,42415)
+  await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1`,
+    [stagedDraftId,JSON.stringify([{kind:'category',id:'bangles',quantity:3}])])
+  const overBudgetKey=randomUUID()
+  await assert.rejects(createSelfBuildNoInventoryOrder({
+    accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
+    customerDetails:{...body,idempotencyKey:overBudgetKey,occasion:'Birthday'}
+  }),{code:'SELF_BUILD_PRIVATE_BUDGET_EXCEEDED'})
+  assert.equal((await control.query('SELECT COUNT(*)::int AS n FROM orders WHERE idempotency_key=$1',
+    [overBudgetKey])).rows[0].n,0,'Overbudget order rolls back entirely')
+  await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1`,
+    [stagedDraftId,JSON.stringify([{kind:'category',id:'premium-necklaces',quantity:4}])])
+  const overSlotsKey=randomUUID()
+  await assert.rejects(createSelfBuildNoInventoryOrder({
+    accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
+    customerDetails:{...body,idempotencyKey:overSlotsKey,occasion:'Birthday'}
+  }),{code:'SELF_BUILD_MAX_ITEMS_EXCEEDED'})
+  assert.equal((await control.query('SELECT COUNT(*)::int AS n FROM orders WHERE idempotency_key=$1',
+    [overSlotsKey])).rows[0].n,0,'Repeated same category 4× cannot bypass 3 total tier slots')
+  await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1`,
+    [stagedDraftId,JSON.stringify([{kind:'category',id:'bangles',quantity:1}])])
   const noStockKey=randomUUID()
   const noStockInput={
     accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
@@ -562,7 +601,8 @@ try {
     FROM orders o JOIN self_build_order_snapshots s ON s.order_id=o.id
     WHERE o.public_id=$1`,[noStockOrder.orderId])).rows[0]
   assert.equal(noStockInternal.total_internal_budget_paise,15000)
-  assert.equal(noStockInternal.tier_budget_paise,20000)
+  assert.equal(noStockInternal.tier_budget_paise,42415,
+    '₹499 Self-Build checkout maximum is 85% including 5 percentage points of flexibility; primary target is 80%')
   assert.equal(noStockInternal.selections[0].id,'bangles')
   assert.equal((await control.query(`
     SELECT COUNT(*)::int AS n FROM self_build_order_reservation_batches
