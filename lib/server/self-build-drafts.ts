@@ -3,6 +3,7 @@ import { query, transaction } from "./db"
 import type { SelfBuildSelection } from "./self-build-quote"
 import { getCatalogConfig } from "./catalog"
 import { deleteSelfBuildPrivatePhoto } from "./r2"
+import { countSelfBuildPieces, getSelfBuildTierLimits } from "./self-build-tier-limits"
 
 const ID=/^[a-z0-9][a-z0-9-]{0,59}$/
 const MAX_SELECTIONS=100
@@ -51,7 +52,10 @@ export async function getSelfBuildDraft(accountId:string) {
 export async function saveSelfBuildDraft(accountId:string,input:unknown){
   const clean=parseDraftBody(input)
   const {catalog}=await getCatalogConfig()
-  if(!catalog.tiers.some(t=>t.id===clean.tierId&&t.active!==false))reject("TIER_UNAVAILABLE")
+  const tier=catalog.tiers.find(t=>t.id===clean.tierId&&t.active!==false)
+  if(!tier)reject("TIER_UNAVAILABLE")
+  if(countSelfBuildPieces(clean.selections)>getSelfBuildTierLimits(tier).maxItems)
+    reject("SELF_BUILD_MAX_ITEMS_EXCEEDED")
   // A draft is NOT a quote, purchase or a promise of category inventory.
   // Reject unknown/deactivated category IDs but NEVER derive retail product IDs.
   return transaction(async client=>{
