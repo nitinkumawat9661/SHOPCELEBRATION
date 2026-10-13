@@ -23,8 +23,8 @@ assert(budget.includes("tiers.map((item) =>") && budget.includes("onSelect(item.
   "Card redesign must keep all genuine tier IDs wired to existing builder")
 assert(budget.includes("celebrationTierMain") && budget.includes("celebrationHamperCard"),
   "Group amount and name as a single flowing card section rather than overlapping siblings")
-assert(budget.includes("{formatMoney(item.price)}") && budget.includes("{item.name}"),
-  "Use actual configured prices/names")
+assert(budget.includes("{formatMoney(hamperFinalPriceRupees(item.price))}") && budget.includes("{item.name}"),
+  "Display tier price includes shipping but source tier names and budgets are unchanged")
 assert(budget.includes("item.maxChoices") && budget.includes("item.size"),
   "Sizes and choice limits must be real tier attributes")
 assert(budget.includes("tierBadge(item, recommendedTierId, socialProof)"),
