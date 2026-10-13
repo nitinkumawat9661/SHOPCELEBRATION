@@ -591,7 +591,14 @@ try {
   }
   const noStockOrder=await createSelfBuildNoInventoryOrder(noStockInput)
   assert.equal(noStockOrder.created,true)
-  assert.equal(noStockOrder.payablePaise,49900)
+  assert.equal(noStockOrder.payablePaise,54900)
+  const selfBuildCharge=(await control.query(
+    'SELECT subtotal_paise,shipping_paise,amount_paise FROM orders WHERE public_id=$1',
+    [noStockOrder.orderId])).rows[0]
+  assert.equal(selfBuildCharge.subtotal_paise,49900)
+  assert.equal(selfBuildCharge.shipping_paise,5000)
+  assert.equal(selfBuildCharge.amount_paise,54900,
+    'Self-Build payment must include ₹50 delivery without changing the hamper tier price')
   const noStockReplay=await createSelfBuildNoInventoryOrder(noStockInput)
   assert.equal(noStockReplay.created,false)
   assert.equal(noStockReplay.orderId,noStockOrder.orderId)
