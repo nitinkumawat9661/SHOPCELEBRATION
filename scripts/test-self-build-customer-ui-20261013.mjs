@@ -85,7 +85,7 @@ assert(draftService.includes("countSelfBuildPieces(clean.selections)>limits.maxI
 assert(ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
  ui.includes("Maximum {maxUnits} pieces")&&ui.includes("selectedUnits>=maxUnits")&&
  ui.includes("selectedUnits>maxUnits")&&
- ui.includes('className="sbBuyerTierBar sbBuyerTierBar--active"')&&
+ ui.includes('tierId===t.id?"sbBuyerTierBar sbBuyerTierBar--active"')&&
  ui.includes('className="sbBuyerTierTotal"')&&
  !ui.includes("Up to {t.maxChoices} pieces"),
  "Visible upper selection card max counter includes repeated category pieces")
