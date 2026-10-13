@@ -38,7 +38,7 @@ export default async function SelfBuildCustomerPage(){
       const [visual,catalog]=await Promise.all([getSelfBuildVisualData(),getSelfBuildPublishedCatalog()])
       const tiers=catalog.tiers
       if(!tiers.length)throw Error("NO_HAMPER_TIERS")
-      surface=<CustomerSelfBuildStudio data={visual} tiers={tiers} occasions={catalog.catalog.occasions} />
+      surface=<CustomerSelfBuildStudio data={visual} tiers={tiers} occasions={catalog.occasions} />
     }catch{
       surface=<section className="sbBuyerComingSoon">
         <h1>Hamper studio is temporarily unavailable.</h1>
