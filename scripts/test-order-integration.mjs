@@ -63,14 +63,19 @@ try {
     await control.query(await readFile(join(repo, 'db/migrations', name), 'utf8'))
     await control.query('INSERT INTO schema_migrations(name) VALUES($1)', [name])
   }
-  const account = await createCustomerAccount({ phone: '9000000001', password: 'Local-test-password-2026!', displayName: 'Local Checkout Tester' })
-  const otherAccount = await createCustomerAccount({ phone: '9000000002', password: 'Local-test-password-2026!', displayName: 'Other Local Tester' })
-  await control.query(`INSERT INTO orders(id,public_id,idempotency_key,tracking_token_hash,tracking_expires_at,tier_id,tier_name,amount_paise,subtotal_paise,required_date,occasion,customer_name,phone,receiver_name,address,pincode,payment_status,status,policy_version,customer_account_id)
-    VALUES($1,'LOCALTEST-LEGACY',$2,'legacy-tracking',now()+interval '1 day','t499','Legacy Hamper',49900,49900,current_date+7,'Birthday','Local Checkout Tester','9000000001','Test Receiver','Local test delivery address','332001','pending','payment_verification_pending',$3,$4)`, [randomUUID(), randomUUID(), orderConfig.policyVersion, account.id])
+  // Seed a pre-009 legacy hamper without an account association. Current
+  // createCustomerAccount requires later migrations (phone_verified_at in 011,
+  // session_version in a later migration), so create accounts only after all
+  // schema migrations have finished.
+  await control.query(`INSERT INTO orders(id,public_id,idempotency_key,tracking_token_hash,tracking_expires_at,tier_id,tier_name,amount_paise,subtotal_paise,required_date,occasion,customer_name,phone,receiver_name,address,pincode,payment_status,status,policy_version)
+    VALUES($1,'LOCALTEST-LEGACY',$2,'legacy-tracking',now()+interval '1 day','t499','Legacy Hamper',49900,49900,current_date+7,'Birthday','Local Checkout Tester','9000000001','Test Receiver','Local test delivery address','332001','pending','payment_verification_pending',$3)`, [randomUUID(), randomUUID(), orderConfig.policyVersion])
   for (const name of migrations.filter((name) => Number(name.split('_')[0]) > 8)) {
     await control.query(await readFile(join(repo, 'db/migrations', name), 'utf8'))
     await control.query('INSERT INTO schema_migrations(name) VALUES($1)', [name])
   }
+  const account = await createCustomerAccount({ phone: '9000000001', password: 'Local-test-password-2026!', displayName: 'Local Checkout Tester' })
+  const otherAccount = await createCustomerAccount({ phone: '9000000002', password: 'Local-test-password-2026!', displayName: 'Other Local Tester' })
+  await control.query("UPDATE orders SET customer_account_id = $1 WHERE public_id = 'LOCALTEST-LEGACY'", [account.id])
   const legacy = (await control.query(`SELECT order_type,line_items,tier_id,amount_paise FROM orders WHERE public_id='LOCALTEST-LEGACY'`)).rows[0]
   assert.deepEqual(legacy, { order_type: 'hamper', line_items: [], tier_id: 't499', amount_paise: 49900 })
   const fixtureProducts = [
