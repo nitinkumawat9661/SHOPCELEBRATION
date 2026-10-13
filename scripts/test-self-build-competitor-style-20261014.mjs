@@ -23,7 +23,7 @@ assert.ok(ui.includes('category.selectionKind === "group" || category.selectionK
 assert.ok(ui.includes('className="sbExploreCard"')&&ui.includes('aria-label={`Explore ${category.label}`}'))
 assert.ok(ui.includes('className="sbExploreName"')&&ui.includes("sbExploreArrow"))
 assert.ok(!ui.includes("sbExploreKind")&&!ui.includes("sbCardMotif"))
-assert.ok(ui.includes('category.selectionKind === "photo"'))
+assert.ok(ui.includes('kind === "category" || kind === "photo"'))
 assert.ok(ui.includes("function QuantityControl")&&ui.includes("onChange(Math.max(0, count - 1))"))
 assert.ok(ui.includes("canAdd={!atMax}")&&ui.includes("maxItems-others"))
 assert.ok(!ui.includes("sbChoiceCardTag")&&!ui.includes("sbChoiceGlyph"))
