@@ -124,12 +124,17 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
     const [kind,choiceId]=id.split(":")
     return(kind==="category"||kind==="option")?[{kind,id:choiceId,quantity:value}]:[]
   }),[quantity])
+  // Count PIECES, not unique category cards: repeating the same option five
+  // times consumes five of this hamper tier's publicly advertised slots.
+  const selectedUnits=items.reduce((total,item)=>total+item.quantity,0)
+  const maxUnits=tier?.maxChoices||0
+  const tooManyItems=selectedUnits>maxUnits
   const photoQuantity=items.reduce((total,item)=>{
     return total+(item.kind==="category"&&data.categories.some(x=>x.id===item.id&&x.selectionKind==="photo")?item.quantity:0)
   },0)
   const signature=JSON.stringify({tierId,selections:items,note:note.trim()})
   const saved=Boolean(draftId)&&savedSignature===signature
-  const readyToPay=saved&&items.length>0&&photos.length===photoQuantity&&Boolean(tier)&&accepted&&Boolean(customer.account)
+  const readyToPay=saved&&items.length>0&&!tooManyItems&&photos.length===photoQuantity&&Boolean(tier)&&accepted&&Boolean(customer.account)
   const grouped=useMemo(()=>{
     const categoryNames=new Map(data.categories.map(c=>[c.id,c.label]))
     const selectable=data.categories.filter(c=>["category","photo"].includes(c.selectionKind)).map(c=>({
@@ -177,6 +182,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   async function saveDraft(){
     if(!customer.account)throw Error("SIGN_IN_REQUIRED")
     if(!tier||!items.length)throw Error("CHOOSE_A_CATEGORY")
+    if(tooManyItems)throw Error("Reduce your selections to this hamper's maximum total pieces.")
     const r=await fetch("/api/account/self-build/draft",{
       method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({tierId:tier.id,selections:items,otherRequestText:note.trim()})
@@ -282,11 +288,16 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
       <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>01</span><div><h2>Choose your hamper size</h2><p>The shown price is the complete hamper tier price. Individual item costs are not shown.</p></div></div>
         <div className="sbBuyerTiers">{tiers.map(t=><button key={t.id} type="button" disabled={disabled}
           aria-pressed={tierId===t.id} onClick={()=>setTierId(t.id)}>
-          <b>{t.name}</b><span>{formatMoney(t.price)}</span><small>{t.size}</small>
+          <b>{t.name}</b><span>{formatMoney(t.price)}</span><small>{t.size} · Up to {t.maxChoices} pieces</small>
         </button>)}</div>
       </section>
       <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
         <p>There is no SKU mapping and no per-piece price. Celebration fulfils the real designs.</p></div></div>
+        <div className={tooManyItems?"sbBuyerCountBar sbBuyerCountBarOver":"sbBuyerCountBar"} role="status" aria-live="polite">
+          <div><small>TOTAL PIECES IN YOUR HAMPER</small><strong>{selectedUnits} <span>/ {maxUnits}</span></strong></div>
+          <p>Maximum {maxUnits} pieces. Repeat the same category as often as you like, within this total.</p>
+        </div>
+        {tooManyItems&&<p className="sbBuyerCountError" role="alert">This hamper holds up to {maxUnits} pieces. Remove {selectedUnits-maxUnits} to continue.</p>}
         <div className="sbBuyerChoices">{grouped.map(item=>{
           const count=quantity[item.key]||0
           return <div className="sbBuyerChoice" key={item.key}><div><small>{item.group||"Gift category"}</small>
@@ -294,15 +305,18 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
             <div className="sbBuyerQty">
               <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
                 onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
-              <output>{count}</output><button type="button" disabled={disabled||count>=100}
-                aria-label={`Add ${item.label}`} onClick={()=>setQuantity(v=>({...v,[item.key]:count+1}))}>+</button>
+              <output>{count}</output><button type="button" disabled={disabled||count>=100||selectedUnits>=maxUnits}
+                aria-label={`Add ${item.label}`} onClick={()=>setQuantity(v=>{
+                  const now=Object.values(v).reduce((sum,value)=>sum+Math.max(0,value),0)
+                  return now>=maxUnits?v:{...v,[item.key]:Math.min(100,(v[item.key]||0)+1)}
+                })}>+</button>
             </div></div>
         })}</div>
         <label className="sbBuyerField">Any special requests?
           <textarea value={note} onChange={e=>setNote(e.target.value)} maxLength={1200}
             rows={3} disabled={disabled} placeholder={data.requestPrompt} />
         </label>
-        <div className="sbBuyerActions"><button type="button" disabled={disabled||!items.length}
+        <div className="sbBuyerActions"><button type="button" disabled={disabled||!items.length||tooManyItems}
           onClick={()=>void onSave()}>{busy?"Saving…":"Save my choices"}</button>
           <span>{saved?"Saved to your account":"Save before adding photos or paying"}</span></div>
       </section>
