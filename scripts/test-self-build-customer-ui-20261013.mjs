@@ -89,13 +89,15 @@ assert(ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
  !ui.includes("Up to {t.maxChoices} pieces"),
  "Visible upper selection card max counter includes repeated category pieces")
 assert(deliveryConfig.includes("SELF_BUILD_DELIVERY_FEE_PAISE = 5000")&&
- ui.includes("SELF_BUILD_DELIVERY_FEE_PAISE/100")&&
- ui.includes("Hamper price")&&ui.includes("Total to pay")&&
+ ui.includes("hamperFinalPriceRupees(t.price)")&&
+ ui.includes("hamperFinalPriceRupees(tier.price)")&&
+ ui.includes("<small>Final price</small>")&&
+ !ui.includes("<small>Delivery</small>")&&
  orderFactory.includes("selfBuildShippingPaise:SELF_BUILD_DELIVERY_FEE_PAISE")&&
  createEngine.includes("HAMPER_DELIVERY_FEE_PAISE")&&
  createEngine.includes("pricing.shippingPaise")&&
  createEngine.includes("pricing.payablePaise"),
- "Fixed ₹50 delivery must display in Self-Build checkout and be frozen server-side in the order and payment amount")
+ "Customer sees only all-inclusive Self-Build price; server still records ₹50 shipping once")
 assert(!ui.includes("allowancePaise")&&!ui.includes("targetPaise")&&
  !ui.includes("internalSpentPaise"),"Buyer never receives private spending or cost fields")
 const result=ts.transpileModule(policy,{compilerOptions:{module:ts.ModuleKind.ESNext,
