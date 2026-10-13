@@ -1,0 +1,47 @@
+name: Cashfree Self-Build REAL Sandbox Smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-cashfree-sandbox-smoke
+  cancel-in-progress: false
+
+jobs:
+  cashfree-sandbox:
+    name: Verify Cashfree merchant test keys and ₹549 test order
+    # The environment prevents PRs from using Cashfree test keys.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: cashfree-sandbox
+    env:
+      CASHFREE_TEST_APP_ID: ${{ secrets.CASHFREE_TEST_APP_ID }}
+      CASHFREE_TEST_SECRET_KEY: ${{ secrets.CASHFREE_TEST_SECRET_KEY }}
+      CASHFREE_SANDBOX_SMOKE_APPROVED: "true"
+    steps:
+      - name: Checkout exact main revision
+        uses: actions/checkout@v5
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Verify isolated smoke script
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CASHFREE_TEST_APP_ID"
+          test -n "$CASHFREE_TEST_SECRET_KEY"
+          test ! -e .env
+          test ! -e .env.production
+          node --check scripts/run-cashfree-sandbox-smoke.mjs
+          npm ci
+      - name: Create one Cashfree test order and check stored ₹549
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-cashfree-sandbox-smoke.mjs
