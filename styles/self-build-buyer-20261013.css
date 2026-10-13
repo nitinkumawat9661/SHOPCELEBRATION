@@ -37,6 +37,11 @@
 .sbBuyerPay{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 0 0;border-top:1px solid #efe1dc}
 .sbBuyerPay>div{display:grid;gap:4px}.sbBuyerPay small{font-size:11px;color:#8b767b}
 .sbBuyerPay b{font-size:22px;color:#64243e}
+.sbBuyerPaySummary{display:grid;gap:7px;min-width:210px}
+.sbBuyerPaySummary>div{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.sbBuyerPaySummary span{font-size:13px;color:#64243e;font-weight:650}
+.sbBuyerPaySummary .sbBuyerPayGrand{padding-top:8px;border-top:1px solid #efe1dc}
+.sbBuyerPaySummary .sbBuyerPayGrand small{font-weight:750}
 .sbBuyerPending{margin:15px 0 0!important;line-height:1.6}
 .sbBuyerPending button{margin-left:10px;padding:6px 9px;border:1px solid #ceb8bf;background:#fff;min-height:38px;color:#713951;border-radius:7px;cursor:pointer}
 .sbBuyerPhotoPicker{margin:8px 0}
