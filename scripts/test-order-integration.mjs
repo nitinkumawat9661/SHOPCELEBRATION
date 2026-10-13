@@ -320,7 +320,8 @@ try {
   await control.query(`INSERT INTO self_build_category_capacity(category_id,available_units,verified)
      VALUES ('bangles',2,true)`)
   await control.query(`INSERT INTO self_build_tier_allowances(tier_id,allowance_paise,enabled)
-     VALUES ('t499',20000,true)`)
+     VALUES ('t499',20000,true)
+     ON CONFLICT (tier_id) DO UPDATE SET allowance_paise=20000,enabled=true`)
   const staged=await createStagedSelfBuildOrder(stagedInput)
   assert.equal(staged.created,true)
   assert.equal(staged.payablePaise,49900)
@@ -550,6 +551,14 @@ try {
     accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
     customerDetails:{...body,idempotencyKey:noStockKey,occasion:'Birthday'}
   }
+  // A repeated single category still counts toward the MAX PHYSICAL PIECES.
+  await control.query("UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1",
+    [stagedDraftId,JSON.stringify([{kind:'category',id:'bangles',quantity:4}])])
+  await assert.rejects(createSelfBuildNoInventoryOrder(noStockInput),{
+    code:'SELF_BUILD_MAX_ITEMS_EXCEEDED'
+  })
+  await control.query("UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1",
+    [stagedDraftId,JSON.stringify([{kind:'category',id:'bangles',quantity:1}])])
   const noStockOrder=await createSelfBuildNoInventoryOrder(noStockInput)
   assert.equal(noStockOrder.created,true)
   assert.equal(noStockOrder.payablePaise,49900)
