@@ -1,0 +1,74 @@
+name: Cashfree Self-Build Sandbox Checkout QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "create = generate two Cashfree sandbox checkout sessions; verify = check an existing sandbox order"
+        required: true
+        type: choice
+        options:
+          - create
+          - verify
+      order_id:
+        description: "For verify only: sandbox order ID from create job"
+        required: false
+        type: string
+      expected_status:
+        description: "For verify only: expected Cashfree result after manual test"
+        required: false
+        type: choice
+        options:
+          - pending
+          - paid
+          - failed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-cashfree-checkout-qa
+  cancel-in-progress: false
+
+jobs:
+  cashfree-qa:
+    name: Create or verify sandbox payment (NEVER live)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: cashfree-sandbox
+    env:
+      CASHFREE_TEST_APP_ID: ${{ secrets.CASHFREE_TEST_APP_ID }}
+      CASHFREE_TEST_SECRET_KEY: ${{ secrets.CASHFREE_TEST_SECRET_KEY }}
+      CASHFREE_SANDBOX_QA_APPROVED: "true"
+      CASHFREE_QA_ACTION: ${{ inputs.action }}
+      CASHFREE_QA_ORDER_ID: ${{ inputs.order_id }}
+      CASHFREE_QA_EXPECTED_STATUS: ${{ inputs.expected_status }}
+    steps:
+      - name: Check out production source WITHOUT production secrets
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Validate sandbox isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .env
+          test ! -e .env.production
+          test -n "$CASHFREE_TEST_APP_ID"
+          test -n "$CASHFREE_TEST_SECRET_KEY"
+          node --check scripts/run-cashfree-sandbox-checkout-qa.mjs
+          npm ci
+      - name: Run selected REAL Cashfree sandbox QA
+        run: node scripts/run-cashfree-sandbox-checkout-qa.mjs
+      - name: Upload private sandbox checkout sessions (create only)
+        if: success() && inputs.action == 'create'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cashfree-sandbox-sessions
+          path: cashfree-qa-artifact/
+          retention-days: 1
+          if-no-files-found: error
