@@ -12,9 +12,9 @@ import { parseDraftBody } from "../self-build-drafts"
 import { transferSelfBuildPhotosToOrderWithClient } from "../self-build-order-photos"
 import { createOrderWithClient } from "./create"
 import { countSelfBuildPieces, getSelfBuildTierLimits } from "../self-build-tier-limits"
+import { evaluatePrivateSelfBuildChoices, type PrivateCategory, type PrivateOption } from "../self-build-private-budget"
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-type Choice={kind:"category"|"option";id:string;quantity:number}
 export class SelfBuildCheckoutError extends Error {
   constructor(public readonly code:string){super(code)}
 }
@@ -27,47 +27,6 @@ export type SelfBuildNoStockInput={
   paymentProvider:"razorpay"|"cashfree"
 }
 
-type Category={id:string;parent_id:string|null;selection_kind:string;charge_mode:string;unit_budget_paise:number|null;label:string;active:boolean}
-type Option={id:string;category_id:string;unit_budget_paise:number;label:string;active:boolean}
-
-function evaluateCategoriesOnly(selections:Choice[],cats:Category[],opts:Option[],allowMultiple:boolean,ceiling:number) {
-  if(!selections.length||!Number.isSafeInteger(ceiling)||ceiling<=0)reject("SELF_BUILD_BUDGET_NOT_CONFIGURED")
-  const categories=new Map(cats.map(c=>[c.id,c]))
-  const options=new Map(opts.map(o=>[o.id,o]))
-  let spent=0,photoCount=0
-  const snap: {kind:Choice["kind"];id:string;label:string;quantity:number}[]=[]
-  for(const choice of selections) {
-    if(!allowMultiple && choice.quantity>1)reject("SELF_BUILD_MULTIPLE_QUANTITIES_DISABLED")
-    let unit:number|null
-    let label:string
-    if(choice.kind==="category"){
-      const category=categories.get(choice.id)
-      if(!category||!category.active||!["category","photo"].includes(category.selection_kind)||
-         (category.parent_id&&!categories.get(category.parent_id)?.active))
-        reject("SELF_BUILD_CATEGORY_UNAVAILABLE")
-      if(!["per_unit","once_per_category"].includes(category.charge_mode))
-        reject("SELF_BUILD_CATEGORY_UNAVAILABLE")
-      if(category.selection_kind==="photo")photoCount+=choice.quantity
-      unit=category.unit_budget_paise
-      label=category.label
-      if(category.charge_mode==="per_unit" && unit!==null)unit*=choice.quantity
-    }else{
-      const option=options.get(choice.id)
-      const parent=option?categories.get(option.category_id):null
-      if(!option||!option.active||!parent||!parent.active||parent.selection_kind!=="variant")
-        reject("SELF_BUILD_OPTION_UNAVAILABLE")
-      unit=option.unit_budget_paise*choice.quantity
-      label=option.label
-    }
-    if(unit===null||!Number.isSafeInteger(unit)||unit<0||unit>2147483647||
-       spent>2147483647-unit)reject("SELF_BUILD_PRIVATE_BUDGET_INVALID")
-    spent+=unit
-    if(spent>ceiling)reject("SELF_BUILD_PRIVATE_BUDGET_EXCEEDED")
-    snap.push({kind:choice.kind,id:choice.id,label,quantity:choice.quantity})
-  }
-  if(photoCount>40)reject("SELF_BUILD_PHOTO_LIMIT")
-  return {spent,photoCount,snap}
-}
 
 export async function createSelfBuildNoInventoryWithClient(client:PoolClient,input:SelfBuildNoStockInput) {
   if(!input||typeof input.accountId!=="string"||!input.accountId||
@@ -109,11 +68,16 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
   // Category & size costs are private budgets, not inventory or retail SKU
   // prices. Allow the owner's 5-point tolerance above the standard target.
   const [cats,opts]=await Promise.all([
-    client.query<Category>("SELECT id,parent_id,selection_kind,charge_mode,unit_budget_paise,label,active FROM self_build_categories ORDER BY id"),
-    client.query<Option>("SELECT id,category_id,unit_budget_paise,label,active FROM self_build_options ORDER BY id")
+    client.query<PrivateCategory>("SELECT id,parent_id,selection_kind,charge_mode,unit_budget_paise,label,active FROM self_build_categories ORDER BY id"),
+    client.query<PrivateOption>("SELECT id,category_id,unit_budget_paise,label,active FROM self_build_options ORDER BY id")
   ])
-  const checkedChoices=evaluateCategoriesOnly(choices,cats.rows,opts.rows,
-    config.allow_multiple_quantities,limits.ceilingPaise)
+  let checkedChoices:ReturnType<typeof evaluatePrivateSelfBuildChoices>
+  try {
+    checkedChoices=evaluatePrivateSelfBuildChoices(choices,cats.rows,opts.rows,
+      config.allow_multiple_quantities,limits.ceilingPaise)
+  }catch(error){
+    reject(error instanceof Error?error.message:"SELF_BUILD_PRIVATE_BUDGET_INVALID")
+  }
   const normalized=normalizeOrderInput({
     ...input.customerDetails,
     orderType:"hamper",tierId:saved.tier_id,selectedProductIds:[],
