@@ -6,7 +6,7 @@ import { TrustStrip } from "../../features/shell/TrustStrip"
 import { SiteFooter } from "../../features/shell/SiteFooter"
 import { customerSelfBuildEnabled } from "../../lib/server/self-build-drafts"
 import { getSelfBuildVisualData } from "../../lib/server/self-build-preview"
-import { getCatalogConfig } from "../../lib/server/catalog"
+import { getSelfBuildPublishedCatalog } from "../../lib/server/self-build-published-tiers"
 import { getStoreSettings,defaultStoreSettings } from "../../lib/server/store-settings"
 import "../../styles/self-build-buyer-20261013.css"
 
@@ -35,8 +35,8 @@ export default async function SelfBuildCustomerPage(){
     </section>
   }else{
     try{
-      const [visual,catalog]=await Promise.all([getSelfBuildVisualData(),getCatalogConfig()])
-      const tiers=catalog.catalog.tiers.filter(t=>t.active!==false)
+      const [visual,catalog]=await Promise.all([getSelfBuildVisualData(),getSelfBuildPublishedCatalog()])
+      const tiers=catalog.tiers
       if(!tiers.length)throw Error("NO_HAMPER_TIERS")
       surface=<CustomerSelfBuildStudio data={visual} tiers={tiers} occasions={catalog.catalog.occasions} />
     }catch{
