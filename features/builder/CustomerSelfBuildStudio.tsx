@@ -375,7 +375,10 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
           {([["customerName","Your name"],["receiverName","Receiver name"],["address","Full address"],
             ["city","City"],["state","State"],["pincode","PIN code"]] as const).map(([name,label])=>
             <label className="sbBuyerField" key={name}>{label}<input value={details[name]} disabled={Boolean(orderId)||busy}
-              onChange={e=>change(name,e.target.value)} maxLength={name==="address"?240:100} required /></label>)}
+              autoComplete={({customerName:"name",receiverName:"shipping name",address:"shipping street-address",
+                city:"shipping address-level2",state:"shipping address-level1",pincode:"shipping postal-code"} as const)[name]}
+              inputMode={name==="pincode"?"numeric":undefined}
+              onChange={e=>change(name,e.target.value)} maxLength={name==="pincode"?6:name==="address"?240:100} required /></label>)}
           <label className="sbBuyerField">Preferred delivery date<input type="date" min={todayForDateInput()}
             value={details.requiredDate} disabled={Boolean(orderId)||busy}
             onChange={e=>change("requiredDate",e.target.value)} required /></label>
