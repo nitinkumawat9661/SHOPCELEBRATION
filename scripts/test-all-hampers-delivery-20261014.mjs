@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Offline regression: one ₹50 delivery charge on curated and Self-Build hampers.
+// Offline regression: ₹50 included in visible final price, saved separately internally; old budgets unchanged.
 // Source test complements isolated PostgreSQL integration, which verifies totals.
 import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
@@ -25,9 +25,11 @@ assert.ok(selfBuild.includes("selfBuildShippingPaise:SELF_BUILD_DELIVERY_FEE_PAI
   "Self-Build keeps the same backend shared checkout and ₹50 fee")
 assert.ok(payment.includes("const deliveryPaise = individual ?") &&
   payment.includes("productPayablePaise + deliveryPaise") &&
-  payment.includes('aria-label="Hamper price breakdown"') &&
-  payment.includes("Delivery {formatMoney(deliveryPaise / 100)}"),
-  "Hamper customer must see exact ₹50 fee before payment (including manual UPI)")
+  payment.includes('aria-label="Hamper final price"') &&
+  payment.includes("Final hamper price: {formatMoney(payablePaise / 100)}") &&
+  !payment.includes("delivery at checkout") &&
+  !payment.includes(" · Delivery"),
+  "Hamper checkout must show one inclusive final price, never a separate delivery line")
 assert.ok(jewelry.includes('<span>Delivery charges</span><b className="marketCartIncluded">FREE</b>'),
   "Individual jewellery free-delivery messaging must remain unchanged")
 assert.ok(provider.includes("createProviderCheckout") && provider.includes("verifyProviderWebhook"),
