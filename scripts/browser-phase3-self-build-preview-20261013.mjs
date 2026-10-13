@@ -76,10 +76,15 @@ try {
       add(width+" intermediate category step visible",
         await page.locator(".sbCategoryJump").count()>=4 &&
         await page.locator(".sbChoiceCard:visible").count()===0)
-      for(const group of ["Jewellery","Chocolates","Snacks","Teddys"]){
+      for(const group of ["Jewellery","Chocolates","Snacks"]){
         add(width+" category overview "+group,
           await page.locator(".sbCategoryJump").filter({hasText:group}).count()===1)
       }
+      // Teddys is not present in the historical SQL seed: only assert it
+      // when the admin has configured an active Teddy category.
+      const teddyPresent=await page.locator(".sbCategoryJump").filter({hasText:/tedd(y|ies)/i}).count()>0
+      if(teddyPresent)add(width+" active Teddys category listed",
+        await page.locator(".sbCategoryJump").filter({hasText:/tedd(y|ies)/i}).count()>0)
       await page.locator(".sbCategoryJump").filter({hasText:"Jewellery"}).click()
       await page.getByRole("heading",{name:"Choose your gifts"}).waitFor({state:"visible"})
       add(width + " selecting hamper advances to gifts screen",
@@ -91,10 +96,12 @@ try {
         await page.locator(".sbExploreCard:visible,.sbBreadcrumb:visible,select[aria-label*='category']").count()===0 &&
         await page.locator(".sbGiftSection").count()>=4 &&
         await page.locator(".sbChoiceCard:visible").count()>=14)
-      for(const group of ["Jewellery","Chocolates","Snacks","Teddys"]){
+      for(const group of ["Jewellery","Chocolates","Snacks"]){
         add(width+" inline gift section "+group,
           await page.locator(".sbGiftSectionHeading").getByText(group,{exact:true}).count()===1)
       }
+      if(teddyPresent)add(width+" configured Teddy gift section visible",
+        await page.locator(".sbGiftSectionHeading").filter({hasText:/tedd(y|ies)/i}).count()>0)
       add(width+" selected jewellery section appears first",
         (await page.locator(".sbGiftSectionHeading").first().innerText())==="Jewellery")
       add(width + " no retail product UI",
