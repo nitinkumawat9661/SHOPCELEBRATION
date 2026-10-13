@@ -27,9 +27,15 @@ function SelectionCard({ title, eyebrow, secondary, index, count, canAdd, onChan
   onChange: (count: number) => void
 }) {
   return <article className={count ? "sbChoiceCard sbChoiceCard--selected" : "sbChoiceCard"}>
-    <div className="sbChoiceCardTop"><span className="sbIndex">{String(index + 1).padStart(2, "0")}</span><span className="sbChoiceGlyph" aria-hidden="true">✳</span></div>
-    <div className="sbChoiceCardBody"><span className="sbMicro">{eyebrow}</span><h3>{title}</h3>{secondary && <p>{secondary}</p>}</div>
-    <div className="sbChoiceCardFoot"><span>{count ? "Added to your hamper" : "Choose quantity"}</span><QuantityControl label={title} count={count} canAdd={canAdd} onChange={onChange} /></div>
+    <div className="sbChoiceCardTop">
+      <span className="sbIndex">{String(index + 1).padStart(2, "0")}</span>
+      <span className="sbChoiceCardTag">{count ? "SELECTED" : eyebrow}</span>
+    </div>
+    <div className="sbChoiceCardBody"><h3>{title}</h3>{secondary && <p>{secondary}</p>}</div>
+    <div className="sbChoiceCardFoot">
+      <span>{count ? "In your hamper" : "Select pieces"}</span>
+      <QuantityControl label={title} count={count} canAdd={canAdd} onChange={onChange} />
+    </div>
   </article>
 }
 
@@ -162,22 +168,29 @@ export function SelfBuildDesignPreview({ data, tiers }: {
                   const total = category.selectionKind === "group"
                     ? sortedCategories.filter(item => item.parentId === category.id && item.selectionKind !== "notes").length
                     : sortedOptions.filter(item => item.categoryId === category.id).length
-                  return <button className="sbExploreCard" type="button" key={category.id} onClick={() => setOpenId(category.id)}>
-                    <div className="sbExploreCardTop"><span className="sbIndex">{String(index + 1).padStart(2, "0")}</span><span className="sbCardMotif" aria-hidden="true">✧</span></div>
-                    <div className="sbExploreCardBottom"><span className="sbMicro">CELEBRATION COLLECTION</span><h3>{category.label}</h3><p>{total} {category.selectionKind === "group" ? "collections" : "ways to choose"}</p></div>
-                    <span className="sbExploreArrow" aria-hidden="true">↗</span>
+                  return <button className="sbExploreCard" type="button" key={category.id} onClick={() => setOpenId(category.id)}
+                    aria-label={`Explore ${category.label}`}>
+                    <div className="sbExploreCardTop">
+                      <span className="sbIndex">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="sbExploreKind">GIFT COLLECTION</span>
+                    </div>
+                    <div className="sbExploreCardBottom">
+                      <h3>{category.label}</h3>
+                      <p>{total} {category.selectionKind === "group" ? "categories" : "options"} to explore</p>
+                    </div>
+                    <span className="sbExploreArrow" aria-hidden="true">→</span>
                   </button>
                 }
                 const quantityId = `category:${category.id}`
                 return <SelectionCard key={category.id} index={index} title={category.label}
                   eyebrow={category.selectionKind === "photo" ? "PERSONALISED MEMORIES" : "CATEGORY SELECTION"}
-                  secondary={category.selectionKind === "photo" ? "Add how many photos you'd like. Upload will be available before launch." : "Our team selects the individual pieces for you."}
+                  secondary={category.selectionKind === "photo" ? "One photo for each selected piece." : "Curated by Celebration."}
                   count={quantities[quantityId] ?? 0} canAdd={!atMax} onChange={count => changeQuantity(quantityId,count)} />
               })}
               {childOptions.map((option: SelfBuildVisualOption, index) => {
                 const quantityId = `option:${option.id}`
                 return <SelectionCard key={option.id} index={index} title={option.label} eyebrow="CHOOSE YOUR SIZE"
-                  secondary="Add more than one if you'd like." count={quantities[quantityId] ?? 0}
+                  secondary="Choose one or more." count={quantities[quantityId] ?? 0}
                   canAdd={!atMax} onChange={count => changeQuantity(quantityId,count)} />
               })}
             </div>
