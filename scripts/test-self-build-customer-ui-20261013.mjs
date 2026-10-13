@@ -59,12 +59,14 @@ assert(homePage.includes("getCachedSelfBuildEnabled().catch(() => false)")&&
  "Gated homepage link is cached and fail-closed")
 assert(provider.includes("verifyProviderWebhook")&&provider.includes("PAYMENT_WEBHOOK_SIGNATURE_INVALID"),
  "Signed provider verification unchanged")
-const [policy,orderFactory,draftService,migration,catalogRaw] = await Promise.all([
+const [policy,orderFactory,draftService,migration,catalogRaw,createEngine,deliveryConfig] = await Promise.all([
   "lib/server/self-build-tier-limits.ts",
   "lib/server/orders/self-build-no-inventory.ts",
   "lib/server/self-build-drafts.ts",
   "db/migrations/106_self_build_tier_auto_percentage_budgets.sql",
-  "content/catalog.json"
+  "content/catalog.json",
+  "lib/server/orders/create.ts",
+  "config/self-build-delivery.ts"
 ].map(read))
 assert(migration.includes("self_build_tier_allowances")&&migration.includes(">= 1299")&&
  migration.includes("THEN 75 ELSE 80")&&migration.includes("AFTER INSERT OR UPDATE OF payload"),
@@ -83,8 +85,17 @@ assert(draftService.includes("countSelfBuildPieces(clean.selections)>limits.maxI
 assert(ui.includes("TOTAL PIECES IN YOUR HAMPER")&&
  ui.includes("Maximum {maxUnits} pieces")&&ui.includes("selectedUnits>=maxUnits")&&
  ui.includes("selectedUnits>maxUnits")&&
- ui.includes("Up to {t.maxChoices} pieces"),
+ ui.includes("A hamper made to match your budget.")&&
+ !ui.includes("Up to {t.maxChoices} pieces"),
  "Visible upper selection card max counter includes repeated category pieces")
+assert(deliveryConfig.includes("SELF_BUILD_DELIVERY_FEE_PAISE = 5000")&&
+ ui.includes("SELF_BUILD_DELIVERY_FEE_PAISE/100")&&
+ ui.includes("Hamper price")&&ui.includes("Total to pay")&&
+ orderFactory.includes("selfBuildShippingPaise:SELF_BUILD_DELIVERY_FEE_PAISE")&&
+ createEngine.includes("options.selfBuildShippingPaise ?? 0")&&
+ createEngine.includes("pricing.shippingPaise")&&
+ createEngine.includes("pricing.payablePaise"),
+ "Fixed ₹50 delivery must display in Self-Build checkout and be frozen server-side in the order and payment amount")
 assert(!ui.includes("allowancePaise")&&!ui.includes("targetPaise")&&
  !ui.includes("internalSpentPaise"),"Buyer never receives private spending or cost fields")
 const result=ts.transpileModule(policy,{compilerOptions:{module:ts.ModuleKind.ESNext,

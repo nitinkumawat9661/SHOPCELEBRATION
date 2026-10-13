@@ -6,6 +6,7 @@ import type { PoolClient } from "pg"
 import type { CreateOrderInput } from "../../domain/order"
 import { normalizeOrderInput } from "../../domain/order"
 import { requireEnv } from "../../../config/env"
+import { SELF_BUILD_DELIVERY_FEE_PAISE } from "../../../config/self-build-delivery"
 import { normalizeCatalogConfig } from "../catalog"
 import { transaction } from "../db"
 import { parseDraftBody } from "../self-build-drafts"
@@ -88,7 +89,8 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
   // Existing hamper createOrderWithClient DOES NOT invoke retail inventory;
   // the new flow never calls reservation/stock/capacity services.
   const order=await createOrderWithClient(client,normalized,input.accountId,undefined,{
-    paymentProvider:input.paymentProvider
+    paymentProvider:input.paymentProvider,
+    selfBuildShippingPaise:SELF_BUILD_DELIVERY_FEE_PAISE
   })
   const result=await client.query<{id:string}>(
     `SELECT id FROM orders WHERE public_id=$1 AND customer_account_id=$2

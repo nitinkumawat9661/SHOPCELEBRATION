@@ -5,6 +5,7 @@
 ## Policy
 
 - The listed *hamper selling price* is the calculation base, **not the price of an individual retail SKU**.
+- Fixed **₹50 delivery** is added separately at Self-Build checkout (e.g. ₹499 hamper + ₹50 delivery = ₹549 payable). Internal 80%/75% product allowances are based on the original hamper tier price, excluding delivery. Existing jewellery and curated hamper pricing are untouched.
 - Hampers priced **below ₹1,299**: aim to spend **80% of sale price** on internal selected gift categories/size options/photos. For an awkward final item, allow at most **85%** (5 percentage points over target).
 - Large hampers **₹1,299 and above**: aim for **75%** on chosen gifts; absolute upper tolerance **80%** of sale price.
 - Being under target is always acceptable: the buyer chooses their own gifts. This is NOT a promised minimum value or minimum number of products. Budget is internal and NEVER included in customer props, JSON, HTML, checkout item lines, source SKU mapping or analytics.
@@ -15,11 +16,11 @@
 
 Maximum total selections are the existing published `tier.maxChoices` values. **All quantities count as items**, including multiple quantities of the very same category or option. Example: a tier with maxChoices=5 allows a chosen necklace category ×5 but not ×6; mixing two pieces from one category plus three from another also totals 5. A chosen mix can still be rejected if its private aggregate expense exceeds the allowance ceiling; the number is an *up-to maximum*, not a guarantee that all combinations fit the budget.
 
-Customer studio and admin preview both display a small `selected / maximum pieces` card next to category selection controls. The buyer never sees private unit costs.
+Customer studio and admin preview both display a small `selected / maximum pieces` card next to category selection controls. The **customer tier cards** show only the tier name, price and `A hamper made to match your budget.`, with no maximum-piece figure on the cards. The buyer never sees private unit costs.
 
 ## Current published tier policy
 
-**This table contains PRIVATE internal business allowances, do not show the target or ceiling to customers.** Customer UI displays only the tier price and maximum selected pieces.
+**This table contains PRIVATE internal business allowances, do not show the target or ceiling to customers.** Customer tier cards display the tier name, price and the budget-matched hamper message. The maximum selected pieces is displayed separately during category selection.
 
 | Tier | Price | Maximum pieces | Private target | Absolute +5pp ceiling |
 |---|---:|---:|---:|---:|
