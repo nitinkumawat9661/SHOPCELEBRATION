@@ -15,7 +15,7 @@ export async function GET() {
       `SELECT o.public_id, COUNT(m.id)::int AS unread_count
          FROM telegram_order_messages m
          JOIN orders o ON o.id = m.order_id
-        WHERE o.customer_account_id = $1 AND m.read_at IS NULL
+        WHERE o.customer_account_id = $1 AND m.sender = 'celebration_support' AND m.read_at IS NULL
         GROUP BY o.public_id
         ORDER BY o.public_id
         LIMIT 200`,

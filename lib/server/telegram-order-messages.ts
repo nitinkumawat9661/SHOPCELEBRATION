@@ -64,7 +64,7 @@ export async function listCustomerOrderMessages(publicId: string, accountId: str
     [orderId]
   )
   const unread = await query<{ count: number }>(
-    `SELECT count(*)::int AS count FROM telegram_order_messages WHERE order_id=$1 AND read_at IS NULL`,
+    `SELECT count(*)::int AS count FROM telegram_order_messages WHERE order_id=$1 AND sender='celebration_support' AND read_at IS NULL`,
     [orderId]
   )
   return {
@@ -84,8 +84,39 @@ export async function acknowledgeCustomerOrderMessages(publicId: string, account
   if (!orderId) return null
   const result = await query(
     `UPDATE telegram_order_messages SET read_at=now()
-      WHERE order_id=$1 AND read_at IS NULL`,
+      WHERE order_id=$1 AND sender='celebration_support' AND read_at IS NULL`,
     [orderId]
   )
   return { acknowledged: result.rowCount || 0 }
 }
+
+export async function sendCustomerOrderMessage(publicId: string, accountId: string, body: string, requestId: string) {
+  const trimmed = typeof body === "string" ? body.trim() : ""
+  if (!trimmed || trimmed.length > 1200 || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId))
+    return { ok: false as const, reason: "INVALID_MESSAGE" }
+  const orderId = await ownsOrder(publicId, accountId)
+  if (!orderId) return { ok: false as const, reason: "ORDER_NOT_FOUND" }
+  const inserted = await query<{ id: string; body: string; sent_at: Date }>(
+    `INSERT INTO telegram_order_messages (order_id,sender,body,client_message_id)
+      VALUES ($1,'customer',$2,$3::uuid)
+      ON CONFLICT (client_message_id) DO NOTHING
+      RETURNING id,body,sent_at`,
+    [orderId, trimmed, requestId]
+  )
+  // A retry never queues the same message twice; do not reveal any message
+  // associated with another account even if a request ID were to collide.
+  const previous = inserted.rows[0] ? null : await query<{ id: string; body: string; sent_at: Date }>(
+    `SELECT m.id,m.body,m.sent_at
+       FROM telegram_order_messages m JOIN orders o ON o.id=m.order_id
+      WHERE m.client_message_id=$1::uuid AND o.customer_account_id=$2
+        AND o.public_id=$3 AND m.sender='customer' LIMIT 1`,
+    [requestId, accountId, publicId]
+  )
+  const row = inserted.rows[0] || previous?.rows[0]
+  if (!row) return { ok: false as const, reason: "MESSAGE_CONFLICT" }
+  return { ok: true as const, message: {
+    id: row.id, sender: "customer" as const, body: row.body,
+    sentAt: row.sent_at.toISOString(), readAt: null
+  }}
+}
+
