@@ -136,7 +136,16 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
     [orderId])
   if(!order.created){
     const match=existing.rows[0]
-    if(!match||JSON.stringify(match.selections)!==JSON.stringify(checkedChoices.snap)||
+    const sameChoices=Array.isArray(match?.selections)&&
+      match.selections.length===checkedChoices.snap.length &&
+      match.selections.every((item:unknown,index:number)=>{
+        const record=item&&typeof item==="object"&&!Array.isArray(item)
+          ?item as Record<string,unknown>:null
+        const expected=checkedChoices.snap[index]
+        return record?.kind===expected.kind&&record?.id===expected.id&&
+          record?.label===expected.label&&record?.quantity===expected.quantity
+      })
+    if(!match||!sameChoices||
        match.other_request_text!==saved.other_request_text.trim()||
        match.total_internal_budget_paise!==checkedChoices.spent||
        match.tier_budget_paise!==tier.rows[0].allowance_paise)
