@@ -297,3 +297,56 @@
 @media(prefers-reduced-motion:reduce){
   .sbBuyerTiers .sbBuyerTierBar,.sbBuyerFlatChoices .sbBuyerChoice{transition:none}
 }
+
+
+/* 2026-10-14 / Category overview followed by always-expanded named options.
+   All categories, including Chocolates, Snacks and Teddys where enabled,
+   are sourced from the actual admin-owned configuration. */
+.sbBuyerCategoryStage{padding:16px 0 30px}
+.sbBuyerCategoryStage h2{
+  color:#501930;font:italic 800 clamp(29px,3.8vw,39px)/1.15 Georgia,serif;
+  margin:0 0 8px
+}
+.sbBuyerCategoryStage>p{color:#74565e;font:500 13px/1.6 Arial,sans-serif;margin:0 0 18px}
+.sbBuyerCategoryList{display:flex;flex-direction:column;border-top:2px solid #9b6672}
+.sbBuyerCategoryList button{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;min-height:64px;padding:15px 6px;background:transparent;
+  color:#4d1c35;border:0;border-bottom:1px solid #d8babc;
+  text-align:left
+}
+.sbBuyerCategoryList button span:first-child{
+  min-width:0;font:italic 800 clamp(22px,2.9vw,30px)/1.2 Georgia,serif;
+  overflow-wrap:anywhere
+}
+.sbBuyerCategoryList button span:last-child{
+  width:32px;height:32px;flex:0 0 32px;border-radius:50%;
+  background:#741e38;color:#fff9f5;display:grid;place-items:center;
+  font:700 18px/1 Arial,sans-serif
+}
+.sbBuyerCategoryList button:hover:not(:disabled){background:#f0dddc}
+.sbBuyerCategoryStage .sbBuyerAllCategories{
+  min-height:48px;margin-top:18px;padding:12px 20px;
+  background:#741e38;color:#fffaf6;border:1px solid #741e38;
+  font:700 13px/1.2 Arial,sans-serif
+}
+.sbBuyerCategoryStage .sbBuyerAllCategories span{margin-left:12px}
+.sbBuyerCategoryStage .sbBuyerBackCategory{
+  display:block;margin-top:10px;min-height:44px;
+  color:#741e38;background:transparent;border:0;
+  font:600 13px/1.3 Arial,sans-serif
+}
+.sbBuyerGiftSections{display:flex;flex-direction:column;gap:28px;margin:8px 0 20px}
+.sbBuyerGiftSection{min-width:0}
+.sbBuyerGiftSection>h3{
+  padding:11px 2px 12px;margin:0;border-bottom:2px solid #ae6d7d;
+  color:#501930;font:italic 800 clamp(25px,3.5vw,35px)/1.15 Georgia,serif;
+  overflow-wrap:anywhere
+}
+.sbBuyerGiftSection .sbBuyerChoices{border-top:0}
+@media(max-width:650px){
+  .sbBuyerCategoryList button{min-height:61px;padding:12px 4px}
+  .sbBuyerCategoryList button span:first-child{font-size:23px}
+  .sbBuyerGiftSections{gap:22px}
+  .sbBuyerGiftSection>h3{font-size:27px}
+}
