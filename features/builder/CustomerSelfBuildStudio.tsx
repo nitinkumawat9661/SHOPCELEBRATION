@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { orderConfig } from "../../config/order"
+import { SELF_BUILD_DELIVERY_FEE_PAISE } from "../../config/self-build-delivery"
 import type { Tier } from "../../lib/domain/catalog"
 import { formatMoney } from "../../lib/domain/catalog"
 import type { SelfBuildVisualData } from "../../lib/server/self-build-preview"
@@ -285,10 +286,10 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
       {paid?<section className="sbBuyerCard sbBuyerSuccess"><h2>Payment confirmed</h2><p>Your personalised hamper order has been placed.</p>
         <p>Order: <strong>{orderId}</strong></p><Link href={trackingPath||"/account"}>Track your order →</Link>
       </section>:<>
-      <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>01</span><div><h2>Choose your hamper size</h2><p>The shown price is the complete hamper tier price. Individual item costs are not shown.</p></div></div>
+      <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>01</span><div><h2>Choose your hamper size</h2><p>Choose your hamper budget. Delivery is added at checkout.</p></div></div>
         <div className="sbBuyerTiers">{tiers.map(t=><button key={t.id} type="button" disabled={disabled}
           aria-pressed={tierId===t.id} onClick={()=>setTierId(t.id)}>
-          <b>{t.name}</b><span>{formatMoney(t.price)}</span><small>{t.size} · Up to {t.maxChoices} pieces</small>
+          <b>{t.name}</b><span>{formatMoney(t.price)}</span><small>A hamper made to match your budget.</small>
         </button>)}</div>
       </section>
       <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
@@ -354,7 +355,11 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
           disabled={Boolean(orderId)||busy} onChange={e=>setAccepted(e.target.checked)} />
           I agree to Celebration's order and delivery policies.</label>
         <div className="sbBuyerPay">
-          <div><small>Hamper total</small><b>{tier?formatMoney(tier.price):"Not available"}</b></div>
+          <div className="sbBuyerPaySummary" aria-label="Order total">
+            <div><small>Hamper price</small><span>{tier?formatMoney(tier.price):"Not available"}</span></div>
+            <div><small>Delivery</small><span>{formatMoney(SELF_BUILD_DELIVERY_FEE_PAISE/100)}</span></div>
+            <div className="sbBuyerPayGrand"><small>Total to pay</small><b>{tier?formatMoney(tier.price+SELF_BUILD_DELIVERY_FEE_PAISE/100):"Not available"}</b></div>
+          </div>
           <button type="button" disabled={busy||(!orderId&&!readyToPay)}
             onClick={()=>void confirmPayment()}>{busy?"Processing…":orderId?"Retry secure payment":"Continue to secure payment"}</button>
         </div>
