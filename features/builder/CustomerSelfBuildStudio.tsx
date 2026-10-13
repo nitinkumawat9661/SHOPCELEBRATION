@@ -124,12 +124,15 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
     const [kind,choiceId]=id.split(":")
     return(kind==="category"||kind==="option")?[{kind,id:choiceId,quantity:value}]:[]
   }),[quantity])
+  const totalPieces=items.reduce((total,item)=>total+item.quantity,0)
+  const maxPieces=tier?.maxChoices??0
+  const withinPieceLimit=Boolean(maxPieces)&&totalPieces<=maxPieces
   const photoQuantity=items.reduce((total,item)=>{
     return total+(item.kind==="category"&&data.categories.some(x=>x.id===item.id&&x.selectionKind==="photo")?item.quantity:0)
   },0)
   const signature=JSON.stringify({tierId,selections:items,note:note.trim()})
   const saved=Boolean(draftId)&&savedSignature===signature
-  const readyToPay=saved&&items.length>0&&photos.length===photoQuantity&&Boolean(tier)&&accepted&&Boolean(customer.account)
+  const readyToPay=saved&&items.length>0&&withinPieceLimit&&photos.length===photoQuantity&&Boolean(tier)&&accepted&&Boolean(customer.account)
   const grouped=useMemo(()=>{
     const categoryNames=new Map(data.categories.map(c=>[c.id,c.label]))
     const selectable=data.categories.filter(c=>["category","photo"].includes(c.selectionKind)).map(c=>({
@@ -177,6 +180,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   async function saveDraft(){
     if(!customer.account)throw Error("SIGN_IN_REQUIRED")
     if(!tier||!items.length)throw Error("CHOOSE_A_CATEGORY")
+    if(!withinPieceLimit)throw Error("MAX_HAMPER_ITEMS_EXCEEDED")
     const r=await fetch("/api/account/self-build/draft",{
       method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({tierId:tier.id,selections:items,otherRequestText:note.trim()})
@@ -283,10 +287,16 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
         <div className="sbBuyerTiers">{tiers.map(t=><button key={t.id} type="button" disabled={disabled}
           aria-pressed={tierId===t.id} onClick={()=>setTierId(t.id)}>
           <b>{t.name}</b><span>{formatMoney(t.price)}</span><small>{t.size}</small>
+          <small>Up to {t.maxChoices} items</small>
         </button>)}</div>
       </section>
       <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
         <p>There is no SKU mapping and no per-piece price. Celebration fulfils the real designs.</p></div></div>
+        <div className="sbBuyerPieceCounter" role="status" aria-live="polite">
+          <strong>{totalPieces} / {maxPieces} items selected</strong>
+          <small>Choose up to {maxPieces} items, including multiple of the same category.</small>
+        </div>
+        {!withinPieceLimit&&<p className="sbBuyerMessage sbBuyerError" role="alert">Remove {totalPieces-maxPieces} item(s) to fit this hamper.</p>}
         <div className="sbBuyerChoices">{grouped.map(item=>{
           const count=quantity[item.key]||0
           return <div className="sbBuyerChoice" key={item.key}><div><small>{item.group||"Gift category"}</small>
@@ -294,7 +304,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
             <div className="sbBuyerQty">
               <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
                 onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
-              <output>{count}</output><button type="button" disabled={disabled||count>=100}
+              <output>{count}</output><button type="button" disabled={disabled||count>=100||totalPieces>=maxPieces|| (item.kind==="photo"&&photoQuantity>=40)}
                 aria-label={`Add ${item.label}`} onClick={()=>setQuantity(v=>({...v,[item.key]:count+1}))}>+</button>
             </div></div>
         })}</div>
@@ -302,7 +312,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
           <textarea value={note} onChange={e=>setNote(e.target.value)} maxLength={1200}
             rows={3} disabled={disabled} placeholder={data.requestPrompt} />
         </label>
-        <div className="sbBuyerActions"><button type="button" disabled={disabled||!items.length}
+        <div className="sbBuyerActions"><button type="button" disabled={disabled||!items.length||!withinPieceLimit}
           onClick={()=>void onSave()}>{busy?"Saving…":"Save my choices"}</button>
           <span>{saved?"Saved to your account":"Save before adding photos or paying"}</span></div>
       </section>
