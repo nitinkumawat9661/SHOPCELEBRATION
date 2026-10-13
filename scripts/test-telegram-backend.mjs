@@ -15,6 +15,14 @@ const files = await Promise.all([
   "config/env.ts"
 ].map(read))
 const [first,second,worker,service,webhook,customer,observations,sync,env] = files
+// The existing orders, order_events and payment_events primary keys use TEXT.
+// Catch incompatible Telegram FKs before attempting a database migration.
+assert(first.includes("order_id text NOT NULL REFERENCES orders(id)"))
+assert(first.includes("source_event_id text NOT NULL"))
+assert(second.split("order_id text NOT NULL REFERENCES orders(id)").length - 1 === 2)
+assert(second.includes("gen_random_uuid()::text"))
+assert((await read("db/migrations/052_telegram_courier_watch.sql"))
+  .includes("order_id text PRIMARY KEY REFERENCES orders(id)"))
 
 for (const table of ["telegram_notification_outbox", "telegram_order_messages", "order_courier_observations"])
   assert((first + second).includes("CREATE TABLE " + table), "Missing durable " + table)
