@@ -41,10 +41,13 @@ assert(!ui.includes('MAXIMUM PIECES')&&!ui.includes('{units} <span>/ {maxItems}<
  !ui.includes('Repeating one category also counts'),"No visible piece capacity limit")
 assert(ui.includes('const units = chosen.reduce')&&ui.includes('setUpgradeOpen(true)')&&
  ui.includes('maxItems-others'),"Server-style quantity cap remains enforced via upgrade dialog")
-assert(ui.includes('availableChoices.map(choice=>')&&ui.includes('walk(root,[])')&&
- !ui.includes('setOpenId(category.id)'),"All categories and options render in one continuous list")
-assert(ui.includes('category.selectionKind==="variant"')&&ui.includes('sortedOptions.filter(o=>o.categoryId===category.id)'))
-assert(ui.includes('kind === "category" || kind === "photo"')&&ui.includes('category:${category.id}'),"Photos must retain their existing quantity control")
+assert(ui.includes('buildSelfBuildGiftSections(data)')&&ui.includes('step==="categories"')&&
+ ui.includes('visibleSections.map(section=>')&&ui.includes('section.choices.map(choice=>'),
+ "Dedicated category overview and all inline grouped choices required")
+assert(ui.includes('setActiveSectionId(section.id)')&&ui.includes('setStep("choose")'),
+ "Category overview click navigates directly to inline gift list")
+assert(ui.includes('group={choice.groupLabel===section.label?"":choice.groupLabel}'),
+ "Nested variants retain their readable parent context")
 assert(ui.includes('data.requestPrompt')&&ui.includes('maxLength={1200}'),"Admin text prompt must be rendered and bounded")
 assert(ui.includes('const units = chosen.reduce')&&ui.includes('const distinct = chosen.length'))
 assert(ui.includes('disabled={units === 0 || exceedsMax}'),"Require at least one within maximum total selections")
