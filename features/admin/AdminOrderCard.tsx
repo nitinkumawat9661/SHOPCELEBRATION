@@ -39,7 +39,7 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
           <div className="adminOrderIdRow">
             <b>{order.publicId}</b>
             <span className="adminStatusChip">{orderStatusLabels[order.status]}</span>
-            <span className="adminStatusChip">{individual ? "Individual purchase" : "Hamper"}</span>
+            <span className="adminStatusChip">{individual ? "Individual purchase" : order.selfBuild ? "Self-Build Hamper" : "Hamper"}</span>
           </div>
           <span>{order.customerName}{uiContent.common.separator}<a href={`tel:${order.phone}`}>{order.phone}</a></span>
         </div>
@@ -64,6 +64,24 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
       </div>
 
       {individual && <ul className="individualOrderLines" aria-label="Purchased items">{(order.lineItems || []).map((item) => <li key={item.productId}><div><b>{item.name}</b><span>{item.quantity} × {formatMoney(item.unitPricePaise / 100)} each</span></div><strong>{formatMoney(item.lineTotalPaise / 100)}</strong></li>)}</ul>}
+
+      {order.selfBuild && <section className="sbAdminOrderSnapshot" aria-label="Self-Build hamper packing details">
+        <div className="sbAdminOrderSnapshotHead">
+          <div><b>Self-Build packing list</b><small>Customer chose categories only — Celebration team chooses actual designs.</small></div>
+          <span className="sbAdminOrderSnapshotStatus">{order.selfBuild.reservationStatus || "Not reserved"}</span>
+        </div>
+        {order.selfBuild.selections.length ? <ul className="sbAdminOrderSnapshotItems">
+          {order.selfBuild.selections.map((choice) =>
+            <li key={choice.kind + ":" + choice.id}>
+              <span>{choice.label}<small>{choice.kind === "option" ? "Size option" : "Category"}</small></span>
+              <strong>× {choice.quantity}</strong>
+            </li>)}
+        </ul> : <p>No category selections saved.</p>}
+        {order.selfBuild.otherRequestText && <div className="sbAdminOrderSnapshotNote">
+          <b>Customer's special request</b><p>{order.selfBuild.otherRequestText}</p>
+        </div>}
+        <p className="sbAdminOrderSnapshotDisclaimer">Category selection is not an individual SKU promise. No internal budget is displayed in the customer order.</p>
+      </section>}
 
       <details className="adminOrderDetails">
         <summary>{copy.orderDetails}</summary>
