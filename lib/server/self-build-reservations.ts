@@ -18,17 +18,15 @@ type RawOption={id:string;category_id:string;label:string;unit_budget_paise:numb
 type RawCategoryCapacity={category_id:string;available_units:number;reserved_units:number;verified:boolean}
 type RawOptionCapacity={option_id:string;available_units:number;reserved_units:number;verified:boolean}
 type RawAllowance={tier_id:string;allowance_paise:number;enabled:boolean}
-type RawBatch={order_id:string;status:string;tier_id:string}
+type RawBatch={order_id:string;status:string;tier_id:string;expires_at:Date}
 const ID=/^[a-z0-9][a-z0-9-]{0,59}$/
 
 async function lockAndRead(client:PoolClient,tierId:string){
-  const [settings,control]=await Promise.all([
-    // DB commits are serialized by these two locks with admin edit routes.
-    client.query<Config>("SELECT * FROM self_build_configuration WHERE id='primary' FOR SHARE"),
-    // IMPORTANT: Do NOT run concurrent queries on one pg connection for lock
-    // ordering. Queries are queued by pg but explicit ordering is clearer.
-    client.query<{version:number}>("SELECT version FROM self_build_capacity_control WHERE id='primary' FOR UPDATE")
-  ])
+  // Exact lock order shared with admin category/capacity writes.
+  const settings=await client.query<Config>(
+    "SELECT * FROM self_build_configuration WHERE id='primary' FOR SHARE")
+  const control=await client.query<{version:number}>(
+    "SELECT version FROM self_build_capacity_control WHERE id='primary' FOR UPDATE")
   const config=settings.rows[0],state=control.rows[0]
   if(!config||!state||config.customer_enabled!==true||config.show_item_prices!==false)
     fail("SELF_BUILD_NOT_LIVE")
@@ -98,7 +96,7 @@ export async function reserveSelfBuildForOrderWithClient(
   if(!o||o.customer_account_id!==input.accountId||o.order_type!=="hamper"||o.tier_id!==input.tierId)
     fail("RESERVATION_ORDER_MISMATCH")
   const existing=await client.query<RawBatch>(
-    "SELECT order_id,status,tier_id FROM self_build_order_reservation_batches WHERE order_id=$1 FOR UPDATE",[input.orderId])
+    "SELECT order_id,status,tier_id,expires_at FROM self_build_order_reservation_batches WHERE order_id=$1 FOR UPDATE",[input.orderId])
   if(existing.rows[0]){
     // A duplicate payment/order retry must never add reservations twice.
     // Mismatched data must NOT silently return success.
@@ -108,6 +106,10 @@ export async function reserveSelfBuildForOrderWithClient(
     const actual=lines.rows.map(r=>[r.kind,r.choice_id,r.quantity].join(":")).sort()
     const supplied=(Array.isArray(input.selections)?input.selections:[]).map(r=>[r.kind,r.id,r.quantity].join(":")).sort()
     if(JSON.stringify(actual)!==JSON.stringify(supplied))fail("RESERVATION_PAYLOAD_MISMATCH")
+    const snap=await client.query<{other_request_text:string}>(
+      "SELECT other_request_text FROM self_build_order_snapshots WHERE order_id=$1",[input.orderId])
+    if(!snap.rows[0]||snap.rows[0].other_request_text!==input.note.trim())
+      fail("RESERVATION_PAYLOAD_MISMATCH")
     if(existing.rows[0].status==="released")fail("RESERVATION_ALREADY_RELEASED")
     return {created:false,status:existing.rows[0].status}
   }
@@ -176,6 +178,13 @@ export async function commitSelfBuildReservationWithClient(client:PoolClient,ord
   if(!batch.rows[0])fail("RESERVATION_NOT_FOUND")
   if(batch.rows[0].status==="committed")return {changed:false,status:"committed" as const}
   if(batch.rows[0].status!=="reserved")fail("RESERVATION_ALREADY_RELEASED")
+  if(batch.rows[0].expires_at<=new Date())fail("RESERVATION_EXPIRED")
+  // A payment/order-status mutation and this commit MUST be in one caller
+  // transaction. Never mark stock consumed on an unverified payment.
+  const payment=await client.query<{payment_status:string}>(
+    "SELECT payment_status FROM orders WHERE id=$1 FOR UPDATE",[orderId])
+  if(!payment.rows[0]||!["paid","verified"].includes(payment.rows[0].payment_status))
+    fail("PAYMENT_NOT_VERIFIED")
   const items=await client.query<{kind:"category"|"option";choice_id:string;quantity:number}>(
     "SELECT kind,choice_id,quantity FROM self_build_order_reservation_items WHERE order_id=$1 ORDER BY kind,choice_id",[orderId])
   for(const item of items.rows){
