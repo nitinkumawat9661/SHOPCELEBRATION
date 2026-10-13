@@ -25,7 +25,7 @@ assert(migration.includes("status IN ('reserved','committed','released')"),"Rese
 assert(draftRoute.includes("getCustomerSession()")&&draftRoute.includes("enforceSameOrigin(request)"))
 assert(draftRoute.includes("customerSelfBuildEnabled()")&&draftRoute.includes("SELF_BUILD_NOT_LIVE"),"Disabled until launch")
 assert(draftRoute.includes("private, no-store")&&!draftRoute.includes("GET /api/catalog"),"Account privacy and no retail SKU mapping")
-assert(drafts.includes("getCatalogConfig()")&&drafts.includes("catalog.tiers.find")&&drafts.includes("evaluatePrivateSelfBuildChoices"),"Verify tier ID")
+assert(drafts.includes("getSelfBuildPublishedCatalog()")&&drafts.includes("catalog.tiers.find")&&drafts.includes("evaluatePrivateSelfBuildChoices"),"Verify tier ID")
 assert(drafts.includes("FOR SHARE")&&drafts.includes("FOR UPDATE"),"Concurrent edits protected")
 assert(drafts.includes("ON CONFLICT(customer_account_id) DO UPDATE")&&drafts.includes("now()+interval '14 days'"))
 assert(drafts.includes("deleteSelfBuildPrivatePhoto")&&drafts.includes("REMOVE_EXCESS_DRAFT_PHOTOS_BEFORE_SAVING"),"Private photo cleanup on draft updates")
@@ -52,7 +52,7 @@ const module={exports:{}}
 const mockRequire=name=>{
   if(name==="node:crypto")return {randomUUID:()=>"test-uuid"}
   if(name==="./db")return {query(){throw Error("mocked")},transaction(){throw Error("mocked")}}
-  if(name==="./catalog")return {getCatalogConfig(){throw Error("mocked")}}
+  if(name==="./self-build-published-tiers")return {getSelfBuildPublishedCatalog(){throw Error("mocked")}}
   if(name==="./r2")return {deleteSelfBuildPrivatePhoto(){throw Error("mocked")}}
   if(name==="./self-build-tier-limits")return {countSelfBuildPieces(){throw Error("mocked")},getSelfBuildTierLimits(){throw Error("mocked")}}
   if(name==="./self-build-private-budget")return {evaluatePrivateSelfBuildChoices(){throw Error("mocked")}}
