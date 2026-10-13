@@ -1,0 +1,164 @@
+name: Self-Build No-Inventory Payment Reviews Backup & Isolated Migration 105 QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'db/migrations/105_self_build_payment_refund_reviews_no_inventory.sql'
+      - '.github/workflows/self-build-refund-predeploy-backup-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safe-vps-backup-and-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Check out exactly reviewed migration
+        uses: actions/checkout@v5
+      - name: Configure exact-host SSH without disclosing credentials
+        run: |
+          set -euo pipefail
+          for var in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!var:-}" ] || { echo "Missing SSH configuration: $var" >&2; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration" "$HOME/.ssh/known_hosts"
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+      - name: Stage migration 105 in nonpublic VPS temp file
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f db/migrations/105_self_build_payment_refund_reviews_no_inventory.sql
+          scp -P "$VPS_PORT" -i "$HOME/.ssh/celebration" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes db/migrations/105_self_build_payment_refund_reviews_no_inventory.sql "$VPS_USER@$VPS_HOST:/tmp/celebration-refunds-105-${GITHUB_SHA}.sql"
+      - name: Backup current live DB and rehearse pending refund review migration on isolated restore
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s -- "/tmp/celebration-refunds-105-${GITHUB_SHA}.sql" <<'REMOTE'
+          set -euo pipefail
+          umask 077
+          REFUND_MIGRATION_SQL="$1"
+          test -f "$REFUND_MIGRATION_SQL"
+          export REFUND_MIGRATION_SQL
+          trap 'rm -f -- "$REFUND_MIGRATION_SQL"' EXIT
+          APP_ROOT=/var/www/celebration
+          LIVE="$(readlink -f "$APP_ROOT/current")"
+          case "$LIVE" in "$APP_ROOT"/releases/*) ;; *) echo "Unrecognized release"; exit 1 ;; esac
+          cd "$LIVE"
+          node - <<'NODE'
+          const {loadEnvConfig}=require("@next/env")
+          loadEnvConfig(process.cwd(),false)
+          const {Client}=require("pg")
+          const {readFileSync,statSync,readdirSync,existsSync,mkdtempSync,rmSync}=require("node:fs")
+          const {spawnSync}=require("node:child_process")
+          const {randomBytes,randomInt}=require("node:crypto")
+          const path=require("node:path")
+          const url=new URL(process.env.DATABASE_URL || "")
+          if(decodeURIComponent(url.pathname.slice(1))!=="celebration")throw Error("Refusing non-Celebration source DB")
+          const opts={...process.env,PGHOST:url.hostname,PGPORT:url.port||"5432",PGUSER:decodeURIComponent(url.username),PGPASSWORD:decodeURIComponent(url.password),PGSSLMODE:process.env.DATABASE_SSL_MODE==="disable"?"disable":"require"}
+          if(!opts.PGHOST||!opts.PGUSER)throw Error("Missing DB host/user")
+          function command(exe,args,env=opts){
+            const r=spawnSync(exe,args,{env,encoding:"utf8",timeout:120000})
+            if(r.error||r.status!==0)throw Error(exe+" failed with exit="+r.status)
+          }
+          const sourceDb="celebration"
+          const safeName="celebration_refund_restore_"+randomBytes(5).toString("hex")
+          const backup="/home/nitin/celebration-db-backups/celebration-before-no-stock-refund-"+new Date().toISOString().replace(/[-:.]/g,"").slice(0,15)+"Z.dump"
+          const sourceConn=process.env.DATABASE_URL
+          const dbConnection=name=>{const target=new URL(sourceConn);target.pathname="/"+name;return target.toString()}
+          const ssl=process.env.DATABASE_SSL_MODE==="disable"?false:{rejectUnauthorized:true}
+          let scratchCreated=false, scratchDb=safeName
+          let isolatedRoot=null, isolatedBin=null, isolatedStarted=false
+          let isolatedDbOpts=null
+          ;(async()=>{
+            const admin=new Client({connectionString:dbConnection("postgres"),ssl})
+            try{
+              command("pg_dump",["-Fc","--no-owner","--no-acl","--file",backup,"--dbname",sourceDb])
+              command("pg_restore",["--list",backup])
+              console.log("FRESH_BACKUP="+backup)
+              console.log("BACKUP_SIZE_BYTES="+statSync(backup).size)
+              await admin.connect()
+              const perms=await admin.query("SELECT rolcreatedb OR rolsuper AS allowed FROM pg_roles WHERE rolname=CURRENT_USER")
+              let scratch
+              if(perms.rows[0]?.allowed){
+                await admin.query('CREATE DATABASE "'+safeName+'"')
+                scratchCreated=true
+                command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--dbname",scratchDb,backup])
+                scratch=new Client({connectionString:dbConnection(scratchDb),ssl})
+              }else{
+                // The app role cannot create a database. Start an entirely
+                // separate unprivileged PostgreSQL instance on a 0700 UNIX socket.
+                // No production DB writes, no network port, no customer-data export.
+                const version=readdirSync("/usr/lib/postgresql").filter(v=>/^\d+$/.test(v)).sort((x,y)=>Number(y)-Number(x))
+                  .find(v=>existsSync("/usr/lib/postgresql/"+v+"/bin/initdb"))
+                if(!version)throw Error("No unprivileged initdb binary available; rollout BLOCKED")
+                isolatedBin="/usr/lib/postgresql/"+version+"/bin"
+                isolatedRoot=mkdtempSync("/tmp/celebration-refund-restore-")
+                const dataDir=path.join(isolatedRoot,"data")
+                const port=String(randomInt(40000,49000))
+                const user=spawnSync("id",["-un"],{encoding:"utf8"}).stdout.trim()
+                command(path.join(isolatedBin,"initdb"),["-D",dataDir,"--auth-local=trust","--auth-host=reject","--no-instructions"],{...process.env,PGPASSWORD:""})
+                command(path.join(isolatedBin,"pg_ctl"),["-D",dataDir,"-l",path.join(isolatedRoot,"postgres.log"),
+                  "-o","-c listen_addresses='' -k "+isolatedRoot+" -p "+port,"-w","start"],{...process.env,PGPASSWORD:""})
+                isolatedStarted=true
+                isolatedDbOpts={host:isolatedRoot,port:Number(port),user,database:"postgres",ssl:false}
+                command("pg_restore",["--no-owner","--no-acl","--exit-on-error","--host",isolatedRoot,
+                  "--port",port,"--username",user,"--dbname","postgres",backup],{...process.env,PGPASSWORD:"",PGSSLMODE:"disable"})
+                scratch=new Client(isolatedDbOpts)
+                console.log("ISOLATED_RESTORE_ENGINE=private_unix_socket")
+              }
+              await scratch.connect()
+              try{
+                const before=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
+                const already=await scratch.query("SELECT name FROM schema_migrations WHERE name IN ('047_self_build_hamper_draft_architecture.sql','048_self_build_owner_confirmed_categories_and_rates.sql','049_self_build_category_only_no_sku_mapping.sql','050_self_build_category_capacity_and_tier_allowances.sql','051_self_build_account_drafts_photos_and_reservations.sql','104_self_build_order_photos_delivery_retention.sql','105_self_build_payment_refund_reviews_no_inventory.sql')")
+                const applied=new Set(already.rows.map(row=>row.name))
+                for(const file of ["047_self_build_hamper_draft_architecture.sql","048_self_build_owner_confirmed_categories_and_rates.sql","049_self_build_category_only_no_sku_mapping.sql","050_self_build_category_capacity_and_tier_allowances.sql","051_self_build_account_drafts_photos_and_reservations.sql","104_self_build_order_photos_delivery_retention.sql"]){
+                  if(!applied.has(file))throw Error("Required production Self-Build stage migration missing: "+file)
+                }
+                const file="105_self_build_payment_refund_reviews_no_inventory.sql"
+                if(applied.has(file))throw Error("Migration 105 already applied; reconcile before production merge")
+                const sql=readFileSync(process.env.REFUND_MIGRATION_SQL,"utf8")
+                await scratch.query("BEGIN")
+                try{
+                  await scratch.query(sql)
+                  await scratch.query("INSERT INTO schema_migrations(name) VALUES($1)",[file])
+                  await scratch.query("COMMIT")
+                }catch(e){await scratch.query("ROLLBACK");throw e}
+                const metadata=await scratch.query("SELECT column_name FROM information_schema.columns WHERE table_name='self_build_payment_reviews' AND column_name IN ('order_id','reason','review_status','external_ref','documented_at')")
+                if(metadata.rows.length!==5)throw Error("Payment review columns absent")
+                const inserted=await scratch.query("SELECT COUNT(*)::integer AS n FROM self_build_payment_reviews")
+                if(inserted.rows[0].n!==0)throw Error("Migration invented pending refunds")
+                const after=await scratch.query("SELECT COUNT(*)::int AS n FROM orders")
+                if(before.rows[0].n!==after.rows[0].n)throw Error("Unexpected order count change")
+                const tables=await scratch.query("SELECT to_regclass('self_build_payment_reviews') IS NOT NULL AS reviews")
+                if(!tables.rows[0].reviews)throw Error("Self-Build review migration incomplete")
+                console.log("ISOLATED_RESTORE_AND_REFUND_MIGRATION_105=PASSED")
+                console.log("ORDERS_PRESERVED="+after.rows[0].n)
+              }finally{await scratch.end()}
+            }finally{
+              if(scratchCreated){
+                await admin.query('DROP DATABASE "'+safeName+'" WITH (FORCE)')
+                console.log("TEMP_DB_REMOVED=YES")
+              }
+              if(isolatedStarted){
+                command(path.join(isolatedBin,"pg_ctl"),["-D",path.join(isolatedRoot,"data"),"-m","fast","-w","stop"],{...process.env,PGPASSWORD:""})
+                isolatedStarted=false
+                console.log("ISOLATED_POSTGRES_STOPPED=YES")
+              }
+              if(isolatedRoot&&!isolatedStarted)rmSync(isolatedRoot,{recursive:true,force:true})
+              await admin.end().catch(()=>{})
+            }
+          })().catch(error=>{console.error("SAFE_CHECK_FAILED:",error.message);process.exitCode=1})
+          NODE
+          REMOTE
