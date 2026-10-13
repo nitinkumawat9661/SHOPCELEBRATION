@@ -50,5 +50,5 @@ jobs:
           test -f "$RELEASE/scripts/audit-self-build-readiness.mjs"
           test -f "$RELEASE/.env.production"
           cd "$RELEASE"
-          node -e "require('@next/env').loadEnvConfig(process.cwd(),false); import('./scripts/audit-self-build-readiness.mjs')"
+          node -e "require('@next/env').loadEnvConfig(process.cwd(),false); import('./scripts/audit-self-build-readiness.mjs').then(m=>m.run()).catch(e=>{console.error('Audit failed:',e.message);process.exitCode=1})"
           REMOTE
