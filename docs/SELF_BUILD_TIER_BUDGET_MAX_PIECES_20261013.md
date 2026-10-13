@@ -20,7 +20,7 @@ Customer studio and admin preview both display a small `selected / maximum piece
 
 ## Current published tier policy
 
-**This table contains PRIVATE internal business allowances, do not show the target or ceiling to customers.** Customer UI displays only the tier price and maximum selected pieces.
+**This table contains PRIVATE internal business allowances, do not show the target or ceiling to customers.** Customer tier cards display the tier name, price and the budget-matched hamper message. The maximum selected pieces is displayed separately during category selection.
 
 | Tier | Price | Maximum pieces | Private target | Absolute +5pp ceiling |
 |---|---:|---:|---:|---:|
