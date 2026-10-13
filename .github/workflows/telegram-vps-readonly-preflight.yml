@@ -1,0 +1,75 @@
+name: Telegram VPS Read-Only Preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/telegram-vps-readonly-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Verify SSH configuration (no secret values printed)
+        run: |
+          set -euo pipefail
+          for var in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!var:-}" ] || { echo "Missing configuration: $var" >&2; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration" "$HOME/.ssh/known_hosts"
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+      - name: Inspect live release, environment permissions and migrations ONLY
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
+          set -euo pipefail
+          APP_ROOT=/var/www/celebration
+          CURRENT="$(readlink -f "$APP_ROOT/current")"
+          case "$CURRENT" in "$APP_ROOT"/releases/*) ;; *) echo "Unrecognized release path"; exit 1 ;; esac
+          echo "ACTIVE_RELEASE=$CURRENT"
+          echo "ENV_TARGET_MODE=$(stat -Lc %a "$APP_ROOT/shared/.env.production")"
+          echo "DISK_FREE:"
+          df -h "$APP_ROOT" | tail -1
+          echo "PM2_STATUS:"
+          PM2_HOME=/home/nitin/.pm2 pm2 jlist | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>{for(const p of JSON.parse(s))if(p.name==="celebration-site"||p.name.includes("telegram"))console.log(p.name+"="+p.pm2_env.status)})'
+          echo "RECENT_BACKUP_ARCHIVES:"
+          find /home/nitin/celebration-db-backups -maxdepth 1 -type f -name '*.dump' -printf '%f %s bytes\n' 2>/dev/null | sort | tail -5 || true
+          cd "$CURRENT"
+          node - <<'NODE'
+          const {loadEnvConfig}=require("@next/env")
+          loadEnvConfig(process.cwd(),false)
+          const {Client}=require("pg")
+          if(!process.env.DATABASE_URL)throw Error("Missing database configuration")
+          const db=new Client({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_SSL_MODE==="disable"?false:{rejectUnauthorized:true}})
+          ;(async()=>{
+            await db.connect()
+            try{
+              await db.query("BEGIN READ ONLY")
+              const identity=await db.query("SELECT current_database() AS db")
+              console.log("DATABASE_NAME="+identity.rows[0].db)
+              const applied=await db.query("SELECT name FROM schema_migrations ORDER BY name DESC LIMIT 15")
+              console.log("RECENT_MIGRATIONS="+applied.rows.map(row=>row.name).join(","))
+              const telegram=await db.query("SELECT to_regclass('telegram_notification_outbox') IS NOT NULL AS outbox, to_regclass('telegram_order_messages') IS NOT NULL AS messages")
+              console.log("TELEGRAM_TABLES="+JSON.stringify(telegram.rows[0]))
+              const orders=await db.query("SELECT COUNT(*)::int AS n FROM orders")
+              console.log("EXISTING_ORDER_COUNT="+orders.rows[0].n)
+              await db.query("ROLLBACK")
+            }finally{await db.end()}
+          })().catch(e=>{console.error("Read-only audit failed:",e.message);process.exitCode=1})
+          NODE
+          REMOTE
