@@ -692,6 +692,75 @@ try {
     SELECT category_id,available_units,reserved_units,verified
     FROM self_build_category_capacity ORDER BY category_id`)).rows,paymentStockSnapshot,
     'Failed payment and retry must never change inventory')
+
+  // Real Cashfree merchant Sandbox separately confirmed: paid, failed,
+  // and failed -> paid on the SAME gateway order. This isolated PostgreSQL
+  // contract checks the WEBSITE's persisted retry, callback replay and
+  // no-inventory invariants using synthetic Cashfree event fixtures.
+  const cfOrder=await createSelfBuildNoInventoryOrder({
+    ...noStockInput,customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
+  })
+  assert.equal(cfOrder.payablePaise,54900,'Cashfree Self-Build ₹499 + ₹50 must remain ₹549')
+  const cfFirst=await reservePaymentAttempt(cfOrder.orderId,account.id,'cashfree')
+  assert.equal(cfFirst.attemptNo,1)
+  await bindPaymentAttempt(cfFirst.attemptId,{
+    provider:'cashfree',mode:'test',providerOrderId:'sbqa_pg_cf_first',
+    paymentSessionId:'session_pg_cf_first',amountPaise:cfOrder.payablePaise,currency:'INR'
+  })
+  const cfFailed={
+    provider:'cashfree',providerOrderId:'sbqa_pg_cf_first',
+    providerPaymentId:'cf_fixture_failed',status:'failed',
+    amountPaise:cfOrder.payablePaise,eventId:'PAYMENT_FAILED_WEBHOOK:cf_fixture_failed',
+    eventType:'PAYMENT_FAILED_WEBHOOK',payload:{testFixture:true}
+  }
+  await assert.rejects(applyProviderPaymentResult({...cfFailed,amountPaise:49900}),
+    /PAYMENT_AMOUNT_MISMATCH/,'Cashfree amount excluding shipping MUST NOT settle')
+  await applyProviderPaymentResult(cfFailed)
+  await applyProviderPaymentResult(cfFailed)
+  assert.equal((await getPaymentOrder(cfOrder.orderId,account.id)).paymentStatus,'failed',
+    'Cashfree signed failure must leave Self-Build unpaid')
+  const cfSecond=await reservePaymentAttempt(cfOrder.orderId,account.id,'cashfree')
+  assert.equal(cfSecond.attemptNo,2,'Cashfree retry creates a second attempt on same WEBSITE order')
+  await bindPaymentAttempt(cfSecond.attemptId,{
+    provider:'cashfree',mode:'test',providerOrderId:'sbqa_pg_cf_retry',
+    paymentSessionId:'session_pg_cf_retry',amountPaise:cfOrder.payablePaise,currency:'INR'
+  })
+  const cfSuccess={
+    ...cfFailed,providerOrderId:'sbqa_pg_cf_retry',providerPaymentId:'cf_fixture_success',
+    status:'paid',eventId:'PAYMENT_SUCCESS_WEBHOOK:cf_fixture_success',
+    eventType:'PAYMENT_SUCCESS_WEBHOOK'
+  }
+  await applyProviderPaymentResult(cfSuccess)
+  await applyProviderPaymentResult(cfSuccess)
+  // Delayed duplicate failure from attempt 1 must never undo attempt 2 success.
+  await applyProviderPaymentResult({...cfFailed,
+    eventId:'PAYMENT_FAILED_WEBHOOK:cf_fixture_failed_delayed'})
+  const cfSettled=await getPaymentOrder(cfOrder.orderId,account.id)
+  assert.equal(cfSettled.paymentStatus,'paid','Delayed failed Cashfree webhook downgraded paid order')
+  assert.equal(cfSettled.status,'payment_verified','Cashfree success did not verify Self-Build order')
+  assert.equal(cfSettled.paymentAttemptCount,2,'Unexpected extra Cashfree payment attempt')
+  const cfDbEvents=await control.query(`
+    SELECT provider_event_id,COUNT(*)::int AS n FROM payment_events
+    WHERE provider='cashfree' AND provider_event_id IN
+      ('PAYMENT_FAILED_WEBHOOK:cf_fixture_failed',
+       'PAYMENT_SUCCESS_WEBHOOK:cf_fixture_success',
+       'PAYMENT_FAILED_WEBHOOK:cf_fixture_failed_delayed')
+    GROUP BY provider_event_id`)
+  assert.equal(cfDbEvents.rows.length,3,'Cashfree payment event records missing')
+  assert.ok(cfDbEvents.rows.every(event=>event.n===1),
+    'Cashfree webhook replay wrote duplicate provider event')
+  const cfAttempts=await control.query(`
+    SELECT attempt_no,provider,provider_order_id,status FROM payment_attempts
+    WHERE order_id=(SELECT id FROM orders WHERE public_id=$1) ORDER BY attempt_no`,[cfOrder.orderId])
+  assert.equal(cfAttempts.rows.length,2,'Payment retry duplicated the WEBSITE order attempt')
+  assert.equal(cfAttempts.rows[0].status,'failed')
+  assert.equal(cfAttempts.rows[1].status,'paid')
+  assert.deepEqual((await control.query(`
+    SELECT category_id,available_units,reserved_units,verified
+    FROM self_build_category_capacity ORDER BY category_id`)).rows,paymentStockSnapshot,
+    'Cashfree Self-Build retry/replay must NEVER change category inventory')
+  console.log('CASHFREE_SELF_BUILD_ISOLATED_POSTGRES_PASSED: ₹549, mismatch rejected, failure, retry, paid, signed-provider event replay and stale failure preserved paid without inventory writes')
+
   console.log('SELF_BUILD_NO_STOCK_PROVIDER_POSTGRES_PASSED: verified paid, replay, bad amount, failed payment and same-order retry with zero inventory writes')
 
   // Live money transfer is never simulated; tests only validate a durable
