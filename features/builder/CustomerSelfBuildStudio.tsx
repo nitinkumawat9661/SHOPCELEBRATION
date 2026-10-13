@@ -146,6 +146,19 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
     }))
     return [...selectable,...options]
   },[data])
+
+  // Presentation-only grouping. Keep category IDs, selection quantities,
+  // pricing, and the saved draft payload completely unchanged.
+  const groupedSections=useMemo(()=>{
+    const sections=new Map<string,typeof grouped>()
+    for(const item of grouped){
+      const title=item.group||"Gift categories"
+      const section=sections.get(title)||[]
+      section.push(item)
+      sections.set(title,section)
+    }
+    return Array.from(sections,([title,choices])=>({title,choices}))
+  },[grouped])
   const change=(name:keyof CheckoutData,value:string)=>setDetails(previous=>({...previous,[name]:value}))
   async function loadPhotos(){
     const result=await fetch("/api/account/self-build/photos",{cache:"no-store",credentials:"same-origin"})
@@ -272,7 +285,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   return <div className="sbBuyer">
     <div className="sbBuyerTop">
       <div><span className="sbBuyerKicker">CELEBRATION · MADE PERSONAL</span><h1>Build your own hamper</h1>
-        <p>Select the categories, sizes and personal touches. Our team chooses the actual gifts for you.</p></div>
+        <p>Choose the gifts you love. We'll put together the hamper with care, just for your occasion.</p></div>
     </div>
     {error&&<div role="alert" className="sbBuyerMessage sbBuyerError">{error}</div>}
     {notice&&<div role="status" className="sbBuyerMessage">{notice}</div>}
@@ -293,37 +306,59 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
         </button>)}</div>
       </section>
       <section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
-        <p>There is no SKU mapping and no per-piece price. Celebration fulfils the real designs.</p></div></div>
+        <p>Explore the gift categories below. You can choose the same type more than once.</p></div></div>
         <div className={tooManyItems?"sbBuyerCountBar sbBuyerCountBarOver":"sbBuyerCountBar"} role="status" aria-live="polite">
           <div><small>TOTAL PIECES IN YOUR HAMPER</small><strong>{selectedUnits} <span>/ {maxUnits}</span></strong></div>
           <p>Maximum {maxUnits} pieces. Repeat the same category as often as you like, within this total.</p>
         </div>
+        <div className="sbBuyerSelectionProgress" role="progressbar" aria-label="Hamper pieces selected"
+          aria-valuemin={0} aria-valuemax={maxUnits} aria-valuenow={Math.min(selectedUnits,maxUnits)}>
+          <span style={{width:`${maxUnits?Math.min(100,Math.round(selectedUnits/maxUnits*100)):0}%`}} />
+        </div>
         {tooManyItems&&<p className="sbBuyerCountError" role="alert">This hamper holds up to {maxUnits} pieces. Remove {selectedUnits-maxUnits} to continue.</p>}
-        <div className="sbBuyerChoices">{grouped.map(item=>{
-          const count=quantity[item.key]||0
-          return <div className="sbBuyerChoice" key={item.key}><div><small>{item.group||"Gift category"}</small>
-            <strong>{item.label}</strong>{item.kind==="photo"&&<small>One photo upload required for each selected piece</small>}</div>
-            <div className="sbBuyerQty">
-              <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
-                onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
-              <output>{count}</output><button type="button" disabled={disabled||count>=100||selectedUnits>=maxUnits}
-                aria-label={`Add ${item.label}`} onClick={()=>setQuantity(v=>{
-                  const now=Object.values(v).reduce((sum,value)=>sum+Math.max(0,value),0)
-                  return now>=maxUnits?v:{...v,[item.key]:Math.min(100,(v[item.key]||0)+1)}
-                })}>+</button>
-            </div></div>
-        })}</div>
+        <div className="sbBuyerChoiceSections">{groupedSections.map(section=><section className="sbBuyerChoiceSection" key={section.title}
+          aria-label={section.title}>
+          <div className="sbBuyerChoiceSectionHead">
+            <h3>{section.title}</h3><span>{section.choices.length} option{section.choices.length===1?"":"s"}</span>
+          </div>
+          <div className="sbBuyerChoices">{section.choices.map(item=>{
+            const count=quantity[item.key]||0
+            return <div className={count>0?"sbBuyerChoice sbBuyerChoiceActive":"sbBuyerChoice"} key={item.key}>
+              <div><strong>{item.label}</strong>
+                {item.kind==="photo"&&<small>One photo upload for each selected piece</small>}
+              </div>
+              <div className="sbBuyerQty">
+                <button type="button" disabled={disabled||count===0} aria-label={`Remove ${item.label}`}
+                  onClick={()=>setQuantity(v=>({...v,[item.key]:Math.max(0,count-1)}))}>−</button>
+                <output aria-label={`${item.label}: ${count} selected`}>{count}</output>
+                <button type="button" disabled={disabled||count>=100||selectedUnits>=maxUnits}
+                  aria-label={`Add ${item.label}`} onClick={()=>setQuantity(v=>{
+                    const now=Object.values(v).reduce((sum,value)=>sum+Math.max(0,value),0)
+                    return now>=maxUnits?v:{...v,[item.key]:Math.min(100,(v[item.key]||0)+1)}
+                  })}>+</button>
+              </div>
+            </div>
+          })}</div>
+        </section>)}</div>
+        {items.length>0&&<div className="sbBuyerSelected" aria-label="Your selected gifts">
+          <div className="sbBuyerSelectedHead"><strong>Your selected gifts</strong><span>{selectedUnits} of {maxUnits} pieces</span></div>
+          <ul>{items.map(item=><li key={`${item.kind}:${item.id}`}>
+            <span>{labelOf(data,item)}</span><b>× {item.quantity}</b>
+          </li>)}</ul>
+        </div>}
         <label className="sbBuyerField">Any special requests?
           <textarea value={note} onChange={e=>setNote(e.target.value)} maxLength={1200}
             rows={3} disabled={disabled} placeholder={data.requestPrompt} />
         </label>
         <div className="sbBuyerActions"><button type="button" disabled={disabled||!items.length||tooManyItems}
           onClick={()=>void onSave()}>{busy?"Saving…":"Save my choices"}</button>
-          <span>{saved?"Saved to your account":"Save before adding photos or paying"}</span></div>
+          <span role="status" aria-live="polite">{saved?"Saved to your account":"Save before adding photos or paying"}</span></div>
       </section>
       {photoQuantity>0&&<section className="sbBuyerCard"><div className="sbBuyerCardHead"><span>03</span><div><h2>Personalised photos</h2>
         <p>Upload {photoQuantity} photo{photoQuantity===1?"":"s"} securely. Files are deleted from private storage two days after actual delivery.</p></div></div>
-        <p>{photos.length} of {photoQuantity} photos uploaded.</p>
+        <p className="sbBuyerPhotoStatus" role="status" aria-live="polite">
+          {photos.length} of {photoQuantity} photos uploaded{photos.length===photoQuantity?" — all set.":"."}
+        </p>
         <label className="sbBuyerPhotoPicker">Add a photo (JPG, PNG or WebP, max 3 MB)
           <input type="file" accept="image/jpeg,image/png,image/webp" disabled={!saved||disabled||photos.length>=photoQuantity}
             onChange={e=>{const file=e.target.files?.[0];if(file)void onPhotoUpload(file);e.currentTarget.value=""}} />
