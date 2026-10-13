@@ -23,6 +23,7 @@ function SelectionCard({ title, group, count, onChange }: {
   title: string
   group?: string
   count: number
+  onChange: (count:number)=>void
 }) {
   return <div className={count ? "sbChoiceCard sbChoiceCard--selected" : "sbChoiceCard"}>
     <div className="sbChoiceLabel"><h3>{title}</h3>{group&&<span>{group}</span>}</div>
