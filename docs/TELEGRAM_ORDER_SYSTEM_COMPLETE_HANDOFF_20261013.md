@@ -4,6 +4,16 @@
 
 **STATUS: BACKEND TESTED, NOT LIVE.** Do NOT deploy the old prepared release as-is. The customer message UI, merge with latest main, fresh tests, production migration, PM2 worker, Telegram webhook and live end-to-end proof remain pending.
 
+## Implementation update (13 October 2026, PR #149)
+
+- Production main `a386af17d692` was incorporated into the Telegram feature via two-parent merge commit `4860b631245d`, with all Self-Build 051 files preserved and no overlapping path conflicts. No production code was switched by the merge.
+- Customer My Orders now has a compact per-order Messages from Celebration panel, a bounded account-only unread summary endpoint, IST timestamps, plain-text rendering, read acknowledgment after the panel displays messages, and account-switch isolation; no customer message composer.
+- Added `scripts/test-telegram-customer-ui.mjs` to `npm run audit`, plus PR-only PostgreSQL 16 integration workflow. GitHub PR #149 initially passed TypeScript, full source audits, Next.js build and real isolated PostgreSQL tests (orders/payment/Telegram).
+- Read-only VPS preflight confirmed running release `github-a386af17d692`, PM2 site online, private env mode 0600, migration 051 applied, 14 existing orders and Telegram tables not yet installed.
+- A **new production backup** was created on VPS at `/home/nitin/celebration-db-backups/celebration-before-telegram-20261013T093639Z.dump`. Archive list validation passed. A restore into a separate unprivileged local PostgreSQL server on a private UNIX socket successfully applied Telegram SQL migrations 100–102, retained all 14 orders and cleaned up the isolated server.
+- PR includes a safer deployment workflow switch to preserve existing category photos by default, plus an automatic post-deploy webhook/PM2 activation workflow. These workflow changes remain **not deployed** until the draft PR passes final checks and merges.
+- **Still pending:** final CI on any subsequent branch commits, current production pre-cutover verification, controlled production deployment/migrations, webhook and worker live health, actual owner Telegram reply, and customer A/B browser E2E. Never report the feature as live until observed.
+
 ## 1. Approved behavior
 
 - Alert the owner via Telegram for every newly created order, including unpaid orders, and for genuine recorded payment changes, packing, status changes, cancellation, courier events, delivery and customer issues.
