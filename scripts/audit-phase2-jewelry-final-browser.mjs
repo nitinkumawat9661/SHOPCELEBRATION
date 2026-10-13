@@ -35,9 +35,17 @@ const prices=async page=>page.locator(".collectionGrid .catalogCard").evaluateAl
  return individual && Number.isFinite(number) ? [number] : []
 }))
 async function filterPanel(page,number,dialogName){
- await page.locator(".marketplaceFilterBar>button").nth(number).click()
+ // An SSR button has no click handler before hydration. Playwright waits for
+ // enabled (React-hydrated) controls rather than silently clicking inert HTML.
+ const trigger=page.locator(".marketplaceFilterBar>button").nth(number)
+ await trigger.waitFor({state:"visible",timeout:15000})
+ await page.waitForFunction(index=>{
+   const node=document.querySelectorAll(".marketplaceFilterBar>button")[index]
+   return node && !node.disabled
+ },number,{timeout:20000})
+ await trigger.click()
  const dialog=page.getByRole("dialog",{name:dialogName})
- await dialog.waitFor({state:"visible",timeout:12000})
+ await dialog.waitFor({state:"visible",timeout:15000})
  return dialog
 }
 async function awaitParam(page,key,val) {
