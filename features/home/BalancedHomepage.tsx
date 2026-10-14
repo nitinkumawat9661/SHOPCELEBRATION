@@ -42,9 +42,10 @@ function featuredJewelry(catalog: CatalogConfig) {
   )].slice(0, 4)
 }
 
-export function BalancedHomepage({ catalog, categoryMedia }: {
+export function BalancedHomepage({ catalog, categoryMedia, selfBuildEnabled = false }: {
   catalog: CatalogConfig
   categoryMedia: Record<string, string>
+  selfBuildEnabled?: boolean
 }) {
   const available = visibleProducts(catalog)
   const knownCategories = new Set(categoriesForCatalog(catalog).map((category) => category.id))
@@ -100,7 +101,7 @@ export function BalancedHomepage({ catalog, categoryMedia }: {
         <div className="cbCategoryGroup">
           <div className="cbGroupTitle"><h3>Hampers</h3><a href="#budgets">Choose a budget <span aria-hidden="true">→</span></a></div>
           <div className="cbCategoryGrid">
-            {HAMPER_CATEGORIES.map((category) => <a key={category.label} className="cbCategoryLink" href={category.label === "Build Your Own" ? "/self-build" : `#hamper-${category.tier}`}>
+            {HAMPER_CATEGORIES.map((category) => <a key={category.label} className="cbCategoryLink" href={category.label === "Build Your Own" && selfBuildEnabled ? "/self-build" : `#hamper-${category.tier}`}>
               <span className="cbCategoryImage"><Image src={category.image} alt={category.label} width={220} height={220} loading="lazy" /></span>
               <span>{category.label}</span>
             </a>)}
