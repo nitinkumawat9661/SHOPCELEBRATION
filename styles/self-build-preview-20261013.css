@@ -534,3 +534,9 @@
 @media(prefers-reduced-motion:reduce){
   .sbPreviewPage .sbCategoryJump{transition:none}
 }
+
+/* Category menu and Make it personal sidebar removed; keep existing gift layout. */
+.sbPreviewPage .sbPreviewLayout{
+  grid-template-columns:minmax(0,1fr);
+  max-width:1040px
+}
