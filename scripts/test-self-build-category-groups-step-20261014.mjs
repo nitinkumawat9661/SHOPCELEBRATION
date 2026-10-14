@@ -21,6 +21,8 @@ const cat=(id,label,selectionKind,displayOrder,parentId=null)=>({id,label,select
 const opt=(id,categoryId,label,displayOrder)=>({id,categoryId,label,displayOrder})
 const fixture={categories:[
  cat("jewellery","Jewellery","group",1),cat("necklace","Premium Necklace","category",3,"jewellery"),
+ cat("korean-bangles","Korean Bangles","category",4,"jewellery"),
+ cat("bangles","Bangles","category",8),
  cat("teddys","Teddys","group",4),cat("small-teddy","Small Teddy","category",10,"teddys"),
  cat("large-teddy","Large Teddy","category",20,"teddys"),
  cat("chocolates","Chocolates","variant",2),cat("snacks","Snacks","variant",3),
@@ -34,7 +36,13 @@ const fixture={categories:[
 const groups=buildSelfBuildGiftSections(fixture)
 assert.deepEqual(groups.map(g=>g.label),["Jewellery","Chocolates","Snacks","Teddys","Perfume","Personalised Photos"])
 const byName=Object.fromEntries(groups.map(g=>[g.label,g]))
-assert.deepEqual(byName.Jewellery.choices.map(c=>c.label),["Premium Necklace"])
+assert.deepEqual(byName.Jewellery.choices.map(c=>c.label),["Premium Necklace","Korean Bangles"])
+assert.ok(!byName.Bangles,"Duplicate standalone Bangles is hidden when Jewellery already offers Bangles")
+const noJewelleryBangles={
+ ...fixture,categories:fixture.categories.filter(c=>c.id!=="korean-bangles")
+}
+assert.ok(buildSelfBuildGiftSections(noJewelleryBangles).some(s=>s.id==="bangles"),
+ "Standalone Bangles must remain discoverable if Jewellery no longer offers any bangles")
 assert.deepEqual(byName.Chocolates.choices.map(c=>c.key),["option:choco-mini","option:choco-mega"])
 assert.deepEqual(byName.Snacks.choices.map(c=>c.key),["option:snack-mini","option:snack-mega"])
 assert.deepEqual(byName.Teddys.choices.map(c=>c.label),["Small Teddy","Large Teddy"])
@@ -42,7 +50,7 @@ assert.deepEqual(byName.Perfume.choices.map(c=>c.label),["Mini"])
 assert.deepEqual(byName["Personalised Photos"].choices.map(c=>c.key),["category:photo"])
 const all=groups.flatMap(g=>g.choices.map(c=>c.key))
 assert.equal(all.length,new Set(all).size,"No duplicated category/option in group projection")
-assert.equal(all.length,9,"All real selectable options remain available regardless of tier")
+assert.equal(all.length,10,"All real selectable options remain available regardless of tier")
 assert.ok(!/unitBudgetPaise|salePricePaise|retail_inventory/.test(helper),
   "Only public labels & quantity keys may be used")
 assert.ok(!preview.includes('step==="categories"')&&preview.includes('step==="choose"'))
@@ -55,4 +63,4 @@ assert.ok(preview.includes("maxItems-others")&&buyer.includes("selectedUnits>=ma
 assert.ok(pricing.includes("HAMPER_DELIVERY_FEE_PAISE = SELF_BUILD_DELIVERY_FEE_PAISE"))
 assert.ok(orders.includes("getSelfBuildTierLimits(chosenTier)"))
 assert.ok(launchGate.includes("customerSelfBuildEnabled().catch(()=>false)"))
-console.log("SELF_BUILD_INLINE_CATEGORY_GROUPS_PASSED: Chocolate, Snacks, Teddy & all active categories are clearly separated without a category-selection screen; prices unchanged")
+console.log("SELF_BUILD_INLINE_CATEGORY_GROUPS_PASSED: Jewellery, Chocolates, Snacks, Teddys separated; no duplicate standalone Bangles; tier pricing and stock untouched")

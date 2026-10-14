@@ -54,5 +54,12 @@ export function buildSelfBuildGiftSections(data: SelfBuildVisualData): SelfBuild
   const sections=roots.map(makeSection)
   // Defensive: keep even misconfigured/orphaned categories discoverable.
   for(const category of categories)if(!visited.has(category.id))sections.push(makeSection(category))
-  return sections.filter(section=>section.choices.length>0)
+  // Standalone legacy "Bangles" duplicates the already-available Korean /
+  // Viral Bangles in Jewellery. Keep its DB record and pricing untouched; only
+  // hide this redundant presentation section when Jewellery actually contains
+  // bangle choices. If Jewellery is inactive, preserve standalone Bangles.
+  const jewellery=sections.find(section=>section.id==="jewellery")
+  const jewelleryHasBangles=jewellery?.choices.some(choice=>/\bbangles?\b/i.test(choice.label))??false
+  return sections.filter(section=>section.choices.length>0 &&
+    !(jewelleryHasBangles && section.id==="bangles"))
 }
