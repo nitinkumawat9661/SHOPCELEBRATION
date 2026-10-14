@@ -28,10 +28,10 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
   return (
     <div className="celebrationHome celebrationBalancedHome">
       <TrustStrip />
-      <StorefrontHeader settings={initialSettings} showSelfBuild={initialSelfBuildEnabled} />
+      <StorefrontHeader settings={initialSettings} showSelfBuild={false} />
       <div className="celebrationHomeHeaderSpacer" aria-hidden="true" />
       <main id="main-content">
-        <BalancedHomepage catalog={initialCatalog} categoryMedia={initialCategoryMedia} />
+        <BalancedHomepage catalog={initialCatalog} categoryMedia={initialCategoryMedia} selfBuildEnabled={initialSelfBuildEnabled} />
         <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={visibleProof} />
       </main>
     </div>
