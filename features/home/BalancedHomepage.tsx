@@ -58,26 +58,28 @@ export function BalancedHomepage({ catalog, categoryMedia, selfBuildEnabled = fa
   const deliveryFee = HAMPER_DELIVERY_FEE_PAISE / 100
 
   return <>
-    <section className="cbHero wrap" aria-label="Shop jewelry and custom hampers">
-      <div className="cbHeroPanel cbHeroJewelry">
-        <Image src="/images/campaign/jewelry-1600.webp" alt="Jewelry collection photographed for Celebration" fill priority sizes="(max-width:700px) 100vw, 50vw" className="cbHeroImage" />
+    <section className="cbHero wrap" aria-labelledby="cb-hero-heading">
+      <div className="cbHeroSurface">
+        <picture className="cbHeroBackdrop" aria-hidden="true">
+          <source media="(max-width: 700px)" srcSet="/images/campaign/hero-800.webp" />
+          <Image src="/images/campaign/hero-1600.webp" alt="" fill priority sizes="100vw" className="cbHeroImage" />
+        </picture>
         <div className="cbHeroCopy">
-          <span className="cbEyebrow">LITTLE THINGS, BIG FEELINGS</span>
-          <h1>Jewelry to <em>wear.</em></h1>
-          <p>Browse necklaces, rings, bracelets and earrings.</p>
-          <Link className="cbPrimaryBtn" href="/jewelry" prefetch={false}>Explore Jewelry <StoreIcon name="arrow" size={16} /></Link>
+          <span className="cbEyebrow">GIFTS • JEWELRY • MEMORIES</span>
+          <h1 id="cb-hero-heading">Jewelry to wear. <em>Hampers to give.</em></h1>
+          <p>Browse beautiful jewelry or start with a budget. We curate the perfect gift.</p>
+          <div className="cbHeroActions">
+            <Link className="cbPrimaryBtn" href="/jewelry" prefetch={false}>Explore Jewelry <StoreIcon name="arrow" size={16} /></Link>
+            <a className="cbPrimaryBtn" href="#budgets">Build Hamper <StoreIcon name="arrow" size={16} /></a>
+          </div>
+          {primaryTier && (
+            <p className="cbHeroNote">
+              Custom hampers from {formatMoney(primaryTier.price)}
+              <span> · {formatMoney(deliveryFee)} delivery extra</span>
+            </p>
+          )}
         </div>
       </div>
-      <div className="cbHeroPanel cbHeroHampers">
-        <Image src="/images/campaign/occasion-1600.webp" alt="Celebration gifting inspiration with gift hampers" fill priority sizes="(max-width:700px) 100vw, 50vw" className="cbHeroImage" />
-        <div className="cbHeroCopy">
-          <span className="cbEyebrow">MADE FOR THEIR MOMENT</span>
-          <h2>Hampers to <em>give.</em></h2>
-          <p>Start with a budget. We curate the perfect gift.</p>
-          <a className="cbPrimaryBtn" href="#budgets">Build Hamper <StoreIcon name="arrow" size={16} /></a>
-        </div>
-      </div>
-      {primaryTier && <p className="cbHeroNote">Custom hampers from {formatMoney(primaryTier.price)} <span>+ {formatMoney(deliveryFee)} delivery</span></p>}
     </section>
 
     <section className="cbCategories wrap" id="products" aria-labelledby="cb-categories-heading">
