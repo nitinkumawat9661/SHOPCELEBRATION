@@ -59,7 +59,7 @@ export function buildSelfBuildGiftSections(data: SelfBuildVisualData): SelfBuild
   // hide this redundant presentation section when Jewellery actually contains
   // bangle choices. If Jewellery is inactive, preserve standalone Bangles.
   const jewellery=sections.find(section=>section.id==="jewellery")
-  const jewelleryHasBangles=jewellery?.choices.some(choice=>/\\bbangles?\\b/i.test(choice.label))??false
+  const jewelleryHasBangles=jewellery?.choices.some(choice=>/\bbangles?\b/i.test(choice.label))??false
   return sections.filter(section=>section.choices.length>0 &&
     !(jewelleryHasBangles && section.id==="bangles"))
 }
