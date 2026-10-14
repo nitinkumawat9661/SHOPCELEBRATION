@@ -97,6 +97,30 @@ try {
         await page.locator(".sbGiftSectionHeading").filter({hasText:/tedd(y|ies)/i}).count()>0)
       add(width+" jewellery is present in published section order",
         await page.locator(".sbGiftSectionHeading").getByText("Jewellery",{exact:true}).count()===1)
+      add(width+" no redundant standalone Bangles section",
+        await page.locator(".sbGiftSectionHeading").getByText("Bangles",{exact:true}).count()===0)
+      add(width+" jewellery still includes Korean / Viral Bangles",
+        await page.locator(".sbGiftSection").filter({
+          has:page.getByRole("heading",{name:"Jewellery",exact:true})
+        }).locator(".sbChoiceCard h3").getByText("Korean Bangles",{exact:true}).count()===1)
+      const visualLayout=await page.evaluate(()=>{
+        const wrapper=document.querySelector(".sbPreviewLayout")
+        const groups=[...document.querySelectorAll(".sbGiftSection")]
+        const firstLast=groups[0]?.querySelector(".sbChoiceCard:last-child")
+        const nextHead=groups[1]?.querySelector(".sbGiftSectionHeading")
+        return {
+          width:Math.round(wrapper?.getBoundingClientRect().width||99999),
+          left:Math.round(wrapper?.getBoundingClientRect().left||-9999),
+          right:Math.round(wrapper?.getBoundingClientRect().right||-9999),
+          gap:firstLast&&nextHead?Math.round(nextHead.getBoundingClientRect().top-firstLast.getBoundingClientRect().bottom):99999
+        }
+      })
+      add(width+" gift list contained, centered and not full-screen",
+        visualLayout.width <= Math.min(width,936)+2 &&
+        Math.abs(visualLayout.left-(width-visualLayout.right))<=3,
+        JSON.stringify(visualLayout))
+      add(width+" category sections closely stacked without empty blocks",
+        visualLayout.gap>=0 && visualLayout.gap<=90,JSON.stringify(visualLayout))
       add(width + " no retail product UI",
         await page.locator(".catalogCard,.productCard,.productStep").count()===0)
       for(const label of ["Premium Feature Necklaces","Premium Necklaces","Necklace & Stud Sets",
