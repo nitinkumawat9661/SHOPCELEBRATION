@@ -34,6 +34,23 @@ for (const phrase of [
   "Jewelry to", "Hampers to", "Explore Jewelry", "Build Hamper",
   "Shop by category", "Take a closer look", "Jewelry to love", "Hampers to gift"
 ]) assert(home.includes(phrase), `Missing required homepage phrase: ${phrase}`)
+// The homepage hero is one photograph and one content block, never two category panels.
+assert.equal((home.match(/className="cbHeroSurface"/g) || []).length,1, "One unified hero surface")
+assert.equal((home.match(/className="cbHeroBackdrop"/g) || []).length,1, "One lifestyle backdrop")
+assert(!home.includes("cbHeroPanel") && !home.includes("cbHeroJewelry") &&
+ !home.includes("cbHeroHampers"), "No split hero cards remain")
+assert(home.includes('Jewelry to wear. <em>Hampers to give.</em>') &&
+ home.includes("GIFTS • JEWELRY • MEMORIES") &&
+ home.includes("Browse beautiful jewelry or start with a budget."),
+ "Unified hero must give both catalog areas equal prominence")
+assert(home.includes('src="/images/campaign/hero-1600.webp"') &&
+ home.includes('srcSet="/images/campaign/hero-800.webp"'),
+ "Use one campaign photograph with optimized mobile variant")
+assert(home.includes('href="/jewelry"') && home.includes('href="#budgets"') &&
+ home.includes("Custom hampers from"),"Two working, equally important CTAs and budget disclosure")
+assert(css.includes(".cbHeroSurface") && css.includes(".cbHeroActions>.cbPrimaryBtn") &&
+ css.includes("grid-template-columns:repeat(2,minmax(0,1fr))") &&
+ !css.includes(".cbHeroPanel"),"Single surface, equal CTA dimensions, no old split CSS")
 assert(home.includes('JEWELRY_CATEGORIES.map(') && home.includes('HAMPER_CATEGORIES.map('), "Two separate category groups")
 assert.equal((home.match(/label: "(?:Mini|Classic|Premium|Luxury|Occasion|Build Your Own)/g) || []).length,6, "Six hamper category tiles")
 assert.equal((home.match(/"[^"]+(?:Necklaces|Sets|Bracelets|Rings|Earrings)"/g) || []).length >= 6,true,"Six jewelry categories")
