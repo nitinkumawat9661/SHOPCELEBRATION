@@ -90,8 +90,8 @@ assert(detail.includes("<ProductGallery product={product} />") && detail.include
   "Product page must retain gallery and real purchase actions")
 assert(reviews.includes("Be the first to review this product"),"Keep genuine no-review state")
 assert(orderProof.includes("isPublicHamperOrderProof"),"Never add fake proof")
-assert(home.includes("visibleProof") && home.includes("paid and delivered hampers"),
-  "Homepage counts only true delivered orders")
+assert(home.includes("isPublicHamperOrderProof(initialSocialProof, tiers)") && home.includes("initialSocialProof={visibleProof}"),
+  "Homepage only forwards verified paid and delivered proof for budget badges")
 
 // CSS order: final finish must not override header navigation, and touches
 // only public/customer facing page scopes. Existing font binaries stay local.
