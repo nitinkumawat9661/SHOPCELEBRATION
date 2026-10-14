@@ -13,6 +13,7 @@
 .celebrationBalancedHome .trustStripGroup span{color:#6a3434}
 .celebrationBalancedHome .trustStripGroup>*::after{color:#b9907c}
 .celebrationBalancedHome .celebrationNav{justify-content:space-between}
+.celebrationBalancedHome .celebrationNav>a[href="/self-build"]{display:none}
 .celebrationBalancedHome .celebrationNav>a{flex:1;text-align:center}
 .celebrationBalancedHome .cbEyebrow{
   display:block;color:#9b7058;font:750 10px/1.3 var(--font-sans),sans-serif;
