@@ -62,12 +62,14 @@
   filter:blur(22px);
 }
 
-/* Refined Bodoni heading: brighter ivory-to-champagne gold, softly lit.
-   Keep original font family, font size, line-height and break exactly as is. */
+/* Real locally hosted Bodoni Moda Italic, not a synthetic slant or script.
+   Keep original size, line-height and deliberate two-line headline break. */
 .celebrationHome .celebrationHero h1{
+  font-family:var(--font-shopping-display),"Bodoni Moda",Georgia,serif;
+  font-style:italic;
+  font-weight:500;
   color:#fff4df;
-  font-weight:450;
-  letter-spacing:-.031em;
+  letter-spacing:-.023em;
   text-shadow:
     0 2px 14px rgba(7,2,5,.57),
     0 0 29px rgba(255,198,122,.25);
@@ -76,7 +78,9 @@
 }
 .celebrationHome .celebrationHero h1 em{
   color:#f6d397;
-  font-weight:450;
+  font-family:inherit;
+  font-style:inherit;
+  font-weight:500;
   text-shadow:
     0 2px 13px rgba(7,2,5,.54),
     0 0 25px rgba(255,206,139,.31);
@@ -103,6 +107,8 @@
   text-shadow:0 2px 8px rgba(7,2,5,.48);
 }
 .celebrationHome .celebrationHeroCopy>p{
+  font-family:var(--font-shopping-sans),Arial,sans-serif;
+  font-style:normal;
   color:#fff8ed;
   font-weight:520;
   letter-spacing:.004em;
@@ -116,6 +122,8 @@
 
 /* CTA hierarchy stays intact: maroon filled vs elegant cream outline. */
 .celebrationHome .celebrationHeroActions .celebrationButton{
+  font-family:var(--font-shopping-sans),Arial,sans-serif;
+  font-style:normal;
   box-sizing:border-box;
   min-height:52px;
   padding:14px 29px;
@@ -204,7 +212,7 @@
     background:radial-gradient(ellipse at 25% 35%,rgba(8,3,7,.45),rgba(8,3,7,.16) 53%,transparent 76%);
     filter:blur(15px);
   }
-  .celebrationHome .celebrationHero h1{letter-spacing:-.034em}
+  .celebrationHome .celebrationHero h1{letter-spacing:-.028em}
   .celebrationHome .celebrationHeroActions .celebrationButton{
     min-height:47px;
     padding:12px 17px;
