@@ -23,7 +23,7 @@ for(const x of [admin,buyer]){
 }
 assert.ok(admin.includes('className="sbPreviewTierPrice"')&&admin.includes('className="sbPreviewTierName"'))
 assert.ok(buyer.includes('className="sbBuyerTierPrice"')&&buyer.includes('className="sbBuyerTierName"'))
-assert.ok(admin.includes("chooseTier(item.id)")&&buyer.includes('setBuyerStep("categories")'))
+assert.ok(admin.includes("chooseTier(item.id)")&&buyer.includes('setBuyerStep("select")'))
 assert.ok(admin.includes("visibleSections.map(section=>")&&buyer.includes("visibleSections.map(section=>"))
 assert.ok(admin.includes('className="sbChoiceGrid"')&&buyer.includes('sbBuyerFlatChoices'))
 assert.ok(admin.includes("upgradeOpen")&&buyer.includes("upgradeOpen"))

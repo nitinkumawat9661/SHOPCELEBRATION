@@ -24,7 +24,7 @@ for(const text of [
  'visibleSections.map(section=>',
  'sbBuyerFlatChoices',
  'sbBuyerChoiceText',
- 'setBuyerStep("categories")',
+ 'setBuyerStep("select")',
  'sbBuyerUpgradeDialog',
  'sbBuyerChoiceActive',
  'selectedUnits>=maxUnits',

@@ -72,21 +72,14 @@ try {
         tierWidth[0] <= tierWidth[1]+2,tierWidth.join("/"))
       await page.screenshot({path:resolve(output,"tier-"+width+".png"),fullPage:true,animations:"disabled"})
       await tierBar.click()
-      await page.getByRole("heading",{name:"Browse gift categories"}).waitFor({state:"visible"})
-      add(width+" intermediate category step visible",
-        await page.locator(".sbCategoryJump").count()>=4 &&
-        await page.locator(".sbChoiceCard:visible").count()===0)
-      for(const group of ["Jewellery","Chocolates","Snacks"]){
-        add(width+" category overview "+group,
-          await page.locator(".sbCategoryJump").filter({hasText:group}).count()===1)
-      }
-      // Teddys is not present in the historical SQL seed: only assert it
-      // when the admin has configured an active Teddy category.
-      const teddyPresent=await page.locator(".sbCategoryJump").filter({hasText:/tedd(y|ies)/i}).count()>0
-      if(teddyPresent)add(width+" active Teddys category listed",
-        await page.locator(".sbCategoryJump").filter({hasText:/tedd(y|ies)/i}).count()>0)
-      await page.locator(".sbCategoryJump").filter({hasText:"Jewellery"}).click()
       await page.getByRole("heading",{name:"Choose your gifts"}).waitFor({state:"visible"})
+      add(width+" hamper selection skips category overview",
+        await page.locator(".sbCategoryStep,.sbCategoryJump").count()===0 &&
+        await page.locator(".sbChoiceCard:visible").count()>=14)
+      add(width+" Make it personal sidebar removed",
+        await page.locator(".sbSummary").count()===0)
+      // Teddys is not present in the historical SQL seed; check only if active.
+      const teddyPresent=await page.locator(".sbGiftSectionHeading").filter({hasText:/tedd(y|ies)/i}).count()>0
       add(width + " selecting hamper advances to gifts screen",
         await page.locator(".sbChosenTierLine").innerText().then(x=>x.includes("1,549")))
       add(width + " no displayed piece allowance",
@@ -102,8 +95,8 @@ try {
       }
       if(teddyPresent)add(width+" configured Teddy gift section visible",
         await page.locator(".sbGiftSectionHeading").filter({hasText:/tedd(y|ies)/i}).count()>0)
-      add(width+" selected jewellery section appears first",
-        (await page.locator(".sbGiftSectionHeading").first().innerText())==="Jewellery")
+      add(width+" jewellery is present in published section order",
+        await page.locator(".sbGiftSectionHeading").getByText("Jewellery",{exact:true}).count()===1)
       add(width + " no retail product UI",
         await page.locator(".catalogCard,.productCard,.productStep").count()===0)
       for(const label of ["Premium Feature Necklaces","Premium Necklaces","Necklace & Stud Sets",

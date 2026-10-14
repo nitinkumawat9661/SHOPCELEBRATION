@@ -104,9 +104,8 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   const [tierId,setTierId]=useState(tiers[0]?.id||"")
   const [quantity,setQuantity]=useState<Record<string,number>>({})
   const [note,setNote]=useState("")
-  const [buyerStep,setBuyerStep]=useState<"tier"|"categories"|"select">("tier")
+  const [buyerStep,setBuyerStep]=useState<"tier"|"select">("tier")
   const [upgradeOpen,setUpgradeOpen]=useState(false)
-  const [activeSectionId,setActiveSectionId]=useState<string|null>(null)
   const [draftId,setDraftId]=useState("")
   const [savedSignature,setSavedSignature]=useState("")
   const [photos,setPhotos]=useState<Photo[]>([])
@@ -141,9 +140,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
   const saved=Boolean(draftId)&&savedSignature===signature
   const readyToPay=saved&&items.length>0&&!tooManyItems&&photos.length===photoQuantity&&Boolean(tier)&&accepted&&Boolean(customer.account)
   const sections=useMemo(()=>buildSelfBuildGiftSections(data),[data])
-  const visibleSections=useMemo(()=>activeSectionId?
-    [...sections].sort((a,b)=>Number(b.id===activeSectionId)-Number(a.id===activeSectionId)):
-    sections,[sections,activeSectionId])
+  const visibleSections=sections
   // Every gift is always available regardless of hamper price; tier allowances
   // remain enforced only at quantity selection and on the existing server.
   const upgradeTier=useMemo(()=>[...tiers]
@@ -297,7 +294,7 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
           {tiers.map(t=><button key={t.id} type="button" disabled={disabled}
             className="sbBuyerTierBar" onClick={()=>{
               if(selectedUnits>t.maxChoices){setUpgradeOpen(true);return}
-              setTierId(t.id);setBuyerStep("categories");setActiveSectionId(null)
+              setTierId(t.id);setBuyerStep("select")
               window.scrollTo({top:0,behavior:"auto"})
             }}>
             <span className="sbBuyerTierName">{t.name}</span>
@@ -305,26 +302,10 @@ export function CustomerSelfBuildStudio({data,tiers,occasions}:{
             <span className="sbBuyerTierArrow" aria-hidden="true">→</span>
           </button>)}
         </div>
-      </section>:buyerStep==="categories"?<section className="sbBuyerCategoryStage"
-        aria-label="Choose your gift categories">
-        <h2>Explore gift categories</h2>
-        <p>Choose any collection to start, or explore every gift together.</p>
-        <div className="sbBuyerCategoryList">{sections.map(section=><button type="button"
-          key={section.id} disabled={disabled} onClick={()=>{
-            setActiveSectionId(section.id);setBuyerStep("select")
-            window.scrollTo({top:0,behavior:"auto"})
-          }}><span>{section.label}</span><span aria-hidden="true">→</span></button>)}</div>
-        <button type="button" className="sbBuyerAllCategories" disabled={disabled}
-          onClick={()=>{setActiveSectionId(null);setBuyerStep("select")
-            window.scrollTo({top:0,behavior:"auto"})}}>
-          Explore all gifts <span aria-hidden="true">→</span>
-        </button>
-        <button type="button" className="sbBuyerBackCategory" disabled={disabled}
-          onClick={()=>setBuyerStep("tier")}>← Change hamper</button>
       </section>:<>
         <div className="sbBuyerChosenTier">
           <span>{tier?.name||"Hamper"} · <strong>{tier?formatMoney(hamperFinalPriceRupees(tier.price)):"—"}</strong></span>
-          <button type="button" disabled={disabled} onClick={()=>setBuyerStep("categories")}>Back to categories</button>
+          <button type="button" disabled={disabled} onClick={()=>setBuyerStep("tier")}>Change hamper</button>
         </div>
       <section className="sbBuyerCard sbBuyerSelectionsSection"><div className="sbBuyerCardHead"><span>02</span><div><h2>Select categories and sizes</h2>
         <p>Explore the gift categories below. You can choose the same type more than once.</p></div></div>
