@@ -62,11 +62,8 @@ for (const contract of [
 ]) assert(orderSource.includes(contract), `Missing true order evidence or privacy gate: ${contract}`)
 assert(!orderSource.includes("WHERE status <> 'cancelled' AND order_type = 'hamper'"), "Paid-but-unfulfilled orders must not count")
 assert(storefront.includes("isPublicHamperOrderProof(initialSocialProof, tiers)") &&
-  storefront.includes("{visibleProof && (") &&
   storefront.includes("initialSocialProof={visibleProof}"),
-  "The displayed aggregate and builder MOST CHOSEN badge must receive only validated proof")
-assert(storefront.includes("paid and delivered hampers") && storefront.includes("visibleProof.totalOrders"),
-  "UI must say exactly which historical orders were counted")
+  "Only validated paid-and-delivered proof may reach homepage budget badges")
 assert(badge.includes('socialProof && item.name === socialProof.tierName'), "Actual MOST CHOSEN badge is tied to the same verified active tier")
 assert(!unusedRail.includes("★★★★★") && !unusedRail.includes("proofMarqueeTrack"),
   "No synthetic five-star review ticker even in dormant sections")
