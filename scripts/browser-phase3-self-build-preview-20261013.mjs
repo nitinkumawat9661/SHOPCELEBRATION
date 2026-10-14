@@ -110,7 +110,7 @@ try {
         const nextHead=groups[1]?.querySelector(".sbGiftSectionHeading")
         return {
           width:Math.round(wrapper?.getBoundingClientRect().width||99999),
-          left:Math.round(wrapper?.getBoundingClientRect().left||-9999),
+          left:Math.round(wrapper?.getBoundingClientRect().left??-9999),
           right:Math.round(wrapper?.getBoundingClientRect().right||-9999),
           gap:firstLast&&nextHead?Math.round(nextHead.getBoundingClientRect().top-firstLast.getBoundingClientRect().bottom):99999
         }
