@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react"
 import type { CatalogConfig } from "../../lib/domain/catalog"
 import { BudgetSection } from "../catalog/BudgetSection"
-import { OccasionRail } from "../catalog/OccasionRail"
 import { BUILDER_OPEN_EVENT, type BuilderOpenDetail } from "../builder/builder-events"
 import { LazyStorefrontTail } from "./LazyStorefrontTail"
 
@@ -60,7 +59,16 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
   useEffect(() => {
     function onBuilderOpen(event: Event) {
       const detail = (event as CustomEvent<BuilderOpenDetail>).detail
-      openBuilder(detail?.step || 1)
+      const requested = detail?.tierId && tiers.find((tier) => tier.id === detail.tierId)
+      if (requested) {
+        setSelectedTierId(requested.id)
+        setTierChosen(true)
+        setBuilderRequest((current) => ({ active: true, step: detail?.step || 2, quickStart: true, version: current.version + 1 }))
+        trackLater("budget_selected", requested.id)
+        trackLater("builder_started", requested.id)
+      } else {
+        openBuilder(detail?.step || 1)
+      }
     }
     window.addEventListener(BUILDER_OPEN_EVENT, onBuilderOpen)
     return () => window.removeEventListener(BUILDER_OPEN_EVENT, onBuilderOpen)
@@ -73,11 +81,6 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
     openBuilder(2, id, true)
   }
 
-  function pickOccasion(value: string) {
-    setOccasion(value)
-    openBuilder(1)
-  }
-
   const syncSelection = useCallback((tierId: string, nextOccasion: string) => {
     setSelectedTierId((current) => current === tierId ? current : tierId)
     setOccasion((current) => current === nextOccasion ? current : nextOccasion)
@@ -86,7 +89,6 @@ export function StorefrontDiscovery({ initialCatalog, initialSocialProof = null 
   return (
     <>
       <BudgetSection tiers={tiers} selectedTierId={selectedTierId} hasChosenTier={tierChosen} recommendedTierId={initialCatalog.settings.defaultTierId} socialProof={initialSocialProof} onSelect={pickTier} />
-      <OccasionRail value={occasion} occasions={initialCatalog.occasions} onChange={pickOccasion} />
       <LazyStorefrontTail
         catalog={initialCatalog}
         socialProof={initialSocialProof}

@@ -1,12 +1,10 @@
 "use client"
 
-import { useRef } from "react"
 import type { Tier } from "../../lib/domain/catalog"
-import { uiContent } from "../../lib/domain/content"
 import { formatMoney } from "../../lib/domain/money"
-import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
+import { HAMPER_DELIVERY_FEE_PAISE } from "../../config/self-build-delivery"
 
-const UNSUPPORTED_SOCIAL_PROOF = new Set(["POPULAR", "BESTSELLER", "MOST POPULAR", "CUSTOMER FAVORITE", "CUSTOMER FAVOURITE"])
+const HOMEPAGE_TIER_ORDER = ["t299", "t399", "t499", "t699", "t999", "t1499", "t2499", "t5000"]
 
 type TierSocialProof = {
   tierName: string
@@ -15,72 +13,47 @@ type TierSocialProof = {
   sharePercent: number
 }
 
-function tierBadge(item: Tier, recommendedTierId: string, socialProof: TierSocialProof | null) {
-  if (socialProof && item.name === socialProof.tierName) return "MOST CHOSEN"
-  if (item.id === recommendedTierId) return "RECOMMENDED"
-  const label = item.label?.trim()
-  if (!label || UNSUPPORTED_SOCIAL_PROOF.has(label.toUpperCase())) return ""
-  return label
-}
+export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommendedTierId, socialProof, onSelect }: {
+  tiers: Tier[]
+  selectedTierId: string
+  hasChosenTier: boolean
+  recommendedTierId: string
+  socialProof: TierSocialProof | null
+  onSelect: (id: string) => void
+}) {
+  const featured = HOMEPAGE_TIER_ORDER
+    .map((id) => tiers.find((item) => item.id === id))
+    .filter((item): item is Tier => !!item)
 
-export function BudgetSection({ tiers, selectedTierId, hasChosenTier, recommendedTierId, socialProof, onSelect }: { tiers: Tier[]; selectedTierId: string; hasChosenTier: boolean; recommendedTierId: string; socialProof: TierSocialProof | null; onSelect: (id: string) => void }) {
-  const railRef = useRef<HTMLDivElement>(null)
-  const startingPrice = tiers.length ? Math.min(...tiers.map((tier) => tier.price)) : null
-
-  function moveRail(direction: -1 | 1) {
-    const rail = railRef.current
-    if (!rail) return
-    const card = rail.querySelector<HTMLElement>(".tier")
-    const distance = card ? card.getBoundingClientRect().width + 16 : rail.clientWidth * 0.75
-    rail.scrollBy({ left: direction * Math.max(distance, 120), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
-  }
+  const totalDelivery = HAMPER_DELIVERY_FEE_PAISE / 100
 
   return (
-    <section id="budgets" className="celebrationBudgets">
+    <section id="budgets" className="celebrationBudgets cbBudgetSection">
       <div className="wrap">
-        <div className="sectionHead">
-          <div className="celebrationBudgetIntro">
-            <div className="kicker">{uiContent.budgets.kicker}</div>
-            <h2>{uiContent.budgets.title}</h2>
-            {startingPrice !== null && <span className="celebrationBudgetStarting">Complete hampers from <strong>{formatMoney(hamperFinalPriceRupees(startingPrice))}</strong></span>}
-          </div>
-          <p>{uiContent.budgets.body}</p>
+        <div className="cbSectionHeading">
+          <span className="cbEyebrow">THOUGHTFUL AT EVERY BUDGET</span>
+          <h2>Choose your budget</h2>
+          <p>You choose the budget. We curate the gift mix and presentation.</p>
         </div>
-        <div className="celebrationBudgetBrowseHead">
-          <span className="celebrationBudgetBrowseCount">{tiers.length} {tiers.length === 1 ? "budget" : "budgets"} to explore</span>
-          <span className="celebrationBudgetSwipeHint">Swipe to see more <span aria-hidden="true">→</span></span>
-          {tiers.length > 3 && <div className="celebrationBudgetArrows" aria-label="Browse hamper budgets">
-            <button type="button" aria-label="Previous hamper budgets" onClick={() => moveRail(-1)}>←</button>
-            <button type="button" aria-label="Next hamper budgets" onClick={() => moveRail(1)}>→</button>
-          </div>}
-        </div>
-        <div className="tiers" ref={railRef} role="region" aria-label="Choose a complete hamper budget" tabIndex={0}>
-          {tiers.map((item) => {
-            const badge = tierBadge(item, recommendedTierId, socialProof)
+        <div className="cbBudgetGrid" role="region" aria-label="Choose a Celebration hamper budget">
+          {featured.map((item) => {
+            const chosen = hasChosenTier && selectedTierId === item.id
+            const mostChosen = socialProof && item.name === socialProof.tierName
+            const recommended = item.id === recommendedTierId
             return (
-              <button type="button" key={item.id} className={`tier celebrationHamperCard ${hasChosenTier && selectedTierId === item.id ? "active" : ""}`} aria-pressed={hasChosenTier && selectedTierId === item.id} onClick={() => onSelect(item.id)}>
-                <div className="celebrationTierMeta">
-                  <span className="celebrationTierEyebrow">MAKE IT PERSONAL</span>
-                  {badge && <span className="badge">{badge}</span>}
-                </div>
-                <div className="celebrationTierMain">
-                  <span className="price">{formatMoney(hamperFinalPriceRupees(item.price))}</span>
-                  <span className="name">{item.name}</span>
-                </div>
-                <div className="celebrationTierDetails">
-                  <span className="size">{item.size}</span>
-                  <span className="celebrationTierDivider" aria-hidden="true" />
-                  <span>Up to {item.maxChoices} {item.maxChoices === 1 ? "choice" : "choices"}</span>
-                </div>
-                <span className="note">Price for the complete hamper</span>
-                <span className="celebrationTierCta"><span>{hasChosenTier && selectedTierId === item.id ? "Selected" : "Choose this hamper"}</span><span className="celebrationTierArrow" aria-hidden="true">→</span></span>
+              <button type="button" key={item.id} id={`hamper-${item.id}`} className={`cbBudgetCard ${chosen ? "isChosen" : ""}`} aria-pressed={chosen} onClick={() => onSelect(item.id)}>
+                <span className="cbBudgetCardTop">
+                  <span className="cbCardKicker">CELEBRATION HAMPER</span>
+                  {mostChosen ? <span className="cbBadge">Most chosen</span> : recommended ? <span className="cbBadge">Recommended</span> : null}
+                </span>
+                <strong className="cbBudgetPrice">{formatMoney(item.price)}</strong>
+                <span className="cbBudgetName">{item.name}</span>
+                <span className="cbBudgetSize">{item.size}</span>
+                <span className="cbBudgetFee">+ {formatMoney(totalDelivery)} delivery · Total {formatMoney(item.price + totalDelivery)}</span>
+                <span className="cbPrimaryBtn">{chosen ? "Selected" : "Choose this hamper"} <span aria-hidden="true">→</span></span>
               </button>
             )
           })}
-        </div>
-        <div className="budgetDecisionHint">
-          <div><b>Working with a different budget?</b><span>Tell us your amount and the occasion. We’ll review the request before you place an order.</span></div>
-          <a className="secondary" href="#custom-request">Request a custom budget</a>
         </div>
       </div>
     </section>

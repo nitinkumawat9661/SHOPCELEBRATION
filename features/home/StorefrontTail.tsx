@@ -6,7 +6,6 @@ import { LazyHamperBuilder } from "../builder/LazyHamperBuilder"
 import { useHamperBuilder } from "../builder/useHamperBuilder"
 import { SiteFooter } from "../shell/SiteFooter"
 import { UxMessenger } from "../ux/UxMessenger"
-import { CustomRequestSection } from "./CustomRequestSection"
 import { FinalCta } from "./FinalCta"
 import { PromiseSection } from "./PromiseSection"
 
@@ -77,9 +76,8 @@ export function StorefrontTail({
   return (
     <>
       <UxMessenger />
-      <LazyHamperBuilder state={state} active={builderActive} quickStart={quickStart} />
+      {builderActive && <LazyHamperBuilder state={state} active={builderActive} quickStart={quickStart} />}
       <PromiseSection />
-      <CustomRequestSection />
       <FinalCta onBuild={() => onBuild(1)} />
       <SiteFooter />
     </>

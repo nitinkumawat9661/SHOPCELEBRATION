@@ -3,9 +3,7 @@ import { isPublicHamperOrderProof } from "../../lib/domain/real-social-proof"
 import type { StoreSettings } from "../../lib/server/store-settings"
 import { StorefrontHeader } from "../shell/StorefrontHeader"
 import { TrustStrip } from "../shell/TrustStrip"
-import { StoreIcon } from "../shell/StoreIcon"
-import { HomeCatalog } from "./HomeCatalog"
-import { Hero } from "./Hero"
+import { BalancedHomepage } from "./BalancedHomepage"
 import { StorefrontDiscovery } from "./StorefrontDiscovery"
 
 type TierSocialProof = {
@@ -28,25 +26,12 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
   const visibleProof = isPublicHamperOrderProof(initialSocialProof, tiers) ? initialSocialProof : null
 
   return (
-    <div className="celebrationHome">
-        <TrustStrip />
-        <StorefrontHeader settings={initialSettings} showSelfBuild={initialSelfBuildEnabled} />
-        <div className="celebrationHomeHeaderSpacer" aria-hidden="true" />
+    <div className="celebrationHome celebrationBalancedHome">
+      <TrustStrip />
+      <StorefrontHeader settings={initialSettings} showSelfBuild={initialSelfBuildEnabled} />
+      <div className="celebrationHomeHeaderSpacer" aria-hidden="true" />
       <main id="main-content">
-        <Hero tiers={tiers} />
-        <div className="celebrationBenefits wrap" aria-label="Shopping at Celebration">
-          <div><StoreIcon name="box" /><span><b>Prepared for dispatch</b><small>Order updates as we pack</small></span></div>
-          <div><StoreIcon name="video" /><span><b>Hamper packing preview</b><small>Where a video is provided</small></span></div>
-          <div><StoreIcon name="shield" /><span><b>Payment confirmation</b><small>Check your order status</small></span></div>
-          <div><StoreIcon name="track" /><span><b>Track your order</b><small>Updates and courier details</small></span></div>
-        </div>
-        {visibleProof && (
-          <div className="celebrationRealProof wrap" aria-label="Verified hamper order insight">
-            <span>From paid, delivered hamper orders</span>
-            <p>{visibleProof.sharePercent}% of {visibleProof.totalOrders} paid and delivered hampers used the {visibleProof.tierName} budget.</p>
-          </div>
-        )}
-        <HomeCatalog catalog={initialCatalog} categoryMedia={initialCategoryMedia} />
+        <BalancedHomepage catalog={initialCatalog} categoryMedia={initialCategoryMedia} selfBuildEnabled={initialSelfBuildEnabled} />
         <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={visibleProof} />
       </main>
     </div>
