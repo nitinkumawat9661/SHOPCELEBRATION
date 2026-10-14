@@ -535,8 +535,64 @@
   .sbPreviewPage .sbCategoryJump{transition:none}
 }
 
-/* Category menu and Make it personal sidebar removed; keep existing gift layout. */
+/* Centered, compact gift workflow after removal of the right-hand card.
+   Never stretch a single list edge to edge on desktop. */
 .sbPreviewPage .sbPreviewLayout{
   grid-template-columns:minmax(0,1fr);
-  max-width:1040px
+  width:100%;
+  max-width:936px;
+  padding-inline:clamp(16px,2.8vw,32px);
+  margin-inline:auto
+}
+.sbPreviewPage .sbPreviewMain{min-width:0;width:100%}
+.sbPreviewPage .sbGiftSections{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:22px;
+  padding:5px 0 15px;
+  margin:0;
+  min-height:0
+}
+.sbPreviewPage .sbGiftSection{
+  display:block;
+  width:100%;
+  height:auto;
+  min-height:0;
+  margin:0;
+  padding:0;
+  flex:0 0 auto
+}
+.sbPreviewPage .sbGiftSectionHeading{
+  margin:0;
+  padding:8px 0 10px;
+  line-height:1.15
+}
+.sbPreviewPage .sbGiftSection .sbChoiceGrid{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  width:100%;
+  height:auto;
+  min-height:0;
+  margin:0;
+  padding:0;
+  gap:0
+}
+.sbPreviewPage .sbGiftSection .sbChoiceCard{
+  box-sizing:border-box;
+  display:flex;
+  flex:0 0 auto;
+  width:100%;
+  height:auto;
+  min-height:64px;
+  margin:0;
+  padding-block:9px
+}
+@media(max-width:600px){
+  .sbPreviewPage .sbPreviewLayout{padding-inline:16px}
+  .sbPreviewPage .sbGiftSections{gap:18px}
+  .sbPreviewPage .sbGiftSection .sbChoiceCard{min-height:60px}
 }
