@@ -350,3 +350,50 @@
   .sbBuyerGiftSections{gap:22px}
   .sbBuyerGiftSection>h3{font-size:27px}
 }
+
+
+/* Self-Build buyer: compact centred gift rows, matched to admin review.
+   Category labels stay visible without a separate category picker. */
+.sbBuyer .sbBuyerGiftSections{
+  width:100%;
+  max-width:890px;
+  margin:8px auto 20px;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:22px;
+  min-height:0
+}
+.sbBuyer .sbBuyerGiftSection{
+  display:block;
+  flex:0 0 auto;
+  min-height:0;
+  height:auto;
+  padding:0;
+  margin:0
+}
+.sbBuyer .sbBuyerGiftSection>h3{
+  padding:8px 2px 10px;
+  margin:0
+}
+.sbBuyer .sbBuyerGiftSection .sbBuyerChoices{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:0;
+  width:100%;
+  min-height:0;
+  height:auto;
+  margin:0;
+  padding:0
+}
+.sbBuyer .sbBuyerGiftSection .sbBuyerChoice{
+  flex:0 0 auto;
+  min-height:62px;
+  height:auto;
+  margin:0
+}
+@media(max-width:650px){
+  .sbBuyer .sbBuyerGiftSections{gap:18px}
+}
