@@ -1,26 +1,47 @@
 /*
- * Celebration live-hero refinement, 15 Oct 2026.
- * Presentation only. Retains the exact existing Hero.tsx markup, imagery,
- * image crop, text, anchors, two CTA roles, four-item benefits bar and layout.
- * Scoped to the original live homepage — not the alternate balanced preview.
+ * Celebration — cinematic luxury pass (15 Oct 2026)
+ *
+ * Scoped to the ORIGINAL live homepage hero and its four-item benefits strip.
+ * Hero.tsx, Storefront.tsx, product imagery, source crops, image positioning,
+ * headings, descriptions, button destinations and page layout stay unchanged.
+ * These are purely optical and typographic enhancements to the existing design.
  */
+
+/* Enriched velvet shadows, warm metallic accents and red rose detail.
+   Image assets and object-fit/object-position remain exactly as before. */
 .celebrationHome .celebrationHeroPhoto img{
-  filter:saturate(1.08) contrast(1.045) brightness(1.025) sepia(.035);
+  filter:saturate(1.19) contrast(1.095) brightness(1.025) sepia(.052);
 }
 
-/* Familiar left-to-right vignette, just slightly deeper around the text. */
+/* Keep the original left-to-right vignette framing. */
 .celebrationHome .celebrationHero::before{
   background:
-    radial-gradient(ellipse at 77% 25%,rgba(255,190,117,.035),transparent 57%),
     linear-gradient(
       90deg,
-      rgba(23,11,14,.875) 0%,
-      rgba(34,17,19,.65) 41%,
-      rgba(28,14,15,.11) 78%
+      rgba(15,7,11,.92) 0%,
+      rgba(28,12,17,.73) 35%,
+      rgba(30,13,17,.43) 56%,
+      rgba(25,11,14,.12) 79%,
+      rgba(25,11,14,.04) 100%
     );
 }
 
-/* A very diffuse depth layer: no visible box, divider, or layout shift. */
+/* Soft directional light catches the EXISTING ribbon/gold/jewelry surfaces.
+   No objects, photographs, collage, framing, or split regions are added. */
+.celebrationHome .celebrationHero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse 43% 53% at 80% 32%,rgba(255,198,115,.21),transparent 77%),
+    radial-gradient(ellipse 28% 37% at 72% 78%,rgba(246,162,73,.11),transparent 77%),
+    radial-gradient(ellipse 29% 38% at 99% 7%,rgba(253,217,155,.13),transparent 73%);
+  mix-blend-mode:screen;
+}
+
+/* Atmosphere behind the existing left-aligned copy, never a visible card. */
 .celebrationHome .celebrationHeroCopy{
   position:relative;
   isolation:isolate;
@@ -28,112 +49,179 @@
 .celebrationHome .celebrationHeroCopy::before{
   content:"";
   position:absolute;
+  inset:-29px -35px;
   z-index:-1;
-  inset:-15px -25px;
   pointer-events:none;
-  background:radial-gradient(ellipse at 32% 45%,rgba(14,6,8,.18),rgba(14,6,8,.06) 47%,transparent 72%);
-  filter:blur(13px);
+  background:radial-gradient(
+    ellipse at 32% 47%,
+    rgba(8,3,7,.55) 0%,
+    rgba(12,5,8,.30) 42%,
+    rgba(12,5,8,.05) 69%,
+    transparent 79%
+  );
+  filter:blur(22px);
 }
+
+/* Refined Bodoni heading: brighter ivory-to-champagne gold, softly lit.
+   Keep original font family, font size, line-height and break exactly as is. */
 .celebrationHome .celebrationHero h1{
-  color:#fff9f0;
+  color:#fff4df;
+  font-weight:450;
+  letter-spacing:-.031em;
   text-shadow:
-    0 2px 10px rgba(13,6,8,.36),
-    0 0 26px rgba(244,190,120,.085);
+    0 2px 14px rgba(7,2,5,.57),
+    0 0 29px rgba(255,198,122,.25);
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
 }
 .celebrationHome .celebrationHero h1 em{
-  color:#f1cd87;
-  text-shadow:0 1px 8px rgba(12,5,8,.34),0 0 19px rgba(248,199,131,.11);
+  color:#f6d397;
+  font-weight:450;
+  text-shadow:
+    0 2px 13px rgba(7,2,5,.54),
+    0 0 25px rgba(255,206,139,.31);
+}
+@supports(-webkit-background-clip:text){
+  .celebrationHome .celebrationHero h1{
+    background:linear-gradient(128deg,
+      #fffcf6 3%,#fff8eb 32%,#f9e5bf 69%,#eec68f 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .celebrationHome .celebrationHero h1 em{
+    background:linear-gradient(108deg,#ffecc7 6%,#f3ce90 53%,#edbc74 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
 }
 .celebrationHome .celebrationHero .celebrationEyebrow{
-  color:#f6dcaf;
-  text-shadow:0 1px 5px rgba(15,7,9,.3);
+  color:#ffdbac;
+  font-weight:730;
+  letter-spacing:.15em;
+  text-shadow:0 2px 8px rgba(7,2,5,.48);
 }
 .celebrationHome .celebrationHeroCopy>p{
-  color:#fff4e7;
-  text-shadow:0 1px 7px rgba(15,7,8,.34);
+  color:#fff8ed;
+  font-weight:520;
+  letter-spacing:.004em;
+  text-shadow:0 2px 12px rgba(7,2,5,.57);
 }
 .celebrationHome .celebrationHeroFoot{
-  color:#f8e6cc;
-  text-shadow:0 1px 6px rgba(15,7,8,.22);
+  color:#f7e4c7;
+  font-weight:580;
+  text-shadow:0 2px 9px rgba(7,2,5,.40);
 }
 
-/* Same filled / outlined hierarchy, with precise padding and gentle depth. */
+/* CTA hierarchy stays intact: maroon filled vs elegant cream outline. */
 .celebrationHome .celebrationHeroActions .celebrationButton{
   box-sizing:border-box;
-  min-height:50px;
-  padding:13px 27px;
-  border-radius:12px;
-  font-weight:675;
-  letter-spacing:.008em;
-  background:linear-gradient(145deg,#8a2931 0%,#7a1f24 57%,#6b1920 100%);
-  border:1px solid rgba(187,83,86,.86);
-  color:#fffaf4;
-  box-shadow:inset 0 1px 0 rgba(255,244,226,.14),0 7px 20px rgba(22,6,10,.25);
-  transition:transform .2s ease,background .2s ease,box-shadow .2s ease,border-color .2s ease;
+  min-height:52px;
+  padding:14px 29px;
+  border-radius:11px;
+  font-size:12px;
+  font-weight:710;
+  letter-spacing:.012em;
+  background:linear-gradient(145deg,#962e37 0%,#7a1f24 47%,#58151c 100%);
+  border:1px solid rgba(207,121,112,.75);
+  color:#fffaf1;
+  box-shadow:
+    inset 0 1px 0 rgba(255,219,185,.29),
+    inset 0 -1px 0 rgba(35,7,9,.32),
+    0 11px 28px rgba(12,3,7,.36);
+  transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease,border-color .2s ease;
 }
 .celebrationHome .celebrationHeroActions .celebrationButton.light{
-  background:rgba(35,15,18,.16);
-  border:1px solid rgba(255,237,210,.82);
+  background:rgba(22,9,13,.30);
+  border:1.5px solid rgba(255,239,215,.93);
   color:#fff9ee;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 6px 17px rgba(15,6,9,.13);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,241,218,.055),
+    0 9px 22px rgba(9,2,6,.24);
 }
 .celebrationHome .celebrationHeroActions .celebrationButton:is(:hover,:focus-visible){
-  box-shadow:inset 0 1px 0 rgba(255,244,226,.19),0 10px 24px rgba(22,6,10,.29);
+  box-shadow:
+    inset 0 1px 0 rgba(255,219,185,.31),
+    0 13px 30px rgba(12,3,7,.43);
 }
 .celebrationHome .celebrationHeroActions .celebrationButton.light:is(:hover,:focus-visible){
-  background:rgba(255,247,233,.1);
-  border-color:#fff1d8;
-  box-shadow:0 9px 23px rgba(15,6,9,.2);
+  background:rgba(255,242,222,.13);
+  border-color:#fff8e7;
+  box-shadow:0 11px 27px rgba(12,3,7,.33);
 }
 
-/* The original four trust items stay in place and in the same grid. */
+/* Same 4 service assurances, same 4-column/2-column responsive grid. */
 .celebrationHome .celebrationBenefits{
-  border-bottom:1px solid #e9d7c4;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.68);
+  gap:clamp(12px,2.15vw,28px);
+  padding-block:27px 25px;
+  background:linear-gradient(180deg,#fff8ef 0%,#f7e8d8 100%);
+  border-bottom:1px solid #e8d4c0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.87),
+    0 5px 15px rgba(65,33,25,.045);
+}
+.celebrationHome .celebrationBenefits>div{
+  gap:clamp(9px,1.1vw,14px);
 }
 .celebrationHome .celebrationBenefits svg{
-  color:#714624;
-  stroke-width:1.65;
-  background:linear-gradient(145deg,#fff0d9 0%,#f4d6a9 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.86),
-             inset 0 0 0 1px rgba(122,78,47,.10),
-             0 3px 10px rgba(83,46,31,.075);
+  color:#85522b;
+  stroke-width:1.7;
+  background:linear-gradient(145deg,#fff5e3 0%,#f0d0a5 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 0 0 1px rgba(135,85,43,.15),
+    0 4px 12px rgba(89,48,28,.095);
 }
 .celebrationHome .celebrationBenefits b{
-  color:#50302a;
-  letter-spacing:.006em;
+  color:#512d28;
+  font-weight:720;
+  letter-spacing:.007em;
 }
 .celebrationHome .celebrationBenefits small{
-  color:#765947;
+  color:#755747;
   margin-top:4px;
 }
 
-/* Retain the existing mobile-first composition and image placement. */
+/* Mobile keeps its original top-down vignette and unchanged image position. */
 @media(max-width:700px){
   .celebrationHome .celebrationHero::before{
+    background:linear-gradient(
+      180deg,
+      rgba(17,8,13,.92) 0%,
+      rgba(26,11,16,.77) 34%,
+      rgba(26,12,16,.52) 58%,
+      rgba(21,10,13,.09) 86%
+    );
+  }
+  .celebrationHome .celebrationHero::after{
     background:
-      linear-gradient(180deg,
-        rgba(23,11,15,.87) 0%,
-        rgba(28,15,17,.64) 54%,
-        rgba(23,13,16,.10) 86%
-      );
+      radial-gradient(ellipse 54% 36% at 82% 72%,rgba(255,194,104,.16),transparent 79%),
+      radial-gradient(ellipse 49% 23% at 91% 96%,rgba(255,214,148,.10),transparent 80%);
   }
   .celebrationHome .celebrationHeroCopy::before{
-    inset:-10px -12px;
-    background:radial-gradient(ellipse at 24% 30%,rgba(14,6,8,.18),transparent 70%);
-    filter:blur(10px);
+    inset:-13px -15px;
+    background:radial-gradient(ellipse at 25% 35%,rgba(8,3,7,.45),rgba(8,3,7,.16) 53%,transparent 76%);
+    filter:blur(15px);
   }
+  .celebrationHome .celebrationHero h1{letter-spacing:-.034em}
   .celebrationHome .celebrationHeroActions .celebrationButton{
-    min-height:46px;
+    min-height:47px;
     padding:12px 17px;
-    border-radius:11px;
-    font-weight:650;
+    border-radius:10px;
+    font-weight:690;
+  }
+  .celebrationHome .celebrationBenefits{
+    gap:18px 12px;
+    padding-block:22px 21px;
   }
 }
 @media(max-width:360px){
-  .celebrationHome .celebrationHeroActions .celebrationButton{padding:11px 12px}
+  .celebrationHome .celebrationHeroActions .celebrationButton{
+    padding:11px 12px;
+    font-size:10px;
+  }
+  .celebrationHome .celebrationBenefits{gap:16px 8px}
 }
 @media(prefers-reduced-motion:reduce){
   .celebrationHome .celebrationHeroActions .celebrationButton{transition:none}
