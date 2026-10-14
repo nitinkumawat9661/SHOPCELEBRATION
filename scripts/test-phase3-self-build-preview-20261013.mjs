@@ -41,19 +41,20 @@ assert(!ui.includes('MAXIMUM PIECES')&&!ui.includes('{units} <span>/ {maxItems}<
  !ui.includes('Repeating one category also counts'),"No visible piece capacity limit")
 assert(ui.includes('const units = chosen.reduce')&&ui.includes('setUpgradeOpen(true)')&&
  ui.includes('maxItems-others'),"Server-style quantity cap remains enforced via upgrade dialog")
-assert(ui.includes('buildSelfBuildGiftSections(data)')&&ui.includes('step==="categories"')&&
+assert(ui.includes('buildSelfBuildGiftSections(data)')&&ui.includes('step==="choose"')&&
  ui.includes('visibleSections.map(section=>')&&ui.includes('section.choices.map(choice=>'),
- "Dedicated category overview and all inline grouped choices required")
-assert(ui.includes('setActiveSectionId(section.id)')&&ui.includes('setStep("choose")'),
- "Category overview click navigates directly to inline gift list")
+ "Inline category sections must remain after the redundant category screen is removed")
+assert(ui.includes('setStep("choose")')&&!ui.includes('sbCategoryStep'),
+ "Selecting a hamper must skip the category selection screen")
 assert(ui.includes('group={choice.groupLabel===section.label?"":choice.groupLabel}'),
  "Nested variants retain their readable parent context")
 assert(ui.includes('data.requestPrompt')&&ui.includes('maxLength={1200}'),"Admin text prompt must be rendered and bounded")
-assert(ui.includes('const units = chosen.reduce')&&ui.includes('const distinct = chosen.length'))
+assert(ui.includes('const units = chosen.reduce')&&!ui.includes('<aside className="sbSummary"'))
 assert(ui.includes('disabled={units === 0 || exceedsMax}'),"Require at least one within maximum total selections")
 assert(ui.includes('Design preview only')&&ui.includes('No order, quote or payment is created'),"Preview must not simulate order submission")
 assert(ui.includes('celebration')&&ui.includes('Choose your hamper')&&ui.includes('Select a hamper to explore the full gift collection.'))
-assert(ui.includes('aria-label="Your hamper preview summary"')&&ui.includes('aria-label="Hamper design steps"'))
+assert(!ui.includes('aria-label="Your hamper preview summary"')&&ui.includes('aria-label="Hamper design steps"'),
+ "Remove the Make it personal sidebar without changing the steps")
 assert(css.includes('.sbPreviewPage{')&&css.includes('--sb-serif:')&&css.includes('var(--font-shopping-display)'),"Use Celebration typography")
 assert(css.includes('@media (max-width:520px)')&&css.includes('@media (max-width:360px)'))
 assert(css.includes('@media (max-width:780px)')&&css.includes('prefers-reduced-motion'))
