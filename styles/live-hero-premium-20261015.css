@@ -1,0 +1,140 @@
+/*
+ * Celebration live-hero refinement, 15 Oct 2026.
+ * Presentation only. Retains the exact existing Hero.tsx markup, imagery,
+ * image crop, text, anchors, two CTA roles, four-item benefits bar and layout.
+ * Scoped to the original live homepage — not the alternate balanced preview.
+ */
+.celebrationHome .celebrationHeroPhoto img{
+  filter:saturate(1.08) contrast(1.045) brightness(1.025) sepia(.035);
+}
+
+/* Familiar left-to-right vignette, just slightly deeper around the text. */
+.celebrationHome .celebrationHero::before{
+  background:
+    radial-gradient(ellipse at 77% 25%,rgba(255,190,117,.035),transparent 57%),
+    linear-gradient(
+      90deg,
+      rgba(23,11,14,.875) 0%,
+      rgba(34,17,19,.65) 41%,
+      rgba(28,14,15,.11) 78%
+    );
+}
+
+/* A very diffuse depth layer: no visible box, divider, or layout shift. */
+.celebrationHome .celebrationHeroCopy{
+  position:relative;
+  isolation:isolate;
+}
+.celebrationHome .celebrationHeroCopy::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-15px -25px;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 32% 45%,rgba(14,6,8,.18),rgba(14,6,8,.06) 47%,transparent 72%);
+  filter:blur(13px);
+}
+.celebrationHome .celebrationHero h1{
+  color:#fff9f0;
+  text-shadow:
+    0 2px 10px rgba(13,6,8,.36),
+    0 0 26px rgba(244,190,120,.085);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.celebrationHome .celebrationHero h1 em{
+  color:#f1cd87;
+  text-shadow:0 1px 8px rgba(12,5,8,.34),0 0 19px rgba(248,199,131,.11);
+}
+.celebrationHome .celebrationHero .celebrationEyebrow{
+  color:#f6dcaf;
+  text-shadow:0 1px 5px rgba(15,7,9,.3);
+}
+.celebrationHome .celebrationHeroCopy>p{
+  color:#fff4e7;
+  text-shadow:0 1px 7px rgba(15,7,8,.34);
+}
+.celebrationHome .celebrationHeroFoot{
+  color:#f8e6cc;
+  text-shadow:0 1px 6px rgba(15,7,8,.22);
+}
+
+/* Same filled / outlined hierarchy, with precise padding and gentle depth. */
+.celebrationHome .celebrationHeroActions .celebrationButton{
+  box-sizing:border-box;
+  min-height:50px;
+  padding:13px 27px;
+  border-radius:12px;
+  font-weight:675;
+  letter-spacing:.008em;
+  background:linear-gradient(145deg,#8a2931 0%,#7a1f24 57%,#6b1920 100%);
+  border:1px solid rgba(187,83,86,.86);
+  color:#fffaf4;
+  box-shadow:inset 0 1px 0 rgba(255,244,226,.14),0 7px 20px rgba(22,6,10,.25);
+  transition:transform .2s ease,background .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.celebrationHome .celebrationHeroActions .celebrationButton.light{
+  background:rgba(35,15,18,.16);
+  border:1px solid rgba(255,237,210,.82);
+  color:#fff9ee;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 6px 17px rgba(15,6,9,.13);
+}
+.celebrationHome .celebrationHeroActions .celebrationButton:is(:hover,:focus-visible){
+  box-shadow:inset 0 1px 0 rgba(255,244,226,.19),0 10px 24px rgba(22,6,10,.29);
+}
+.celebrationHome .celebrationHeroActions .celebrationButton.light:is(:hover,:focus-visible){
+  background:rgba(255,247,233,.1);
+  border-color:#fff1d8;
+  box-shadow:0 9px 23px rgba(15,6,9,.2);
+}
+
+/* The original four trust items stay in place and in the same grid. */
+.celebrationHome .celebrationBenefits{
+  border-bottom:1px solid #e9d7c4;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.68);
+}
+.celebrationHome .celebrationBenefits svg{
+  color:#714624;
+  stroke-width:1.65;
+  background:linear-gradient(145deg,#fff0d9 0%,#f4d6a9 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.86),
+             inset 0 0 0 1px rgba(122,78,47,.10),
+             0 3px 10px rgba(83,46,31,.075);
+}
+.celebrationHome .celebrationBenefits b{
+  color:#50302a;
+  letter-spacing:.006em;
+}
+.celebrationHome .celebrationBenefits small{
+  color:#765947;
+  margin-top:4px;
+}
+
+/* Retain the existing mobile-first composition and image placement. */
+@media(max-width:700px){
+  .celebrationHome .celebrationHero::before{
+    background:
+      linear-gradient(180deg,
+        rgba(23,11,15,.87) 0%,
+        rgba(28,15,17,.64) 54%,
+        rgba(23,13,16,.10) 86%
+      );
+  }
+  .celebrationHome .celebrationHeroCopy::before{
+    inset:-10px -12px;
+    background:radial-gradient(ellipse at 24% 30%,rgba(14,6,8,.18),transparent 70%);
+    filter:blur(10px);
+  }
+  .celebrationHome .celebrationHeroActions .celebrationButton{
+    min-height:46px;
+    padding:12px 17px;
+    border-radius:11px;
+    font-weight:650;
+  }
+}
+@media(max-width:360px){
+  .celebrationHome .celebrationHeroActions .celebrationButton{padding:11px 12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationHeroActions .celebrationButton{transition:none}
+}
