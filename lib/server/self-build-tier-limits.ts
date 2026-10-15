@@ -35,6 +35,35 @@ export function getSelfBuildTierLimits(tier:{
   }
 }
 
+// Server-only guard for the four owner-approved packaging options.
+// Never accept a posted cost: callers must fetch the approved DB value.
+export type SelfBuildBoxId="kappa"|"corrugated"|"bag-clear"|"bag-print"
+const BOX_IDS:readonly string[]=["kappa","corrugated","bag-clear","bag-print"]
+export function parseSelfBuildBoxId(value:unknown):SelfBuildBoxId|null {
+  if(value===null||value===undefined)return null // Historical drafts only.
+  if(typeof value!=="string"||!BOX_IDS.includes(value))throw Error("SELF_BUILD_BOX_INVALID")
+  return value as SelfBuildBoxId
+}
+export function validateSelfBuildPackaging(
+  tier:{price:number;maxChoices:number;active?:boolean},
+  boxId:unknown,
+  cost:{approved:boolean;total_cost_paise:number|null}|undefined
+) {
+  const box=parseSelfBuildBoxId(boxId)
+  if(!box)throw Error("SELF_BUILD_BOX_REQUIRED")
+  const limits=getSelfBuildTierLimits(tier)
+  // Tier price excludes the fixed ₹50 delivery charge.
+  if(box==="kappa"&&tier.price<1000)throw Error("SELF_BUILD_KAPPA_MIN_TIER")
+  if(cost?.approved!==true||!Number.isSafeInteger(cost.total_cost_paise)||
+     cost.total_cost_paise===null||cost.total_cost_paise<=0)
+    throw Error("SELF_BUILD_PACKAGING_COST_UNAPPROVED")
+  const pricePaise=Math.round(tier.price*100)
+  const reservePaise=pricePaise-limits.ceilingPaise
+  if(cost.total_cost_paise>reservePaise)
+    throw Error("SELF_BUILD_PACKAGING_BUDGET_EXCEEDED")
+  return {boxId:box} // Never serialize cost or private budget to buyers.
+}
+
 export function countSelfBuildPieces(selections:readonly {quantity:number}[]){
   let total=0
   for(const selection of selections){
