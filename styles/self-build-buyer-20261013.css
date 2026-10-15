@@ -86,7 +86,6 @@
 .sbBuyerChoiceSectionHead span{font:600 11px/1.5 Arial,sans-serif;color:#947b85;white-space:nowrap}
 .sbBuyerChoice{min-height:74px;transition:background-color .16s ease,border-color .16s ease}
 .sbBuyerChoiceActive{background:#fbf3f0;border-color:#cdaab7}
-.sbBuyerChoice>div:first-child{min-width:0}
 .sbBuyerChoice strong{font-size:13px;overflow-wrap:anywhere}
 .sbBuyerQty button{width:42px;height:44px;min-width:42px;min-height:44px;font-size:22px}
 .sbBuyerQty output{min-width:24px}
@@ -106,8 +105,7 @@
 .sbBuyerAccept input{flex:0 0 18px;margin:0;min-height:18px}
 .sbBuyerCard button:focus-visible,.sbBuyerPhotoPicker:focus-within,.sbBuyerField select:focus-visible,.sbBuyerAccept input:focus-visible{outline:3px solid #b7859d;outline-offset:3px}
 @media(max-width:650px){
-  .sbBuyerChoiceSections{gap:18px}
-  .sbBuyerChoice{padding:12px 11px}
+    .sbBuyerChoice{padding:12px 11px}
   .sbBuyerChoiceSectionHead{gap:7px}
   .sbBuyerSelected{padding:14px}
   .sbBuyerSelectedHead{flex-wrap:wrap}
