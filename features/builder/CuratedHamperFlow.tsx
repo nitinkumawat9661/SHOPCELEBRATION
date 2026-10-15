@@ -14,12 +14,6 @@ import { focusCheckoutField, notifyUx } from "../ux/UxMessenger"
 
 type Screen = 1 | 2 | 3 | 4
 
-const FLOW_STEPS = [
-  { step: 1, label: "Budget" },
-  { step: 2, label: "Occasion" },
-  { step: 3, label: "Details & review" }
-] as const
-
 export function CuratedHamperFlow({ catalog }: { catalog: CatalogConfig }) {
   const state = useHamperBuilder({ catalog })
   const account = useCustomerAccount()
@@ -102,33 +96,10 @@ export function CuratedHamperFlow({ catalog }: { catalog: CatalogConfig }) {
 
   return (
     <section className="curatedFlow wrap" aria-label="Celebration curated hamper checkout">
-      <div className="curatedFlowIntro">
-        <span className="curatedFlowKicker">CELEBRATION CURATED · MADE FOR THEIR MOMENT</span>
-        <h1>Gifting, thoughtfully <em>done for you.</em></h1>
-        <p>Choose a budget, tell us the occasion, and let Celebration take care of the gift.</p>
-      </div>
-
-      <nav className="curatedProgress" aria-label="Your hamper order progress">
-        {FLOW_STEPS.map(({ step, label }) => (
-          <button
-            key={step}
-            type="button"
-            disabled={step > screen || (step > 1 && !hasChosenBudget)}
-            className={screen === step ? "active" : screen > step ? "done" : ""}
-            aria-current={screen === step ? "step" : undefined}
-            onClick={() => changeScreen(step)}
-          >
-            <span className="curatedProgressNumber">{screen > step ? "✓" : String(step).padStart(2, "0")}</span>
-            <span>{label}</span>
-          </button>
-        ))}
-      </nav>
-
       {screen === 1 && (
         <div className="curatedScreen curatedBudgetScreen">
           <div className="curatedScreenHead">
-            <span className="curatedFlowKicker">STEP 01 · THE PERFECT START</span>
-            <h2>Choose your budget</h2>
+            <h1>Choose your budget</h1>
             <p>You choose the budget. We curate the perfect gift.</p>
           </div>
           <div className="curatedBudgetGrid">
@@ -156,8 +127,7 @@ export function CuratedHamperFlow({ catalog }: { catalog: CatalogConfig }) {
       {screen === 2 && (
         <div className="curatedScreen curatedOccasionScreen">
           <div className="curatedScreenHead">
-            <span className="curatedFlowKicker">STEP 02 · THE OCCASION</span>
-            <h2>What are we celebrating?</h2>
+            <h1>What are we celebrating?</h1>
             <p>A little context helps us choose the right gifts and presentation.</p>
           </div>
           <div className="curatedOccasionPanel">
@@ -192,8 +162,7 @@ export function CuratedHamperFlow({ catalog }: { catalog: CatalogConfig }) {
       {screen === 3 && (
         <div className="curatedScreen curatedDetailsScreen">
           <div className="curatedScreenHead">
-            <span className="curatedFlowKicker">STEP 03 · FINAL DETAILS</span>
-            <h2>Add details & review</h2>
+            <h1>Add details & review</h1>
             <p>Everything in one place before your secure checkout.</p>
           </div>
           <div className="curatedDetailsShell">
