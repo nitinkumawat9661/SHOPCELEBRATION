@@ -15,7 +15,7 @@ export function SiteFooter() {
           <h2>Shop</h2>
           <Link href="/jewelry">Shop jewelry</Link>
           <Link href="/jewelry?view=all">All gifts</Link>
-          <a href="/#budgets">Custom hampers</a>
+          <a href="/curated-hampers">Custom hampers</a>
           <Link href={routes.about}>Our Story</Link>
         </nav>
         <nav className="footerGroup" aria-label="Help links">
