@@ -2,6 +2,7 @@ import { AdminCatalogPreview } from "../../../features/admin/AdminCatalogPreview
 import { AdminLogin } from "../../../features/admin/AdminLogin"
 import { isAdminRequest } from "../../../lib/security/admin-session"
 import { getCatalogAdminState } from "../../../lib/server/catalog"
+import "../../../styles/admin-preview-legacy-hero.css"
 
 export const dynamic = "force-dynamic"
 export const metadata = { robots: { index: false, follow: false } }
