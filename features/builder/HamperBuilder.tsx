@@ -242,6 +242,11 @@ export function HamperBuilder({ state, quickStart = false, onBackToCurated, onNe
   }, [order.created?.orderId])
 
   function moveToStep(nextStep: number) {
+    if (onBackToCurated && nextStep === 2 && state.step === 3) {
+      state.goToStep(2)
+      onBackToCurated()
+      return
+    }
     const currentHistory = window.history.state as { celebrationBuilder?: boolean; celebrationBuilderStep?: number } | null
     if (nextStep === state.step - 1 && currentHistory?.celebrationBuilder && currentHistory.celebrationBuilderStep === state.step) {
       window.history.back()
@@ -347,12 +352,7 @@ export function HamperBuilder({ state, quickStart = false, onBackToCurated, onNe
           <div className="builderCard" data-builder-step-shell>
             {state.step === 1 && <BudgetStep tierId={state.tierId} occasion={state.checkout.occasion} tiers={state.tiers} occasions={state.occasions} onTier={state.selectTier} onOccasion={(value) => state.updateField("occasion", value)} onNext={() => moveToStep(2)} />}
             {state.step === 2 && <DetailsStep tier={state.tier} checkout={state.checkout} occasions={state.occasions} error={state.detailsError} fieldErrors={state.detailsFieldErrors} updateField={state.updateField} savedAddress={savedAddress} onUseSavedAddress={() => { if (savedAddress) useSavedAddress(savedAddress) }} onBack={quickStart ? changeBudget : () => moveToStep(1)} backLabel={quickStart ? "Change budget" : undefined} onNext={moveToPayment} />}
-            {state.step === 3 && <div data-payment-checkout><PaymentStep tier={state.tier} checkout={state.checkout} selectedProductIds={state.selected} selectedNames={state.selectedNames} accepted={state.accepted} submitting={order.submitting} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} paymentState={order.paymentState} paymentOrderId={order.paymentOrderId} onAccepted={state.setAccepted} onReference={(value) => state.updateField("paymentReference", value)} onBack={() => {
-              if (onBackToCurated) {
-                state.goToStep(2)
-                onBackToCurated()
-              } else moveToStep(2)
-            }} onSubmit={submit} onPay={pay} onRefreshPayment={() => void order.refreshPayment()} onWhatsapp={openWhatsapp} onLogin={openAuth} onNewOrder={startAnotherOrder} /></div>}
+            {state.step === 3 && <div data-payment-checkout><PaymentStep tier={state.tier} checkout={state.checkout} selectedProductIds={state.selected} selectedNames={state.selectedNames} accepted={state.accepted} submitting={order.submitting} error={order.error} created={order.created} customerAccount={customer.account} accountLoading={customer.loading} gatewayLoading={order.gatewayLoading} gatewayEnabled={order.gatewayEnabled} paymentState={order.paymentState} paymentOrderId={order.paymentOrderId} onAccepted={state.setAccepted} onReference={(value) => state.updateField("paymentReference", value)} onBack={() => moveToStep(2)} onSubmit={submit} onPay={pay} onRefreshPayment={() => void order.refreshPayment()} onWhatsapp={openWhatsapp} onLogin={openAuth} onNewOrder={startAnotherOrder} /></div>}
           </div>
         </div>
       </section>
