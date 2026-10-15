@@ -8,7 +8,6 @@ import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 type BoxId = "kappa" | "corrugated" | "bag-clear" | "bag-print"
 type Stage = 1 | 2 | 3
 type CategoryName = "Jewelry" | "Chocolates" | "Teddy Bear" | "Flowers" | "Customised Photos" | "Custom Requirements"
-type GiftChoice = { id: string; label: string; category: CategoryName }
 type DeliveryDetails = {
   name: string; phone: string; recipient: string; address: string;
   city: string; state: string; pincode: string; message: string
