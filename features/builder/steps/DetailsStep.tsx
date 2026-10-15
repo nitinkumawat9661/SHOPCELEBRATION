@@ -22,7 +22,7 @@ function RequiredLabel({ children }: { children: string }) {
   return <span>{cleanLabel(children)} <b className="requiredMark" aria-hidden="true">*</b></span>
 }
 
-export function DetailsStep({ tier, individual = false, summary, checkout, occasions, error, fieldErrors, updateField, savedAddress, onUseSavedAddress, onBack, backLabel, onNext }: {
+export function DetailsStep({ tier, individual = false, summary, checkout, occasions, error, fieldErrors, updateField, savedAddress, onUseSavedAddress, onBack, backLabel, titleOverride, nextLabel, onNext }: {
   tier?: Tier
   individual?: boolean
   summary?: ReactNode
@@ -35,6 +35,8 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
   onUseSavedAddress?: () => void
   onBack: () => void
   backLabel?: string
+  titleOverride?: string
+  nextLabel?: string
   onNext: () => void
 }) {
   const copy = uiContent.builder.details
@@ -42,7 +44,7 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
 
   return (
     <div className={individual ? "stepPane active cartDeliveryStep" : "stepPane active hamperDeliveryStep"}>
-      <div className="builderTitle"><div><h3>{individual ? "2. Delivery details" : copy.title}</h3><p>{individual ? "Tell us where to deliver your individual items." : copy.body}</p></div></div>
+      <div className="builderTitle"><div><h3>{individual ? "2. Delivery details" : (titleOverride || copy.title)}</h3><p>{individual ? "Tell us where to deliver your individual items." : copy.body}</p></div></div>
       <div className="detailsGrid">
         <div>
           <div className="checkoutSectionStack">
@@ -90,7 +92,7 @@ export function DetailsStep({ tier, individual = false, summary, checkout, occas
 
           {error && <div className="errorBox" role="alert">{error}</div>}
           <div className="checkoutProgressNote"><span>✓</span><span><b>Before payment:</b> we validate the required fields and take you directly to anything that still needs attention.</span></div>
-          <div className="navRow detailActions"><button className="secondary" type="button" onClick={onBack}>{individual ? "Back to cart" : backLabel || copy.back}</button><span className="tiny">{copy.nextHint}</span><button className="primary" type="button" onClick={onNext}>{copy.next}</button></div>
+          <div className="navRow detailActions"><button className="secondary" type="button" onClick={onBack}>{individual ? "Back to cart" : backLabel || copy.back}</button><span className="tiny">{copy.nextHint}</span><button className="primary" type="button" onClick={onNext}>{nextLabel || copy.next}</button></div>
         </div>
         {summary || (tier && <OrderSummary tier={tier} checkout={checkout} />)}
       </div>

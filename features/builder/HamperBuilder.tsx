@@ -30,7 +30,13 @@ function historyBuilderStep(value: unknown) {
   return Number.isInteger(step) && step >= 1 && step <= 3 ? step : null
 }
 
-export function HamperBuilder({ state, quickStart = false }: { state: ReturnType<typeof useHamperBuilder>; quickStart?: boolean }) {
+export function HamperBuilder({ state, quickStart = false, hideTierSize = false, onBackToCurated, onNewCuratedOrder }: {
+  state: ReturnType<typeof useHamperBuilder>
+  quickStart?: boolean
+  hideTierSize?: boolean
+  onBackToCurated?: () => void
+  onNewCuratedOrder?: () => void
+}) {
   const order = useOrderSubmit()
   const customer = useCustomerAccount()
   const storeSettings = useStoreSettings()
@@ -237,6 +243,11 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
   }, [order.created?.orderId])
 
   function moveToStep(nextStep: number) {
+    if (onBackToCurated && nextStep === 2 && state.step === 3) {
+      state.goToStep(2)
+      onBackToCurated()
+      return
+    }
     const currentHistory = window.history.state as { celebrationBuilder?: boolean; celebrationBuilderStep?: number } | null
     if (nextStep === state.step - 1 && currentHistory?.celebrationBuilder && currentHistory.celebrationBuilderStep === state.step) {
       window.history.back()
@@ -302,6 +313,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
   function startAnotherOrder() {
     order.reset()
     state.resetForNewOrder(customer.account ? { customerName: customer.account.displayName, phone: customer.account.phone } : undefined)
+    onNewCuratedOrder?.()
     notifyUx({ title: "Ready for another one", body: "Choose a new budget and start your next hamper.", tone: "info" })
     window.setTimeout(() => scrollToUxTarget(document.getElementById("builder"), "start"), 80)
   }
@@ -331,7 +343,7 @@ export function HamperBuilder({ state, quickStart = false }: { state: ReturnType
             <dl className="quickHamperFacts">
               <div><dt>Final price</dt><dd>{formatMoney(hamperFinalPriceRupees(state.tier.price))}</dd></div>
               <div><dt>Occasion</dt><dd>{state.checkout.occasion}</dd></div>
-              <div><dt>Size</dt><dd>{state.tier.size}</dd></div>
+              {!hideTierSize && <div><dt>Size</dt><dd>{state.tier.size}</dd></div>}
             </dl>
             <button className="secondary quickHamperChange" type="button" onClick={changeBudget}>Change budget <span aria-hidden="true">↗</span></button>
           </section>}
