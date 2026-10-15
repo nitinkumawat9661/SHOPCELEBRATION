@@ -1,0 +1,236 @@
+/*
+ * Celebration — cinematic luxury pass (15 Oct 2026)
+ *
+ * Scoped to the ORIGINAL live homepage hero and its four-item benefits strip.
+ * Hero.tsx, Storefront.tsx, product imagery, source crops, image positioning,
+ * headings, descriptions, button destinations and page layout stay unchanged.
+ * These are purely optical and typographic enhancements to the existing design.
+ */
+
+/* Enriched velvet shadows, warm metallic accents and red rose detail.
+   Image assets and object-fit/object-position remain exactly as before. */
+.celebrationHome .celebrationHeroPhoto img{
+  filter:saturate(1.19) contrast(1.095) brightness(1.025) sepia(.052);
+}
+
+/* Keep the original left-to-right vignette framing. */
+.celebrationHome .celebrationHero::before{
+  background:
+    linear-gradient(
+      90deg,
+      rgba(15,7,11,.92) 0%,
+      rgba(28,12,17,.73) 35%,
+      rgba(30,13,17,.43) 56%,
+      rgba(25,11,14,.12) 79%,
+      rgba(25,11,14,.04) 100%
+    );
+}
+
+/* Soft directional light catches the EXISTING ribbon/gold/jewelry surfaces.
+   No objects, photographs, collage, framing, or split regions are added. */
+.celebrationHome .celebrationHero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse 43% 53% at 80% 32%,rgba(255,198,115,.21),transparent 77%),
+    radial-gradient(ellipse 28% 37% at 72% 78%,rgba(246,162,73,.11),transparent 77%),
+    radial-gradient(ellipse 29% 38% at 99% 7%,rgba(253,217,155,.13),transparent 73%);
+  mix-blend-mode:screen;
+}
+
+/* Atmosphere behind the existing left-aligned copy, never a visible card. */
+.celebrationHome .celebrationHeroCopy{
+  position:relative;
+  isolation:isolate;
+}
+.celebrationHome .celebrationHeroCopy::before{
+  content:"";
+  position:absolute;
+  inset:-29px -35px;
+  z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(
+    ellipse at 32% 47%,
+    rgba(8,3,7,.55) 0%,
+    rgba(12,5,8,.30) 42%,
+    rgba(12,5,8,.05) 69%,
+    transparent 79%
+  );
+  filter:blur(22px);
+}
+
+/* Real locally hosted Bodoni Moda Italic, not a synthetic slant or script.
+   Keep original size, line-height and deliberate two-line headline break. */
+.celebrationHome .celebrationHero h1{
+  font-family:var(--font-shopping-display),"Bodoni Moda",Georgia,serif;
+  font-style:italic;
+  font-weight:500;
+  color:#fff4df;
+  letter-spacing:-.023em;
+  text-shadow:
+    0 2px 14px rgba(7,2,5,.57),
+    0 0 29px rgba(255,198,122,.25);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.celebrationHome .celebrationHero h1 em{
+  color:#f6d397;
+  font-family:inherit;
+  font-style:inherit;
+  font-weight:500;
+  text-shadow:
+    0 2px 13px rgba(7,2,5,.54),
+    0 0 25px rgba(255,206,139,.31);
+}
+@supports(-webkit-background-clip:text){
+  .celebrationHome .celebrationHero h1{
+    background:linear-gradient(128deg,
+      #fffcf6 3%,#fff8eb 32%,#f9e5bf 69%,#eec68f 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .celebrationHome .celebrationHero h1 em{
+    background:linear-gradient(108deg,#ffecc7 6%,#f3ce90 53%,#edbc74 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+}
+.celebrationHome .celebrationHero .celebrationEyebrow{
+  color:#ffdbac;
+  font-weight:730;
+  letter-spacing:.15em;
+  text-shadow:0 2px 8px rgba(7,2,5,.48);
+}
+.celebrationHome .celebrationHeroCopy>p{
+  font-family:var(--font-shopping-sans),Arial,sans-serif;
+  font-style:normal;
+  color:#fff8ed;
+  font-weight:520;
+  letter-spacing:.004em;
+  text-shadow:0 2px 12px rgba(7,2,5,.57);
+}
+.celebrationHome .celebrationHeroFoot{
+  color:#f7e4c7;
+  font-weight:580;
+  text-shadow:0 2px 9px rgba(7,2,5,.40);
+}
+
+/* CTA hierarchy stays intact: maroon filled vs elegant cream outline. */
+.celebrationHome .celebrationHeroActions .celebrationButton{
+  font-family:var(--font-shopping-sans),Arial,sans-serif;
+  font-style:normal;
+  box-sizing:border-box;
+  min-height:52px;
+  padding:14px 29px;
+  border-radius:11px;
+  font-size:12px;
+  font-weight:710;
+  letter-spacing:.012em;
+  background:linear-gradient(145deg,#962e37 0%,#7a1f24 47%,#58151c 100%);
+  border:1px solid rgba(207,121,112,.75);
+  color:#fffaf1;
+  box-shadow:
+    inset 0 1px 0 rgba(255,219,185,.29),
+    inset 0 -1px 0 rgba(35,7,9,.32),
+    0 11px 28px rgba(12,3,7,.36);
+  transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease,border-color .2s ease;
+}
+.celebrationHome .celebrationHeroActions .celebrationButton.light{
+  background:rgba(22,9,13,.30);
+  border:1.5px solid rgba(255,239,215,.93);
+  color:#fff9ee;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,241,218,.055),
+    0 9px 22px rgba(9,2,6,.24);
+}
+.celebrationHome .celebrationHeroActions .celebrationButton:is(:hover,:focus-visible){
+  box-shadow:
+    inset 0 1px 0 rgba(255,219,185,.31),
+    0 13px 30px rgba(12,3,7,.43);
+}
+.celebrationHome .celebrationHeroActions .celebrationButton.light:is(:hover,:focus-visible){
+  background:rgba(255,242,222,.13);
+  border-color:#fff8e7;
+  box-shadow:0 11px 27px rgba(12,3,7,.33);
+}
+
+/* Same 4 service assurances, same 4-column/2-column responsive grid. */
+.celebrationHome .celebrationBenefits{
+  gap:clamp(12px,2.15vw,28px);
+  padding-block:27px 25px;
+  background:linear-gradient(180deg,#fff8ef 0%,#f7e8d8 100%);
+  border-bottom:1px solid #e8d4c0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.87),
+    0 5px 15px rgba(65,33,25,.045);
+}
+.celebrationHome .celebrationBenefits>div{
+  gap:clamp(9px,1.1vw,14px);
+}
+.celebrationHome .celebrationBenefits svg{
+  color:#85522b;
+  stroke-width:1.7;
+  background:linear-gradient(145deg,#fff5e3 0%,#f0d0a5 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 0 0 1px rgba(135,85,43,.15),
+    0 4px 12px rgba(89,48,28,.095);
+}
+.celebrationHome .celebrationBenefits b{
+  color:#512d28;
+  font-weight:720;
+  letter-spacing:.007em;
+}
+.celebrationHome .celebrationBenefits small{
+  color:#755747;
+  margin-top:4px;
+}
+
+/* Mobile keeps its original top-down vignette and unchanged image position. */
+@media(max-width:700px){
+  .celebrationHome .celebrationHero::before{
+    background:linear-gradient(
+      180deg,
+      rgba(17,8,13,.92) 0%,
+      rgba(26,11,16,.77) 34%,
+      rgba(26,12,16,.52) 58%,
+      rgba(21,10,13,.09) 86%
+    );
+  }
+  .celebrationHome .celebrationHero::after{
+    background:
+      radial-gradient(ellipse 54% 36% at 82% 72%,rgba(255,194,104,.16),transparent 79%),
+      radial-gradient(ellipse 49% 23% at 91% 96%,rgba(255,214,148,.10),transparent 80%);
+  }
+  .celebrationHome .celebrationHeroCopy::before{
+    inset:-13px -15px;
+    background:radial-gradient(ellipse at 25% 35%,rgba(8,3,7,.45),rgba(8,3,7,.16) 53%,transparent 76%);
+    filter:blur(15px);
+  }
+  .celebrationHome .celebrationHero h1{letter-spacing:-.028em}
+  .celebrationHome .celebrationHeroActions .celebrationButton{
+    min-height:47px;
+    padding:12px 17px;
+    border-radius:10px;
+    font-weight:690;
+  }
+  .celebrationHome .celebrationBenefits{
+    gap:18px 12px;
+    padding-block:22px 21px;
+  }
+}
+@media(max-width:360px){
+  .celebrationHome .celebrationHeroActions .celebrationButton{
+    padding:11px 12px;
+    font-size:10px;
+  }
+  .celebrationHome .celebrationBenefits{gap:16px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .celebrationHome .celebrationHeroActions .celebrationButton{transition:none}
+}
