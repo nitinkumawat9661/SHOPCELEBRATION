@@ -3,7 +3,7 @@ import { query, transaction } from "./db"
 import type { SelfBuildSelection } from "./self-build-quote"
 import { getSelfBuildPublishedCatalog } from "./self-build-published-tiers"
 import { deleteSelfBuildPrivatePhoto } from "./r2"
-import { countSelfBuildPieces, getSelfBuildTierLimits } from "./self-build-tier-limits"
+import { countSelfBuildPieces, getSelfBuildTierLimits, parseSelfBuildBoxId, validateSelfBuildPackaging, type SelfBuildBoxId } from "./self-build-tier-limits"
 import { evaluatePrivateSelfBuildChoices, type PrivateCategory, type PrivateOption } from "./self-build-private-budget"
 
 const ID=/^[a-z0-9][a-z0-9-]{0,59}$/
@@ -33,22 +33,22 @@ export function parseDraftBody(input:unknown){
     seen.add(key)
     return {kind:e.kind as SelfBuildSelection["kind"],id:e.id,quantity:e.quantity as number}
   })
-  return {tierId:v.tierId,selections,otherRequestText:v.otherRequestText.trim()}
+  return {tierId:v.tierId,selections,otherRequestText:v.otherRequestText.trim(),boxId:parseSelfBuildBoxId(v.boxId)}
 }
 export async function customerSelfBuildEnabled(){
   const result=await query<{customer_enabled:boolean}>("SELECT customer_enabled FROM self_build_configuration WHERE id='primary'")
   // Fail closed if migration not applied.
   return result.rows[0]?.customer_enabled===true
 }
-type DraftRow={id:string;tier_id:string;selections:SelfBuildSelection[];other_request_text:string;expires_at:Date}
+type DraftRow={id:string;tier_id:string;selections:SelfBuildSelection[];other_request_text:string;expires_at:Date;box_id:SelfBuildBoxId|null}
 export async function getSelfBuildDraft(accountId:string) {
   const result=await query<DraftRow>(
-    `SELECT id,tier_id,selections,other_request_text,expires_at
+    `SELECT id,tier_id,selections,other_request_text,expires_at,box_id
        FROM self_build_drafts WHERE customer_account_id=$1 AND expires_at>now() LIMIT 1`,[accountId])
   const item=result.rows[0]
   if(!item)return null
   return {id:item.id,tierId:item.tier_id,selections:item.selections,
-    otherRequestText:item.other_request_text,expiresAt:item.expires_at.toISOString()}
+    otherRequestText:item.other_request_text,expiresAt:item.expires_at.toISOString(),boxId:item.box_id}
 }
 export async function saveSelfBuildDraft(accountId:string,input:unknown){
   const clean=parseDraftBody(input)
@@ -64,6 +64,15 @@ export async function saveSelfBuildDraft(accountId:string,input:unknown){
     const settings=await client.query<{allow_multiple_quantities:boolean;customer_enabled:boolean}>(
       "SELECT allow_multiple_quantities,customer_enabled FROM self_build_configuration WHERE id='primary' FOR SHARE")
     if(settings.rows[0]?.customer_enabled!==true)reject("SELF_BUILD_NOT_LIVE",403)
+    // Existing unboxed drafts may be edited but can never proceed to payment.
+    // Only owner-approved complete packaging costs are accepted for new box picks.
+    if(clean.boxId){
+      const cost=await client.query<{approved:boolean;total_cost_paise:number|null}>(
+        "SELECT approved,total_cost_paise FROM self_build_packaging_costs WHERE box_id=$1 FOR SHARE",
+        [clean.boxId])
+      try{validateSelfBuildPackaging(tier,clean.boxId,cost.rows[0])}
+      catch(error){reject(error instanceof Error?error.message:"SELF_BUILD_BOX_INVALID")}
+    }
     const cats=await client.query<PrivateCategory>(
       "SELECT id,parent_id,selection_kind,charge_mode,unit_budget_paise,label,active FROM self_build_categories")
     const options=await client.query<PrivateOption>(
@@ -111,18 +120,20 @@ export async function saveSelfBuildDraft(accountId:string,input:unknown){
     }
     const id=existing.rows[0]?.id||randomUUID()
     await client.query(`INSERT INTO self_build_drafts
-      (id,customer_account_id,tier_id,selections,other_request_text,expires_at)
-      VALUES ($1,$2,$3,$4::jsonb,$5,now()+interval '14 days')
+      (id,customer_account_id,tier_id,selections,other_request_text,box_id,expires_at)
+      VALUES ($1,$2,$3,$4::jsonb,$5,$6,now()+interval '14 days')
       ON CONFLICT(customer_account_id) DO UPDATE SET
        tier_id=EXCLUDED.tier_id,selections=EXCLUDED.selections,
-       other_request_text=EXCLUDED.other_request_text,expires_at=EXCLUDED.expires_at,
+       other_request_text=EXCLUDED.other_request_text,box_id=EXCLUDED.box_id,
+       expires_at=EXCLUDED.expires_at,
        updated_at=now()`,
-      [id,accountId,clean.tierId,JSON.stringify(clean.selections),clean.otherRequestText])
+      [id,accountId,clean.tierId,JSON.stringify(clean.selections),clean.otherRequestText,clean.boxId])
     const row=await client.query<DraftRow>(
-      "SELECT id,tier_id,selections,other_request_text,expires_at FROM self_build_drafts WHERE customer_account_id=$1",
+      "SELECT id,tier_id,selections,other_request_text,expires_at,box_id FROM self_build_drafts WHERE customer_account_id=$1",
       [accountId])
     return {id:row.rows[0].id,tierId:row.rows[0].tier_id,selections:row.rows[0].selections,
-      otherRequestText:row.rows[0].other_request_text,expiresAt:row.rows[0].expires_at.toISOString()}
+      otherRequestText:row.rows[0].other_request_text,expiresAt:row.rows[0].expires_at.toISOString(),
+      boxId:row.rows[0].box_id}
   })
 }
 export async function deleteSelfBuildDraft(accountId:string) {

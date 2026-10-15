@@ -30,7 +30,7 @@ for(const [base,final,percent,maxChoices] of [
  assert.equal(budget.targetPercent,percent)
  assert.equal(budget.targetPaise,Math.floor(base*100*percent/100),
    "Budget must always be calculated from the ORIGINAL hamper price")
- assert.equal(budget.ceilingPercent,percent+5)
+ assert.equal(budget.ceilingPercent,80, "Keep 20% of the base tier for packaging")
 }
 const displayFiles=[
  "features/home/Hero.tsx",
@@ -73,4 +73,4 @@ for(const tier of catalog.tiers){
  assert.equal(limits.getSelfBuildTierLimits(tier).targetPaise,
    Math.floor(Math.round(before*100)* (before>=1299?75:80)/100))
 }
-console.log("HAMPER_INCLUSIVE_FINAL_PRICE_BUDGET_UNCHANGED_PASSED: all customer tiers show +₹50, server adds once, original 80/75% budgets unchanged, no visible separate delivery line")
+console.log("HAMPER_INCLUSIVE_FINAL_PRICE_BUDGET_SAFE_PASSED: customer tier +₹50 only once, 80/75% gift targets with 80% hard ceiling, 20% packaging reserved")

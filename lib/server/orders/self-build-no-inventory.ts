@@ -12,7 +12,7 @@ import { transaction } from "../db"
 import { parseDraftBody } from "../self-build-drafts"
 import { transferSelfBuildPhotosToOrderWithClient } from "../self-build-order-photos"
 import { createOrderWithClient } from "./create"
-import { countSelfBuildPieces, getSelfBuildTierLimits } from "../self-build-tier-limits"
+import { countSelfBuildPieces, getSelfBuildTierLimits, validateSelfBuildPackaging, type SelfBuildBoxId } from "../self-build-tier-limits"
 import { evaluatePrivateSelfBuildChoices, type PrivateCategory, type PrivateOption } from "../self-build-private-budget"
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -47,8 +47,8 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
     "SELECT id,phone FROM customer_accounts WHERE id=$1 AND status='active' AND phone_verified_at IS NOT NULL",
     [input.accountId])
   if(!account.rows[0])reject("SELF_BUILD_ACCOUNT_NOT_VERIFIED")
-  const draft=await client.query<{tier_id:string;selections:unknown;other_request_text:string}>(
-    `SELECT tier_id,selections,other_request_text FROM self_build_drafts
+  const draft=await client.query<{tier_id:string;selections:unknown;other_request_text:string;box_id:SelfBuildBoxId|null}>(
+    `SELECT tier_id,selections,other_request_text,box_id FROM self_build_drafts
       WHERE id=$1 AND customer_account_id=$2 AND expires_at>now() FOR UPDATE`,
     [input.draftId,input.accountId])
   if(!draft.rows[0])reject("SELF_BUILD_DRAFT_NOT_FOUND")
@@ -65,6 +65,14 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
   const chosenTier=published.tiers.find(t=>t.id===saved.tier_id&&t.active!==false)
   if(!chosenTier)reject("SELF_BUILD_TIER_UNAVAILABLE")
   const limits=getSelfBuildTierLimits(chosenTier)
+  // Reject missing/unapproved packaging BEFORE the order or payment attempt.
+  // The price used here is the base published tier, excluding ₹50 delivery.
+  const boxCost=await client.query<{approved:boolean;total_cost_paise:number|null}>(
+    "SELECT approved,total_cost_paise FROM self_build_packaging_costs WHERE box_id=$1 FOR SHARE",
+    [saved.box_id])
+  try{validateSelfBuildPackaging(chosenTier,saved.box_id,boxCost.rows[0])}
+  catch(error){reject(error instanceof Error?error.message:"SELF_BUILD_BOX_INVALID")}
+  const packagingCostPaise=boxCost.rows[0]!.total_cost_paise!
   if(countSelfBuildPieces(choices)>limits.maxItems)reject("SELF_BUILD_MAX_ITEMS_EXCEEDED")
   // Category & size costs are private budgets, not inventory or retail SKU
   // prices. Allow the owner's 5-point tolerance above the standard target.
@@ -100,9 +108,9 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
   if(!orderId)reject("SELF_BUILD_ORDER_NOT_FOUND")
   const existing=await client.query<{
     selections:unknown;other_request_text:string;total_internal_budget_paise:number;
-    tier_budget_paise:number
+    tier_budget_paise:number;box_id:SelfBuildBoxId|null;packaging_cost_paise:number|null
   }>(
-    "SELECT selections,other_request_text,total_internal_budget_paise,tier_budget_paise FROM self_build_order_snapshots WHERE order_id=$1",
+    "SELECT selections,other_request_text,total_internal_budget_paise,tier_budget_paise,box_id,packaging_cost_paise FROM self_build_order_snapshots WHERE order_id=$1",
     [orderId])
   if(!order.created){
     const match=existing.rows[0]
@@ -118,15 +126,17 @@ export async function createSelfBuildNoInventoryWithClient(client:PoolClient,inp
     if(!match||!sameChoices||
        match.other_request_text!==saved.other_request_text.trim()||
        match.total_internal_budget_paise!==checkedChoices.spent||
-       match.tier_budget_paise!==limits.ceilingPaise)
+       match.tier_budget_paise!==limits.ceilingPaise||
+       match.box_id!==saved.box_id||match.packaging_cost_paise!==packagingCostPaise)
       reject("SELF_BUILD_IDEMPOTENCY_PAYLOAD_MISMATCH")
   }else{
     await client.query(`
       INSERT INTO self_build_order_snapshots
-      (order_id,rules_version,tier_id,selections,total_internal_budget_paise,tier_budget_paise,other_request_text)
-      VALUES($1,$2,$3,$4::jsonb,$5,$6,$7)`,
+      (order_id,rules_version,tier_id,selections,total_internal_budget_paise,tier_budget_paise,other_request_text,box_id,packaging_cost_paise)
+      VALUES($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9)`,
       [orderId,config.version,saved.tier_id,JSON.stringify(checkedChoices.snap),
-       checkedChoices.spent,limits.ceilingPaise,saved.other_request_text.trim()])
+       checkedChoices.spent,limits.ceilingPaise,saved.other_request_text.trim(),
+       saved.box_id,packagingCostPaise])
   }
   await transferSelfBuildPhotosToOrderWithClient(client,{
     orderId,draftId:input.draftId,accountId:input.accountId,

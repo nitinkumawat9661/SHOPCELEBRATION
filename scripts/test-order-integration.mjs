@@ -556,12 +556,37 @@ try {
   const optionBefore=(await control.query(`
     SELECT option_id,available_units,reserved_units,verified
     FROM self_build_option_capacity ORDER BY option_id`)).rows
-  // Owner private target: ₹499×80%=₹399.20, one final selection may
-  // use the extra 5 percentage-point headroom (absolute ₹424.15 cap).
-  // Count ALL units including repeats: maxChoices=3 for t499.
+  // Local-only packaging fixtures: no real procurement prices are approved.
+  const packingInput={
+    accountId:account.id,draftId:stagedDraftId,paymentProvider:'razorpay',
+    customerDetails:{...body,idempotencyKey:randomUUID(),occasion:'Birthday'}
+  }
+  await assert.rejects(createSelfBuildNoInventoryOrder(packingInput),
+    {code:'SELF_BUILD_BOX_REQUIRED'},'Unboxed draft cannot proceed to payment')
+  await control.query("UPDATE self_build_drafts SET box_id='corrugated' WHERE id=$1",[stagedDraftId])
+  await assert.rejects(createSelfBuildNoInventoryOrder(packingInput),
+    {code:'SELF_BUILD_PACKAGING_COST_UNAPPROVED'},'Unknown packaging cost fails closed')
+  await control.query("UPDATE self_build_packaging_costs SET total_cost_paise=10000,approved=true WHERE box_id='corrugated'")
+  await assert.rejects(createSelfBuildNoInventoryOrder(packingInput),
+    {code:'SELF_BUILD_PACKAGING_BUDGET_EXCEEDED'},'₹100 cannot fit in ₹99.80 of ₹499')
+  await control.query("UPDATE self_build_packaging_costs SET total_cost_paise=2000 WHERE box_id='corrugated'")
+  await control.query("UPDATE self_build_packaging_costs SET total_cost_paise=2000,approved=true WHERE box_id='kappa'")
+  await control.query("UPDATE self_build_drafts SET box_id='kappa' WHERE id=$1",[stagedDraftId])
+  await assert.rejects(createSelfBuildNoInventoryOrder(packingInput),
+    {code:'SELF_BUILD_KAPPA_MIN_TIER'},'Kappa unavailable on ₹499 base tier')
+  await control.query("UPDATE self_build_drafts SET box_id='corrugated' WHERE id=$1",[stagedDraftId])
+  // ₹400 in gifts formerly passed the 85% ceiling, but now breaches the
+  // strict ₹399.20 80%-gift cap protecting 20% packaging.
   await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1`,
     [stagedDraftId,JSON.stringify([
       {kind:'category',id:'bangles',quantity:2},
+      {kind:'option',id:'chocolate-extra-100',quantity:1}
+    ])])
+  await assert.rejects(createSelfBuildNoInventoryOrder(packingInput),
+    {code:'SELF_BUILD_PRIVATE_BUDGET_EXCEEDED'})
+  await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1`,
+    [stagedDraftId,JSON.stringify([
+      {kind:'category',id:'bangles',quantity:1},
       {kind:'option',id:'chocolate-extra-100',quantity:1}
     ])])
   const toleranceOrder=await createSelfBuildNoInventoryOrder({
@@ -571,9 +596,9 @@ try {
   const allowed=(await control.query(`SELECT s.total_internal_budget_paise,s.tier_budget_paise
     FROM orders o JOIN self_build_order_snapshots s ON s.order_id=o.id
     WHERE o.public_id=$1`,[toleranceOrder.orderId])).rows[0]
-  assert.equal(allowed.total_internal_budget_paise,40000,
-    '₹400 private cost is just above the ₹399.20 target but within approved tolerance')
-  assert.equal(allowed.tier_budget_paise,42415)
+  assert.equal(allowed.total_internal_budget_paise,25000,
+     '₹250 gift spend leaves 20% packaging portion intact')
+  assert.equal(allowed.tier_budget_paise,39920)
   await control.query(`UPDATE self_build_drafts SET selections=$2::jsonb WHERE id=$1`,
     [stagedDraftId,JSON.stringify([{kind:'category',id:'bangles',quantity:3}])])
   const overBudgetKey=randomUUID()
@@ -614,12 +639,15 @@ try {
   assert.equal(noStockReplay.orderId,noStockOrder.orderId)
   const noStockInternal=(await control.query(`
     SELECT o.id,s.selections,s.total_internal_budget_paise,
-      s.tier_budget_paise,s.other_request_text
+       s.tier_budget_paise,s.other_request_text,s.box_id,s.packaging_cost_paise
     FROM orders o JOIN self_build_order_snapshots s ON s.order_id=o.id
     WHERE o.public_id=$1`,[noStockOrder.orderId])).rows[0]
   assert.equal(noStockInternal.total_internal_budget_paise,15000)
-  assert.equal(noStockInternal.tier_budget_paise,42415,
-    '₹499 Self-Build checkout maximum is 85% including 5 percentage points of flexibility; primary target is 80%')
+  assert.equal(noStockInternal.tier_budget_paise,39920,
+     '₹499 gift hard ceiling at 80% preserves 20% for packaging')
+   assert.equal(noStockInternal.box_id,'corrugated')
+   assert.equal(noStockInternal.packaging_cost_paise,2000,
+     'Private approved complete packaging cost is frozen on order')
   assert.equal(noStockInternal.selections[0].id,'bangles')
   assert.equal((await control.query(`
     SELECT COUNT(*)::int AS n FROM self_build_order_reservation_batches

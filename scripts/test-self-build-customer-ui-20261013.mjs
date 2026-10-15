@@ -107,7 +107,7 @@ assert(!ui.includes("allowancePaise")&&!ui.includes("targetPaise")&&
  !ui.includes("internalSpentPaise"),"Buyer never receives private spending or cost fields")
 const result=ts.transpileModule(policy,{compilerOptions:{module:ts.ModuleKind.ESNext,
  target:ts.ScriptTarget.ES2022}}).outputText
-const {getSelfBuildTierLimits,countSelfBuildPieces}=await import("data:text/javascript;base64,"+
+const {getSelfBuildTierLimits,countSelfBuildPieces,parseSelfBuildBoxId,validateSelfBuildPackaging}=await import("data:text/javascript;base64,"+
  Buffer.from(result).toString("base64"))
 const tierData=JSON.parse(catalogRaw)
 assert(Array.isArray(tierData.tiers)&&tierData.tiers.length>=12)
@@ -116,18 +116,76 @@ for(const t of tierData.tiers){
   const pricePaise=Math.round(t.price*100)
   const big=pricePaise>=129900
   assert.equal(limits.targetPercent,big?75:80)
-  assert.equal(limits.ceilingPercent,big?80:85)
+  assert.equal(limits.ceilingPercent,80)
   assert.equal(limits.targetPaise,Math.floor(pricePaise*(big?75:80)/100))
-  assert.equal(limits.ceilingPaise,Math.floor(pricePaise*(big?80:85)/100))
+  assert.equal(limits.ceilingPaise,Math.floor(pricePaise*80/100))
+  assert(pricePaise-limits.ceilingPaise>=Math.floor(pricePaise*20/100),
+    "Reserve at least 20% of each tier for box and packaging")
   assert.equal(limits.maxItems,t.maxChoices)
 }
 assert.deepEqual(getSelfBuildTierLimits({price:499,maxChoices:3}),{
- targetPaise:39920,ceilingPaise:42415,maxItems:3,targetPercent:80,ceilingPercent:85
+ targetPaise:39920,ceilingPaise:39920,maxItems:3,targetPercent:80,ceilingPercent:80
 })
 assert.deepEqual(getSelfBuildTierLimits({price:1299,maxChoices:6}),{
  targetPaise:97425,ceilingPaise:103920,maxItems:6,targetPercent:75,ceilingPercent:80
 })
 assert.equal(countSelfBuildPieces([{quantity:3}]),3,"Three repeats are three products")
 assert.equal(countSelfBuildPieces([{quantity:2},{quantity:3}]),5)
+const approvedBox={approved:true,total_cost_paise:2000}
+assert.equal(parseSelfBuildBoxId(undefined),null)
+assert.equal(parseSelfBuildBoxId("bag-print"),"bag-print")
+assert.throws(()=>parseSelfBuildBoxId("unauthorized"),/SELF_BUILD_BOX_INVALID/)
+assert.deepEqual(validateSelfBuildPackaging({price:299,maxChoices:2},"corrugated",approvedBox),
+  {boxId:"corrugated"},"An owner-approved ₹20 total packaging cost fits a ₹299 tier")
+assert.throws(()=>validateSelfBuildPackaging({price:999,maxChoices:5},"kappa",approvedBox),
+  /SELF_BUILD_KAPPA_MIN_TIER/,"₹999 plus ₹50 delivery never qualifies for Kappa")
+assert.deepEqual(validateSelfBuildPackaging({price:1000,maxChoices:5},"kappa",approvedBox),
+  {boxId:"kappa"},"₹1,000 base tier qualifies when the packing cost is approved")
+assert.throws(()=>validateSelfBuildPackaging({price:1299,maxChoices:6},"kappa",undefined),
+  /SELF_BUILD_PACKAGING_COST_UNAPPROVED/)
+assert.throws(()=>validateSelfBuildPackaging({price:299,maxChoices:2},"corrugated",
+  {approved:false,total_cost_paise:2000}),/SELF_BUILD_PACKAGING_COST_UNAPPROVED/)
+assert.throws(()=>validateSelfBuildPackaging({price:299,maxChoices:2},"corrugated",
+  {approved:true,total_cost_paise:6000}),/SELF_BUILD_PACKAGING_BUDGET_EXCEEDED/,
+  "₹60 exceeds the ₹59.80 private packaging reserve on a ₹299 base tier")
+assert.throws(()=>validateSelfBuildPackaging({price:1299,maxChoices:6},null,approvedBox),
+  /SELF_BUILD_BOX_REQUIRED/)
+const [packingMigration,privateDraft,privateOrder]=await Promise.all([
+  "db/migrations/107_self_build_packaging_cost_approval.sql",
+  "lib/server/self-build-drafts.ts",
+  "lib/server/orders/self-build-no-inventory.ts"
+].map(read))
+assert(packingMigration.includes("approved boolean NOT NULL DEFAULT false")&&
+  packingMigration.includes("ADD COLUMN box_id text NULL")&&
+  packingMigration.includes("ADD COLUMN packaging_cost_paise integer NULL")&&
+  !/UPDATE orders|retail_inventory|customer_enabled\s*=\s*true/.test(packingMigration),
+  "No fabricated packaging prices, old-order migration, stock write or buyer launch")
+assert(privateDraft.includes("validateSelfBuildPackaging(tier,clean.boxId,cost.rows[0])")&&
+  privateOrder.includes("validateSelfBuildPackaging(chosenTier,saved.box_id,boxCost.rows[0])")&&
+  privateOrder.indexOf("validateSelfBuildPackaging(")<privateOrder.indexOf("createOrderWithClient(")&&
+  privateOrder.includes("match.box_id!==saved.box_id")&&
+  privateOrder.includes("match.packaging_cost_paise!==packagingCostPaise"),
+  "Box approval must be transactional, checked before order writes, frozen on retries")
+
 assert.throws(()=>countSelfBuildPieces([{quantity:101}]),/INVALID_SELF_BUILD_QUANTITY/)
+// The public 3-screen design preview must never turn stale fallback tier prices
+// into a payable quote. It reuses the published catalog projection only.
+const [designRoute, designUi] = await Promise.all([
+  "app/self-build-design/page.tsx",
+  "features/builder/SelfBuildThreeScreenPreview.tsx"
+].map(read))
+assert(designRoute.includes("getSelfBuildPublishedCatalog().catch(() => null)") &&
+  designRoute.includes("hasPublishedPricing={hasPublishedPricing}"),
+  "Design preview must read published public tier prices, with fail-closed fallback")
+assert(designUi.includes("hasPublishedPricing && chosenTier") &&
+  designUi.includes('"—"') && designUi.includes("Published tier prices are unavailable."),
+  "Unavailable live tiers must NEVER display fallback pricing as a quote")
+assert(designUi.includes("KAPPA_MIN_HAMPER_PRICE = 1000") &&
+  designUi.includes('box !== "kappa" || t.price >= KAPPA_MIN_HAMPER_PRICE') &&
+  designUi.includes('enoughForPieces(tiers, pieces, box)') &&
+  designUi.includes('disabled={choice.id === "kappa" && !kappaEligible}'),
+  "Kappa requires a pre-delivery hamper price of at least ₹1,000, not ₹999 + ₹50 shipping")
+assert(designUi.includes("Payment is not connected; no order was placed.") &&
+  !designUi.includes("/api/payments/"),
+  "Public demo remains non-transactional regardless of catalog state")
 console.log("SELF_BUILD_CUSTOMER_UI_SOURCE_CHECKS_PASSED: no-stock builder, auth, draft/photos, payment and redirect recovery, live-hard-gate, privacy, mobile")
