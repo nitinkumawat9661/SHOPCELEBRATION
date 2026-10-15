@@ -88,6 +88,7 @@ export function CuratedHamperFlow({ catalog }: { catalog: CatalogConfig }) {
       <HamperBuilder
         state={state}
         quickStart
+        hideTierSize
         onBackToCurated={() => changeScreen(3)}
         onNewCuratedOrder={() => { setHasChosenBudget(false); changeScreen(1) }}
       />
@@ -113,7 +114,6 @@ export function CuratedHamperFlow({ catalog }: { catalog: CatalogConfig }) {
                 </div>
                 <div className="curatedBudgetPrice">{formatMoney(hamperFinalPriceRupees(item.price))}</div>
                 <h3>{item.name}</h3>
-                <p>Size: {item.size}</p>
                 <span className="curatedPriceHint">Complete hamper · delivery included</span>
                 <button type="button" className="curatedPrimary" onClick={() => chooseBudget(item.id)}>
                   {chosen ? "Selected · Continue" : "Choose this hamper"} <span aria-hidden="true">→</span>
@@ -189,7 +189,6 @@ export function CuratedHamperFlow({ catalog }: { catalog: CatalogConfig }) {
                     <div><dt>Budget</dt><dd>{formatMoney(tier.price)}</dd></div>
                     {delivery > 0 && <div><dt>Delivery included</dt><dd>{formatMoney(delivery)}</dd></div>}
                     <div><dt>Hamper</dt><dd>{tier.name}</dd></div>
-                    <div><dt>Size</dt><dd>{tier.size}</dd></div>
                     <div><dt>Occasion</dt><dd>{state.checkout.occasion}</dd></div>
                     <div><dt>Selected gifts</dt><dd>Curated by Celebration</dd></div>
                   </dl>
