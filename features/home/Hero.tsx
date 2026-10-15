@@ -17,7 +17,7 @@ export function Hero({ tiers }: { tiers: Tier[] }) {
         <span className="celebrationEyebrow">JEWELRY / CUSTOM HAMPERS</span>
         <h1 id="gift-hero-title">Jewelry to wear.<br />Hampers to <em>give.</em></h1>
         <p>Browse necklaces, rings and bracelets. For a custom hamper, start with a budget and tell us the occasion.</p>
-        <div className="celebrationHeroActions"><a className="celebrationButton" href="#budgets">Shop Hampers <StoreIcon name="arrow" size={17} /></a><Link className="celebrationButton light" href="/jewelry" prefetch={false}>Explore Jewelry</Link></div>
+        <div className="celebrationHeroActions"><a className="celebrationButton" href="/curated-hampers">Shop Hampers <StoreIcon name="arrow" size={17} /></a><Link className="celebrationButton light" href="/jewelry" prefetch={false}>Explore Jewelry</Link></div>
         {minPrice !== null && <small className="celebrationHeroFoot">Custom hampers from {formatMoney(hamperFinalPriceRupees(minPrice))}.</small>}
       </div>
     </div>
