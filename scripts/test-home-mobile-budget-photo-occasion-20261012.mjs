@@ -2,8 +2,7 @@ import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8")
-const [budget, budgetStyles, imageCard, imageStyle, home, occasion, occasionStyles, builder, rawCatalog, imports] = await Promise.all([
-  "features/catalog/BudgetSection.tsx",
+const [budgetStyles, imageCard, imageStyle, home, occasion, occasionStyles, builder, rawCatalog, imports] = await Promise.all([
   "styles/home-mobile-budget-featured-fix-20261012.css",
   "features/catalog/CatalogCard.tsx",
   "styles/home-phase1-original-featured-grid-20261012.css",
@@ -19,28 +18,13 @@ const catalog = JSON.parse(rawCatalog)
 const tiers = catalog.tiers.filter((tier) => tier.active !== false)
 
 assert.equal(tiers.length, 12, "Live catalog currently exposes 12 budget options")
-assert(budget.includes("tiers.map((item) =>") && budget.includes("onSelect(item.id)"),
-  "Card redesign must keep all genuine tier IDs wired to existing builder")
-assert(budget.includes("celebrationTierMain") && budget.includes("celebrationHamperCard"),
-  "Group amount and name as a single flowing card section rather than overlapping siblings")
-assert(budget.includes("{formatMoney(hamperFinalPriceRupees(item.price))}") && budget.includes("{item.name}"),
-  "Display tier price includes shipping but source tier names and budgets are unchanged")
-assert(budget.includes("item.maxChoices") && budget.includes("item.size"),
-  "Sizes and choice limits must be real tier attributes")
-assert(budget.includes("tierBadge(item, recommendedTierId, socialProof)"),
-  "Badge recommendations must not invent popularity")
-assert(budget.includes("Price for the complete hamper") && budget.includes('href="#custom-request"'),
-  "Transparent complete-hamper price and custom request flow")
-assert(builder.includes("openBuilder(2, id, true)"),
-  "Clicking a budget must retain correct quick-start builder event")
-assert(budgetStyles.includes(".celebrationTierMain") &&
-  budgetStyles.includes("white-space:normal") && budgetStyles.includes("word-break:normal") &&
-  budgetStyles.includes("height:auto") && budgetStyles.includes("max-height:none"),
-  "Budget price/title must expand naturally and avoid word splitting or clipping")
-assert(budgetStyles.includes("celebrationHamperCard::before") && budgetStyles.includes("celebrationHamperCard::after"),
-  "Decorative overlay layers must not cover mobile text")
-assert(budgetStyles.includes("flex-direction:column") && budgetStyles.includes("@media(max-width:360px)"),
-  "Stack text in a consistent mobile card at narrow screen widths")
+assert(builder.includes("<OccasionRail")&&
+  !builder.includes("<BudgetSection"),
+  "Remove duplicate homepage budget rail while keeping occasion selection")
+assert(budgetStyles.includes(".celebrationFeatured .catalogCardVisual") &&
+  budgetStyles.includes("object-fit:contain") &&
+  budgetStyles.includes(".catalogCardMedia .safeCatalogImageFrame"),
+  "Featured photos retain stable framing regardless of budget rail removal")
 
 assert(imageCard.includes('imageVariant = "thumb"'),
   "All original listing cards must keep the same image URL variant")

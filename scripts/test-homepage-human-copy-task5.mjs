@@ -2,11 +2,10 @@ import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8")
-const [hero, homeCatalog, storefront, budget, occasions, request, content, storeRaw, css, globals, olderEditorial, navCss, plan] = await Promise.all([
+const [hero, homeCatalog, storefront, occasions, request, content, storeRaw, css, globals, olderEditorial, navCss, plan] = await Promise.all([
   "features/home/Hero.tsx",
   "features/home/HomeCatalog.tsx",
   "features/home/Storefront.tsx",
-  "features/catalog/BudgetSection.tsx",
   "features/catalog/OccasionRail.tsx",
   "features/home/CustomRequestSection.tsx",
   "lib/domain/content.ts",
@@ -24,11 +23,11 @@ assert.equal(store.brand.name, "Celebration", "Brand identity must remain")
 assert(hero.includes("Jewelry to wear.") && hero.includes("Hampers to"), "Homepage hero must lead with what Celebration actually sells")
 assert(hero.includes("Browse necklaces, rings and bracelets."), "Use product-specific, plain English")
 assert(hero.includes("Custom hampers from {formatMoney(hamperFinalPriceRupees(minPrice))}."), "Keep genuine dynamic starting budget")
-assert(hero.includes('href="#budgets"') && hero.includes('href="/jewelry"'), "Both hero routes must remain functional")
+assert(hero.includes('href="/curated-hampers"') && hero.includes('href="/jewelry"'), "Both hero routes must remain functional")
 assert(hero.includes('hero-800.webp') && hero.includes('hero-1600.webp'), "Keep the optimized verified campaign photos")
 assert(homeCatalog.includes("categoriesForCatalog(catalog)") && homeCatalog.includes("visibleProducts(catalog)"), "Categories remain sourced from actual product data")
 assert(homeCatalog.includes("{category.label}") && homeCatalog.includes("{product.id}"), "Keep exact catalog names and SKU identity")
-assert(homeCatalog.includes('href="#budgets"') && homeCatalog.includes('href="/jewelry"'), "Keep existing jewelry and hamper routes")
+assert(homeCatalog.includes('href="/curated-hampers"') && homeCatalog.includes('href="/jewelry"'), "Keep existing jewelry and hamper routes")
 assert(homeCatalog.includes("Take a closer look") && homeCatalog.includes("Browse pieces"), "Category/featured CTA copy should sound natural")
 assert(homeCatalog.includes("loading=\"lazy\"") && homeCatalog.includes('CatalogProductImage product={photo}'), "Keep below-the-fold image strategy and same-SKU imagery")
 assert(storefront.includes("Where a video is provided") && storefront.includes("Payment confirmation"), "Benefits must not promise a universal packing video")
@@ -38,15 +37,15 @@ const videoCard = store.promiseCards.find(x => x.title === "Hamper packing previ
 assert(videoCard && videoCard.body.includes("When a packing video is provided"), "Trust card must avoid unconditional delivery promises")
 assert(content.includes('title: "Choose your hamper budget."') && content.includes('price covers the complete hamper'), "Budget price description must be specific")
 assert(content.includes('title: "From payment to delivery."') && content.includes('title: "Have a hamper in mind?"'), "Homepage promise and final CTA must be grounded in real workflows")
-assert(budget.includes("{formatMoney(hamperFinalPriceRupees(item.price))}") && budget.includes("{item.name}") && budget.includes("onSelect(item.id)"), "Do not alter budget options or selection")
-assert(budget.includes("Price for the complete hamper") && budget.includes('href="#custom-request"'), "Tier note must be transparent and request link must work")
+assert(hero.includes('href="/curated-hampers"')&&homeCatalog.includes('href="/curated-hampers"'),
+  "Removed rail must route to existing complete-hamper budget checkout")
 assert(occasions.includes("{occasion}") && occasions.includes("onChange(occasion)"), "Do not change dynamic occasions or picker behavior")
 assert(occasions.includes("Birthday, anniversary") && occasions.includes("Pick an occasion"), "Occasion copy must identify the action")
 assert(request.includes('action') === false || request.includes("custom-request"), "Existing custom request action must remain")
 assert(request.includes('fetch("/api/custom-request"') && request.includes("onSubmit={submit}"), "Custom request POST and interactions must remain intact")
 assert(request.includes("Gift preferences or instructions"), "The form should ask for concrete preferences rather than a vague feeling")
 
-const surfaces = [hero, homeCatalog, storefront, budget, occasions, request]
+const surfaces = [hero, homeCatalog, storefront, occasions, request]
 for (const [label, re] of [
   ["thoughtful", /\bthoughtful\b/i],
   ["little", /\blittle\b/i],
@@ -65,7 +64,6 @@ for(const text of [
   ".celebrationHome .celebrationCategories",
   ".celebrationHome .celebrationFeatured",
   ".celebrationHome .celebrationEdits",
-  ".celebrationHome .celebrationBudgets",
   ".celebrationHome .celebrationOccasions",
   ".celebrationHome .promiseSec",
   ".celebrationHome .customRequestSection",

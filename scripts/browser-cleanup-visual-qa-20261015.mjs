@@ -80,6 +80,12 @@ try{
   check(`No severe homepage horizontal overflow @${width}`,
    homeState.docWidth<=width+12,
    `documentWidth=${homeState.docWidth}`)
+  check(`Duplicate homepage budget rail removed @${width}`,
+   await page.locator("#budgets,.celebrationBudgets,.celebrationHamperCard").count()===0)
+  check(`Hampers/Budget navigation opens existing curated route @${width}`,
+   await page.locator(".celebrationHeroActions a[href='/curated-hampers']").count()===1 &&
+   await page.locator(".celebrationNav a[href='/curated-hampers']").count()===2 &&
+   await page.locator(".celebrationCategory--hamper[href='/curated-hampers']").count()===1)
   await screenshot(page,width,"home")
 
   const curated=await page.goto(base+"/curated-hampers",{waitUntil:"domcontentloaded",timeout:45000})

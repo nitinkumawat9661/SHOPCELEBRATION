@@ -43,7 +43,7 @@ assert.match(styles, /\.collectionPage \.collectionGrid \.catalogCardBadge--new/
 assert(hero.includes("Browse necklaces, rings and bracelets.") && hero.includes("Custom hampers from {formatMoney(hamperFinalPriceRupees(minPrice))}."), "Hero copy must explain the real catalog without changing prices")
 assert(hero.includes("Jewelry to wear.") && hero.includes("Hampers to") && hero.includes("Shop Hampers") && hero.includes('href="/jewelry"'), "Keep hero, catalog categories and both shopping CTAs")
 assert(homeCatalog.includes("Take a closer look") && homeCatalog.includes("Start with") && homeCatalog.includes("your budget."), "Use specific editorial headings")
-assert(homeCatalog.includes("CatalogCard") && homeCatalog.includes("{product.id}") && homeCatalog.includes('href="#budgets"'), "Keep homepage catalog identity and hamper CTA")
+assert(homeCatalog.includes("CatalogCard") && homeCatalog.includes("{product.id}") && homeCatalog.includes('href="/curated-hampers"'), "Keep homepage catalog identity and hamper CTA")
 assert(storefront.includes("Prepared for dispatch") && storefront.includes("Track your order") && storefront.includes("Where a video is provided"), "Explain existing benefits without overpromising packing videos")
 assert(collection.includes("Jewelry for your everyday.") && collection.includes("Putting a hamper together?"), "Replace repetitive marketing phrases")
 assert(collection.includes("discoverProducts(products, filters)") && collection.includes("<CatalogCard key={product.id} product={product} />"), "Do not change filters or product identity")

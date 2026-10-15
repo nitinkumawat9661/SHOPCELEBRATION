@@ -2,11 +2,11 @@ import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 
 const read=(file)=>readFile(new URL(`../${file}`,import.meta.url),"utf8")
-const [builder,styles,imports,budget,discovery,tail,details,packageRaw,orderSummary,customerCopy]=await Promise.all([
+const [builder,styles,imports,curated,discovery,tail,details,packageRaw,orderSummary,customerCopy]=await Promise.all([
   "features/builder/HamperBuilder.tsx",
   "styles/hamper-builder-selection-preview-20261012.css",
   "app/globals.css",
-  "features/catalog/BudgetSection.tsx",
+  "features/builder/CuratedHamperFlow.tsx",
   "features/home/StorefrontDiscovery.tsx",
   "features/home/StorefrontTail.tsx",
   "features/builder/steps/DetailsStep.tsx",
@@ -22,16 +22,17 @@ assert(builder.includes("{state.tier.name}")&&builder.includes("{formatMoney(ham
 assert(builder.includes("Complete hamper price, not just the box."),"Do not imply a budget represents packaging-only price")
 assert(builder.includes('<dl className="quickHamperFacts">')&&builder.includes("<dt>Final price</dt>")&&builder.includes("<dt>Occasion</dt>")&&builder.includes("<dt>Size</dt>"),
   "Inclusive final price, occasion and size should be accessible description-list data")
-assert(builder.includes('onClick={changeBudget}')&&builder.includes('document.getElementById("budgets")?.scrollIntoView'),
-  "Change budget must retain the existing scroll-based edit action")
+assert(builder.includes('onClick={changeBudget}')&&builder.includes("state.goToStep(1)"),
+  "Change budget must open the existing genuine tier picker without dangling #budgets link")
 assert(builder.includes('quickStart ? "quickSteps quickSteps--premium" : "fourSteps"')&&builder.includes('quickStepNumber'),
   "Quick-start has clear numbered Delivery/Payment stages while full builder flow remains")
 assert(builder.includes('state.step === 2 && <DetailsStep')&&builder.includes('state.step === 3 && <div data-payment-checkout><PaymentStep'),
   "The real delivery/payment components remain untouched")
 assert(builder.includes("onNext={moveToPayment}")&&builder.includes("onSubmit={submit}")&&builder.includes("onPay={pay}"),
   "Preserve address validation and order/payment wiring")
-assert(budget.includes("onSelect(item.id)")&&discovery.includes("openBuilder(2, id, true)"),
-  "Quick start still comes from the actual selected hamper tier")
+assert(curated.includes("chooseBudget(item.id)")&&discovery.includes("openBuilder(1)")&&
+  !discovery.includes("<BudgetSection"),
+  "Dedicated budget flow remains functional, while old homepage rail is removed")
 assert(tail.includes("<LazyHamperBuilder state={state} active={builderActive} quickStart={quickStart} />"),
   "No extra builder instance or altered order state")
 assert(details.includes('data-checkout-field="customerName"')&&details.includes('data-checkout-field="phone"'),
@@ -46,7 +47,7 @@ assert(styles.includes("min-height:44px")&&styles.includes(":focus-visible"),
   "Change budget button and quick-stage controls are touch/keyboard accessible")
 assert(styles.includes("prefers-reduced-motion:reduce"),"Respect reduced-motion preferences")
 assert(!styles.includes(".celebrationCategories")&&!styles.includes(".celebrationFeatured")&&!styles.includes(".celebrationBudgets"),
-  "Previously approved category circles, product cards and budget carousel are untouched")
+  "Product and builder styles remain scoped; no change to jewellery or categories")
 assert(imports.includes('@import "../styles/hamper-builder-selection-preview-20261012.css";'),
   "New builder CSS is actually included in production")
 assert(imports.trimEnd().endsWith('@import "../styles/jewelry-two-column-scroll-header-fix.css";'),

@@ -22,7 +22,7 @@ assert(navStart !== -1 && navEnd !== -1, "Find store navigation source")
 const nav = header.slice(navStart, navEnd)
 const linkLabels = Array.from(nav.matchAll(/>(Hampers|Jewelry|All Gifts|Occasions|Budget|Why Celebration)</g), m=>m[1])
 assert.deepEqual(linkLabels, ["Hampers","Jewelry","All Gifts","Occasions","Budget","Why Celebration"], "All six real nav destinations must be preserved")
-for(const anchor of ['/\#budgets','/jewelry','/jewelry?view=all','/\#occasions','/\#trust']) {
+for(const anchor of ['/curated-hampers','/jewelry','/jewelry?view=all','/\#occasions','/\#trust']) {
   assert(nav.includes(anchor.replaceAll("\\","")), `Missing navigation destination: ${anchor}`)
 }
 assert(!/Budg\b/.test(nav.replaceAll("Budget","")), "No truncated Budget text")

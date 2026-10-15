@@ -39,7 +39,7 @@ assert(faq.includes("<SiteFooter />") && faq.includes("<StorefrontHeader setting
 for (const path of ["routes.about","routes.policies","routes.terms","routes.privacy","routes.claim","routes.track","routes.account","routes.compliance"]) {
   assert(footer.includes(path), `Footer lost critical navigation: ${path}`)
 }
-assert(footer.includes('href="/faq"') && footer.includes('href="/jewelry"') && footer.includes('href="/#budgets"'), "Footer must link FAQ, products and hampers")
+assert(footer.includes('href="/faq"') && footer.includes('href="/jewelry"') && footer.includes('href="/curated-hampers"'), "Footer must link FAQ, products and hampers")
 assert(footer.includes('aria-label="Shop links"') && footer.includes('aria-label="Help links"'), "Footer navigation needs meaningful grouped labels")
 
 assert(fit.includes("if (!isJewelryProduct(product)) return null"), "Do not show jewelry fit advice on non-jewelry gifts")
