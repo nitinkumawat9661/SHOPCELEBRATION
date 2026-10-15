@@ -253,9 +253,6 @@
   transition:opacity .18s ease;
   background:#fffdf9;
 }
-.celebrationHome .celebrationFeatured .catalogCardMedia .safeCatalogImageFrame.catalogSpritePhoto>img{
-  object-fit:cover;
-}
 .celebrationHome .celebrationFeatured .catalogCard .catalogCardInfo{
   width:100%;
   box-sizing:border-box;
