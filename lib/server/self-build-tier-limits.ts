@@ -1,7 +1,9 @@
 // Private Self-Build hamper budget policy (never expose as client props).
-// Standard hampers: target 80%; Grand/Large and above (₹1,299+): 75%.
-// Owner permits a 5-PERCENTAGE-POINT overrun for a final item; the ceiling is
-// therefore 85%/80%. No artificial minimum spend, product SKU mapping,
+// Owner reserves 20% of the pre-delivery hamper tier price for the box and
+// packaging. Gift target remains 80% (standard) or 75% (₹1,299+), with
+// a strict 80% spend ceiling for both so packaging reserve cannot be spent
+// on gift selections. Larger hampers retain up to 5 points of flexibility.
+// No artificial minimum spend, product SKU mapping,
 // inventory availability, or quantity-on-hand check is part of this policy.
 // The published catalog price/maxChoices are the only inputs: changing the
 // price recomputes the allowance automatically with no admin stock work.
@@ -10,7 +12,7 @@ export type SelfBuildTierLimits = {
   ceilingPaise: number
   maxItems: number
   targetPercent: 80 | 75
-  ceilingPercent: 85 | 80
+  ceilingPercent: 80
 }
 
 export function getSelfBuildTierLimits(tier:{
@@ -24,7 +26,7 @@ export function getSelfBuildTierLimits(tier:{
     throw Error("SELF_BUILD_TIER_INVALID")
   const larger=sellingPricePaise>=129900
   const targetPercent=larger?75:80
-  const ceilingPercent=larger?80:85
+  const ceilingPercent=80
   return {
     targetPaise:Math.floor(sellingPricePaise*targetPercent/100),
     ceilingPaise:Math.floor(sellingPricePaise*ceilingPercent/100),
