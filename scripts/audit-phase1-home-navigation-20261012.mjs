@@ -76,7 +76,7 @@ try{
    verify(id+" homepage",status===200,"HTTP 200","status="+status)
    const hrefs=await page.locator(".celebrationHeader .celebrationNav a").evaluateAll(els=>els.map(e=>({text:e.textContent?.trim(),href:e.getAttribute("href")})))
    verify(id+" six actual navigation links",hrefs.length===6,"6",JSON.stringify(hrefs))
-   verify(id+" navigation destinations",hrefs.map(x=>x.href).join("|")==="/#budgets|/jewelry|/jewelry?view=all|/#occasions|/#budgets|/#trust","six correct original routes")
+   verify(id+" navigation destinations",hrefs.map(x=>x.href).join("|")==="/curated-hampers|/jewelry|/jewelry?view=all|/#occasions|/curated-hampers|/#trust","six correct original routes")
    const expectedHeader=await page.locator(".celebrationHeader").count()
    verify(id+" logo/account/cart",expectedHeader===1&&
      await page.locator(".celebrationBrand[href='/']").count()===1 &&
@@ -84,7 +84,7 @@ try{
      "Home logo, account and cart entries")
    const categoryItems=await page.locator(".celebrationCategoryRail .celebrationCategory").evaluateAll(els=>els.map(e=>({label:e.querySelector("b")?.textContent?.trim(),href:e.getAttribute("href")})))
    verify(id+" eight approved category links",categoryItems.length===8,"8",JSON.stringify(categoryItems))
-   verify(id+" all category hrefs internal",categoryItems.every(e=>e.href?.startsWith("/jewelry?view=all")||e.href==="#budgets"),"five category routes + all + hamper")
+   verify(id+" all category hrefs internal",categoryItems.every(e=>e.href?.startsWith("/jewelry?view=all")||e.href==="/curated-hampers"),"five category routes + all + hamper")
    verify(id+" no changed round image names",await page.locator(".celebrationCategoryEditorialPhoto img").count()===8,"8 final owner category images")
    // The storefront tail (including footer) intentionally lazy-loads on
    // scroll. Trigger it before verifying footer routes.
@@ -137,38 +137,53 @@ try{
     verify(id+" search results",await page.locator(".collectionSearchFeedback").count()>0,"search query feedback")
    }catch(e){verify(id+" search",false,"query + page results",e.message.slice(0,350))}
 
-   // Anchor links are safe and should load lazy homepage sections if needed.
+   // User removed the duplicate 12-budget homepage rail. All entrypoints
+   // must still reach the existing real, database-driven curated page.
+   await home(page)
+   verify(id+" duplicate homepage budgets absent",
+     await page.locator(".celebrationBudgets, #budgets, .celebrationHamperCard").count()===0,
+     "No duplicate rail on homepage")
+   for(const [name,selector] of [
+     ["hero Shop Hampers",".celebrationHeroActions a[href='/curated-hampers']"],
+     ["header Budget",".celebrationNav a[href='/curated-hampers']"],
+     ["Custom Hampers category",".celebrationCategory--hamper"]
+   ]) {
+     await verifyRoute(page,id+" "+name,selector,{
+       path:"/curated-hampers",
+       check:async(p,u,n)=>verify(n+" genuine budget choices",
+         await p.locator(".curatedBudgetCard .curatedPrimary").count()>=3,
+         "Original dedicated hamper budget cards remain functional")
+     })
+   }
    for(const [n,sel,hash,target] of [
-    ["hero Shop Hampers",".celebrationHeroActions a[href='#budgets']","#budgets","#budgets"],
-    ["header Occasions",".celebrationNav a[href='/#occasions']","#occasions","#occasions"],
-    ["header Why Celebration",".celebrationNav a[href='/#trust']","#trust","#trust"],
-    ["Custom Hampers category",".celebrationCategory--hamper","#budgets","#budgets"],
-    ["custom budget request",".budgetDecisionHint a[href='#custom-request']","#custom-request","#custom-request"]
-   ]){
-    try{
-     const url=await goHomeAndClick(page,sel)
-     verify(id+" "+n+" hash",new URL(url).hash===hash,hash,url)
-     await page.locator(target).first().waitFor({state:"attached",timeout:16000})
-     verify(id+" "+n+" target",await page.locator(target).count()>0,"destination section exists")
-    }catch(e){verify(id+" "+n,false,"anchor target resolves",e.message.slice(0,350))}
+     ["header Occasions",".celebrationNav a[href='/#occasions']","#occasions","#occasions"],
+     ["header Why Celebration",".celebrationNav a[href='/#trust']","#trust","#trust"]
+   ]) {
+     try{
+       const url=await goHomeAndClick(page,sel)
+       verify(id+" "+n+" hash",new URL(url).hash===hash,hash,url)
+       await page.locator(target).first().waitFor({state:"attached",timeout:16000})
+       verify(id+" "+n+" target",await page.locator(target).count()>0,"destination section exists")
+     }catch(e){verify(id+" "+n,false,"anchor target resolves",e.message.slice(0,350))}
    }
 
-   // Tier selection exercises genuine client state. No delivery form is
-   // submitted and all mutating API calls above are stubbed.
-   try{
-    await home(page)
-    const tile=page.locator("#budgets .tier").first()
-    const name=(await tile.locator(".name").textContent())?.trim()
-    await tile.click({timeout:12000})
-    await page.locator("#builder.quickBuilder .quickHamperSummaryName").waitFor({state:"visible",timeout:20000})
-    const selected=(await page.locator("#builder .quickHamperSummaryName").textContent())?.trim()
-    verify(id+" budget selection opens builder",selected===name,"same genuine hamper tier selected",name+" -> "+selected)
-    verify(id+" quick builder starts with delivery",await page.locator("#builder.quickBuilder .hamperDeliveryStep").count()>0,"delivery form; no payment automatically")
-    await page.screenshot({path:resolve(root,id+"-budget-to-builder.png"),animations:"disabled",timeout:15000}).catch(()=>{})
-    // The builder Change Budget returns to budgets without changing actual order.
-    await page.locator("#builder .quickHamperChange").click({timeout:10000})
-    verify(id+" change budget",await page.locator("#budgets .tier").count()>0,"budget choices still available")
-   }catch(e){verify(id+" budget-to-builder",false,"selection and delivery step",e.message.slice(0,380))}
+   // Real budget click remains transactional only at later customer-approved
+   // checkout stage. This interaction selects a tier without a payment POST.
+   try {
+     await page.goto(new URL("/curated-hampers",base).toString(),{waitUntil:"domcontentloaded"})
+     const tile=page.locator(".curatedBudgetCard").first()
+     const name=(await tile.locator("h3").textContent())?.trim()
+     await tile.locator(".curatedPrimary").click({timeout:10000})
+     await page.locator(".curatedOccasionChip").first().waitFor({state:"visible",timeout:15000})
+     verify(id+" curated budget continues to occasion",
+       (await page.locator(".curatedSelectionLine").innerText()).includes(name||""),
+       "Genuine selected tier is preserved before details/payment")
+     await page.getByRole("button",{name:/Change budget/i}).click()
+     verify(id+" curated Change budget",
+       await page.locator(".curatedBudgetCard").count()>0,
+       "Budget re-selection remains available")
+   }catch(e){verify(id+" curated-budget-to-occasion",false,
+      "select tier and change budget",e.message.slice(0,350))}
 
    // Occasion buttons must open and preserve real chosen occasion, without
    // placing an order or modifying any shipping data.
