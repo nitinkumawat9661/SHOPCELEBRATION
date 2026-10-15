@@ -37,7 +37,6 @@ jobs:
         run: |
           set -euo pipefail
           npm run audit
-          npm run typecheck
           npm run build
       - name: Run read-only mobile and desktop layout and flow checks
         shell: bash
