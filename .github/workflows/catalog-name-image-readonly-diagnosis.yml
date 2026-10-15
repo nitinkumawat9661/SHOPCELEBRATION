@@ -1,0 +1,49 @@
+name: Celebration Jewelry Identity Diagnosis - Read Only
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audit-live-jewelry-name-image-readonly.cjs"
+      - ".github/workflows/catalog-name-image-readonly-diagnosis.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Check out diagnostic only (never deploy)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify SSH access
+        shell: bash
+        run: |
+          set -euo pipefail
+          for variable in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!variable:-}" ] || { echo "Missing expected connection setting: $variable"; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration_catalog_audit"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration_catalog_audit" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/celebration_catalog_audit" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
+      - name: Compare live DB, canonical name-photo mapping and public catalog (SELECT ONLY)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s scripts/audit-live-jewelry-name-image-readonly.cjs
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration_catalog_audit" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" \
+            "cd /var/www/celebration/current && PGOPTIONS='-c default_transaction_read_only=on' node -" \
+            < scripts/audit-live-jewelry-name-image-readonly.cjs
+          echo "Diagnosis completed. No catalog or storefront mutation was performed."
