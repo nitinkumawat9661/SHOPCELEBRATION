@@ -31,16 +31,19 @@ for (const file of files) {
   const used = retired.filter(token => new RegExp("\\b"+token+"\\b").test(content))
   if (used.length) callers.push({file:path.relative(root,file),used})
 }
-assert.deepEqual(callers,[], "Legacy hero visual components still occur in active TS/TSX/JS sources")
+assert.deepEqual(callers,[{file:"features/admin/AdminPreviewHero.tsx",used:retired}],
+ "Legacy visual-card hero must only be rendered in the protected admin catalog preview")
 
-const [refresh,perf,globals,hero,trust,curated,demo] = await Promise.all([
+const [refresh,perf,globals,hero,trust,curated,demo,adminStyles,adminRoute] = await Promise.all([
  "styles/home-refresh.css",
  "styles/performance-v2.css",
  "app/globals.css",
  "features/home/Hero.tsx",
  "features/shell/TrustStrip.tsx",
  "features/builder/CuratedHamperFlow.tsx",
- "features/builder/SelfBuildThreeScreenPreview.tsx"
+ "features/builder/SelfBuildThreeScreenPreview.tsx",
+ "styles/admin-preview-legacy-hero.css",
+ "app/admin/catalog-preview/page.tsx"
 ].map(file=>readFile(path.join(root,file),"utf8")))
 
 for (const t of retired) {
@@ -49,6 +52,17 @@ for (const t of retired) {
 assert(!refresh.includes("heroVisualBreath")&&!refresh.includes("mobileShapeWaveDrift"),
  "Old visual-card animations must be deleted")
 assert(!perf.includes(".heroVisual{animation:none!important}"), "Remove redundant coarse-pointer visual-card override")
+assert(adminRoute.includes('import "../../../styles/admin-preview-legacy-hero.css"'),
+ "Admin catalog preview must load the isolated legacy hero stylesheet")
+for (const fragment of [
+ ".heroRefresh{min-height:auto", ".heroVisual{position:relative",
+ ".heroLead,.heroItalic{display:block}", ".heroFacts{display:grid",
+ ".heroVisualItems{position:relative", "@keyframes heroVisualBreath",
+ "@keyframes mobileShapeWaveDrift", ".heroRefresh .heroGrid{padding-top:28px}",
+ ".heroRefresh .heroGrid{grid-template-columns:",
+ ".heroVisual{animation:none!important}"
+]) assert(adminStyles.includes(fragment), "Retain original admin-preview hero declaration: "+fragment)
+
 
 const activeSelectors=[
  ".trustStrip{", ".trustStripTrack{", "@keyframes trustStripMarquee",
@@ -69,6 +83,7 @@ assert(curated.includes("Review & Pay") && demo.includes("Payment is not connect
 console.log(JSON.stringify({
  status:"LEGACY_HOME_REFRESH_CLEANUP_SAFE",
  sourceFilesScanned:files.length,
- obsoleteSelectorsNotUsed:retired,
+ retiredFromPublicPages:retired,
+ keptInAdminCatalogPreview:true,
  preserved:["premium image hero","mobile nav","trust strip","responsive utilities","curated checkout","Self-Build design demo"]
 },null,2))
