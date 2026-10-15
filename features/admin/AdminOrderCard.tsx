@@ -10,6 +10,11 @@ import { AdminShippingPanel } from "./AdminShippingPanel"
 import { AdminSelfBuildOrderPhotos } from "./AdminSelfBuildOrderPhotos"
 import type { AdminOrder } from "./types"
 
+const BOX_LABELS:Record<string,string>={
+  kappa:"Kappa Box",corrugated:"Corrugated Normal Box",
+  "bag-clear":"Translucent Hamper Bag","bag-print":"Printed Hamper Bag"
+}
+
 export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
   order: AdminOrder
   busy: boolean
@@ -72,10 +77,7 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
           <span className="sbAdminOrderSnapshotStatus">{order.selfBuild.reservationStatus || "Not reserved"}</span>
         </div>
         {order.selfBuild.boxId && <p className="sbAdminOrderSnapshotDisclaimer">
-          <b>Packaging:</b> {{
-            kappa: "Kappa Box", corrugated: "Corrugated Normal Box",
-            "bag-clear": "Translucent Hamper Bag", "bag-print": "Printed Hamper Bag"
-          }[order.selfBuild.boxId] || "Unrecognized box — verify before packing"}</p>}
+          <b>Packaging:</b> {BOX_LABELS[order.selfBuild.boxId] || "Unrecognized box — verify before packing"}</p>}
         {order.selfBuild.selections.length ? <ul className="sbAdminOrderSnapshotItems">
           {order.selfBuild.selections.map((choice) =>
             <li key={choice.kind + ":" + choice.id}>
