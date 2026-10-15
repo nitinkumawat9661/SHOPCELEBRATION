@@ -1,0 +1,66 @@
+name: Celebration Cleanup Visual Browser QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'styles/home-refresh.css'
+      - 'styles/performance-v2.css'
+      - 'scripts/browser-cleanup-visual-qa-20261015.mjs'
+      - 'scripts/audit-legacy-home-css-20261015.mjs'
+      - '.github/workflows/cleanup-visual-qa-20261015.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SITE_INDEXABLE: "false"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install exact dependencies and Chromium driver
+        run: |
+          set -euo pipefail
+          npm ci
+          npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Build the exact cleanup candidate
+        run: |
+          set -euo pipefail
+          npm run audit
+          npm run typecheck
+          npm run build
+      - name: Run read-only mobile and desktop layout and flow checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./node_modules/.bin/next start -H 127.0.0.1 -p 3218 > /tmp/celebration-cleanup-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          OK=0
+          for i in $(seq 1 45); do
+            if curl -fsS --max-time 5 http://127.0.0.1:3218/ -o /dev/null; then OK=1; break; fi
+            sleep 2
+          done
+          if [ "$OK" -ne 1 ]; then
+            tail -n 150 /tmp/celebration-cleanup-server.log
+            exit 1
+          fi
+          BASE_URL=http://127.0.0.1:3218 node scripts/browser-cleanup-visual-qa-20261015.mjs
+      - name: Save candidate screenshots and QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: celebration-cleanup-visual-qa-${{ github.run_id }}
+          path: artifacts/phase3-cleanup/
+          if-no-files-found: warn
+          retention-days: 14
