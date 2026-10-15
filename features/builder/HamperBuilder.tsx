@@ -30,9 +30,10 @@ function historyBuilderStep(value: unknown) {
   return Number.isInteger(step) && step >= 1 && step <= 3 ? step : null
 }
 
-export function HamperBuilder({ state, quickStart = false, onBackToCurated, onNewCuratedOrder }: {
+export function HamperBuilder({ state, quickStart = false, hideTierSize = false, onBackToCurated, onNewCuratedOrder }: {
   state: ReturnType<typeof useHamperBuilder>
   quickStart?: boolean
+  hideTierSize?: boolean
   onBackToCurated?: () => void
   onNewCuratedOrder?: () => void
 }) {
@@ -342,7 +343,7 @@ export function HamperBuilder({ state, quickStart = false, onBackToCurated, onNe
             <dl className="quickHamperFacts">
               <div><dt>Final price</dt><dd>{formatMoney(hamperFinalPriceRupees(state.tier.price))}</dd></div>
               <div><dt>Occasion</dt><dd>{state.checkout.occasion}</dd></div>
-              <div><dt>Size</dt><dd>{state.tier.size}</dd></div>
+              {!hideTierSize && <div><dt>Size</dt><dd>{state.tier.size}</dd></div>}
             </dl>
             <button className="secondary quickHamperChange" type="button" onClick={changeBudget}>Change budget <span aria-hidden="true">↗</span></button>
           </section>}
