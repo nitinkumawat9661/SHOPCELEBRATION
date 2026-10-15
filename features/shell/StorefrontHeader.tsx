@@ -31,7 +31,7 @@ export function StorefrontHeader({ settings, onCreate, showAccount = true, searc
         </div>
       </div>
       <nav className="celebrationNav wrap" aria-label="Store navigation">
-        <a href="/#budgets">Hampers</a>{showSelfBuild && <Link href="/self-build" prefetch={false}>Create your hamper</Link>}<Link href="/jewelry" prefetch={false}>Jewelry</Link><Link href="/jewelry?view=all" prefetch={false}>All Gifts</Link><a href="/#occasions">Occasions</a><a href="/#budgets">Budget</a><a href="/#trust">Why Celebration</a>
+        <a href="/curated-hampers">Hampers</a>{showSelfBuild && <Link href="/self-build" prefetch={false}>Create your hamper</Link>}<Link href="/jewelry" prefetch={false}>Jewelry</Link><Link href="/jewelry?view=all" prefetch={false}>All Gifts</Link><a href="/#occasions">Occasions</a><a href="/#budgets">Budget</a><a href="/#trust">Why Celebration</a>
       </nav>
     </header>
     <HeaderScrollBehavior />
