@@ -166,7 +166,8 @@ export function HamperBuilder({ state, quickStart = false, hideTierSize = false,
   }, [state.setStep])
 
   function changeBudget() {
-    state.goToStep(1)
+    if(onNewCuratedOrder) onNewCuratedOrder()
+    else state.goToStep(1)
   }
 
   function openAuth() {
