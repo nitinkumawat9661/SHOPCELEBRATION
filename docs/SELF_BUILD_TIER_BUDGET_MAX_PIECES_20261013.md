@@ -1,16 +1,24 @@
 # Celebration Self-Build — Tier Budgets and Maximum Product Count
 
-**Owner confirmed 13 October 2026. Scope: Self-Build gift hampers ONLY.**
+**Owner confirmed 13 October 2026; box/packaging budget revised 15 October 2026. Scope: Self-Build gift hampers ONLY.**
 
 ## Policy
 
 - The listed *hamper selling price* is the calculation base, **not the price of an individual retail SKU**.
 - Fixed **₹50 delivery** is added separately at Self-Build checkout (e.g. ₹499 hamper + ₹50 delivery = ₹549 payable). Internal 80%/75% product allowances are based on the original hamper tier price, excluding delivery. Existing jewellery and curated hamper pricing are untouched.
-- Hampers priced **below ₹1,299**: aim to spend **80% of sale price** on internal selected gift categories/size options/photos. For an awkward final item, allow at most **85%** (5 percentage points over target).
-- Large hampers **₹1,299 and above**: aim for **75%** on chosen gifts; absolute upper tolerance **80%** of sale price.
+- Hampers priced **below ₹1,299**: gift selections target and hard ceiling are **80% of the base tier price**; the remaining **at least 20% is reserved for the box and packaging**. The previous 85% gift overrun is removed to keep this reserve intact.
+- Hampers **₹1,299 and above**: gift selections target **75%**, with a maximum of **80%** (up to 5 percentage points more). At least **20% remains reserved for the box and packaging**, with the remaining 5% available as buffer when gifts stay at target.
 - Being under target is always acceptable: the buyer chooses their own gifts. This is NOT a promised minimum value or minimum number of products. Budget is internal and NEVER included in customer props, JSON, HTML, checkout item lines, source SKU mapping or analytics.
 - Limits are calculated **from the current published catalog tier price** each time the server creates a draft/order. Migration 106 initially syncs the targets into admin tier allowance records and auto-refreshes those records when the published catalog is updated.
 - **No inventory / capacity / retail SKU mapping / stock reservations.** Admin budget consumption uses owner-approved category-level unit budget values only. No automatic replenishment or inventory checks.
+
+
+## Box eligibility and packaging budget — 15 October 2026
+
+- **Kappa Box** may be selected only with a **published hamper tier priced at least ₹1,000, before the separate ₹50 delivery fee**. A ₹999 tier does **not** qualify merely because the delivered price is ₹1,049. With the seed tier ladder, **₹1,299 is the first qualifying tier**. Actual published tiers may differ.
+- Corrugated Box, Translucent Bag and Printed Bag keep their existing preview selection. This pricing decision does not imply physical box stock or packaging-size availability.
+- **20% of the tier price is protected for box and packaging** in the private tier budget policy; it is **not a new buyer-facing surcharge** or an additional checkout charge. The existing ₹50 hamper delivery fee remains unchanged.
+- **Important release gate:** the three-step `/self-build-design` page is still a non-transactional design preview. Box choice is not yet persisted in a customer draft/order, nor validated in a provider payment transaction. Before turning on buyer checkout, add server-authoritative box ownership/eligibility and confirm actual packaging costs stay within the protected 20%; never rely on the client-side disable control alone.
 
 ## Item counter — existing catalog maxChoices
 
@@ -22,14 +30,14 @@ Customer studio and admin preview both display a small `selected / maximum piece
 
 **This table contains PRIVATE internal business allowances, do not show the target or ceiling to customers.** Customer tier cards display the tier name, price and the budget-matched hamper message. The maximum selected pieces is displayed separately during category selection.
 
-| Tier | Price | Maximum pieces | Private target | Absolute +5pp ceiling |
+| Tier | Price | Maximum pieces | Private target | Strict 80% gift ceiling |
 |---|---:|---:|---:|---:|
-| Little Joy | ₹299 | 2 | ₹239.20 (80%) | ₹254.15 (85%) |
-| Sweet Smile | ₹399 | 3 | ₹319.20 (80%) | ₹339.15 (85%) |
-| Celebration Mini | ₹499 | 3 | ₹399.20 (80%) | ₹424.15 (85%) |
-| Classic | ₹699 | 4 | ₹559.20 (80%) | ₹594.15 (85%) |
-| Premium Classic | ₹799 | 4 | ₹639.20 (80%) | ₹679.15 (85%) |
-| Special | ₹999 | 5 | ₹799.20 (80%) | ₹849.15 (85%) |
+| Little Joy | ₹299 | 2 | ₹239.20 (80%) | ₹239.20 (80%) |
+| Sweet Smile | ₹399 | 3 | ₹319.20 (80%) | ₹319.20 (80%) |
+| Celebration Mini | ₹499 | 3 | ₹399.20 (80%) | ₹399.20 (80%) |
+| Classic | ₹699 | 4 | ₹559.20 (80%) | ₹559.20 (80%) |
+| Premium Classic | ₹799 | 4 | ₹639.20 (80%) | ₹639.20 (80%) |
+| Special | ₹999 | 5 | ₹799.20 (80%) | ₹799.20 (80%) |
 | Grand | ₹1299 | 6 | ₹974.25 (75%) | ₹1,039.20 (80%) |
 | Grand Plus | ₹1499 | 7 | ₹1,124.25 (75%) | ₹1,199.20 (80%) |
 | Royal | ₹1999 | 8 | ₹1,499.25 (75%) | ₹1,599.20 (80%) |
