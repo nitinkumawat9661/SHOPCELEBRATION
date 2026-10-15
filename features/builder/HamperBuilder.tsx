@@ -166,10 +166,7 @@ export function HamperBuilder({ state, quickStart = false, hideTierSize = false,
   }, [state.setStep])
 
   function changeBudget() {
-    document.getElementById("budgets")?.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
-      block: "start"
-    })
+    state.goToStep(1)
   }
 
   function openAuth() {
