@@ -9,8 +9,6 @@
   .ambientOrbOne{animation-duration:16s}
   .ambientOrbTwo{animation-duration:19s}
 
-  /* Avoid a second always-running transform on the above-fold visual card. */
-  .heroVisual{animation:none!important}
 }
 
 /* Heavy storefront content remains outside the initial rendering budget until approached. */
