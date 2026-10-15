@@ -116,13 +116,15 @@ for(const t of tierData.tiers){
   const pricePaise=Math.round(t.price*100)
   const big=pricePaise>=129900
   assert.equal(limits.targetPercent,big?75:80)
-  assert.equal(limits.ceilingPercent,big?80:85)
+  assert.equal(limits.ceilingPercent,80)
   assert.equal(limits.targetPaise,Math.floor(pricePaise*(big?75:80)/100))
-  assert.equal(limits.ceilingPaise,Math.floor(pricePaise*(big?80:85)/100))
+  assert.equal(limits.ceilingPaise,Math.floor(pricePaise*80/100))
+  assert(pricePaise-limits.ceilingPaise>=Math.floor(pricePaise*20/100),
+    "Reserve at least 20% of each tier for box and packaging")
   assert.equal(limits.maxItems,t.maxChoices)
 }
 assert.deepEqual(getSelfBuildTierLimits({price:499,maxChoices:3}),{
- targetPaise:39920,ceilingPaise:42415,maxItems:3,targetPercent:80,ceilingPercent:85
+ targetPaise:39920,ceilingPaise:39920,maxItems:3,targetPercent:80,ceilingPercent:80
 })
 assert.deepEqual(getSelfBuildTierLimits({price:1299,maxChoices:6}),{
  targetPaise:97425,ceilingPaise:103920,maxItems:6,targetPercent:75,ceilingPercent:80
@@ -142,6 +144,11 @@ assert(designRoute.includes("getSelfBuildPublishedCatalog().catch(() => null)") 
 assert(designUi.includes("hasPublishedPricing && chosenTier") &&
   designUi.includes('"—"') && designUi.includes("Published tier prices are unavailable."),
   "Unavailable live tiers must NEVER display fallback pricing as a quote")
+assert(designUi.includes("KAPPA_MIN_HAMPER_PRICE = 1000") &&
+  designUi.includes('box !== "kappa" || t.price >= KAPPA_MIN_HAMPER_PRICE') &&
+  designUi.includes('enoughForPieces(tiers, pieces, box)') &&
+  designUi.includes('disabled={choice.id === "kappa" && !kappaEligible}'),
+  "Kappa requires a pre-delivery hamper price of at least ₹1,000, not ₹999 + ₹50 shipping")
 assert(designUi.includes("Payment is not connected; no order was placed.") &&
   !designUi.includes("/api/payments/"),
   "Public demo remains non-transactional regardless of catalog state")
