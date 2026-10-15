@@ -8,14 +8,8 @@
   background:linear-gradient(180deg,#fffaf4 0%,#fcf4eb 52%,#fffaf4 100%);
 }
 .curatedFlowPage .curatedFlow{
-  padding-top:clamp(28px,4.4vw,62px);
+  padding-top:clamp(18px,2.2vw,30px);
   padding-bottom:clamp(70px,8vw,120px);
-}
-.curatedFlowPage .curatedFlowIntro{
-  text-align:center;
-  padding:0 0 32px;
-  margin-inline:auto;
-  max-width:790px;
 }
 .curatedFlowPage .curatedFlowKicker{
   color:#987454;
@@ -23,77 +17,19 @@
   letter-spacing:.165em;
   text-transform:uppercase;
 }
-.curatedFlowPage .curatedFlowIntro h1{
-  color:#65272c;
-  margin:14px 0 11px;
-  font:500 clamp(35px,4.2vw,57px)/1.13 var(--font-shopping-display),Georgia,serif;
-  letter-spacing:-.03em;
-  text-wrap:balance;
-}
-.curatedFlowPage .curatedFlowIntro h1 em{
-  color:#9a563e;
-  font-weight:450;
-}
-.curatedFlowPage .curatedFlowIntro p,
 .curatedFlowPage .curatedScreenHead p{
   margin:0;
   color:#806a60;
   font:400 clamp(13px,1.3vw,15px)/1.7 var(--font-shopping-sans),Arial,sans-serif;
 }
-.curatedFlowPage .curatedProgress{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  max-width:690px;
-  gap:8px;
-  margin:0 auto 42px;
-  border:1px solid #ead9cc;
-  border-radius:18px;
-  padding:7px;
-  background:rgba(255,253,248,.86);
-  box-shadow:0 6px 25px rgba(80,40,34,.045);
-}
-.curatedFlowPage .curatedProgress button{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:9px;
-  min-width:0;
-  min-height:48px;
-  padding:8px 9px;
-  border:1px solid transparent;
-  border-radius:12px;
-  background:transparent;
-  color:#8b766f;
-  font:650 11px/1.25 var(--font-shopping-sans),Arial,sans-serif;
-  cursor:pointer;
-}
-.curatedFlowPage .curatedProgress button.active{
-  color:#7a1f24;
-  background:#f6e8df;
-  border-color:#ead1c4;
-}
-.curatedFlowPage .curatedProgress button.done{color:#6f4b48}
-.curatedFlowPage .curatedProgress button:disabled{cursor:default;opacity:.69}
-.curatedFlowPage .curatedProgressNumber{
-  display:grid;
-  place-items:center;
-  width:25px;height:25px;flex:none;
-  border-radius:50%;
-  background:#f3e6d9;
-  color:#8b554b;
-  font-size:10px;
-}
-.curatedFlowPage .curatedProgress .active .curatedProgressNumber{
-  background:#7a1f24;color:#fff7ec;
-}
 .curatedFlowPage .curatedScreen{animation:curatedReveal .28s ease both}
 @keyframes curatedReveal{from{opacity:.4;transform:translateY(7px)}to{opacity:1;transform:none}}
 .curatedFlowPage .curatedScreenHead{
-  text-align:center;margin:0 auto 31px;max-width:640px;
+  text-align:left;margin:0 0 23px;max-width:none;
 }
-.curatedFlowPage .curatedScreenHead h2{
-  font:500 clamp(32px,3.5vw,47px)/1.16 var(--font-shopping-display),Georgia,serif;
-  letter-spacing:-.028em;color:#65272c;margin:10px 0;
+.curatedFlowPage .curatedScreenHead h1{
+  font:500 clamp(29px,3.1vw,41px)/1.16 var(--font-shopping-display),Georgia,serif;
+  letter-spacing:-.028em;color:#65272c;margin:0 0 7px;
 }
 .curatedFlowPage .curatedBudgetGrid{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
@@ -164,7 +100,7 @@
   padding-inline:9px;justify-content:space-between;
   font-size:11px;
 }
-.curatedFlowPage :is(.curatedPrimary,.curatedSecondary,.curatedOccasionChip,.curatedProgress button):focus-visible{
+.curatedFlowPage :is(.curatedPrimary,.curatedSecondary,.curatedOccasionChip):focus-visible{
   outline:3px solid rgba(122,31,36,.34);outline-offset:3px;
 }
 .curatedFlowPage .curatedOccasionPanel{
@@ -312,14 +248,9 @@
   .curatedFlowPage .curatedSelectionLine{margin-bottom:20px}
 }
 @media(max-width:600px){
-  .curatedFlowPage .curatedFlow{padding-top:25px;padding-bottom:62px}
-  .curatedFlowPage .curatedFlowIntro{padding-bottom:20px}
-  .curatedFlowPage .curatedFlowIntro h1{font-size:37px}
-  .curatedFlowPage .curatedProgress{margin-bottom:29px;gap:3px;padding:5px;border-radius:14px}
-  .curatedFlowPage .curatedProgress button{min-height:47px;gap:5px;padding:5px 3px;font-size:9px;flex-direction:column}
-  .curatedFlowPage .curatedProgressNumber{width:22px;height:22px}
-  .curatedFlowPage .curatedScreenHead{margin-bottom:23px}
-  .curatedFlowPage .curatedScreenHead h2{font-size:33px}
+  .curatedFlowPage .curatedFlow{padding-top:16px;padding-bottom:62px}
+  .curatedFlowPage .curatedScreenHead{margin-bottom:17px}
+  .curatedFlowPage .curatedScreenHead h1{font-size:30px}
   .curatedFlowPage .curatedBudgetGrid{
     display:grid;grid-auto-flow:column;grid-template-columns:none;
     grid-auto-columns:minmax(215px,73%);gap:12px;
@@ -337,7 +268,6 @@
   .curatedFlowPage .curatedDetailsScreen .navRow.detailActions .tiny{width:100%;text-align:center;order:3}
 }
 @media(max-width:360px){
-  .curatedFlowPage .curatedProgress button{font-size:8.5px}
   .curatedFlowPage .curatedOccasionChip{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){
