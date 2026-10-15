@@ -1,10 +1,6 @@
 /* Celebration Curated: three focused screens, original warm editorial palette.
    All selectors are scoped to /curated-hampers; existing checkout is unchanged. */
 .curatedFlowPage{
-  --curated-ink:#4e3030;
-  --curated-maroon:#7a1f24;
-  --curated-line:rgba(122,31,36,.125);
-  --curated-cream:#fffaf5;
   background:linear-gradient(180deg,#fffaf4 0%,#fcf4eb 52%,#fffaf4 100%);
 }
 .curatedFlowPage .curatedFlow{
