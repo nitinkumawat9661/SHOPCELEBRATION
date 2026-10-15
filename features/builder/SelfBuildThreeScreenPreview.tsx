@@ -88,7 +88,7 @@ function enoughForPieces(tiers: Tier[], pieces: number) {
   return sorted.find(t => t.maxChoices >= Math.max(1, pieces)) ?? sorted.at(-1)
 }
 
-export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
+export function SelfBuildThreeScreenPreview({ tiers, hasPublishedPricing }: { tiers: Tier[]; hasPublishedPricing: boolean }) {
   const [stage, setStage] = useState<Stage>(1)
   const [box, setBox] = useState<BoxId | null>(null)
   const [category, setCategory] = useState<CategoryName>("Jewelry")
@@ -102,7 +102,7 @@ export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
     .map(([id, qty]) => ({ id, qty, category: id.split("::")[0] || "", label: id.split("::")[1] || id })), [selected])
   const pieces = selectedItems.reduce((sum, item) => sum + item.qty, 0)
   const chosenTier = enoughForPieces(tiers, pieces)
-  const previewTotal = chosenTier ? formatMoney(hamperFinalPriceRupees(chosenTier.price)) : "—"
+  const previewTotal = hasPublishedPricing && chosenTier ? formatMoney(hamperFinalPriceRupees(chosenTier.price)) : "—"
   const selectedBox = BOXES.find(entry => entry.id === box)
   const maxPieces = Math.max(0, ...tiers.map(t => t.maxChoices))
 
@@ -214,7 +214,9 @@ export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
             {customNote.trim() && <p className="sb3SpecialNote">Special request added</p>}
           </div>
           <div className="sb3Total"><span>Estimated hamper total</span><strong>{previewTotal}</strong></div>
-          <p className="sb3EstimateDisclaimer">Budget-tier illustration only. This is not an item-level quote. Box charges and final pricing will be confirmed before checkout.</p>
+          <p className="sb3EstimateDisclaimer">{hasPublishedPricing
+            ? "Based on current published hamper tiers, including delivery. This is not an item-level quote; box charges and final pricing need confirmation."
+            : "Published tier prices are temporarily unavailable. Selections are for design preview only; no quote or payment is available."}</p>
           <button type="button" className="sb3Primary" disabled={!pieces}
             onClick={() => jump(3)}>Continue <span aria-hidden="true">→</span></button>
           {pieces >= maxPieces && <p className="sb3MaxNotice">Maximum {maxPieces} selected pieces in this preview.</p>}
@@ -277,7 +279,9 @@ export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
           {customNote.trim() && <p className="sb3SpecialNote">Special request: {customNote}</p>}
         </div>
         <div className="sb3Total"><span>Estimated total</span><strong>{previewTotal}</strong></div>
-        <p className="sb3EstimateDisclaimer">An illustrative tier estimate, not a confirmed payable amount. No checkout or payment will run from this preview.</p>
+        <p className="sb3EstimateDisclaimer">{hasPublishedPricing
+          ? "Based on current published hamper tiers, including delivery; not a confirmed payable amount. Box pricing and checkout are not connected."
+          : "Published tier prices are unavailable. No quote, checkout or payment will run from this preview."}</p>
         <span className="sb3Signature">Mharo Surprise, Thari Smile</span>
       </aside>
     </div>}
