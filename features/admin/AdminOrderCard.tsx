@@ -71,6 +71,11 @@ export function AdminOrderCard({ order, busy, onStatus, onShipping, onVideo }: {
           <div><b>Self-Build packing list</b><small>Customer chose categories only — Celebration team chooses actual designs.</small></div>
           <span className="sbAdminOrderSnapshotStatus">{order.selfBuild.reservationStatus || "Not reserved"}</span>
         </div>
+        {order.selfBuild.boxId && <p className="sbAdminOrderSnapshotDisclaimer">
+          <b>Packaging:</b> {{
+            kappa: "Kappa Box", corrugated: "Corrugated Normal Box",
+            "bag-clear": "Translucent Hamper Bag", "bag-print": "Printed Hamper Bag"
+          }[order.selfBuild.boxId] || "Unrecognized box — verify before packing"}</p>}
         {order.selfBuild.selections.length ? <ul className="sbAdminOrderSnapshotItems">
           {order.selfBuild.selections.map((choice) =>
             <li key={choice.kind + ":" + choice.id}>
