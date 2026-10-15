@@ -12,7 +12,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..")
-const dirs=["app","features","lib","config"]
+const dirs=["app","features","lib","config","pages","components","src"]
 const files=[]
 const ext=/\.(?:tsx?|jsx?)$/
 async function scan(dir){
@@ -22,7 +22,10 @@ async function scan(dir){
     else if(item.isFile()&&ext.test(item.name))files.push(file)
   }
 }
-for(const d of dirs) await scan(path.join(root,d))
+for(const d of dirs){
+  const directory=path.join(root,d)
+  if(await access(directory).then(()=>true,()=>false)) await scan(directory)
+}
 const oldSelectors=["heroClassicMotion","heroPixelField","heroCardFloatMobile"]
 const matches=[]
 for(const file of files){
