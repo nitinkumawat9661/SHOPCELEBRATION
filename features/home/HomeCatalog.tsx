@@ -57,7 +57,7 @@ export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogC
           <b>All Jewellery</b>
           <span className="celebrationCategorySub">Shop the edit <StoreIcon name="arrow" size={13} /></span>
         </Link>
-        <a className="celebrationCategory celebrationCategory--hamper" href="#budgets">
+        <a className="celebrationCategory celebrationCategory--hamper" href="/curated-hampers">
           <div className="celebrationCategoryArt celebrationCategoryArt--editorial">
             {categoryMedia.__hamper__ ? <CategoryEditorialPhoto src={categoryMedia.__hamper__} label="Custom Hampers" /> : <StoreIcon name="gift" size={45} />}
           </div>
