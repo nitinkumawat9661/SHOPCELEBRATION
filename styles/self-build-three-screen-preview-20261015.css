@@ -4,7 +4,6 @@
   --sb3-maroon:#7a1f24;
   --sb3-ink:#56352f;
   --sb3-muted:#806961;
-  --sb3-border:#ead7ca;
   background:linear-gradient(180deg,#fffaf3 0%,#fbf2e9 60%,#fffaf5 100%);
   min-height:100vh;
   color:var(--sb3-ink);
