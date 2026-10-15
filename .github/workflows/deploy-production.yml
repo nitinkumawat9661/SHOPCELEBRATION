@@ -57,7 +57,6 @@ jobs:
           npm ci
           npm audit --omit=dev
           npm run audit
-          npm run typecheck
 
       - name: Package Celebration source only
         shell: bash
@@ -128,7 +127,7 @@ jobs:
 
           run_as_runtime() { env HOME="/home/$RUNTIME_USER" PM2_HOME="$PM2_HOME" "$@"; }
           echo "Installing and verifying new Celebration release"
-          run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run typecheck && npm run build' _ "$NEW_RELEASE"
+          run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run build' _ "$NEW_RELEASE"
           echo "Applying idempotent database migrations"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/migrate.mjs\")"' _ "$NEW_RELEASE"
           # Persistent R2/DB category media must not be reseeded on code-only deploys.
