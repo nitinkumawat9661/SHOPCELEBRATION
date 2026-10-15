@@ -6,6 +6,8 @@ on:
     paths:
       - 'styles/home-refresh.css'
       - 'styles/performance-v2.css'
+      - 'styles/celebration.css'
+      - 'styles/self-build-buyer-20261013.css'
       - 'scripts/browser-cleanup-visual-qa-20261015.mjs'
       - 'scripts/audit-legacy-home-css-20261015.mjs'
       - '.github/workflows/cleanup-visual-qa-20261015.yml'
