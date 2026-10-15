@@ -130,4 +130,19 @@ assert.deepEqual(getSelfBuildTierLimits({price:1299,maxChoices:6}),{
 assert.equal(countSelfBuildPieces([{quantity:3}]),3,"Three repeats are three products")
 assert.equal(countSelfBuildPieces([{quantity:2},{quantity:3}]),5)
 assert.throws(()=>countSelfBuildPieces([{quantity:101}]),/INVALID_SELF_BUILD_QUANTITY/)
+// The public 3-screen design preview must never turn stale fallback tier prices
+// into a payable quote. It reuses the published catalog projection only.
+const [designRoute, designUi] = await Promise.all([
+  "app/self-build-design/page.tsx",
+  "features/builder/SelfBuildThreeScreenPreview.tsx"
+].map(read))
+assert(designRoute.includes("getSelfBuildPublishedCatalog().catch(() => null)") &&
+  designRoute.includes("hasPublishedPricing={hasPublishedPricing}"),
+  "Design preview must read published public tier prices, with fail-closed fallback")
+assert(designUi.includes("hasPublishedPricing && chosenTier") &&
+  designUi.includes('"—"') && designUi.includes("Published tier prices are unavailable."),
+  "Unavailable live tiers must NEVER display fallback pricing as a quote")
+assert(designUi.includes("Payment is not connected; no order was placed.") &&
+  !designUi.includes("/api/payments/"),
+  "Public demo remains non-transactional regardless of catalog state")
 console.log("SELF_BUILD_CUSTOMER_UI_SOURCE_CHECKS_PASSED: no-stock builder, auth, draft/photos, payment and redirect recovery, live-hard-gate, privacy, mobile")
