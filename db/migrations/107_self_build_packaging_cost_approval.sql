@@ -18,6 +18,11 @@ ALTER TABLE self_build_drafts
   CHECK (box_id IS NULL OR box_id IN ('kappa','corrugated','bag-clear','bag-print'));
 ALTER TABLE self_build_order_snapshots
   ADD COLUMN box_id text NULL
-  CHECK (box_id IS NULL OR box_id IN ('kappa','corrugated','bag-clear','bag-print'));
+  CHECK (box_id IS NULL OR box_id IN ('kappa','corrugated','bag-clear','bag-print')),
+  ADD COLUMN packaging_cost_paise integer NULL
+  CHECK (packaging_cost_paise IS NULL OR packaging_cost_paise BETWEEN 1 AND 2147483647),
+  ADD CONSTRAINT self_build_snapshot_packaging_both_or_neither CHECK (
+    (box_id IS NULL) = (packaging_cost_paise IS NULL)
+  );
 
 -- Intentionally DO NOT populate costs, approve choices or enable customer mode.
