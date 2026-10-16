@@ -37,3 +37,7 @@ No payment is marked verified from a browser redirect. Admin verifies bank credi
 
 ### Admin operations
 The admin dashboard is optimized for day-to-day fulfillment: search/filter orders, identify the next action, upload/preview packing videos, save shipping, and safely advance workflow status. Operational grouping lives in `config/admin-orders.json`; customer/business copy remains in content/config rather than component literals.
+
+## Permanent post-change operating procedure
+
+All catalog publishing, stock-only changes, SEO / Google Merchant Center, GA4, Bing, Rich Results, deployment safety, and the agent's after-change reminders: [Celebration change & SEO runbook](docs/CELEBRATION_PERMANENT_CHANGE_AND_SEO_RUNBOOK.md). Coding agents must follow the pointer in [AGENTS.md](AGENTS.md).
