@@ -14,7 +14,7 @@ import { useCustomerAccount } from "../account/useCustomerAccount"
 import { CustomerAuthPanel } from "../account/CustomerAuthPanel"
 import { useStoreSettings } from "../shell/useStoreSettings"
 import { focusCheckoutField, notifyUx, scrollToUxTarget } from "../ux/UxMessenger"
-import { trackGa4BeginCheckout } from "../analytics/ga4"
+import { trackGa4AddShippingInfo, trackGa4BeginCheckout } from "../analytics/ga4"
 import type { DeliveryAddress } from "../../lib/domain/delivery-address"
 import { deliveryHasInput } from "../../lib/domain/delivery-address"
 import { loadDefaultAddress, saveDefaultAddress } from "../checkout/delivery-preferences"
@@ -50,6 +50,7 @@ export function HamperBuilder({ state, quickStart = false, hideTierSize = false,
   const authSheetRef = useRef<HTMLDivElement>(null)
   const authReturnFocus = useRef<HTMLElement | null>(null)
   const gaCheckoutKey = useRef("")
+  const gaShippingKey = useRef("")
   const copy = uiContent.builder
   const submitArgs = {
     tier: state.tier,
@@ -67,6 +68,20 @@ export function HamperBuilder({ state, quickStart = false, hideTierSize = false,
     if (gaCheckoutKey.current === key) return
     gaCheckoutKey.current = key
     trackGa4BeginCheckout([{
+      item_id: `hamper:${state.tier.id}`,
+      item_name: state.tier.name,
+      item_category: "Gift Hamper",
+      price: state.tier.price,
+      quantity: 1
+    }], state.tier.price)
+  }, [state.step, state.tier.id, state.tier.name, state.tier.price, state.checkout.occasion])
+
+  useEffect(() => {
+    if (state.step !== 3) return
+    const key = `${state.tier.id}:${state.checkout.occasion}`
+    if (gaShippingKey.current === key) return
+    gaShippingKey.current = key
+    trackGa4AddShippingInfo([{
       item_id: `hamper:${state.tier.id}`,
       item_name: state.tier.name,
       item_category: "Gift Hamper",

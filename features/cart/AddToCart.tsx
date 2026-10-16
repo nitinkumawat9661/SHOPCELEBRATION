@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { MAX_CART_QUANTITY } from "./cart"
-import { trackGa4AddToCart } from "../analytics/ga4"
+import { trackGa4AddToCart, trackGa4RemoveFromCart } from "../analytics/ga4"
 import { useCart } from "./useCart"
 
 export function AddToCart({ productId, productName, productCategory, pricePaise, buyNow = false, maxQuantity = MAX_CART_QUANTITY }: {
@@ -44,7 +44,11 @@ export function AddToCart({ productId, productName, productCategory, pricePaise,
           <button
             type="button"
             aria-label="Reduce quantity"
-            onClick={() => quantity <= 1 ? cart.remove(productId) : cart.quantity(productId, quantity - 1)}
+            onClick={() => {
+              if (productName && typeof pricePaise === "number") trackGa4RemoveFromCart({ item_id: productId, item_name: productName, item_category: productCategory, price: pricePaise / 100, quantity: 1 })
+              if (quantity <= 1) cart.remove(productId)
+              else cart.quantity(productId, quantity - 1)
+            }}
           >−</button>
           <output aria-live="polite" aria-label="Quantity in cart">{quantity}</output>
           <button

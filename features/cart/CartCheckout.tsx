@@ -17,7 +17,7 @@ import { useStoreSettings } from "../shell/useStoreSettings"
 import { routes } from "../../config/routes"
 import { cartKey, MAX_CART_QUANTITY, type CartItem } from "./cart"
 import { useCart } from "./useCart"
-import { trackGa4BeginCheckout } from "../analytics/ga4"
+import { trackGa4AddShippingInfo, trackGa4BeginCheckout, trackGa4RemoveFromCart } from "../analytics/ga4"
 import { applyDelivery, deliveryHasInput, type DeliveryAddress } from "../../lib/domain/delivery-address"
 import { clearCheckoutDraft, loadDefaultAddress, readCheckoutDraft, saveDefaultAddress, writeCheckoutDraft } from "../checkout/delivery-preferences"
 
@@ -252,6 +252,14 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
         throw new Error(result.error || "SHIPWAY_RATE_UNAVAILABLE")
       }
       setShippingPaise(0)
+      const gaItems = rows.flatMap((row) => row.product && isIndividuallySellable(row.product) ? [{
+        item_id: row.product.id,
+        item_name: row.product.name,
+        item_category: row.product.category,
+        price: (row.product.salePricePaise || 0) / 100,
+        quantity: row.quantity
+      }] : [])
+      trackGa4AddShippingInfo(gaItems, subtotalPaise / 100)
       if (customer.account) {
         try { setSavedAddress(await saveDefaultAddress(checkout)); setAddressSaveError("") }
         catch { setAddressSaveError("Delivery will work, but your default address could not be saved. Try again later.") }
@@ -379,11 +387,17 @@ export function CartCheckout({ initialCatalog }: { initialCatalog: CatalogConfig
                 <p className="marketCartItemDelivery">FREE delivery · Address checked at next step</p>
                 <div className="cartRowControls marketCartItemActions">
                   <div className="cartQuantity" role="group" aria-label={"Quantity for " + (row.product?.name || row.productId)}>
-                    <button type="button" aria-label={"Decrease quantity of " + (row.product?.name || row.productId)} disabled={locked || row.quantity <= 1} onClick={() => cart.quantity(row.productId, row.quantity - 1)}>−</button>
+                    <button type="button" aria-label={"Decrease quantity of " + (row.product?.name || row.productId)} disabled={locked || row.quantity <= 1} onClick={() => {
+                      if (row.product) trackGa4RemoveFromCart({ item_id: row.productId, item_name: row.product.name, item_category: row.product.category, price: (row.product.salePricePaise || 0) / 100, quantity: 1 })
+                      cart.quantity(row.productId, row.quantity - 1)
+                    }}>−</button>
                     <output aria-label="Quantity">{row.quantity}</output>
                     <button type="button" aria-label={"Increase quantity of " + (row.product?.name || row.productId)} disabled={locked || row.quantity >= Math.min(MAX_CART_QUANTITY, row.product?.stockAvailable ?? MAX_CART_QUANTITY)} onClick={() => cart.quantity(row.productId, row.quantity + 1)}>+</button>
                   </div>
-                  <button className="cartRemove" type="button" aria-label={"Remove " + (row.product?.name || row.productId) + " from cart"} disabled={locked} onClick={() => cart.remove(row.productId)}>Remove</button>
+                  <button className="cartRemove" type="button" aria-label={"Remove " + (row.product?.name || row.productId) + " from cart"} disabled={locked} onClick={() => {
+                    if (row.product) trackGa4RemoveFromCart({ item_id: row.productId, item_name: row.product.name, item_category: row.product.category, price: (row.product.salePricePaise || 0) / 100, quantity: row.quantity })
+                    cart.remove(row.productId)
+                  }}>Remove</button>
                 </div>
               </div>
               <div className="marketCartLineTotal"><span>Item total</span><strong>{salePaise != null ? formatMoney(salePaise * row.quantity / 100) : "Unavailable"}</strong></div>

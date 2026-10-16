@@ -9,7 +9,7 @@ import type { CheckoutData } from "../builder/types"
 import { routes } from "../../config/routes"
 import { validateCheckoutDetails, validatePaymentReference } from "../builder/validation"
 import type { CartItem } from "../cart/cart"
-import { trackGa4Purchase, type Ga4Purchase } from "../analytics/ga4"
+import { trackGa4AddPaymentInfo, trackGa4Purchase, type Ga4Purchase } from "../analytics/ga4"
 
 export type SubmitArgs = {
   selectedNames: string[]
@@ -376,6 +376,8 @@ export function useOrderSubmit() {
         return completed
       }
       if (!started.orderId || !started.checkout) throw new Error(paymentError())
+      // The payment provider checkout is ready; no card/UPI or address data is sent.
+      if (started.analyticsPurchase) trackGa4AddPaymentInfo(started.analyticsPurchase, started.checkout.provider)
 
       const result = started.checkout.provider === "razorpay"
         ? await launchRazorpay(started.checkout, args, started.orderId)

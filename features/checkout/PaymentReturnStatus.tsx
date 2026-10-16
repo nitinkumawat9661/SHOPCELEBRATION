@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { routes } from "../../config/routes"
 import { formatMoney } from "../../lib/domain/catalog"
-import { trackGa4Purchase, type Ga4Purchase } from "../analytics/ga4"
+import { trackGa4AddPaymentInfo, trackGa4Purchase, type Ga4Purchase } from "../analytics/ga4"
 
 type PaymentCheckout =
   | { provider: "cashfree"; mode: "test" | "live"; providerOrderId: string; paymentSessionId: string; amountPaise: number; currency: "INR" }
@@ -203,6 +203,7 @@ export function PaymentReturnStatus({ providerOrderId, publicOrderId = "" }: { p
         return
       }
       if (!data.checkout) throw new Error("PAYMENT_CHECKOUT_MISSING")
+      if (data.analyticsPurchase) trackGa4AddPaymentInfo(data.analyticsPurchase, data.checkout.provider)
 
       setResult((current) => ({ ...current, ...data }))
 
