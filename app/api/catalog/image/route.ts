@@ -14,8 +14,8 @@ export async function GET(request: Request) {
       headers: {
         "Content-Type": type,
         "Cache-Control": immutable
-          ? "public, max-age=604800, immutable"
-          : "public, max-age=3600, stale-while-revalidate=86400",
+          ? "public, max-age=31536000, s-maxage=31536000, immutable"
+          : "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
         "X-Content-Type-Options": "nosniff"
       }
     })
