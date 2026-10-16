@@ -1,6 +1,6 @@
 # Celebration — Permanent Change, Catalog, SEO & Merchant Operations Runbook
 
-**Status:** Living operational source of truth, created 17 Oct 2026 (Asia/Kolkata).
+**Status:** Living operational source of truth, created 17 Oct 2026 (Asia/Kolkata); merchant schema implementation recorded 17 Oct, subject to live retest.
 **Site:** https://shopcelebration.in
 **Repository:** nitinkumawat9661/SHOPCELEBRATION (production source; main)
 **Audience:** owner, developers, coding agents, and change-monitoring agents.
@@ -17,7 +17,7 @@
 | Google Merchant Center | Account created; website discovered 4 products when last checked; under account verification | Approval, complete catalog ingestion, feed freshness |
 | Google Analytics 4 | CELEBRATION property with public measurement ID G-8F24GVDSL3; Realtime page_view, view_item, add_to_cart, begin_checkout observed | Full real-money purchase/refund end-to-end verification and stable revenue reporting |
 | Google Rich Results | 17 Oct: /jewelry/celebration-necklace-001 fetched, 3 valid items: Product snippets, Merchant listings, Breadcrumbs | All catalog pages and optional warning-free schema |
-| Merchant warnings on example SKU | Optional missing brand/global identifier; optional hasMerchantReturnPolicy; optional shippingDetails | Shipping/returns structured-data remediation has NOT been deployed |
+| Merchant warnings on example SKU | Optional missing brand/global identifier; optional hasMerchantReturnPolicy; optional shippingDetails | Code now includes truthful brand, a link to the real return policy, free retail-jewellery shipping and handling 0–2 days; live Rich Results re-test and Google processing remain pending |
 | Production | GitHub Actions deploy to VPS; immutable releases and rollback; last verified 17 Oct at commit 7c24a1d5dcf1 | Later changes need their own release/health verification |
 
 **Public URLs:** sitemap.xml; robots.txt; /jewelry; /jewelry/<sku>; /api/health. Source: app/sitemap.ts, app/robots.ts, app/jewelry/[id]/page.tsx, features/analytics/*, current server catalog, and actual Google/Bing account screenshots.
@@ -88,7 +88,7 @@
 - Check Products → Needs attention, Data sources / Found by Google, website claim, shipping/returns, identity verification and item-level disapprovals.
 - Product price/availability/image/title and landing page must match Merchant Center listings. If automatic discovery does not populate the remainder, a properly deduplicated dynamic product feed can be planned **separately after approval**. Do not add duplicates by combining discovery and feed accidentally.
 - GSTIN is business tax registration, **not** GTIN/UPC/EAN. For truthful private-label products, brand name may be Celebration. No invented barcodes. Check correct manufacturer/importer declarations as applicable.
-- Example product (necklace-001) was eligible for 3 rich-result types, with *non-critical* warnings: missing global identifier/brand, hasMerchantReturnPolicy, shippingDetails. **These warnings were NOT corrected yet at runbook creation.** Add brand truthfully; only add shipping and return schema if aligned with published/operational policy.
+- Example product (necklace-001) was eligible for 3 rich-result types with *non-critical* warnings. The Oct 17 code update adds a truthful Celebration brand for individually sold jewellery, offer-level free shipping and handling 0–2 days (no invented transit days), and a merchant return-policy link backed by global OnlineStore JSON-LD. **Verify the live Google Rich Results Test again before claiming warnings are cleared.** Google may still report optional transit details because the exact transit split is unknown.
 - Verified business timing: maximum 2 days to dispatch; **3–7 days TOTAL order to delivery**. Separate handling/transit values require truthfulness; do not label all 3–7 as transit alone.
 
 ## 6. GA4, revenue and privacy
@@ -121,12 +121,25 @@
 
 - [ ] Merchant Center initial business/product approval — wait for review; inspect actual reason if denied.
 - [ ] Assess remaining products beyond 4 auto-discovered; decide whether deduplicated product feed is needed after review.
-- [ ] Brand schema: add truthful Celebration brand to labelled Celebration retail goods, without false GTIN.
-- [ ] Merchant optional shippingDetails schema based on total 3–7 days, maximum 0–2 day handling and validated transit details; do not invent split.
-- [ ] Merchant optional hasMerchantReturnPolicy mapped to real /policies obligations. Optional and must not misstate defect-only claims as no statutory rights or unrestricted returns.
+- [x] Code: Celebration brand for individually sold jewellery, without GTIN. **Live Rich Results verification pending.**
+- [x] Code: OfferShippingDetails for individually sold jewellery, ₹0 delivery and 0–2 days handling. **Exact courier transit timing still unverified and intentionally omitted; total 3–7 days remains a business estimate.**
+- [x] Code: OnlineStore hasMerchantReturnPolicy linking directly to the real /policies page (no invented 7-day window or unconditional return rights). **Live Google validation pending.**
 - [ ] Verify Product snippets warnings independently if Google still reports them.
 - [ ] Verify GA4 live add_shipping_info/add_payment_info and verified purchase/revenue on next genuine sale; refund pipeline separately.
 - [ ] Monitor Google/Bing index coverage as reports begin populating.
 - [ ] Future consideration: product-feed sync, IndexNow; not implemented and not scheduled as GitHub workflows.
 
 **Change log template** (copy into a PR/issue note or commit description): Date IST | Type | Product SKUs / URLs | Old → new | Source of truth | Admin draft/live version or Git SHA | Live checks + URLs | Merchant/GSC/Bing follow-up + next check | Owner signoff.
+
+
+## 10. Merchant schema rollout note — 17 Oct 2026
+
+Code-only changes: `lib/domain/merchant-seo.ts`, `app/layout.tsx`, `app/jewelry/[id]/page.tsx` and existing SEO regression tests. No database, payment or inventory changes. Next.js production build is required because product JSON-LD rendering changed.
+
+After successful deployment and public health check: test `/jewelry/celebration-necklace-001` with [Rich Results Test](https://search.google.com/test/rich-results), inspect the **Merchant listings** field details, and confirm schema shows:
+- Product brand Celebration, stable existing SKU and current DB price/availability.
+- Free shipping (0 INR), India, handling 0–2 days. **Do not** claim a 3–7 day transit time.
+- Linked official `/policies` merchant return policy; this is not an unrestricted return promise.
+- All 3 pre-existing valid structured data types continue to parse.
+
+In Merchant Center, the account-level policies may override markup. Align them with the real published policy and actual postcode-specific delivery. **No GTIN, tax registration number or fabricated delivery time was added.** If Rich Results Test still shows warnings, record the exact wording before further coding. Do not blindly redeploy for noncritical notices.

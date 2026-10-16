@@ -16,6 +16,7 @@ import { SiteFooter } from "../../../features/shell/SiteFooter"
 import { StorefrontHeader } from "../../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../../features/shell/TrustStrip"
 import { isJewelryProduct } from "../../../lib/domain/catalog-discovery"
+import { CELEBRATION_ORGANIZATION_ID, celebrationOfferShippingDetails, celebrationReturnPolicyReference } from "../../../lib/domain/merchant-seo"
 import { formatMoney } from "../../../lib/domain/money"
 import { isIndividualListing, isIndividuallySellable, primaryProductImage } from "../../../lib/domain/catalog"
 import { productSavingLabel } from "../../../lib/domain/catalog-badges"
@@ -88,6 +89,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       name: product.name,
       sku: product.id,
       category: product.category,
+      // Brand reflects actual Celebration private-label retail jewellery.
+      ...(listed && isJewelryProduct(product) ? { brand: { "@type": "Brand", name: "Celebration" } } : {}),
       description: productDescription(product.name, product.category, product.description),
       image: image ? [image.startsWith("/") ? `${siteUrl}${image}` : image] : undefined,
       ...(listed ? {
@@ -98,7 +101,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           price: (product.salePricePaise! / 100).toFixed(2),
           availability: individual ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
           itemCondition: "https://schema.org/NewCondition",
-          seller: { "@type": "Organization", name: "Celebration", url: siteUrl }
+          // Individual jewellery includes delivery in the displayed price.
+          ...(isJewelryProduct(product) ? {
+            shippingDetails: celebrationOfferShippingDetails(),
+            hasMerchantReturnPolicy: celebrationReturnPolicyReference()
+          } : {}),
+          seller: { "@type": "Organization", "@id": CELEBRATION_ORGANIZATION_ID, name: "Celebration", url: siteUrl }
         }
       } : {})
     },

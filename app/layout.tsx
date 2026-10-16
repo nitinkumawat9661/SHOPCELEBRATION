@@ -4,6 +4,8 @@ import { publicEnv } from "../config/public-env"
 import { storeContent } from "../lib/domain/content"
 import { StorefrontAnalytics } from "../features/analytics/StorefrontAnalytics"
 import { GoogleAnalytics } from "../features/analytics/GoogleAnalytics"
+import { SeoJsonLd } from "../features/seo/SeoJsonLd"
+import { celebrationOrganizationMarkup } from "../lib/domain/merchant-seo"
 import "./globals.css"
 
 const displayFont = localFont({
@@ -40,5 +42,5 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} ${accentFont.variable}`}><body><GoogleAnalytics measurementId={publicEnv.ga4MeasurementId} /><StorefrontAnalytics />{children}</body></html>
+  return <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} ${accentFont.variable}`}><body><SeoJsonLd data={celebrationOrganizationMarkup()} /><GoogleAnalytics measurementId={publicEnv.ga4MeasurementId} /><StorefrontAnalytics />{children}</body></html>
 }
