@@ -1,6 +1,6 @@
 # Celebration product-photo performance pass — 17 Oct 2026
 
-**Status:** Source changes on review branch only. Live website and VPS database are unchanged until main is merged and the existing production deploy succeeds. **No claim of a 99 Lighthouse result has been made.**
+**Status update 17 Oct 2026:** PR #203 merged into main at commit `8a69c3c0358d9c7101ecdcf92261b4862376320f`; existing production workflow run **38982717469 completed successfully** with full source audit, 66 generated WebPs, Next.js build, live PM2 cutover, public `/api/health` HTTP success and robots/sitemap verification (95 URLs). **Lighthouse 99 and real mobile image waterfall remain UNMEASURED.**
 
 ## Findings from inspected code and repository assets
 
