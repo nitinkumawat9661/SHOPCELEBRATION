@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url)
 const read = (path) => readFileSync(new URL("../"+path, import.meta.url), "utf8")
 function load(path, extra = {}) {
  const js = ts.transpileModule(read(path), {
-   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true }
  }).outputText
  const mod = { exports: {} }
  runInNewContext(js, {module: mod, exports: mod.exports, require, Buffer, URL, URLSearchParams, ...extra})
