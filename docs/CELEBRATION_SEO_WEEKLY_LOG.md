@@ -23,7 +23,7 @@ Maintain this as a dated evidence log. Do not record secret credentials, real cu
 
 | Day/date IST | Single most important action | Actual evidence | Status | Needs code deploy? | Next review |
 | --- | --- | --- | --- | --- | --- |
-| Sat 17 Oct | Confirm performance deployment workflow result; capture health and mobile image waterfall | PR #203 merged as commit `8a69c3c...`; production outcome **not yet confirmed** | IN PROGRESS | Existing deployment already triggered | After workflow result |
+| Sat 17 Oct | Confirm performance deployment workflow result; capture health and mobile image waterfall | PR #203 merged as commit `8a69c3c...`; production deployment workflow **SUCCESS** (66 WebPs generated; health/robots/sitemap checks passed). Mobile Lighthouse not yet measured | PARTIALLY COMPLETE | Existing deployment already triggered | After workflow result |
 | Sun 18 Oct | Owner confirms whether customers visit a signed staffed shop, meet Celebration personnel in person, or purchase online only | Awaiting factual confirmation; do **not** create GBP blindly | BLOCKED ON BUSINESS FACT | No | Next owner update |
 | Mon 19 Oct | Capture GSC Sikar query impressions/clicks/CTR/avg position and indexing counts | Not collected | QUEUED | No | Tue |
 | Tue 20 Oct | Select one real highest-demand product title/description improvement | Not selected | QUEUED | No if admin | Wed |
