@@ -2,6 +2,16 @@
 
 **Prepared:** 15 October 2026. **Status:** inspection only — NO product names, images, database contents, prices, stock or checkout have been edited.
 
+## Owner review received — Premium Necklaces (16 October 2026)
+
+Owner supplied a **SKU-by-SKU photo description and exact proposed product name** for the first **22** premium necklaces. The review CSV and [Premium Necklaces board](./01-premium-necklaces.md) now record every decision.
+
+- **11 MATCH:** 001–006, 010, 013, 019, 020, 022.
+- **11 RENAME:** 007, 008, 009, 011, 012, 014, 015, 016, 017, 018, 021.
+- **67 other products remain PENDING_VISUAL_REVIEW**, including 27 earlier master/source name reconciliations.
+- **Duplicate-title caution:** SKU 011 was assigned exactly the same proposed title as SKU 001: Korean Fan Crystal Pendant Necklace. These are different product IDs/photos; do not merge or silently invent a distinction.
+- These are **owner-provided assessments**, not independent visual inspection by the assistant. This documentation PR changes no catalog or production data.
+
 ## Start here
 
 1. **[Full forensic report: what was checked, where and how](../JEWELRY_IMAGE_NAME_FORENSIC_AUDIT_20261015.md)** — read-only production database, public API, source keys, earlier 27 product name repairs, limitations and safe next steps.
@@ -39,7 +49,7 @@ Fill `pictured_design_motif` in plain language (e.g. 'gold double heart with pea
 2. Joined each product by **exact SKU ID** to `content/catalog-image-source-map.json` (67 known original upload links) and `content/catalog-name-source-reconciliation-20261010.json` (27 prior, master-backed name changes). **Never joined by product-array index or by inferred visual similarity.**
 3. For the 67 R2-rehosted images, the preview uses the *same SKU's* deterministic `/api/catalog/image?key=...thumb.webp` variant, with the main original retained as a clickable link. The 22 first-party necklaces use the already-published `/catalog/necklaces/...png` source.
 4. The review CSV stores complete public URLs, not server paths, credentials or customer information. Each SKU also links directly to `https://shopcelebration.in/jewelry/{sku}`.
-5. Checked category totals (22+15+28+12+12), 89 distinct product rows, 67 sourced records and 27 historical name repairs. All decisions initially set to **PENDING_VISUAL_REVIEW**.
+5. Checked category totals (22+15+28+12+12), 89 distinct product rows, 67 sourced records and 27 historical name repairs. All decisions were initially PENDING_VISUAL_REVIEW; the first 22 have now been updated from the owner's 16-Oct review.
 6. These are **remote previews**: external image previews can sometimes be blocked by the GitHub interface or an image host. If a thumbnail does not load, click the product page / full-size image URL; a missing preview is not proof the item's image or title matches.
 
 ## Safe correction policy — read before approving
@@ -52,4 +62,4 @@ Fill `pictured_design_motif` in plain language (e.g. 'gold double heart with pea
 
 ## Current status
 
-**Production audit:** complete, read-only. **Visual comparison:** 89/89 rows awaiting owner/photo inspection. **Automatic repairs:** none. **Release:** not applicable; these are documentation-only GitHub files.
+**Production audit:** complete, read-only. **Visual comparison:** 22 owner decisions recorded (11 keep, 11 rename); 67 pending. **Automatic repairs:** none. **Release:** not applicable; these are documentation-only GitHub files.
