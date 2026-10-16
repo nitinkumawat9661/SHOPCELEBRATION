@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { getCatalogConfig } from "../../../lib/server/catalog"
+import { getPublicCatalogConfig } from "../../../lib/server/public-storefront"
 import { getTierPopularity } from "../../../lib/server/orders"
 
 export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const result = await getCatalogConfig()
+    const result = await getPublicCatalogConfig()
     const socialProof = await getTierPopularity().catch((error) => {
       console.error("catalog-social-proof", error)
       return null
