@@ -33,6 +33,7 @@ assert.ok(gallery.includes("locallyOwnedImageFallback(sprite?.url || catalogImag
 assert.ok(card.includes('loading={priority ? "eager" : "lazy"}'), "Offscreen cards remain native lazy")
 assert.ok(gallery.includes('loading="eager"'), "Primary product hero remains eager")
 assert.ok(route.includes("readCatalogImageObject(key)") && !route.includes("createCatalogImageViewUrl("))
-assert.ok(route.includes("max-age=604800") && route.includes("max-age=3600"))
+assert.ok(route.includes("max-age=31536000") && route.includes("max-age=3600"))
+assert.ok(r2.includes("catalogWebpCache") && r2.includes("CATALOG_CACHE_LIMIT") && r2.includes("catalogImageReads"))
 assert.ok(r2.includes("new GetObjectCommand") && r2.includes("isCatalogImageKey(key)"))
 console.log("PASS: no Meesho browser fallbacks, no cross-SKU photos, native lazy loading, direct R2 reads and safe cache")

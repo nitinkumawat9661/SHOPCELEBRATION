@@ -26,6 +26,15 @@ export function ownedR2ImageFallback(imageUrl: string): string | undefined {
 }
 
 export function locallyOwnedImageFallback(imageUrl: string, legacyFallback?: string): string | undefined {
+  // Generated local WebP may be absent after a misconfigured deployment.
+  // Fall back ONLY to this same necklace's permanent original photo.
+  try {
+    const url = new URL(imageUrl, OWNED_IMAGE_PREFIX)
+    if (url.origin === OWNED_IMAGE_PREFIX && !url.search && !url.hash) {
+      const match = url.pathname.match(/^\/catalog\/necklaces-optimized\/(celebration-necklace-(?:00[1-9]|01\d|02[0-2]))-(?:thumb|main|zoom)\.webp$/)
+      if (match) return `/catalog/necklaces/${match[1]}.png`
+    }
+  } catch { /* Fall back to existing exact-source checks below. */ }
   const r2Alternate = ownedR2ImageFallback(imageUrl)
   if (r2Alternate) return r2Alternate
   if (!legacyFallback) return undefined

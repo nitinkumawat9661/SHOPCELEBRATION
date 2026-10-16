@@ -96,6 +96,10 @@ export function primaryProductImage(product: GiftProduct) {
  * For all other catalog URLs, preserve the original URL unchanged.
  */
 export function catalogImageVariant(url: string, variant: "thumb" | "main" | "zoom") {
+  // Original 22 Celebration PNGs exceed 2 MB each. Render their exact-SKU
+  // generated WebPs instead; the untouched PNG is retained as a local fallback.
+  const local = url.match(/^(?:https:\/\/shopcelebration\.in)?\/catalog\/necklaces\/(celebration-necklace-(?:00[1-9]|01\d|02[0-2]))\.png$/)
+  if (local) return `/catalog/necklaces-optimized/${local[1]}-${variant}.webp`
   if (!url.startsWith("/api/catalog/image?key=")) return url
   const params = new URLSearchParams(url.split("?")[1] || "")
   const key = params.get("key") || ""

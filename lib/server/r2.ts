@@ -136,24 +136,66 @@ export async function verifyCatalogImageObject(key: string) {
 }
 
 /**
+ * Only immutable SHA-256-addressed public catalog WebPs may enter this tiny
+ * per-process LRU. Admin uploads can change independently and stay uncached.
+ * Avoids repeat VPS -> R2 round trips and collapses identical concurrent reads.
+ */
+const catalogWebpCache = new Map<string, { bytes: Uint8Array; type: string }>()
+const catalogImageReads = new Map<string, Promise<{ bytes: Uint8Array; type: string }>>()
+let catalogCacheBytes = 0
+const CATALOG_CACHE_LIMIT = 32 * 1024 * 1024
+const IMMUTABLE_WEBP = /^catalog\/rehost\/meesho\/[a-f0-9]{64}\/(?:thumb|main|zoom)\.webp$/
+
+function rememberCatalogWebp(key: string, bytes: Uint8Array, type: string) {
+  if (!IMMUTABLE_WEBP.test(key) || type !== "image/webp" || bytes.byteLength > 2 * 1024 * 1024) return
+  while (catalogCacheBytes + bytes.byteLength > CATALOG_CACHE_LIMIT && catalogWebpCache.size) {
+    const oldest = catalogWebpCache.keys().next().value
+    if (!oldest) break
+    const previous = catalogWebpCache.get(oldest)
+    catalogCacheBytes -= previous?.bytes.byteLength || 0
+    catalogWebpCache.delete(oldest)
+  }
+  catalogWebpCache.set(key, { bytes, type })
+  catalogCacheBytes += bytes.byteLength
+}
+
+/**
  * Read a verified PUBLIC product photo directly from R2 via the existing S3
  * client. Avoid a presigned URL + a second HTTP fetch on every image request.
  * Private customer/review/order objects are NEVER accessible through this API.
  */
 export async function readCatalogImageObject(key: string) {
   if (!isCatalogImageKey(key)) throw new Error("INVALID_CATALOG_IMAGE_KEY")
-  const response = await client().send(new GetObjectCommand({
-    Bucket: requireEnv("r2Bucket"),
-    Key: key
-  }))
-  const type = response.ContentType || ""
-  const size = response.ContentLength || 0
-  if (!type.startsWith("image/") || size > 12 * 1024 * 1024 || !response.Body) {
-    throw new Error("INVALID_CATALOG_IMAGE_OBJECT")
+  const cached = catalogWebpCache.get(key)
+  if (cached) {
+    catalogWebpCache.delete(key)
+    catalogWebpCache.set(key, cached)
+    return cached
   }
-  const bytes = await response.Body.transformToByteArray()
-  if (!bytes.length || bytes.length > 12 * 1024 * 1024) throw new Error("INVALID_CATALOG_IMAGE_OBJECT")
-  return { bytes, type }
+  const existing = catalogImageReads.get(key)
+  if (existing) return existing
+
+  const pending = (async () => {
+    const response = await client().send(new GetObjectCommand({
+      Bucket: requireEnv("r2Bucket"),
+      Key: key
+    }))
+    const type = response.ContentType || ""
+    const size = response.ContentLength || 0
+    if (!type.startsWith("image/") || size > 12 * 1024 * 1024 || !response.Body) {
+      throw new Error("INVALID_CATALOG_IMAGE_OBJECT")
+    }
+    const bytes = await response.Body.transformToByteArray()
+    if (!bytes.length || bytes.length > 12 * 1024 * 1024) throw new Error("INVALID_CATALOG_IMAGE_OBJECT")
+    rememberCatalogWebp(key, bytes, type)
+    return { bytes, type }
+  })()
+  catalogImageReads.set(key, pending)
+  try {
+    return await pending
+  } finally {
+    catalogImageReads.delete(key)
+  }
 }
 
 export async function createCatalogImageViewUrl(key: string) {
