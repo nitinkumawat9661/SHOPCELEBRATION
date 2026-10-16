@@ -143,26 +143,3 @@ After successful deployment and public health check: test `/jewelry/celebration-
 - All 3 pre-existing valid structured data types continue to parse.
 
 In Merchant Center, the account-level policies may override markup. Align them with the real published policy and actual postcode-specific delivery. **No GTIN, tax registration number or fabricated delivery time was added.** If Rich Results Test still shows warnings, record the exact wording before further coding. Do not blindly redeploy for noncritical notices.
-
-## 11. Storefront speed optimization — 17 Oct 2026
-
-**Objective:** Pursue mobile-first Lighthouse 90–100 where independently measured; do not claim a score of 100 without real mobile/desktop tests and Core Web Vitals. Source audits cannot substitute for PageSpeed or real-device data. After deploy, capture Google PageSpeed Insights on **/**, **/jewelry**, and one product page for **both mobile and desktop**, ideally 3 runs, then prioritize LCP/FCP/INP/CLS/TTFB. Keep links and screenshots as evidence.
-
-Safe initial changes (server source; no catalog/DB/business mutation):
-- HomeCatalog continues to render full, exact-photo products server-side. The curated homepage builder receives just tiers, occasions and settings (empty products array), avoiding RSC JSON/hydration of the 89+ SKU media and retail fields. Curated builder does not reference products; if that changes, revise this projection.
-- The verified first-party necklace PNGs (up to ~2.5 MB) render as responsive, compressed **card-only** variants through the existing Next image optimizer. Original exact-SKU PNG stays as failure fallback and SEO/product-detail source. R2-owned WebP images are unchanged; no cross-SKU substitutions.
-- Eager, high-priority loading is explicit for the hero WebP. Do not make every image eager.
-
-Validation: source regression script `scripts/test-storefront-performance-20261017.mjs`, full audit, Next build, PM2/live health and checkout smoke checks. Important: compressed image HTTP size, image optimizer cache hit and benchmark improvements require browser/network verification; code-only tests cannot prove 100/100.
-
-## 12. Mobile PageSpeed follow-up — 17 Oct 2026
-
-Owner's measured homepage Mobile Lighthouse: Performance 88, Accessibility 100, Best Practices 92, SEO 100; FCP 2.2s, LCP 3.4s, TBT 30ms, CLS 0, Speed Index 3.7s. Opportunities reported: render-blocking requests ~1350ms, cache lifetime ~830KiB, images ~677KiB, unused CSS 49KiB, unused JS 124KiB. The 401 unread-message endpoint is expected for anonymous users; strict CSP blocks optional auto-injected Cloudflare beacon. Do not loosen the CSP merely for a higher score.
-
-Second conservative code pass: remove seven staff-only admin stylesheet imports from public root bundle (admin layout retains them). Extend browser caching to seven days for unique public R2 product photo keys; named category art receives one-hour caching and unknown keys retain five minutes. Private photos/videos, live inventory, checkout and design are not touched. Audit: scripts/test-lighthouse-mobile-20261017.mjs. After deployment, rerun PageSpeed on homepage, /jewelry and an actual product page (mobile and desktop); record LCP/FCP/CLS, check /admin and product photo validity. **A score of 100 is not guaranteed until real measurement confirms it.**
-
-## 13. Third PageSpeed pass — 17 Oct 2026 (image delivery)
-
-New user's mobile diagnostics: cache opportunity down to 387 KiB (previously 830), render-blocking to 900ms (previously 1350), but image delivery remains ~677 KiB and unused CSS ~48 KiB. The report specifically shows original public /api/catalog/image key URLs decoded at 640/800 pixels for 187-pixel category circles and mobile cards. The uploaded PageSpeed report also shows GA4 gtag.js ~175KiB; do not disable GA4 purchase tracking merely for Lighthouse. Console reports unauthorized anonymous notification 401 and Cloudflare beacon CSP block; these are separate cleanup candidates, not render-critical.
-
-Implemented response: on the public R2 image endpoint accept a constrained optional `w` parameter (192/256/384/640/828) and produce quality-73 WebP with Sharp, leaving the original bytes untouched for requests without `w` and as fallback when conversion fails. Category circles and retail product cards now request appropriately sized variants through srcSet/sizes; original exact-SKU photos remain the fallback. No private media routes, catalog DB, payment processing or inventory changed. Verify live Lighthouse image delivery savings and that all images remain faithful to the exact products. Test script: `scripts/test-responsive-r2-images-20261017.mjs`.

@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server"
 import { createCatalogImageViewUrl, isCatalogImageKey } from "../../../../lib/server/r2"
-import { publicCatalogImageCacheControl } from "../../../../lib/domain/catalog-image-cache"
-import { resizePublicCatalogImage, requestedPublicCatalogImageWidth } from "../../../../lib/server/public-catalog-image-resize"
 
 export async function GET(request: Request) {
-  const params = new URL(request.url).searchParams
-  const key = params.get("key") || ""
-  const imageWidth = requestedPublicCatalogImageWidth(params)
+  const key = new URL(request.url).searchParams.get("key") || ""
   if (!isCatalogImageKey(key)) return NextResponse.json({ ok: false, error: "INVALID_IMAGE_KEY" }, { status: 404 })
   try {
     const signedUrl = await createCatalogImageViewUrl(key)
@@ -14,19 +10,11 @@ export async function GET(request: Request) {
     if (!upstream.ok) throw new Error(`R2_${upstream.status}`)
     const type = upstream.headers.get("content-type") || "application/octet-stream"
     if (!type.startsWith("image/")) throw new Error("INVALID_IMAGE_TYPE")
-    const original = Buffer.from(await upstream.arrayBuffer())
-    const resized = imageWidth && type !== "image/svg+xml"
-      ? await resizePublicCatalogImage(original, imageWidth)
-      : null
-    // If decoding unsupported legacy media fails, keep the original SAME-SKU
-    // image. Never replace a catalogue image with another product photo.
-    const bytes = resized || original
-    return new NextResponse(new Uint8Array(bytes), {
+    return new NextResponse(await upstream.arrayBuffer(), {
       status: 200,
       headers: {
-        "Content-Type": resized ? "image/webp" : type,
-        "Vary": "Accept",
-        "Cache-Control": publicCatalogImageCacheControl(key),
+        "Content-Type": type,
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=1800",
         "X-Content-Type-Options": "nosniff"
       }
     })
