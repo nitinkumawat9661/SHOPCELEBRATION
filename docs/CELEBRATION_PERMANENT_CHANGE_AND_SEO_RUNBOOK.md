@@ -154,3 +154,9 @@ Safe initial changes (server source; no catalog/DB/business mutation):
 - Eager, high-priority loading is explicit for the hero WebP. Do not make every image eager.
 
 Validation: source regression script `scripts/test-storefront-performance-20261017.mjs`, full audit, Next build, PM2/live health and checkout smoke checks. Important: compressed image HTTP size, image optimizer cache hit and benchmark improvements require browser/network verification; code-only tests cannot prove 100/100.
+
+## 12. Mobile PageSpeed follow-up — 17 Oct 2026
+
+Owner's measured homepage Mobile Lighthouse: Performance 88, Accessibility 100, Best Practices 92, SEO 100; FCP 2.2s, LCP 3.4s, TBT 30ms, CLS 0, Speed Index 3.7s. Opportunities reported: render-blocking requests ~1350ms, cache lifetime ~830KiB, images ~677KiB, unused CSS 49KiB, unused JS 124KiB. The 401 unread-message endpoint is expected for anonymous users; strict CSP blocks optional auto-injected Cloudflare beacon. Do not loosen the CSP merely for a higher score.
+
+Second conservative code pass: remove seven staff-only admin stylesheet imports from public root bundle (admin layout retains them). Extend browser caching to seven days for unique public R2 product photo keys; named category art receives one-hour caching and unknown keys retain five minutes. Private photos/videos, live inventory, checkout and design are not touched. Audit: scripts/test-lighthouse-mobile-20261017.mjs. After deployment, rerun PageSpeed on homepage, /jewelry and an actual product page (mobile and desktop); record LCP/FCP/CLS, check /admin and product photo validity. **A score of 100 is not guaranteed until real measurement confirms it.**

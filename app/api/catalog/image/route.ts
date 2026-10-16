@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createCatalogImageViewUrl, isCatalogImageKey } from "../../../../lib/server/r2"
+import { publicCatalogImageCacheControl } from "../../../../lib/domain/catalog-image-cache"
 
 export async function GET(request: Request) {
   const key = new URL(request.url).searchParams.get("key") || ""
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
       status: 200,
       headers: {
         "Content-Type": type,
-        "Cache-Control": "public, max-age=300, stale-while-revalidate=1800",
+        "Cache-Control": publicCatalogImageCacheControl(key),
         "X-Content-Type-Options": "nosniff"
       }
     })
