@@ -27,15 +27,15 @@ function redisTarget() {
   const port = url.port ? Number(url.port) : 6379
   const database = url.pathname && url.pathname !== "/" ? url.pathname.slice(1) : "0"
   if (!Number.isSafeInteger(port) || port < 1 || port > 65535 ||
-      !/^\\d{1,2}$/.test(database) || Number(database) > 15) {
+      !/^\d{1,2}$/.test(database) || Number(database) > 15) {
     throw new Error("INVALID_REDIS_TARGET")
   }
   return { host: url.hostname, port, database, username: decodeURIComponent(url.username), password: decodeURIComponent(url.password) }
 }
 
 function command(args: string[]): Buffer {
-  return Buffer.from(`*${args.length}\\r\\n` +
-    args.map((arg) => `$${Buffer.byteLength(arg)}\\r\\n${arg}\\r\\n`).join(""))
+  return Buffer.from(`*${args.length}\r\n` +
+    args.map((arg) => `$${Buffer.byteLength(arg)}\r\n${arg}\r\n`).join(""))
 }
 
 /** One short-lived loopback request per L1 miss. Handles fragmented RESP2 replies. */
