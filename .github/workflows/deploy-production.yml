@@ -113,6 +113,24 @@ jobs:
           test -s "$ARCHIVE"
           test -f "$APP_ROOT/shared/.env.production"
 
+          # The owner has verified the production domain in Google Search Console.
+          # Enable indexing in the PRIVATE shared VPS environment before Next.js build.
+          # Keep the existing private environment outside GitHub; never print its contents.
+          SEO_ENV="$APP_ROOT/shared/.env.production"
+          if ! grep -qx 'NEXT_PUBLIC_SITE_INDEXABLE=true' "$SEO_ENV" || [ "$(grep -c '^NEXT_PUBLIC_SITE_INDEXABLE=' "$SEO_ENV" || true)" -ne 1 ]; then
+            BACKUP="$APP_ROOT/shared/.env.production.before-gsc-indexing-20261016"
+            if [ ! -e "$BACKUP" ]; then cp -p -- "$SEO_ENV" "$BACKUP"; chmod 600 "$BACKUP"; fi
+            if grep -q '^NEXT_PUBLIC_SITE_INDEXABLE=' "$SEO_ENV"; then
+              sed -i 's/^NEXT_PUBLIC_SITE_INDEXABLE=.*/NEXT_PUBLIC_SITE_INDEXABLE=true/' "$SEO_ENV"
+            else
+              printf '\\nNEXT_PUBLIC_SITE_INDEXABLE=true\\n' >> "$SEO_ENV"
+            fi
+            chmod 600 "$SEO_ENV"
+            echo "Production GSC indexing flag enabled (environment contents kept private)."
+          else
+            echo "Production GSC indexing flag already enabled."
+          fi
+
           OLD_RELEASE="$(readlink -f "$APP_ROOT/current")"
           case "$OLD_RELEASE" in "$APP_ROOT"/releases/*) ;; *) echo "Unsafe current Celebration release: $OLD_RELEASE" >&2; exit 1 ;; esac
           SHORT_SHA="$(printf '%s' "$SHA" | cut -c1-12)"
@@ -214,3 +232,21 @@ jobs:
           printf '%s\n' "$BODY"
           printf '%s' "$BODY" | grep -q '"ok":true'
           printf '%s' "$BODY" | grep -q '"service":"Celebration"'
+
+          echo "Checking public SEO discovery routes after production cutover"
+          ROBOTS="$(curl --silent --show-error --fail --location --max-time 20 'https://shopcelebration.in/robots.txt')"
+          printf '%s\\n' "$ROBOTS" | grep -Eq '^Allow: /
+
+          printf '%s\\n' "$ROBOTS" | grep -Fq 'Sitemap: https://shopcelebration.in/sitemap.xml'
+          if printf '%s\\n' "$ROBOTS" | grep -Eq '^Disallow: /
+; then
+            echo "ERROR: Production robots.txt blocks all Google crawling." >&2
+            exit 1
+          fi
+          SITEMAP="$(curl --silent --show-error --fail --location --max-time 25 'https://shopcelebration.in/sitemap.xml')"
+          printf '%s\\n' "$SITEMAP" | grep -q '<urlset'
+          printf '%s\\n' "$SITEMAP" | grep -Fq '/jewelry/celebration-necklace-001'
+          COUNT="$(printf '%s\\n' "$SITEMAP" | grep -o '<loc>' | wc -l | tr -d ' ')"
+          test "$COUNT" -ge 89
+          echo "Public robots allows indexing, sitemap HTTP 200 and $COUNT URLs discovered."
+
