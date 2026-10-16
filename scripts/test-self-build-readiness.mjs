@@ -30,8 +30,8 @@ assert(source.includes("gateway_sandbox_success_failure_retry_refund_not_signed_
 if(workflow){
   assert(workflow.includes("StrictHostKeyChecking=yes") && workflow.includes("readlink -f"),
     "Verify SSH host and active release")
-  assert(workflow.includes("workflow_run:") && workflow.includes("Deploy Celebration Production"),
-    "Run preflight only following successful production deploy")
+  assert(workflow.includes("workflow_dispatch:") && !workflow.includes("  workflow_run:"),
+    "Run read-only preflight manually, not after every deploy (save GitHub Actions minutes)")
   assert(workflow.includes("self-build-readiness.mjs"),"VPS job must execute actual monitor")
 }
 assert(packageRaw.includes("test-self-build-readiness.mjs"),"Audit is always executed")
