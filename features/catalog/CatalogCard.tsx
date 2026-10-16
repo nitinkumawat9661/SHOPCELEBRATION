@@ -8,7 +8,7 @@ import { formatMoney } from "../../lib/domain/money"
 import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 import { SafeCatalogImage } from "./SafeCatalogImage"
 import { catalogCardTreatment } from "../../lib/domain/catalog-card-presentation"
-import { responsiveFirstPartyCardImage } from "../../lib/domain/catalog-image-performance"
+import { responsiveFirstPartyCardImage, responsivePublicCatalogImage } from "../../lib/domain/catalog-image-performance"
 import { WishlistToggle } from "./WishlistToggle"
 
 export function CatalogProductImage({ product, priority = false, imageVariant = "thumb" }: { product: GiftProduct; priority?: boolean; imageVariant?: "thumb" | "main" }) {
@@ -29,7 +29,7 @@ export function CatalogProductImage({ product, priority = false, imageVariant = 
     // Compress the 2 MB original first-party PNG only for collection cards.
     // The original exact-SKU photo remains an automatic failure fallback,
     // and product detail/SEO URLs are never changed.
-    const responsive = responsiveFirstPartyCardImage(requestedImage, imageVariant)
+    const responsive = responsiveFirstPartyCardImage(requestedImage, imageVariant) || responsivePublicCatalogImage(requestedImage, imageVariant)
     return <SafeCatalogImage
       className="catalogPhoto"
       src={responsive?.src || requestedImage}
