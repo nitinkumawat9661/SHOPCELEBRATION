@@ -26,6 +26,16 @@ type StorefrontProps = {
 export function Storefront({ initialCatalog, initialSocialProof = null, initialSettings, initialCategoryMedia, initialSelfBuildEnabled = false }: StorefrontProps) {
   const tiers = initialCatalog.tiers.filter((item) => item.active !== false)
   const visibleProof = isPublicHamperOrderProof(initialSocialProof, tiers) ? initialSocialProof : null
+  // Only tiers, occasions and settings are used by the curated hamper builder.
+  // Keep the full 89+ photo/price/catalog records server-side for HomeCatalog
+  // instead of serializing every SKU to the initial client/RSC payload.
+  // Admin, live inventory and individual jewellery checkout are unaffected.
+  const curatedDiscoveryCatalog: CatalogConfig = {
+    settings: initialCatalog.settings,
+    tiers: initialCatalog.tiers,
+    occasions: initialCatalog.occasions,
+    products: []
+  }
 
   return (
     <div className="celebrationHome">
@@ -47,7 +57,7 @@ export function Storefront({ initialCatalog, initialSocialProof = null, initialS
           </div>
         )}
         <HomeCatalog catalog={initialCatalog} categoryMedia={initialCategoryMedia} />
-        <StorefrontDiscovery initialCatalog={initialCatalog} initialSocialProof={visibleProof} />
+        <StorefrontDiscovery initialCatalog={curatedDiscoveryCatalog} initialSocialProof={visibleProof} />
       </main>
     </div>
   )

@@ -143,3 +143,14 @@ After successful deployment and public health check: test `/jewelry/celebration-
 - All 3 pre-existing valid structured data types continue to parse.
 
 In Merchant Center, the account-level policies may override markup. Align them with the real published policy and actual postcode-specific delivery. **No GTIN, tax registration number or fabricated delivery time was added.** If Rich Results Test still shows warnings, record the exact wording before further coding. Do not blindly redeploy for noncritical notices.
+
+## 11. Storefront speed optimization — 17 Oct 2026
+
+**Objective:** Pursue mobile-first Lighthouse 90–100 where independently measured; do not claim a score of 100 without real mobile/desktop tests and Core Web Vitals. Source audits cannot substitute for PageSpeed or real-device data. After deploy, capture Google PageSpeed Insights on **/**, **/jewelry**, and one product page for **both mobile and desktop**, ideally 3 runs, then prioritize LCP/FCP/INP/CLS/TTFB. Keep links and screenshots as evidence.
+
+Safe initial changes (server source; no catalog/DB/business mutation):
+- HomeCatalog continues to render full, exact-photo products server-side. The curated homepage builder receives just tiers, occasions and settings (empty products array), avoiding RSC JSON/hydration of the 89+ SKU media and retail fields. Curated builder does not reference products; if that changes, revise this projection.
+- The verified first-party necklace PNGs (up to ~2.5 MB) render as responsive, compressed **card-only** variants through the existing Next image optimizer. Original exact-SKU PNG stays as failure fallback and SEO/product-detail source. R2-owned WebP images are unchanged; no cross-SKU substitutions.
+- Eager, high-priority loading is explicit for the hero WebP. Do not make every image eager.
+
+Validation: source regression script `scripts/test-storefront-performance-20261017.mjs`, full audit, Next build, PM2/live health and checkout smoke checks. Important: compressed image HTTP size, image optimizer cache hit and benchmark improvements require browser/network verification; code-only tests cannot prove 100/100.

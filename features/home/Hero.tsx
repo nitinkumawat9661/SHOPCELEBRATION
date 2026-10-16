@@ -10,7 +10,7 @@ export function Hero({ tiers }: { tiers: Tier[] }) {
   return <section className="celebrationHero" aria-labelledby="gift-hero-title">
     <picture className="celebrationHeroPhoto">
       <source media="(max-width: 640px)" srcSet="/images/campaign/hero-800.webp" />
-      <Image src="/images/campaign/hero-1600.webp" alt="" width={1600} height={900} unoptimized fetchPriority="high" />
+      <Image src="/images/campaign/hero-1600.webp" alt="" width={1600} height={900} unoptimized loading="eager" fetchPriority="high" />
     </picture>
     <div className="wrap celebrationHeroInner">
       <div className="celebrationHeroCopy">
