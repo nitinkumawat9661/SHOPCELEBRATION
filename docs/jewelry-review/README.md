@@ -27,7 +27,7 @@ Owner supplied a **SKU-by-SKU photo description and exact proposed product name*
 | Trending Necklaces | 28 | 0 | [Photos & current names](./03-trending-necklaces.md) |
 | Gold-Plated Bangles & Bracelets | 12 | 12 | [Photos & current names](./04-bangles-bracelets.md) |
 | Adjustable Rings | 12 | 0 | [Photos & current names](./05-rings.md) |
-| **TOTAL** | **89** | **27** | **ALL 89 REQUIRE HUMAN VISUAL VERDICT** |
+| **TOTAL** | **89** | **27** | **22 owner decisions recorded; 67 pending** |
 
 **What the 27 previous repairs mean:** A master record and original source link were previously used to correct names in 15 sets and 12 bangles. The production DB currently contains those names. **Do not mark them visually verified automatically.** Previous evidence only proves the corrective source association used by the earlier process.
 
