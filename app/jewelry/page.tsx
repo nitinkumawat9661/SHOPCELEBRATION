@@ -5,9 +5,9 @@ import { SiteFooter } from "../../features/shell/SiteFooter"
 import { StorefrontHeader } from "../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../features/shell/TrustStrip"
 import { primaryProductImage } from "../../lib/domain/catalog"
-import { getCatalogConfig } from "../../lib/server/catalog"
 import { withVerifiedStorefrontBadges } from "../../lib/server/product-badge-evidence"
-import { defaultStoreSettings, getStoreSettings } from "../../lib/server/store-settings"
+import { defaultStoreSettings } from "../../lib/server/store-settings"
+import { getPublicCatalogConfig, getPublicStoreSettings } from "../../lib/server/public-storefront"
 
 export const dynamic = "force-dynamic"
 const siteUrl = "https://shopcelebration.in"
@@ -33,7 +33,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export default async function JewelryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const [params, catalog, settings] = await Promise.all([searchParams, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
+  const [params, catalog, settings] = await Promise.all([searchParams, getPublicCatalogConfig().catch(() => null), getPublicStoreSettings().catch(() => null)])
   const value = (key: string) => (typeof params[key] === "string" ? params[key] : "").slice(0, 100)
   const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
   const products = storefrontCatalog?.products.filter((product) => product.active !== false) || []
