@@ -1,17 +1,21 @@
 import assert from "node:assert/strict"
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 
 const file = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8")
 const robots = file("app/robots.ts")
 const sitemap = file("app/sitemap.ts")
 const product = file("app/jewelry/[id]/page.tsx")
-const workflow = file(".github/workflows/deploy-production.yml")
+// The deployment intentionally excludes .github from immutable VPS releases.
+// Only check deployment-source assertions when running inside GitHub checkout.
+const workflowPath = new URL("../.github/workflows/deploy-production.yml", import.meta.url)
 
 // Public R2 image requests must be allowed while the rest of /api stays blocked.
 assert.ok(robots.includes('allow: ["/", "/api/catalog/image?key="]'))
 assert.ok(robots.includes('"/api"'))
 assert.ok(robots.includes('"/account"'))
-assert.ok(workflow.includes("Allow: /api/catalog/image?key="))
+if (existsSync(workflowPath)) {
+  assert.ok(readFileSync(workflowPath, "utf8").includes("Allow: /api/catalog/image?key="))
+}
 
 // Every sitemap fetch must not pretend all products have just been edited.
 assert.ok(sitemap.includes("getCatalogConfig()"))
