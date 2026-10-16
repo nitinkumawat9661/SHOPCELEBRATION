@@ -1,0 +1,144 @@
+{
+  "source": "Owner supplied exact photo-name mapping in conversation on 2026-10-16",
+  "scope": "First-party original necklaces 001-022",
+  "appliesTo": "11 SKU-scoped name/alt changes with proposed motif-only descriptions",
+  "sameNameDifferentSKUs": [
+    "celebration-necklace-001",
+    "celebration-necklace-011"
+  ],
+  "requiresOwnerFinalReviewForDuplicate": true,
+  "records": [
+    {
+      "sku": "celebration-necklace-007",
+      "action": "RENAME",
+      "previousName": "Korean Crown Dancing Stone Necklace",
+      "correctName": "Korean Clover Dancing Stone Necklace",
+      "picturedMotif": "Round clover / quatrefoil + moving stone",
+      "previousDescription": "Crown-sweep necklace with a free-moving central stone, bright JD embellishment and anti-tarnish silver plating for festive wear.",
+      "proposedDescription": "Round clover/quatrefoil pendant with a moving centre stone and delicate stone detailing.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-007.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-008",
+      "action": "RENAME",
+      "previousName": "Korean Teardrop Dancing Stone Necklace",
+      "correctName": "Korean Crown Teardrop Dancing Stone Necklace",
+      "picturedMotif": "Crown / lotus-style teardrop + moving stone",
+      "previousDescription": "Teardrop-orbit necklace featuring a mobile center stone, sparkling JD accents and a polished anti-tarnish silver-toned surface.",
+      "proposedDescription": "Crown- and lotus-inspired teardrop frame with a moving centre stone.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-008.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-009",
+      "action": "RENAME",
+      "previousName": "Korean Heart Dancing Stone Necklace",
+      "correctName": "Korean Bow Teardrop Dancing Stone Necklace",
+      "picturedMotif": "Bow on top + teardrop loop + moving stone",
+      "previousDescription": "Star-and-heart themed necklace with a moving focal stone, fine JD detailing and anti-tarnish finish suited to evening looks.",
+      "proposedDescription": "Bow-topped teardrop-loop pendant with a moving centre stone.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-009.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-011",
+      "action": "RENAME",
+      "previousName": "Korean Gold Flower Dancing Stone Necklace",
+      "correctName": "Korean Fan Crystal Pendant Necklace",
+      "picturedMotif": "Fan-shaped (silver/gold tone)",
+      "previousDescription": "Gold-toned floral orbit necklace with JD stone highlights, anti-tarnish plating and a festive imported-style finish.",
+      "proposedDescription": "Fan-shaped pendant in silver- and gold-tone styling with crystal detail.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-011.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-012",
+      "action": "RENAME",
+      "previousName": "Korean Teddy Bear Dancing Stone Necklace",
+      "correctName": "Korean Gold Clover Dancing Stone Necklace",
+      "picturedMotif": "Gold clover / quatrefoil + moving stone",
+      "previousDescription": "Teddy-inspired halo necklace with a moving center stone, bright JD detailing and a smooth anti-tarnish silver finish.",
+      "proposedDescription": "Gold-tone clover/quatrefoil pendant with a moving centre stone.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-012.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-014",
+      "action": "RENAME",
+      "previousName": "Korean Moon Heart Dancing Stone Necklace",
+      "correctName": "Korean Snowflake Dancing Stone Necklace",
+      "picturedMotif": "Snowflake / Starburst + moving stone",
+      "previousDescription": "Crescent-heart necklace with a free-moving center stone, JD stone accents and polished anti-tarnish silver-toned finish.",
+      "proposedDescription": "Snowflake and starburst-style pendant with a moving centre stone.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-014.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-015",
+      "action": "RENAME",
+      "previousName": "Korean Pearl Flower Pendant Necklace",
+      "correctName": "Korean Moon Heart Dancing Stone Necklace",
+      "picturedMotif": "Crescent Moon + Heart + moving stone",
+      "previousDescription": "Pearl-centered petal necklace accented with JD stones, anti-tarnish silver plating and a soft statement look for casual wear.",
+      "proposedDescription": "Crescent moon and heart pendant featuring a moving centre stone.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-015.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-016",
+      "action": "RENAME",
+      "previousName": "Korean Rose Gold Teddy Bear Crystal Necklace",
+      "correctName": "Korean Teddy Bear Dancing Stone Necklace",
+      "picturedMotif": "Silver Teddy Bear + moving stone in heart",
+      "previousDescription": "Rose-toned teddy charm necklace with JD stone detailing, anti-tarnish plating and a playful imported fashion finish.",
+      "proposedDescription": "Silver-tone teddy-bear pendant with a moving stone set inside its heart detail.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-016.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-017",
+      "action": "RENAME",
+      "previousName": "Korean Gold Flower Medallion Necklace",
+      "correctName": "Korean Rose Gold Teddy Bear Crystal Necklace",
+      "picturedMotif": "Rose Gold Teddy Bear with heart",
+      "previousDescription": "Gold-toned round petal necklace with sparkling JD stone work, anti-tarnish finish and a clean floral medallion profile.",
+      "proposedDescription": "Rose-gold-tone teddy-bear pendant with a heart motif and crystal-style detailing.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-017.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-018",
+      "action": "RENAME",
+      "previousName": "Korean Open Flower Crystal Pendant Necklace",
+      "correctName": "Korean Rotating Flower Crystal Pendant Necklace",
+      "picturedMotif": "Rotating 5-petal flower",
+      "previousDescription": "Open-flower necklace with detailed JD stone petals, anti-tarnish silver plating and a polished finish for party styling.",
+      "proposedDescription": "Rotating five-petal flower pendant with crystal-style accents.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-018.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    },
+    {
+      "sku": "celebration-necklace-021",
+      "action": "RENAME",
+      "previousName": "Korean Spiral Flower Crystal Necklace",
+      "correctName": "Korean Star Heart Dancing Stone Necklace",
+      "picturedMotif": "Star frame + heart + bows + moving stone",
+      "previousDescription": "Rotating flower necklace with a movable upper floral section, full JD stone detailing and anti-tarnish silver finish.",
+      "proposedDescription": "Star-framed pendant featuring a heart, bow details and a moving centre stone.",
+      "expectedImageUrl": "https://shopcelebration.in/catalog/necklaces/celebration-necklace-021.png",
+      "evidence": "Owner-provided image-motif and exact-name table (2026-10-16)",
+      "descriptionReview": "EDITORIALLY_DERIVED_FROM_OWNER_MOTIF_NOT_EXPLICITLY_APPROVED"
+    }
+  ]
+}
