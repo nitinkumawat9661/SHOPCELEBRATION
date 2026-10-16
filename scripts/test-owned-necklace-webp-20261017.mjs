@@ -50,6 +50,7 @@ assert(ignore.includes("/public/catalog/necklaces-optimized/"), "Generated media
 for (const required of ["EXPECTED = 22", "sharp", "withoutEnlargement: true", "thumb:", "main:", "zoom:", "rotate()", "await rename(temp, target)"]) {
   assert(build.includes(required), `Original exact-SKU WebP generation guard absent: ${required}`)
 }
+assert(css.includes("z-index:1;") && css.includes("z-index:0;"), "Loaded photos must paint above the branded fallback immediately")
 assert(css.includes("opacity:1;") && !/\.safeCatalogImageFrame>img\s*\{[^}]*opacity:0/s.test(css),
   "Images must paint natively without waiting for client hydration/decode")
 assert(css.includes('[data-image-state="unavailable"]>img{visibility:hidden}'),
