@@ -112,3 +112,13 @@ The diagnostic script was created on a **separate unmerged audit branch** (PR #2
 ## 7. Safety state after this report
 
 **Investigation completed; visual identity verification is NOT completed.** Documentation and future review sheets are non-deploying source artifacts. No automatic catalog renames/image swaps are authorized by preparing this report. PR #198 (separate Self-Build packaging work) is not part of this investigation.
+
+## 8. Owner-supplied physical-photo/name decisions — 16 October 2026
+
+The owner has now provided a 22-row exact SKU, pictured-motif and proposed product name table for all Premium Anti-Tarnish Necklaces. The [CSV](./jewelry-review/JEWELRY_89_SKU_VISUAL_REVIEW_20261015.csv) and [photo board](./jewelry-review/01-premium-necklaces.md) preserve all 22 assessments. This does not constitute an independent image-by-image review by the assistant.
+
+- **Keep name (11):** 001–006, 010, 013, 019, 020, 022.
+- **Rename requested (11):** 007 Clover, 008 Crown Teardrop, 009 Bow Teardrop, 011 Fan Crystal, 012 Gold Clover, 014 Snowflake, 015 Moon Heart, 016 Teddy Bear, 017 Rose Gold Teddy Bear, 018 Rotating Flower, 021 Star Heart.
+- **Remaining 67:** no new owner visual verdict yet; do not classify prior 27 technical name repairs as owner visual approvals.
+- **Exact-title collision:** user-supplied name for 011 matches 001 exactly, despite distinct photos and SKUs. Confirm if a color/style qualifier is desired before final release; do not silently change either.
+- Writing these assessments to documents does not update production DB, website images, product IDs, prices, stock, orders or payments.
