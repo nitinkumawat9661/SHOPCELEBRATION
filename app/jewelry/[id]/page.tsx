@@ -83,6 +83,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     {
       "@context": "https://schema.org",
       "@type": "Product",
+      "@id": `${productUrl}#product`,
+      url: productUrl,
       name: product.name,
       sku: product.id,
       category: product.category,

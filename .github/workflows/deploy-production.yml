@@ -247,6 +247,7 @@ jobs:
           echo "Checking public SEO discovery routes after production cutover"
           ROBOTS="$(curl --silent --show-error --fail --location --max-time 20 https://shopcelebration.in/robots.txt)"
           printf '%s\n' "$ROBOTS" | grep -Fq 'Allow: /'
+          printf '%s\n' "$ROBOTS" | grep -Fq 'Allow: /api/catalog/image?key='
           printf '%s\n' "$ROBOTS" | grep -Fq 'Sitemap: https://shopcelebration.in/sitemap.xml'
           if printf '%s\n' "$ROBOTS" | grep -Fxq 'Disallow: /'; then
             echo "ERROR: Production robots.txt blocks all Google crawling." >&2

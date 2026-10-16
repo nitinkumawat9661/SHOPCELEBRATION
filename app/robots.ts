@@ -6,7 +6,8 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
+      // Keep the public product-image proxy crawlable while other APIs stay blocked.
+      allow: ["/", "/api/catalog/image?key="],
       disallow: ["/admin", "/account", "/cart", "/payment", "/track", "/api"]
     },
     sitemap: "https://shopcelebration.in/sitemap.xml",
