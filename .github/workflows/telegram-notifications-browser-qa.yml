@@ -7,9 +7,6 @@ on:
       - 'scripts/audit-notifications-browser.mjs'
       - '.github/workflows/telegram-notifications-browser-qa.yml'
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Deploy Celebration Production"]
-    types: [completed]
 
 permissions:
   contents: read

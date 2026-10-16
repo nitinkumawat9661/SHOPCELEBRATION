@@ -2,9 +2,6 @@ name: Celebration Self-Build Read-Only Launch Readiness
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Deploy Celebration Production"]
-    types: [completed]
 
 permissions:
   contents: read

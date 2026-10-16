@@ -31,7 +31,7 @@ export default async function SelfBuildCustomerPage(){
       <span>CELEBRATION · GIFT HAMPERS</span>
       <h1>Personal hampers, made with care.</h1>
       <p>Our create-your-own hamper studio is being prepared. Gift hampers and jewellery are still available in our existing store.</p>
-      <Link href="/#budgets">Shop available hampers →</Link>
+      <Link href="/curated-hampers">Shop available hampers →</Link>
     </section>
   }else{
     try{

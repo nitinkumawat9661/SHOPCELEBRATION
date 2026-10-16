@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     default: "Celebration | Affordable Jewelry & Custom Gift Hampers Online",
     template: "%s | Celebration"
   },
-  description: "Shop affordable jewelry, anti-tarnish pieces marked with a 6-month guarantee, and custom gift hampers from Celebration. Secure online payment, order tracking and delivery across serviceable Indian pincodes.",
+  description: "Discover necklaces, rings, bangles, bracelets and curated gift hampers at Celebration. Browse real product photos, use secure checkout and track orders across serviceable Indian pincodes.",
   applicationName: "Celebration",
   category: "shopping",
   robots: publicEnv.siteIndexable

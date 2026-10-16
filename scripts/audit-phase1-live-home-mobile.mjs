@@ -79,7 +79,7 @@ const getMetrics=async page=>page.evaluate(()=>{
       cartButton:rect(el.querySelector(".cartAddControl button")),
       price:el.querySelector(".catalogCardPrice strong")?.textContent?.trim()||""
     })),
-    budgets:rect($("#budgets")),occasions:rect($("#occasions")),
+    occasions:rect($("#occasions")),
     trust:rect($("#trust")),edits:rect($(".celebrationEdits")),
     homeMain:rect($(".celebrationHome main")),
     targets:[...document.querySelectorAll(".celebrationHome .celebrationHeroActions a,.celebrationHome .celebrationNav a")].map(el=>({
@@ -100,7 +100,7 @@ async function tryScreenshot(page,name,selector){
 }
 function check(width,d){
   if(d.docWidth>width+3)severe(width,`document horizontally overflows: ${d.docWidth}px vs ${width}px`)
-  if(!d.hero || !d.featured || !d.categories || !d.budgets || !d.occasions)
+  if(!d.hero || !d.featured || !d.categories || !d.occasions)
     severe(width,"Critical homepage sections missing from live document")
   if(d.categoryCount!==8)severe(width,`Expected 8 actual category navigation cards, got ${d.categoryCount}`)
   if(d.categoryPhotoCount!==8)warn(width,`Expected 8 current category photos, found ${d.categoryPhotoCount}; inspect fallback/DB`)
@@ -127,7 +127,6 @@ function check(width,d){
   if(d.heroText && d.heroText.right>width+3)warn(width,"Hero title may extend beyond viewport")
   if(d.nav && d.nav.w>width+3)warn(width,"Navigation may extend beyond viewport")
   if(d.header && d.header.w>width+3)severe(width,"Header extends beyond viewport")
-  if(d.budgets && d.budgets.w>width+3)severe(width,"Hamper budget section extends beyond viewport")
 }
 try {
   for(const width of widths){
@@ -151,7 +150,7 @@ try {
       await page.evaluate(()=>document.fonts.ready)
       // Force lazy product and editorial images to load in the browser
       // without clicking any shopping/payment action.
-      for(const selector of [".celebrationCategories",".celebrationFeatured","#budgets","#occasions"]){
+      for(const selector of [".celebrationCategories",".celebrationFeatured","#occasions"]){
         if(await page.locator(selector).count()){
           await page.locator(selector).first().scrollIntoViewIfNeeded({timeout:7000})
           await page.waitForTimeout(700)
@@ -165,7 +164,7 @@ try {
       await tryScreenshot(page,`home-${width}-hero`,".celebrationHero")
       await tryScreenshot(page,`home-${width}-categories`,".celebrationCategories")
       await tryScreenshot(page,`home-${width}-featured`,".celebrationFeatured")
-      await tryScreenshot(page,`home-${width}-budget`,"#budgets")
+      await tryScreenshot(page,`home-${width}-occasions`,"#occasions")
       if(width===390){
         await page.evaluate(()=>window.scrollTo(0,420))
         await page.mouse.wheel(0,320)

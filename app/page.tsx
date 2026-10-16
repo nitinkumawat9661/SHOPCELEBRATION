@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
   title: { absolute: "Celebration | Affordable Jewelry & Custom Gift Hampers Online" },
-  description: "Shop affordable jewelry, anti-tarnish pieces marked with a 6-month guarantee, and custom gift hampers from Celebration. Secure online payment, live stock checks and order tracking.",
+  description: "Shop necklaces, rings, bangles and bracelets, plus curated gift hampers from Celebration. Explore real product listings with secure checkout and order tracking.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",

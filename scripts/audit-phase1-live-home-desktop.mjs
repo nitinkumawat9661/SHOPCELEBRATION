@@ -37,7 +37,7 @@ const measured=page=>page.evaluate(()=>{
  const heroButtons=$$(".celebrationHeroActions a")
  const sectionSelectors=[
    ".celebrationHero",".celebrationBenefits",".celebrationCategories",".celebrationFeatured",
-   ".celebrationEdits","#budgets","#occasions","#trust"
+   ".celebrationEdits","#occasions","#trust"
  ]
  const sections=Object.fromEntries(sectionSelectors.map(selector=>[selector,box($(selector))]))
  return{
@@ -96,7 +96,7 @@ const screenshot=async(page,width,label,selector)=>{
 }
 function check(width,d){
  if(d.documentWidth>width+3)severe(width,"Horizontal document overflow "+d.documentWidth+"px > "+width+"px")
- for(const sel of [".celebrationHero",".celebrationBenefits",".celebrationCategories",".celebrationFeatured",".celebrationEdits","#budgets","#occasions","#trust"])
+ for(const sel of [".celebrationHero",".celebrationBenefits",".celebrationCategories",".celebrationFeatured",".celebrationEdits","#occasions","#trust"])
    if(!d.sections[sel])severe(width,"Missing essential desktop section: "+sel)
  if(!d.header||!d.logo||!d.search||!d.headerActions||!d.nav)
    severe(width,"Header missing logo, search, actions or nav")
@@ -148,7 +148,7 @@ try{
      status=res?.status()??null
      await page.locator(".celebrationFeatured .catalogCard").first().waitFor({state:"attached",timeout:23000})
      await page.evaluate(()=>document.fonts.ready)
-     for(const selector of [".celebrationCategories",".celebrationFeatured",".celebrationEdits","#budgets","#occasions","#trust"]){
+     for(const selector of [".celebrationCategories",".celebrationFeatured",".celebrationEdits","#occasions","#trust"]){
        if(await page.locator(selector).count()){
          await page.locator(selector).first().scrollIntoViewIfNeeded({timeout:6500})
          await page.waitForTimeout(550)
@@ -162,7 +162,7 @@ try{
      for(const [key,sel] of Object.entries({
        header:".celebrationHeader",hero:".celebrationHero",
        categories:".celebrationCategories",featured:".celebrationFeatured",
-       edits:".celebrationEdits",budgets:"#budgets",occasions:"#occasions"
+       edits:".celebrationEdits",occasions:"#occasions"
      }))await screenshot(page,width,key,sel)
      // Make sure the desktop header doesn't become compact on scroll.
      await page.mouse.wheel(0,700)

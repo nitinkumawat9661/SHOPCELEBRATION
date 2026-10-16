@@ -2,9 +2,6 @@ name: Celebration Phase 2 Product PIN Browser QA
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Deploy Celebration Production"]
-    types: [completed]
 
 permissions:
   contents: read
