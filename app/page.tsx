@@ -4,12 +4,11 @@ import { redirect } from "next/navigation"
 import { routes } from "../config/routes"
 import { Storefront } from "../features/home/Storefront"
 import { defaultCatalog } from "../lib/domain/catalog"
-import { getCatalogConfig } from "../lib/server/catalog"
-import { getHomeCategoryMedia } from "../lib/server/home-category-media"
 import { withVerifiedStorefrontBadges } from "../lib/server/product-badge-evidence"
 import { getTierPopularity } from "../lib/server/orders"
 import { customerSelfBuildEnabled } from "../lib/server/self-build-drafts"
-import { defaultStoreSettings, getStoreSettings } from "../lib/server/store-settings"
+import { defaultStoreSettings } from "../lib/server/store-settings"
+import { getPublicCatalogConfig, getPublicHomeCategoryMedia, getPublicStoreSettings } from "../lib/server/public-storefront"
 
 export const dynamic = "force-dynamic"
 
@@ -45,12 +44,6 @@ const getCachedSelfBuildEnabled = unstable_cache(
   { revalidate: 120 }
 )
 
-const getCachedStoreSettings = unstable_cache(
-  () => getStoreSettings(),
-  ["celebration-home-store-settings"],
-  { revalidate: 60 }
-)
-
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 export default async function HomePage({ searchParams }: { searchParams: SearchParams }) {
@@ -64,10 +57,10 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
   }
 
   const [catalogResult, proofResult, settingsResult, categoryMedia, selfBuildEnabled] = await Promise.all([
-    getCatalogConfig().catch(() => null),
+    getPublicCatalogConfig().catch(() => null),
     getCachedTierPopularity().catch(() => null),
-    getCachedStoreSettings().catch(() => null),
-    getHomeCategoryMedia().catch(() => ({})),
+    getPublicStoreSettings().catch(() => null),
+    getPublicHomeCategoryMedia().catch(() => ({})),
     getCachedSelfBuildEnabled().catch(() => false)
   ])
 
