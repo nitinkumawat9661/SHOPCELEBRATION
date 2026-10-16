@@ -1,0 +1,48 @@
+name: Jewelry Owner Names - Isolated PostgreSQL Verification
+
+on:
+  pull_request:
+    paths:
+      - "content/catalog.json"
+      - "content/jewelry-owner-name-reconciliation-20261016.json"
+      - "db/migrations/108_owner_necklace_22_photo_name_review.sql"
+      - "scripts/test-owner-necklace-postgres-20261016.mjs"
+      - ".github/workflows/jewelry-name-migration-sandbox-20261016.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: jewelry_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d jewelry_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      JEWELRY_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/jewelry_ci
+    steps:
+      - name: Checkout candidate (read-only GitHub)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Rehearse owner necklace name migration in disposable DB
+        run: node scripts/test-owner-necklace-postgres-20261016.mjs
