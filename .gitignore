@@ -5,3 +5,4 @@ node_modules/
 .next/
 *.log
 tsconfig.tsbuildinfo
+/public/catalog/necklaces-optimized/
