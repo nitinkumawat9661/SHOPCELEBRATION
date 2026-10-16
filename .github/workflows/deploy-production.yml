@@ -123,7 +123,7 @@ jobs:
             if grep -q '^NEXT_PUBLIC_SITE_INDEXABLE=' "$SEO_ENV"; then
               sed -i 's/^NEXT_PUBLIC_SITE_INDEXABLE=.*/NEXT_PUBLIC_SITE_INDEXABLE=true/' "$SEO_ENV"
             else
-              printf '\\nNEXT_PUBLIC_SITE_INDEXABLE=true\\n' >> "$SEO_ENV"
+              printf '\nNEXT_PUBLIC_SITE_INDEXABLE=true\n' >> "$SEO_ENV"
             fi
             chmod 600 "$SEO_ENV"
             echo "Production GSC indexing flag enabled (environment contents kept private)."
