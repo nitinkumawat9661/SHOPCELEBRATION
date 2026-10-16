@@ -9,6 +9,7 @@ import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 import { SafeCatalogImage } from "./SafeCatalogImage"
 import { catalogCardTreatment } from "../../lib/domain/catalog-card-presentation"
 import { WishlistToggle } from "./WishlistToggle"
+import { locallyOwnedImageFallback } from "../../lib/domain/owned-catalog-image-fallback"
 
 export function CatalogProductImage({ product, priority = false, imageVariant = "thumb" }: { product: GiftProduct; priority?: boolean; imageVariant?: "thumb" | "main" }) {
   const primary = primaryProductImage(product)
@@ -18,7 +19,7 @@ export function CatalogProductImage({ product, priority = false, imageVariant = 
       return <SafeCatalogImage
         className="catalogPhoto catalogSpritePhoto"
         src={sprite.url}
-        fallbackSrc={primary.fallbackUrl}
+        fallbackSrc={locallyOwnedImageFallback(sprite.url, primary.fallbackUrl)}
         objectPosition={sprite.backgroundPosition}
         alt={primary.alt || product.name}
         loading={priority ? "eager" : "lazy"}
@@ -27,7 +28,7 @@ export function CatalogProductImage({ product, priority = false, imageVariant = 
     return <SafeCatalogImage
       className="catalogPhoto"
       src={catalogImageVariant(primary.url, imageVariant)}
-      fallbackSrc={primary.fallbackUrl}
+      fallbackSrc={locallyOwnedImageFallback(catalogImageVariant(primary.url, imageVariant), primary.fallbackUrl)}
       alt={primary.alt || product.name}
       loading={priority ? "eager" : "lazy"}
     />

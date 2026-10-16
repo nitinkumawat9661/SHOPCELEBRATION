@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server"
-import { createCatalogImageViewUrl, isCatalogImageKey } from "../../../../lib/server/r2"
+import { isCatalogImageKey, readCatalogImageObject } from "../../../../lib/server/r2"
 
 export async function GET(request: Request) {
   const key = new URL(request.url).searchParams.get("key") || ""
   if (!isCatalogImageKey(key)) return NextResponse.json({ ok: false, error: "INVALID_IMAGE_KEY" }, { status: 404 })
   try {
-    const signedUrl = await createCatalogImageViewUrl(key)
-    const upstream = await fetch(signedUrl, { cache: "no-store" })
-    if (!upstream.ok) throw new Error(`R2_${upstream.status}`)
-    const type = upstream.headers.get("content-type") || "application/octet-stream"
-    if (!type.startsWith("image/")) throw new Error("INVALID_IMAGE_TYPE")
-    return new NextResponse(await upstream.arrayBuffer(), {
+    // One direct R2 request; no Meesho URL, redirect or temporary presigned
+    // download. Existing thumb/main/zoom WebP assets remain byte-for-byte.
+    const { bytes, type } = await readCatalogImageObject(key)
+    const immutable = /^catalog\/rehost\/meesho\/[a-f0-9]{64}\/(?:thumb|main|zoom)\.webp$/.test(key)
+    return new NextResponse(new Uint8Array(bytes), {
       status: 200,
       headers: {
         "Content-Type": type,
-        "Cache-Control": "public, max-age=300, stale-while-revalidate=1800",
+        "Cache-Control": immutable
+          ? "public, max-age=604800, immutable"
+          : "public, max-age=3600, stale-while-revalidate=86400",
         "X-Content-Type-Options": "nosniff"
       }
     })

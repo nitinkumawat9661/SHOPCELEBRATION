@@ -135,6 +135,27 @@ export async function verifyCatalogImageObject(key: string) {
   return isCatalogImageMimeType(type) && length > 0 && length <= validation.catalogImageMaxBytes
 }
 
+/**
+ * Read a verified PUBLIC product photo directly from R2 via the existing S3
+ * client. Avoid a presigned URL + a second HTTP fetch on every image request.
+ * Private customer/review/order objects are NEVER accessible through this API.
+ */
+export async function readCatalogImageObject(key: string) {
+  if (!isCatalogImageKey(key)) throw new Error("INVALID_CATALOG_IMAGE_KEY")
+  const response = await client().send(new GetObjectCommand({
+    Bucket: requireEnv("r2Bucket"),
+    Key: key
+  }))
+  const type = response.ContentType || ""
+  const size = response.ContentLength || 0
+  if (!type.startsWith("image/") || size > 12 * 1024 * 1024 || !response.Body) {
+    throw new Error("INVALID_CATALOG_IMAGE_OBJECT")
+  }
+  const bytes = await response.Body.transformToByteArray()
+  if (!bytes.length || bytes.length > 12 * 1024 * 1024) throw new Error("INVALID_CATALOG_IMAGE_OBJECT")
+  return { bytes, type }
+}
+
 export async function createCatalogImageViewUrl(key: string) {
   if (!isCatalogImageKey(key)) throw new Error("INVALID_CATALOG_IMAGE_KEY")
   return getSignedUrl(

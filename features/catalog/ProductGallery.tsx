@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type TouchEvent, type KeyboardEvent } from "
 import { catalogImageVariant, catalogSpriteImage, productImages, type GiftProduct } from "../../lib/domain/catalog"
 import { SafeCatalogImage } from "./SafeCatalogImage"
 import { productBadge } from "../../lib/domain/catalog-badges"
+import { locallyOwnedImageFallback } from "../../lib/domain/owned-catalog-image-fallback"
 
 export function ProductGallery({ product }: { product: GiftProduct }) {
   const images = useMemo(() => productImages(product), [product])
@@ -63,7 +64,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
           key={`${product.id}:${current.url}`}
           className={currentSprite ? "marketplaceGallerySprite" : "marketplaceGalleryPhoto"}
           src={currentSrc}
-          fallbackSrc={current.fallbackUrl}
+          fallbackSrc={locallyOwnedImageFallback(currentSrc, current.fallbackUrl)}
           srcSet={zoomSrc !== currentSrc ? `${currentSrc} 900w, ${zoomSrc} 1600w` : undefined}
           sizes="(max-width: 700px) 100vw, 50vw"
           objectPosition={currentSprite?.backgroundPosition}
@@ -94,7 +95,7 @@ export function ProductGallery({ product }: { product: GiftProduct }) {
                 <SafeCatalogImage
                   className={sprite ? "marketplaceGalleryThumbSprite" : undefined}
                   src={sprite?.url || catalogImageVariant(image.url, "thumb")}
-                  fallbackSrc={image.fallbackUrl}
+                  fallbackSrc={locallyOwnedImageFallback(sprite?.url || catalogImageVariant(image.url, "thumb"), image.fallbackUrl)}
                   objectPosition={sprite?.backgroundPosition}
                   alt={image.alt || product.name}
                   loading={index === 0 ? "eager" : "lazy"}
