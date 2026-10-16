@@ -21,11 +21,13 @@
   height:100%;
   max-width:none;
   object-fit:cover;
-  opacity:0;
-  transition:opacity .18s ease-out;
+  /* Native browser image paint must not wait for React hydration or decode(). */
+  opacity:1;
+  transition:none;
   background:transparent;
 }
 .safeCatalogImageFrame[data-image-state="ready"]>img{opacity:1}
+.safeCatalogImageFrame[data-image-state="unavailable"]>img{visibility:hidden}
 .safeCatalogImagePlaceholder{
   position:absolute;
   inset:0;
