@@ -131,6 +131,17 @@ jobs:
             echo "Production GSC indexing flag already enabled."
           fi
 
+          # Set the verified public GA4 Measurement ID in the private VPS environment.
+          # Next.js embeds NEXT_PUBLIC_* values during the production build.
+          GA4_ID='G-8F24GVDSL3'
+          if ! grep -qx "NEXT_PUBLIC_GA4_MEASUREMENT_ID=$GA4_ID" "$SEO_ENV" || [ "$(grep -c '^NEXT_PUBLIC_GA4_MEASUREMENT_ID=' "$SEO_ENV" || true)" -ne 1 ]; then
+            sed -i '/^NEXT_PUBLIC_GA4_MEASUREMENT_ID=/d' "$SEO_ENV"
+            printf '\nNEXT_PUBLIC_GA4_MEASUREMENT_ID=%s\n' "$GA4_ID" >> "$SEO_ENV"
+            chmod 600 "$SEO_ENV"
+            echo "Production GA4 measurement ID configured (environment contents kept private)."
+          else
+            echo "Production GA4 measurement ID already configured."
+          fi
           OLD_RELEASE="$(readlink -f "$APP_ROOT/current")"
           case "$OLD_RELEASE" in "$APP_ROOT"/releases/*) ;; *) echo "Unsafe current Celebration release: $OLD_RELEASE" >&2; exit 1 ;; esac
           SHORT_SHA="$(printf '%s' "$SHA" | cut -c1-12)"
