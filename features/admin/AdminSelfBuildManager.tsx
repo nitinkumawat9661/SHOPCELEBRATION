@@ -161,7 +161,11 @@ export function AdminSelfBuildManager({ onDirtyChange }: { onDirtyChange?: (dirt
   }
   function selectSection(next:Group) {
     if(next===section)return
-    if(unsaved && !window.confirm("Unsaved Self-Build settings may be lost when switching sections. Continue?"))return
+    // Category/option/rule changes stay mounted in this parent and retain their
+    // unsaved state across tabs. Capacity has its own editor: leaving it
+    // unmounts that editor and genuinely discards pending capacity changes.
+    if(section==="capacity" && capacityDirty &&
+       !window.confirm("Unsaved capacity or tier allowance changes will be discarded. Continue?"))return
     if(section==="capacity")setCapacityDirty(false)
     setSection(next)
   }
