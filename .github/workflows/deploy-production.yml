@@ -160,10 +160,16 @@ jobs:
           run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run build' _ "$NEW_RELEASE"
           echo "Ensuring private Celebration Redis cache is available when permitted"
           run_as_runtime bash "$NEW_RELEASE/scripts/provision-private-redis-cache.sh"
-          echo "Verifying dedicated loopback cache without exposing any credentials"
-          if command -v redis-cli >/dev/null 2>&1 && timeout 2 redis-cli -h 127.0.0.1 -p 6390 PING 2>/dev/null | grep -Fxq PONG; then
+          echo "Verifying dedicated loopback cache without exposing credentials"
+          REDIS_CLI_BIN="$(command -v redis-cli || true)"
+          if [ -z "$REDIS_CLI_BIN" ] && [ -x "$APP_ROOT/shared/redis-cache/runtime/usr/bin/redis-cli" ]; then
+            REDIS_CLI_BIN="$APP_ROOT/shared/redis-cache/runtime/usr/bin/redis-cli"
+          fi
+          REDIS_RUNTIME_LIB="$APP_ROOT/shared/redis-cache/runtime"
+          REDIS_LD_PATH="$REDIS_RUNTIME_LIB/lib/x86_64-linux-gnu:$REDIS_RUNTIME_LIB/usr/lib/x86_64-linux-gnu"
+          if [ -n "$REDIS_CLI_BIN" ] && timeout 2 env LD_LIBRARY_PATH="$REDIS_LD_PATH" "$REDIS_CLI_BIN" -h 127.0.0.1 -p 6390 PING 2>/dev/null | grep -Fxq PONG; then
             echo "CELEBRATION_REDIS_HEALTH=ACTIVE_PRIVATE"
-          elif command -v redis-cli >/dev/null 2>&1 && timeout 2 redis-cli -h 127.0.0.1 -p 6379 PING 2>/dev/null | grep -Fxq PONG; then
+          elif [ -n "$REDIS_CLI_BIN" ] && timeout 2 "$REDIS_CLI_BIN" -h 127.0.0.1 -p 6379 PING 2>/dev/null | grep -Fxq PONG; then
             echo "CELEBRATION_REDIS_HEALTH=ACTIVE_SYSTEM"
           else
             echo "CELEBRATION_REDIS_HEALTH=UNAVAILABLE_OR_OWNER_AUTHENTICATED"
