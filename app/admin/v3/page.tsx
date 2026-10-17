@@ -5,6 +5,8 @@ import { getAdminAccessState } from "../../../lib/security/admin-session"
 import "../../../styles/admin-v3.css"
 import "../../../styles/admin-v3-details.css"
 import "../../../styles/admin-v3-inventory.css"
+import "../../../styles/admin-v3-hampers.css"
+import "../../../styles/admin-self-build-20261013.css"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Admin V3 Preview | Celebration", robots: { index: false, follow: false } }
