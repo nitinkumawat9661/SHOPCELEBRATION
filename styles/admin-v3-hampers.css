@@ -1,0 +1,63 @@
+/* Celebration Admin V3 hampers — additive, route-scoped presentation only. */
+.cav3-root .cav3-hampers {display:grid;gap:17px;min-width:0}
+.cav3-root .cav3-hamper-hero {border:1px solid #eadeda;background:linear-gradient(115deg,#fff 34%,#faf0ed);
+ border-radius:16px;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.cav3-root .cav3-hamper-hero h2 {font:italic 600 34px/1.18 var(--font-shopping-display),Georgia,serif;
+ letter-spacing:-.045em;margin:7px 0 5px;color:var(--cav3-wine)}
+.cav3-root .cav3-hamper-hero p {margin:0;max-width:575px;font-size:12.5px;color:#6c605b;line-height:1.65}
+.cav3-root .cav3-hamper-links {display:flex;gap:8px;flex-wrap:wrap}
+.cav3-root .cav3-hamper-links a {display:inline-flex;align-items:center;justify-content:center;min-height:42px;
+ font-size:11px;font-weight:760;border:1px solid #e6d6d0;border-radius:9px;padding:10px 13px;color:var(--cav3-wine);background:#fff}
+.cav3-root .cav3-hamper-safety {border-radius:11px;border:1px solid #e9d9be;background:#fffbf5;color:#705948;
+ line-height:1.65;font-size:11.5px;padding:15px 17px}
+.cav3-root .cav3-hamper-overview {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cav3-root .cav3-hamper-overview>div {background:#fff;border:1px solid var(--cav3-line);
+ padding:17px 20px;border-radius:12px;display:grid;gap:8px;min-width:0}
+.cav3-root .cav3-hamper-overview span {color:#756c68;font-weight:750;font-size:11px}
+.cav3-root .cav3-hamper-overview strong {font-size:25px;line-height:1.1}
+.cav3-root .cav3-hamper-overview strong.cav3-hamper-off {font-size:19px;color:#974a43}
+.cav3-root .cav3-hamper-overview small {font-size:10px;color:#958a85}
+.cav3-root .cav3-hamper-tier-section {background:#fff;border-radius:14px;border:1px solid var(--cav3-line)}
+.cav3-root .cav3-hamper-tier-list {display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;padding:0 20px 14px}
+.cav3-root .cav3-hamper-tier-list article {border:1px solid #f1e8e3;background:#fffcfa;
+ border-radius:11px;display:grid;gap:7px;padding:14px;min-width:0}
+.cav3-root .cav3-hamper-tier-name {font-size:11px;color:#765e5a;font-weight:750;overflow-wrap:anywhere}
+.cav3-root .cav3-hamper-tier-list strong {font-size:22px;color:var(--cav3-wine);line-height:1.15}
+.cav3-root .cav3-hamper-tier-list small {font-size:10px;color:#8a7d77}
+.cav3-root .cav3-hamper-tier-note {padding:0 20px 15px;margin:0;color:#84766f;font-size:10.5px}
+.cav3-root .cav3-hamper-tabs {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ gap:7px;padding:7px;background:#f1ebe8;border:1px solid #e7deda;border-radius:12px}
+.cav3-root .cav3-hamper-tabs>button {border:1px solid transparent;background:transparent;border-radius:9px;
+ text-align:left;display:grid;align-content:center;gap:4px;padding:12px;min-width:0;min-height:61px;color:#776c66;cursor:pointer}
+.cav3-root .cav3-hamper-tabs>button:hover {background:#fff9f8}
+.cav3-root .cav3-hamper-tabs>button.is-active {border-color:#e9dad6;background:white;color:var(--cav3-wine);
+ box-shadow:0 3px 10px #4d25220b}
+.cav3-root .cav3-hamper-tabs b {font-size:11.5px;line-height:1.3}
+.cav3-root .cav3-hamper-tabs small {font-size:9.5px;color:#8d7f78;line-height:1.3}
+.cav3-root .cav3-hamper-workspace {min-width:0}
+.cav3-root .cav3-hamper-workspace .adminWorkspaceCard {width:100%;max-width:none;margin:0;min-width:0}
+.cav3-root .cav3-hamper-workspace .adminEditorGrid {min-width:0}
+.cav3-root .cav3-hamper-workspace input,.cav3-root .cav3-hamper-workspace textarea,
+.cav3-root .cav3-hamper-workspace select {min-width:0;max-width:100%}
+.cav3-root .cav3-hamper-workspace .sbAdmin {max-width:none}
+.cav3-root .cav3-hamper-workspace .sbAdminHero {flex-wrap:wrap}
+.cav3-root .cav3-hamper-workspace .adminDraftNotice {overflow-wrap:anywhere}
+.cav3-root .cav3-hamper-footer {font-size:11px;color:#7b6e66;line-height:1.6;margin:0 0 20px}
+.cav3-root .cav3-hamper-footer a {color:var(--cav3-wine);text-decoration:underline;font-weight:750}
+@media(max-width:1050px) {
+ .cav3-root .cav3-hamper-tabs {grid-template-columns:repeat(3,minmax(0,1fr))}
+ .cav3-root .cav3-hamper-overview {grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:600px) {
+ .cav3-root .cav3-hamper-hero {padding:18px}
+ .cav3-root .cav3-hamper-hero h2 {font-size:29px}
+ .cav3-root .cav3-hamper-overview {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .cav3-root .cav3-hamper-overview>div {padding:14px}
+ .cav3-root .cav3-hamper-tabs {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cav3-root .cav3-hamper-tabs>button {padding:10px}
+ .cav3-root .cav3-hamper-tier-list {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 12px 12px}
+ .cav3-root .cav3-hamper-tier-section .cav3-panel-head {padding:17px 12px}
+ .cav3-root .cav3-hamper-workspace .adminCatalogActions {width:100%}
+ .cav3-root .cav3-hamper-workspace .adminCatalogActions>button {min-height:43px}
+ .cav3-root .cav3-hamper-workspace .sbAdminBody {padding:14px}
+}
