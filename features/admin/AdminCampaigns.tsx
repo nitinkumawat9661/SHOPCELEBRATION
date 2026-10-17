@@ -148,8 +148,8 @@ export function AdminCampaigns({ v3 = false, onDirtyChange, onPublished }: {
         "Changes apply to checkout immediately after saving. There is no persistent draft or automatic rollback.",
         "Existing orders and offer quotes must still be reconciled using their stored records.",
         "The individual-cart eligible product rule currently applies the discount to the entire cart if at least one eligible item matches."
-      ].join("\\n")
-      if (!window.confirm("REVIEW CAMPAIGN PUBLISH\\n\\n" + details + "\\n\\nPublish this full offer configuration?")) return
+      ].join("\n")
+      if (!window.confirm("REVIEW CAMPAIGN PUBLISH\n\n" + details + "\n\nPublish this full offer configuration?")) return
     }
     setBusy(true)
     setNotice("")
