@@ -16,6 +16,12 @@ Previously homepage, jewellery listing and product detail routes invoked `getCat
 - Admin Save live / Publish / Rollback invalidate public catalog AFTER commit. Save stock invalidates catalog after commit. Store settings save invalidates settings.
 - If Redis is unavailable, the site **stays operational using 2s in-process cache and original DB**. Does not silently install or expose Redis; protected/remote services must be configured separately.
 
+## Live diagnosis and safe activation
+- The 17 Oct 2026 first Redis-cache code release completed successfully, but its production probe reported **CELEBRATION_REDIS_STATUS=UNAVAILABLE**. Therefore the first deployment was using only the 2-second L1 cache and authoritative DB fallback, not real Redis L2.
+- This follow-up includes an idempotent private Redis activation script, executed from the existing vetted deployment. It attempts a dedicated **127.0.0.1:6390** cache-only instance with 64MB bound and no persistence. If redis-server is missing, a bounded Ubuntu APT install is attempted ONLY when noninteractive sudo is already granted. Otherwise it declines safely.
+- On successful private cache PING, the script appends **only** `CELEBRATION_REDIS_URL=redis://127.0.0.1:6390/0` to the private shared environment. It never prints other credentials, changes inventory, modifies Nginx or exposes Redis publicly.
+- Do **not** claim Redis is active until the new rollout logs `CELEBRATION_REDIS_STATUS=ACTIVE` (or `CELEBRATION_REDIS_HEALTH=ACTIVE_PRIVATE`). This is still not a validated Lighthouse result.
+
 ## Redis readiness and setup
 - Default connection: loopback `redis://127.0.0.1:6379/0`, never put a public host in a browser.
 - Optional private environment override: `CELEBRATION_REDIS_URL`. Can include Redis username/password. Store only in `/var/www/celebration/shared/.env.production`, never commit credentials.
