@@ -668,8 +668,9 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
               replaceProduct(index, { salePricePaise: amount })
             }} /></label>
             <label className="adminCheck"><input type="checkbox" checked={product.sellIndividually === true} onChange={(event) => replaceProduct(index, { sellIndividually: event.target.checked })} /> Sell individually without a hamper</label>
-            <label>Available stock<input type="number" min="0" max="10000" step="1" inputMode="numeric" disabled={!product.sellIndividually || busy === `stock-${index}`} value={product.stockAvailable ?? 0} onChange={(event) => replaceStockLocal(index, Math.max(0, Math.min(10000, Number(event.target.value) || 0)))} /></label>
-            <button className="secondary" type="button" disabled={!product.sellIndividually || busy === `stock-${index}`} onClick={() => void saveStock(index)}>{busy === `stock-${index}` ? "Saving stock…" : "Save stock"}</button>
+            {!focusMode && <><label>Available stock<input type="number" min="0" max="10000" step="1" inputMode="numeric" disabled={!product.sellIndividually || busy === `stock-${index}`} value={product.stockAvailable ?? 0} onChange={(event) => replaceStockLocal(index, Math.max(0, Math.min(10000, Number(event.target.value) || 0)))} /></label>
+            <button className="secondary" type="button" disabled={!product.sellIndividually || busy === `stock-${index}`} onClick={() => void saveStock(index)}>{busy === `stock-${index}` ? "Saving stock…" : "Save stock"}</button></>}
+            {focusMode && <p className="adminWide">Available stock is read-only in V3 product editing. Manage physical/available quantities separately in the existing Inventory workflow.</p>}
           </div>
           <details className="adminOrderDetails">
             <summary>Retail declarations / Legal Metrology</summary>
