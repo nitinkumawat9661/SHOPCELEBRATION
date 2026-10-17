@@ -20,7 +20,8 @@ if (existsSync(workflowPath)) {
 }
 
 // Every sitemap fetch must not pretend all products have just been edited.
-assert.ok(sitemap.includes("getCatalogConfig()"))
+assert.ok(sitemap.includes("getPublicCatalogConfig()"))
+assert.ok(file("lib/server/public-storefront.ts").includes('publicSnapshot("catalog", 8, getCatalogConfig)'))
 assert.ok(sitemap.includes("product.active !== false"))
 assert.ok(sitemap.includes("encodeURIComponent(product.id)"))
 assert.ok(!sitemap.includes("lastModified: now"))
