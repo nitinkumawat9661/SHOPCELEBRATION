@@ -1,0 +1,101 @@
+/* Celebration Admin V3 Settings & Security, isolated to protected /admin/v3 */
+.cav3-root .cav3-settings{display:grid;gap:17px;min-width:0}
+.cav3-root .cav3-settings-banner{padding:16px 19px;border-radius:12px;
+ border:1px solid #e4d5bd;background:#fffbf4;color:#725946;font-size:11.5px;line-height:1.7}
+.cav3-root .cav3-settings-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.cav3-root .cav3-settings-tiles>div{min-width:0;display:grid;gap:8px;background:#fff;
+ padding:18px;border:1px solid var(--cav3-line);border-radius:12px}
+.cav3-root .cav3-settings-tiles span{font-size:11px;font-weight:750;color:#776963}
+.cav3-root .cav3-settings-tiles b{font-size:22px;line-height:1.2;overflow-wrap:anywhere}
+.cav3-root .cav3-settings-tiles b.is-warning{color:#a55042}
+.cav3-root .cav3-settings-tiles small{font-size:10px;line-height:1.55;color:#978980}
+.cav3-root .cav3-settings-tabs{display:flex;gap:8px;overflow-x:auto;padding:0 0 2px;scrollbar-width:thin}
+.cav3-root .cav3-settings-tabs>button{font-size:11px;font-weight:800;color:#75675f;
+ border:1px solid #e9dfd9;border-radius:9px;background:#fff;padding:12px 16px;
+ min-height:43px;white-space:nowrap;cursor:pointer}
+.cav3-root .cav3-settings-tabs>button.is-active{background:#7a1f24;border-color:#7a1f24;color:#fff}
+.cav3-root .cav3-settings-editor{display:grid;gap:0;min-width:0;border:1px solid var(--cav3-line);
+ background:#fff;border-radius:14px;overflow:hidden}
+.cav3-root .cav3-settings-editor-head{display:flex;justify-content:space-between;align-items:center;
+ flex-wrap:wrap;gap:15px;border-bottom:1px solid #f0e9e5;padding:20px}
+.cav3-root .cav3-settings-editor-head h2{font-size:16px;line-height:1.4;margin:0 0 6px}
+.cav3-root .cav3-settings-editor-head p{font-size:11px;line-height:1.6;color:#84766d;margin:0}
+.cav3-root .cav3-settings-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cav3-root .cav3-settings-actions button{min-height:42px;padding:10px 13px;cursor:pointer;
+ border-radius:9px;font-size:11px;font-weight:800}
+.cav3-root .cav3-settings-actions button:disabled{opacity:.45;cursor:not-allowed}
+.cav3-root .cav3-settings-primary{border:1px solid #7a1f24;background:#7a1f24;color:#fff}
+.cav3-root .cav3-settings-secondary{background:#fff;border:1px solid #e6d8d2;color:#7a1f24}
+.cav3-root .cav3-settings-dirty{font-size:11px;color:#866b3b;background:#fff7e9;
+ margin:15px 20px 0;border:1px solid #efddbe;padding:11px 13px;border-radius:9px}
+.cav3-root .cav3-settings-editor>.cav3-state,
+.cav3-root .cav3-settings-editor>.cav3-error,
+.cav3-root .cav3-settings-editor>.cav3-success{margin:13px 20px}
+.cav3-root .cav3-settings-fields{padding:20px;display:grid;gap:18px;
+ grid-template-columns:repeat(2,minmax(0,1fr))}
+.cav3-root .cav3-settings-field{display:grid;align-content:start;gap:8px;min-width:0}
+.cav3-root .cav3-settings-field.is-wide{grid-column:1/-1}
+.cav3-root .cav3-settings-field>span{font-size:11.5px;font-weight:780;color:#524942}
+.cav3-root .cav3-settings-field>input,
+.cav3-root .cav3-settings-field>textarea{width:100%;min-width:0;border-radius:9px;
+ border:1px solid #e5dad4;padding:11px 12px;color:#302a27;font-size:12px;line-height:1.5;background:#fff}
+.cav3-root .cav3-settings-field>input{min-height:44px}
+.cav3-root .cav3-settings-field>textarea{resize:vertical}
+.cav3-root .cav3-settings-field>small{font-size:10px;line-height:1.6;color:#907f76}
+.cav3-root .cav3-settings-preview{display:flex;gap:20px;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;background:#fdf8f5;border-top:1px solid #f0e5dd;padding:19px 20px}
+.cav3-root .cav3-settings-preview>div{min-width:0;display:grid;gap:6px}
+.cav3-root .cav3-settings-preview b{font-size:11px;color:#817068}
+.cav3-root .cav3-settings-preview h3{font:italic 600 23px/1.25 Georgia,serif;color:#7a1f24;margin:2px 0}
+.cav3-root .cav3-settings-preview p{font-size:12px;margin:0;color:#5d524d;overflow-wrap:anywhere}
+.cav3-root .cav3-settings-preview small{font-size:10px;color:#928076}
+.cav3-root .cav3-settings-preview>a{display:inline-flex;min-height:42px;align-items:center;
+ border:1px solid #e2cfc5;border-radius:9px;padding:10px 14px;color:#7a1f24;background:#fff;
+ font-size:11px;font-weight:800;text-decoration:none}
+.cav3-root .cav3-settings-caution{padding:16px 20px;color:#95503b;background:#fff7ee;
+ border-top:1px solid #f1dfce;font-size:11px;line-height:1.7}
+.cav3-root .cav3-settings-security{display:grid;gap:17px;min-width:0}
+.cav3-root .cav3-settings-security>.cav3-panel{margin:0;min-width:0}
+.cav3-root .cav3-settings-security .cav3-panel-head button{border:1px solid #e4d5ce;color:#7a1f24;
+ padding:9px 12px;border-radius:8px;background:white;min-height:37px;font-size:11px;font-weight:770;cursor:pointer}
+.cav3-root .cav3-settings-security-facts{margin:0;padding:0 19px 16px;display:grid}
+.cav3-root .cav3-settings-security-facts>div{display:grid;grid-template-columns:minmax(110px,43%) minmax(0,1fr);
+ gap:10px;padding:13px 0;border-top:1px solid #f1eae6;font-size:11.5px}
+.cav3-root .cav3-settings-security-facts dt{color:#7e726b}
+.cav3-root .cav3-settings-security-facts dd{margin:0;font-weight:800;overflow-wrap:anywhere}
+.cav3-root .cav3-settings-passkey-action{display:flex;align-items:center;justify-content:space-between;
+ gap:16px;flex-wrap:wrap;background:#fdf8f5;border-top:1px solid #eee2dc;padding:20px}
+.cav3-root .cav3-settings-passkey-action>div{flex:1 1 240px}
+.cav3-root .cav3-settings-passkey-action b{font-size:12px}
+.cav3-root .cav3-settings-passkey-action p{font-size:11px;color:#746860;line-height:1.7;margin:6px 0 0}
+.cav3-root .cav3-settings-passkey-action button{background:#7a1f24;border:1px solid #7a1f24;
+ color:#fff;padding:11px 15px;min-height:43px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer}
+.cav3-root .cav3-settings-passkey-action button:disabled{opacity:.5;cursor:not-allowed}
+.cav3-root .cav3-settings-security .cav3-error,
+.cav3-root .cav3-settings-security .cav3-success{margin:14px 19px}
+.cav3-root .cav3-settings-security-warning{background:#fffaf4;border:1px solid #e7d8c4;
+ border-radius:12px;padding:19px;color:#755a49}
+.cav3-root .cav3-settings-security-warning h3{font-size:13px;margin:0 0 8px}
+.cav3-root .cav3-settings-security-warning p{font-size:11px;line-height:1.7;margin:7px 0}
+.cav3-root .cav3-settings-system-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;padding:0 19px 19px}
+.cav3-root .cav3-settings-system-grid>div{min-width:0;border:1px solid #eee5df;
+ border-radius:10px;background:#fcfaf8;padding:15px;display:grid;gap:8px}
+.cav3-root .cav3-settings-system-grid b{font-size:12px;color:#433732}
+.cav3-root .cav3-settings-system-grid small{font-size:10.5px;line-height:1.7;color:#82766e}
+@media(max-width:1000px){
+ .cav3-root .cav3-settings-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+ .cav3-root .cav3-settings-tiles{gap:8px}
+ .cav3-root .cav3-settings-tiles>div{padding:13px}
+ .cav3-root .cav3-settings-tiles b{font-size:19px}
+ .cav3-root .cav3-settings-editor-head{padding:16px}
+ .cav3-root .cav3-settings-fields{grid-template-columns:1fr;padding:16px;gap:15px}
+ .cav3-root .cav3-settings-actions,.cav3-root .cav3-settings-actions>button{width:100%}
+ .cav3-root .cav3-settings-system-grid{grid-template-columns:1fr;padding:0 13px 13px}
+ .cav3-root .cav3-settings-security-facts{padding:0 13px 13px}
+ .cav3-root .cav3-settings-security-facts>div{grid-template-columns:minmax(95px,42%) minmax(0,1fr)}
+ .cav3-root .cav3-settings-passkey-action{padding:16px}
+ .cav3-root .cav3-settings-passkey-action button{width:100%}
+}
