@@ -262,7 +262,10 @@ jobs:
             ADMIN_SESSION_VERSION: hex(16),
             TRACKING_TOKEN_SECRET: hex(32),
             PASSWORD_RESET_SECRET: hex(32)
-          })) process.stdout.write(key + '=' + value + '\n')
+          })) {
+            process.stderr.write('::add-mask::' + value + '\n')
+            process.stdout.write(key + '=' + value + '\n')
+          }
           NODE
       - name: Install locked dependencies and virtual WebAuthn browser driver
         run: |
