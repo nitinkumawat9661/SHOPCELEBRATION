@@ -11,6 +11,12 @@ const nextConfig = {
     ]
     return [
       { source: "/:path*", headers: shared },
+      // Stable, first-party campaign art: one-week browser freshness instead of
+      // the default no-cache public/ response. Avoid one-year immutable caching
+      // because these file names are not content-addressed.
+      { source: "/images/campaign/:path*", headers: [
+        { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }
+      ] },
       // Generated local WebPs keep their same-SKU PNG originals as fallbacks.
       { source: "/catalog/necklaces-optimized/:path*", headers: [
         { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }

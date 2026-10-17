@@ -18,7 +18,7 @@ const displayFont = localFont({
   display: "swap"
 })
 const bodyFont = localFont({ src: "./fonts/inter-latin.woff2", weight: "400 700", variable: "--font-shopping-sans", display: "swap" })
-const accentFont = localFont({ src: "./fonts/allura-latin.woff2", weight: "400", variable: "--font-shopping-script", adjustFontFallback: "Times New Roman", display: "swap" })
+const accentFont = localFont({ src: "./fonts/allura-latin.woff2", weight: "400", variable: "--font-shopping-script", preload: false, adjustFontFallback: "Times New Roman", display: "swap" })
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shopcelebration.in"),
