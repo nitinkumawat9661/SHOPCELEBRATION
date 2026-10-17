@@ -61,16 +61,16 @@ unset secret
 [ -s "$CREDENTIAL_FILE" ] || fail "Credential file was not saved"
 chmod 600 "$CREDENTIAL_FILE"
 
-# Connect using the stored database URL without writing its contents to a log.
+# Verify the stored stage-only secret with psql; never pass the password as
+# a command-line argument and do not attempt login to any other database.
 database_url="$(<"$CREDENTIAL_FILE")"
-identity="$(DATABASE_URL="$database_url" node -e '
-const { Client } = require("pg")
-const client = new Client({connectionString:process.env.DATABASE_URL,ssl:false})
-;(async()=>{await client.connect()
- const r=await client.query("SELECT current_database() AS d, current_user AS u")
- process.stdout.write(r.rows[0].d + " " + r.rows[0].u)
- await client.end()})().catch(e=>{console.error(e.code||"DB_LOGIN_FAILED");process.exit(1)})
-' 2>&1)" || fail "DB authentication verification failed: $identity"
+db_password="${database_url#postgresql://$ROLE:}"
+db_password="${db_password%%@*}"
+[ "${#db_password}" -eq 64 ] || fail "Stored database password malformed"
+identity="$(PGPASSWORD="$db_password" psql -XAtq -h 127.0.0.1 -p 5432 -U "$ROLE" -d "$DB" \
+  -c "SELECT current_database() || ' ' || current_user" 2>&1)" ||
+  fail "DB authentication verification failed: check isolated Postgres permissions"
+unset db_password
 unset database_url
 [ "$identity" = "$DB $ROLE" ] || fail "Staging DB identity mismatch"
 printf 'PASS: dedicated stage-only Postgres DB and least-privilege role created.\n'
