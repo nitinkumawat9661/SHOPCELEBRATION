@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { catalogImageVariant, primaryProductImage, type CatalogConfig, type GiftProduct } from "../../../lib/domain/catalog"
-import type { AdjustmentMode } from "../../../lib/server/admin-inventory-adjustments"
+import { nextAvailableStock, type AdjustmentMode } from "../../../lib/domain/admin-stock-adjustment"
 
 type Adjustment = {
   id: string
@@ -127,8 +127,11 @@ export function AdminInventoryV3({ catalog, catalogError, onRefresh, onOpenOrder
     Number(amount) >= 0 && Number(amount) <= 10000
   const value = inputValid ? Number(amount) : NaN
   const previous = selected?.stockAvailable ?? NaN
-  const next = !inputValid ? NaN : mode === "set" ? value : mode === "add" ? previous + value : previous - value
-  const reasonable = Number.isInteger(next) && next >= 0 && next <= 10000 && next !== previous
+  let next = NaN
+  if (selected && inputValid) {
+    try { next = nextAvailableStock(previous, mode, value) } catch { next = NaN }
+  }
+  const reasonable = Number.isInteger(next)
   const reasonClean = reason.trim().replace(/\s+/g, " ")
   const isReady = Boolean(selected && history && reservations && !busy && inputValid && reasonable &&
     reasonClean.length >= 4 && reasonClean.length <= 240)
