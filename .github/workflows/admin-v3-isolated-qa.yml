@@ -138,9 +138,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test ! -e app/__admin_v3_qa_only
-          mkdir -p app/__admin_v3_qa_only
-          cat > app/__admin_v3_qa_only/page.tsx <<'TSX'
+          test ! -e app/admin-v3-qa-only
+          mkdir -p app/admin-v3-qa-only
+          cat > app/admin-v3-qa-only/page.tsx <<'TSX'
           import { AdminDashboardV3 } from '../../features/admin/v3/AdminDashboardV3'
           import '../../styles/admin.css'
           import '../../styles/admin-v2.css'
@@ -178,14 +178,14 @@ jobs:
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
           READY=0
           for i in $(seq 1 60); do
-            if curl -fsS --max-time 5 http://127.0.0.1:3288/__admin_v3_qa_only -o /dev/null; then READY=1; break; fi
+            if curl -fsS --max-time 5 http://127.0.0.1:3288/admin-v3-qa-only -o /dev/null; then READY=1; break; fi
             sleep 2
           done
           if [ "$READY" -ne 1 ]; then
             tail -n 160 /tmp/admin-v3-qa-next.log
             exit 1
           fi
-          ADMIN_V3_QA_URL=http://127.0.0.1:3288/__admin_v3_qa_only node scripts/browser-admin-v3-qa.mjs
+          ADMIN_V3_QA_URL=http://127.0.0.1:3288/admin-v3-qa-only node scripts/browser-admin-v3-qa.mjs
       - name: Save synthetic layout proof (no user records)
         if: always()
         uses: actions/upload-artifact@v4
