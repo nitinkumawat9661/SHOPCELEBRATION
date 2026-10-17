@@ -18,6 +18,7 @@ on:
       - 'app/admin/v3/**'
       - 'styles/admin-v3-*.css'
       - 'scripts/test-admin-v3-*.mjs'
+      - 'db/migrations/109_admin_inventory_adjustment_history.sql'
   workflow_dispatch:
 
 permissions:
@@ -78,3 +79,36 @@ jobs:
         run: npm run audit
       - name: Build candidate without indexing or deployment
         run: npm run build
+
+  postgres-integration:
+    name: Disposable PostgreSQL 16 domain integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin-v3-only-disposable-test
+          POSTGRES_DB: celebration_v3_qa
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d celebration_v3_qa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:admin-v3-only-disposable-test@127.0.0.1:5432/celebration_v3_qa
+      DATABASE_SSL_MODE: disable
+      NEXT_PUBLIC_SITE_INDEXABLE: 'false'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies for disposable local tests only
+        run: npm ci
+      - name: Execute migrations and V3 database integration on ephemeral local DB
+        run: node scripts/test-admin-v3-postgres.mjs
