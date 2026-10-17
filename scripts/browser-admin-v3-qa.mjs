@@ -8,11 +8,11 @@ import assert from "node:assert/strict"
 import { mkdir, writeFile } from "node:fs/promises"
 import { chromium } from "playwright-core"
 
-const base = process.env.ADMIN_V3_QA_URL || "http://127.0.0.1:3288/__admin_v3_qa_only"
+const base = process.env.ADMIN_V3_QA_URL || "http://127.0.0.1:3288/admin-v3-qa-only"
 const url = new URL(base)
 assert.equal(url.hostname, "127.0.0.1", "Only loopback CI preview URLs are allowed")
 assert.equal(url.port, "3288")
-assert.equal(url.pathname, "/__admin_v3_qa_only")
+assert.equal(url.pathname, "/admin-v3-qa-only")
 await mkdir("artifacts/admin-v3-browser", { recursive: true })
 
 const sampleCatalog = {
