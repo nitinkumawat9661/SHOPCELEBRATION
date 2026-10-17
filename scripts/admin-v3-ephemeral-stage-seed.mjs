@@ -4,6 +4,7 @@
  */
 import assert from "node:assert/strict"
 import pg from "pg"
+import { readFile } from "node:fs/promises"
 
 assert.equal(process.env.GITHUB_ACTIONS, "true", "Only GitHub isolated CI runner is permitted")
 assert.equal(process.env.ADMIN_V3_STAGING, "ephemeral-ci")
@@ -22,6 +23,32 @@ try {
   assert.equal(identity.role, "celebration_v3_staging")
   const table = (await client.query("SELECT to_regclass('public.product_inventory') AS name")).rows[0]
   assert(table.name, "Migrations must be applied to disposable staging first")
+  // Seed one valid, wholly synthetic catalog SKU. An orphan inventory row is
+  // intentionally rejected by the real Admin V3 stock mutation backend.
+  const source = JSON.parse(await readFile(new URL("../content/catalog.json", import.meta.url), "utf8"))
+  const tier = source.tiers.find(row => row.id === source.settings.defaultTierId)
+  assert(tier && tier.active !== false)
+  const catalog = {
+    tiers: [tier],
+    occasions: [source.settings.defaultOccasion],
+    settings: source.settings,
+    products: [{
+      id: "staging-qa-necklace-001", name: "Synthetic QA Necklace",
+      category: "Synthetic staging test", minTier: 0, points: 1,
+      active: true, sellIndividually: true, salePricePaise: 19900,
+      note: "Disposable integration fixture; no actual retail SKU"
+    }]
+  }
+  await client.query(
+    `INSERT INTO catalog_config(id, payload, version)
+      VALUES ('primary', $1::jsonb, 1)`,
+    [JSON.stringify(catalog)]
+  )
+  await client.query(
+    `INSERT INTO catalog_revisions(version, payload)
+      VALUES (1, $1::jsonb)`,
+    [JSON.stringify(catalog)]
+  )
   await client.query(
     `INSERT INTO product_inventory(product_id, available_quantity)
       VALUES ($1, 5)
