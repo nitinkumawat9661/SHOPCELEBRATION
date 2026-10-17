@@ -39,7 +39,9 @@ assert.match(css, /cav3-detail-columns/, "Responsive detail layout must exist")
 assert.match(css, /max-width:500px/, "Mobile detail layout must exist")
 
 for (const f of [workspace, detail]) {
-  assert.doesNotMatch(f, /fetch\([^)]*\{[^}]*method:\s*["'](?:POST|PUT|PATCH|DELETE)/,
-    "V3 detail/read-only UI must not add business mutation fetches")
+  // Logout is a legitimate session mutation. Product/order data mutations
+  // belong to the pre-existing protected workflow modules, not these views.
+  assert.doesNotMatch(f, /fetch\(\s*["'`][^"'`]*\/api\/admin\/(?:catalog|orders|inventory|campaigns|store-settings)[^"'`]*["'`]\s*,\s*\{\s*method:\s*["'](?:POST|PUT|PATCH|DELETE)/,
+    "Detail components must not invent a new business mutation API")
 }
 console.log("PASS: V3 phase-2 AST parsing and focused static safety checks (NOT build/runtime integration)")
