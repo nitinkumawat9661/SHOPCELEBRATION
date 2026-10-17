@@ -10,6 +10,7 @@ import { AdminOrderDetailV3, AdminProductDetailV3 } from "./AdminDetailsV3"
 import { AdminCatalogManager } from "../AdminCatalogManager"
 import { AdminOrderCard } from "../AdminOrderCard"
 import { useAdminOrders } from "../useAdminOrders"
+import { AdminInventoryV3 } from "./AdminInventoryV3"
 import type { AdminOrderFilterId } from "../../../config/admin-orders"
 
 type View = "overview" | "orders" | "products" | "inventory" | "hampers" | "offers" | "customers" | "analytics" | "reviews" | "settings"
@@ -40,7 +41,7 @@ const headings: Record<View, { kicker: string; heading: string; description: str
   overview: { kicker: "Store command center", heading: "Welcome to your workspace.", description: "Live paid-order numbers and operational priorities in one place." },
   orders: { kicker: "Order operations", heading: "Orders", description: "Search orders, review snapshots and perform existing guarded fulfillment actions." },
   products: { kicker: "Your catalogue", heading: "Products", description: "Browse live items and edit a focused SKU using the existing full-catalog draft/publish workflow." },
-  inventory: { kicker: "Coming in phase 3", heading: "Inventory", description: "Transactional stock adjustments and reservations will be added after safety testing." },
+  inventory: { kicker: "Inventory control", heading: "Inventory", description: "Available-to-sell quantities, low stock and audited stock corrections. Reservation review is read-only." },
   hampers: { kicker: "Coming in phase 4", heading: "Hampers", description: "Curated and Self-Build configuration stays in the existing admin for now." },
   offers: { kicker: "Coming in phase 4", heading: "Offers & Coupons", description: "The existing versioned campaign editor remains the operational source." },
   customers: { kicker: "Coming in phase 5", heading: "Customers", description: "Privacy-safe customer profiles require new admin-only endpoints." },
@@ -337,7 +338,15 @@ export function AdminDashboardV3() {
           <p className="cav3-help">Open an order to use the existing guarded status, packing and shipping operations. Payment refunds still require separate provider verification.</p>
         </>)}
 
-        {!["overview", "products", "orders"].includes(view) && <div className="cav3-next-phase">
+        {view === "inventory" && <AdminInventoryV3 catalog={catalog} catalogError={catalogError}
+          onRefresh={refreshAll} refreshToken={refreshKey}
+          onOpenOrder={(publicId) => {
+            navigate("orders")
+            setOrderFilter("all")
+            setSelectedOrderId(publicId)
+          }} />}
+
+        {!["overview", "products", "orders", "inventory"].includes(view) && <div className="cav3-next-phase">
           <span className="cav3-brand-mark">C</span><h2>{info.heading} · Planned development</h2>
           <p>{info.description} This visual shell is not yet connected to a V3 operational screen. Nothing is fabricated or editable.</p>
           <a className="cav3-primary" href="/admin">Open existing operational admin ↗</a>
