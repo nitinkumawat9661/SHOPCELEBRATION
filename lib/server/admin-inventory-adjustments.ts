@@ -140,7 +140,9 @@ export async function applyAdminInventoryAdjustment(input: Input) {
     return { ...publicRecord(written.rows[0]), replayed: false }
   })
 
-  if (!outcome.replayed) await invalidatePublicSnapshot("catalog")
+  // Also invalidate on an idempotent retry. The previous request may have
+  // committed the DB transaction but failed before its cache invalidation.
+  await invalidatePublicSnapshot("catalog")
   return outcome
 }
 
