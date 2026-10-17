@@ -16,7 +16,7 @@ function paise(raw:string) {
   return Number.isSafeInteger(n)&&n>=0&&n<=2_147_483_647?n:null
 }
 
-export function AdminSelfBuildCapacity(){
+export function AdminSelfBuildCapacity({ onDirtyChange }: { onDirtyChange?: (dirty: boolean) => void } = {}){
   const [state,setState]=useState<SelfBuildCapacityState|null>(null)
   const [baseline,setBaseline]=useState("")
   const [pending,setPending]=useState<Record<string,string>>({})
@@ -24,6 +24,8 @@ export function AdminSelfBuildCapacity(){
   const [saving,setSaving]=useState(false)
   const [notice,setNotice]=useState<Message|null>(null)
   const dirty=state!==null&&JSON.stringify(state)!==baseline
+  const invalidInput = Object.entries(pending).some(([key, raw]) => key.startsWith("tier:") ? paise(raw) === null : units(raw) === null)
+  useEffect(() => { onDirtyChange?.(dirty || invalidInput) }, [dirty, invalidInput, onDirtyChange])
 
   const reload=useCallback(async()=>{
     setLoading(true);setNotice(null)
@@ -40,6 +42,11 @@ export function AdminSelfBuildCapacity(){
     finally{setLoading(false)}
   },[])
   useEffect(()=>{void reload()},[reload])
+  useEffect(() => {
+    const warn=(event:BeforeUnloadEvent) => { if(dirty || invalidInput){event.preventDefault();event.returnValue=""} }
+    window.addEventListener("beforeunload",warn)
+    return () => window.removeEventListener("beforeunload",warn)
+  },[dirty,invalidInput])
 
   const rows=useMemo(()=>state?[
     ...state.categories.map(c=>({...c,kind:"category" as const,
