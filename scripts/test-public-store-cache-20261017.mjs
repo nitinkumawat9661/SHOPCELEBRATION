@@ -80,8 +80,9 @@ const compiled = ts.transpileModule(source, {
 const mod = { exports: {} }
 runInNewContext(compiled, {
   exports: mod.exports, module: mod, require: (name) => {
-    assert.equal(name, "node:net")
-    return { createConnection }
+    if (name === "node:net") return { createConnection }
+    if (name === "../../config/env") return { env: { celebrationRedisUrl: "redis://127.0.0.1:6379/0" } }
+    throw new Error("Unexpected dependency: " + name)
   },
   process: { env: { CELEBRATION_REDIS_URL: "redis://127.0.0.1:6379/0" } },
   Buffer, URL, Date: FakeDate, Map, Number, Promise, Error, JSON, queueMicrotask
