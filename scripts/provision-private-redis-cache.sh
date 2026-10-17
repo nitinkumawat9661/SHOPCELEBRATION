@@ -28,34 +28,60 @@ if [ -z "$CONFIGURED_REDIS" ] && command -v redis-cli >/dev/null 2>&1 &&
   exit 0
 fi
 
-# Install only when this user has explicit passwordless sudo, with bounded
-# noninteractive Ubuntu package operations. Leave other running services alone.
-if ! command -v redis-server >/dev/null 2>&1; then
-  if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null &&
-      command -v apt-get >/dev/null 2>&1; then
-    echo "Redis binary missing; attempting bounded APT installation"
-    if timeout 100 sudo -n apt-get update -qq >/dev/null 2>&1 &&
-        timeout 120 sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq redis-server redis-tools >/dev/null 2>&1; then
-      echo "Redis package available for isolated Celebration cache"
-    else
-      echo "CELEBRATION_REDIS_STATUS=UNAVAILABLE; package install not permitted or unsuccessful"
-      exit 0
-    fi
-  else
-    echo "CELEBRATION_REDIS_STATUS=UNAVAILABLE; Redis binary absent and no noninteractive sudo"
-    exit 0
+# Prefer preinstalled binaries. If absent, a passwordless sudo APT install
+# may be used. Otherwise unpack signed distro APT packages only inside the
+# owner-writable shared cache directory. Never change another tenant's Redis.
+install -d -m 700 "$CACHE_DIR"
+REDIS_SERVER_BIN="$(command -v redis-server || true)"
+REDIS_CLI_BIN="$(command -v redis-cli || true)"
+if [ -z "$REDIS_SERVER_BIN" ] && command -v sudo >/dev/null 2>&1 &&
+    sudo -n true 2>/dev/null && command -v apt-get >/dev/null 2>&1; then
+  echo "Redis absent; checking bounded noninteractive system installation"
+  if timeout 100 sudo -n apt-get update -qq >/dev/null 2>&1 &&
+      timeout 120 sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq redis-server redis-tools >/dev/null 2>&1; then
+    REDIS_SERVER_BIN="$(command -v redis-server || true)"
+    REDIS_CLI_BIN="$(command -v redis-cli || true)"
   fi
 fi
 
-command -v redis-cli >/dev/null 2>&1 || {
-  echo "CELEBRATION_REDIS_STATUS=UNAVAILABLE; redis-cli missing"
-  exit 0
-}
+# User-space extraction uses packages matched to the VPS distro/architecture.
+if [ -z "$REDIS_SERVER_BIN" ] || [ -z "$REDIS_CLI_BIN" ]; then
+  if command -v apt-get >/dev/null 2>&1 && command -v dpkg-deb >/dev/null 2>&1; then
+    echo "Redis unavailable system-wide; trying private distro-package extraction"
+    PACKAGE_DIR="$CACHE_DIR/packages"
+    RUNTIME_DIR="$CACHE_DIR/runtime"
+    install -d -m 700 "$PACKAGE_DIR" "$RUNTIME_DIR"
+    if ( cd "$PACKAGE_DIR" && timeout 90 apt-get download redis-server redis-tools >/dev/null 2>&1 ); then
+      for deb in "$PACKAGE_DIR"/*.deb; do
+        [ -f "$deb" ] || continue
+        dpkg-deb -x "$deb" "$RUNTIME_DIR"
+      done
+      REDIS_SERVER_BIN="$RUNTIME_DIR/usr/bin/redis-server"
+      REDIS_CLI_BIN="$RUNTIME_DIR/usr/bin/redis-cli"
+      export LD_LIBRARY_PATH="$RUNTIME_DIR/lib/x86_64-linux-gnu:$RUNTIME_DIR/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+      if ! "$REDIS_SERVER_BIN" --version >/dev/null 2>&1 ||
+          ! "$REDIS_CLI_BIN" --version >/dev/null 2>&1; then
+        # Redis may additionally depend on libjemalloc and liblzf.
+        ( cd "$PACKAGE_DIR" && timeout 75 apt-get download libjemalloc2 liblzf1 >/dev/null 2>&1 ) || true
+        for deb in "$PACKAGE_DIR"/libjemalloc2_*.deb "$PACKAGE_DIR"/liblzf1_*.deb; do
+          [ -f "$deb" ] || continue
+          dpkg-deb -x "$deb" "$RUNTIME_DIR"
+        done
+      fi
+    fi
+  fi
+fi
 
-install -d -m 700 "$CACHE_DIR"
+if [ -z "$REDIS_SERVER_BIN" ] || [ -z "$REDIS_CLI_BIN" ] ||
+    [ ! -x "$REDIS_SERVER_BIN" ] || [ ! -x "$REDIS_CLI_BIN" ] ||
+    ! "$REDIS_SERVER_BIN" --version >/dev/null 2>&1 ||
+    ! "$REDIS_CLI_BIN" --version >/dev/null 2>&1; then
+  echo "CELEBRATION_REDIS_STATUS=UNAVAILABLE; local Redis binaries not usable"
+  exit 0
+fi
 
 # Never hijack an existing service on the dedicated port.
-if timeout 2 redis-cli -h 127.0.0.1 -p "$PORT" PING 2>/dev/null | grep -Fxq PONG; then
+if timeout 2 "$REDIS_CLI_BIN" -h 127.0.0.1 -p "$PORT" PING 2>/dev/null | grep -Fxq PONG; then
   if [ ! -f "$CACHE_DIR/redis.pid" ]; then
     echo "CELEBRATION_REDIS_STATUS=UNAVAILABLE; port $PORT is already owned by an unknown Redis"
     exit 0
@@ -65,7 +91,7 @@ elif timeout 1 bash -c 'exec 7<>/dev/tcp/127.0.0.1/6390' 2>/dev/null; then
   exit 0
 else
   echo "Starting private, non-persistent, localhost-only Redis on $PORT"
-  redis-server \
+  "$REDIS_SERVER_BIN" \
     --bind 127.0.0.1 \
     --port "$PORT" \
     --protected-mode yes \
@@ -84,7 +110,7 @@ fi
 
 READY=false
 for attempt in 1 2 3 4 5; do
-  if timeout 2 redis-cli -h 127.0.0.1 -p "$PORT" PING 2>/dev/null | grep -Fxq PONG; then
+  if timeout 2 "$REDIS_CLI_BIN" -h 127.0.0.1 -p "$PORT" PING 2>/dev/null | grep -Fxq PONG; then
     READY=true
     break
   fi
