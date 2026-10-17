@@ -7,11 +7,13 @@ import { orderStatusLabels, customerPaymentStatusLabel } from "../../../lib/doma
 import { countAdminFilter, filterAdminOrders } from "../orderFilters"
 import type { AdminOrder } from "../types"
 import { AdminOrderDetailV3, AdminProductDetailV3 } from "./AdminDetailsV3"
+import { AdminCatalogManager } from "../AdminCatalogManager"
+import { AdminOrderCard } from "../AdminOrderCard"
+import { useAdminOrders } from "../useAdminOrders"
 import type { AdminOrderFilterId } from "../../../config/admin-orders"
 
 type View = "overview" | "orders" | "products" | "inventory" | "hampers" | "offers" | "customers" | "analytics" | "reviews" | "settings"
 type Analytics = { days: number; orders: number; revenuePaise: number; discountPaise: number; checkoutRate: number }
-type ResultOrders = { ok?: boolean; orders?: AdminOrder[]; error?: string }
 type ResultCatalog = { ok?: boolean; catalog?: CatalogConfig; error?: string }
 type ResultAnalytics = { ok?: boolean; analytics?: Analytics; error?: string }
 
@@ -36,8 +38,8 @@ const groups: { label: string; views: { id: View; label: string; icon: string }[
 
 const headings: Record<View, { kicker: string; heading: string; description: string }> = {
   overview: { kicker: "Store command center", heading: "Welcome to your workspace.", description: "Live paid-order numbers and operational priorities in one place." },
-  orders: { kicker: "Order operations", heading: "Orders", description: "Search the current order pipeline. Existing admin handles fulfilment actions." },
-  products: { kicker: "Your catalogue", heading: "Products", description: "Browse live jewellery and hamper items. Existing admin handles publishing." },
+  orders: { kicker: "Order operations", heading: "Orders", description: "Search orders, review snapshots and perform existing guarded fulfillment actions." },
+  products: { kicker: "Your catalogue", heading: "Products", description: "Browse live items and edit a focused SKU using the existing full-catalog draft/publish workflow." },
   inventory: { kicker: "Coming in phase 3", heading: "Inventory", description: "Transactional stock adjustments and reservations will be added after safety testing." },
   hampers: { kicker: "Coming in phase 4", heading: "Hampers", description: "Curated and Self-Build configuration stays in the existing admin for now." },
   offers: { kicker: "Coming in phase 4", heading: "Offers & Coupons", description: "The existing versioned campaign editor remains the operational source." },
@@ -99,10 +101,11 @@ export function AdminDashboardV3() {
   const [view, setView] = useState<View>("overview")
   const [period, setPeriod] = useState<7 | 30 | 90>(7)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [orders, setOrders] = useState<AdminOrder[] | null>(null)
+  const admin = useAdminOrders()
+  const orders: AdminOrder[] | null = admin.loading && admin.orders.length === 0 ? null : admin.orders
+  const ordersError = admin.error
   const [catalog, setCatalog] = useState<CatalogConfig | null>(null)
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
-  const [ordersError, setOrdersError] = useState("")
   const [catalogError, setCatalogError] = useState("")
   const [analyticsError, setAnalyticsError] = useState("")
   const [query, setQuery] = useState("")
@@ -112,19 +115,12 @@ export function AdminDashboardV3() {
   const [busyLogout, setBusyLogout] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [editingProduct, setEditingProduct] = useState(false)
+  const [editorDirty, setEditorDirty] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
-    setOrdersError("")
     setCatalogError("")
-    void (async () => {
-      try {
-        const r = await fetch("/api/admin/orders", { cache: "no-store", signal: controller.signal })
-        const data = await r.json() as ResultOrders
-        if (!r.ok || !data.ok || !Array.isArray(data.orders)) throw new Error("Order records unavailable.")
-        if (!controller.signal.aborted) setOrders(data.orders)
-      } catch { if (!controller.signal.aborted) { setOrders(null); setOrdersError("Orders could not be loaded. Refresh to retry.") } }
-    })()
     void (async () => {
       try {
         const r = await fetch("/api/catalog", { cache: "no-store", signal: controller.signal })
@@ -181,15 +177,30 @@ export function AdminDashboardV3() {
   const info = headings[view]
 
   function navigate(next: View) {
+    if (editingProduct && editorDirty && !window.confirm("Unsaved product edits will be lost. Leave the V3 editor?")) return
+    setEditingProduct(false)
+    setEditorDirty(false)
     setView(next)
     setMoreOpen(false)
     setQuery("")
     setCategory("all")
     setSelectedOrderId(null)
     setSelectedProductId(null)
-    window.scrollTo({ top: 0, behavior: "instant" })
+    window.scrollTo({ top: 0, behavior: "auto" })
   }
+  function leaveProductEditor() {
+    if (editorDirty && !window.confirm("Unsaved product edits will be lost. Return to product details?")) return
+    setEditingProduct(false)
+    setEditorDirty(false)
+  }
+
+  function refreshAll() {
+    setRefreshKey(v => v + 1)
+    void admin.load()
+  }
+
   async function logout() {
+    if (editingProduct && editorDirty && !window.confirm("Unsaved product edits will be lost. Sign out?")) return
     setBusyLogout(true)
     try {
       const response = await fetch("/api/admin/logout", { method: "POST" })
@@ -215,7 +226,7 @@ export function AdminDashboardV3() {
         <div className="cav3-nav-group" key={g.label}><div className="cav3-nav-label">{g.label}</div>
           {g.views.map((item) => nav(item.id, item.label, item.icon))}</div>
       )}</nav>
-      <div className="cav3-side-footer"><span>DEVELOPMENT PREVIEW · V3</span><small>Read-only. Live admin is unchanged.</small>
+      <div className="cav3-side-footer"><span>DEVELOPMENT BRANCH · V3</span><small>Product publishing & order actions use real guarded admin APIs. Not deployed.</small>
         <a href="/admin">Open current admin ↗</a><button type="button" disabled={busyLogout} onClick={() => void logout()}>Log out</button>
       </div>
     </aside>
@@ -229,11 +240,12 @@ export function AdminDashboardV3() {
           <div className="cav3-intro-buttons">{view === "overview" && <select aria-label="Reporting period" value={period} onChange={(e) => setPeriod(Number(e.target.value) as 7 | 30 | 90)}>
             <option value={7}>7 days</option><option value={30}>30 days</option><option value={90}>90 days</option>
           </select>}
-          <button type="button" onClick={() => setRefreshKey((v) => v + 1)}>Refresh</button>
+          <button type="button" onClick={refreshAll}>Refresh</button>
           <a className="cav3-primary" href="/admin">Manage in current admin ↗</a></div>
         </div>
 
-        <p className="cav3-preview-notice" role="note">Phase 1: passkey-protected, read-only V3 preview with real backend data. No product, order, stock or payment updates occur here.</p>
+        <p className="cav3-preview-notice" role="note">Development branch only: Product editing and order operations now reuse the existing secured backend.
+          Saving or publishing in this V3 interface would modify that environment's actual database. Do not connect a test/staging UI to production data.</p>
 
         {view === "overview" && <>
           {(analyticsError || ordersError || catalogError) && <p className="cav3-error" role="alert">{[analyticsError, ordersError, catalogError].filter(Boolean).join(" ")}</p>}
@@ -269,8 +281,12 @@ export function AdminDashboardV3() {
           </Section>
         </>}
 
-        {view === "products" && (selectedProduct ? <AdminProductDetailV3 key={selectedProduct.id} product={selectedProduct}
-          onBack={() => setSelectedProductId(null)} /> : <>
+        {view === "products" && (editingProduct && selectedProductId ? <div className="cav3-inline-editor">
+          <button type="button" className="cav3-detail-back" onClick={leaveProductEditor}>← Back to product details</button>
+          <AdminCatalogManager key={selectedProductId} section="products" focusProductId={selectedProductId}
+            onDirtyChange={setEditorDirty} onPublished={refreshAll} />
+        </div> : selectedProduct ? <AdminProductDetailV3 key={selectedProduct.id} product={selectedProduct}
+          onBack={() => setSelectedProductId(null)} onEdit={() => { setEditingProduct(true); setEditorDirty(false) }} /> : <>
           {catalogError && <p role="alert" className="cav3-error">{catalogError}</p>}
           <div className="cav3-filters"><input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
             aria-label="Search live products" placeholder="Search product or SKU…" />
@@ -280,9 +296,9 @@ export function AdminDashboardV3() {
           <Section title="Live product catalogue" extra={<span className="cav3-quiet">{catalog ? products.length + " matching products" : "Loading…"}</span>}>
             {catalog ? products.length ? <div className="cav3-table cav3-product-list">
               {products.slice(0, 60).map((product) => <div role="button" tabIndex={0} className="cav3-table-row cav3-product-row cav3-click-row" key={product.id}
-                onClick={() => { setSelectedProductId(product.id); window.scrollTo({ top: 0, behavior: "instant" }) }}
+                onClick={() => { setSelectedProductId(product.id); window.scrollTo({ top: 0, behavior: "auto" }) }}
                 onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault(); setSelectedProductId(product.id); window.scrollTo({ top: 0, behavior: "instant" })
+                  event.preventDefault(); setSelectedProductId(product.id); window.scrollTo({ top: 0, behavior: "auto" })
                 } }} aria-label={"View product " + product.name}>
                 <div className="cav3-product-identity"><ProductThumb product={product} /><span><b>{product.name}</b><small>{product.id}</small></span></div>
                 <div><b>{product.category}</b><small>{product.active === false ? "Inactive" : "Active"}</small></div>
@@ -296,8 +312,16 @@ export function AdminDashboardV3() {
           </Section>
         </>)}
 
-        {view === "orders" && (selectedOrder ? <AdminOrderDetailV3 key={selectedOrder.publicId} order={selectedOrder}
-          onBack={() => setSelectedOrderId(null)} /> : <>
+        {view === "orders" && (selectedOrder ? <>
+          {admin.error && <p className="cav3-error" role="alert">{admin.error}</p>}
+          {admin.notice && <p className="cav3-success" role="status">{admin.notice}</p>}
+          <AdminOrderDetailV3 key={selectedOrder.publicId} order={selectedOrder}
+            onBack={() => setSelectedOrderId(null)}
+            operations={<AdminOrderCard order={selectedOrder} busy={admin.busy === selectedOrder.publicId}
+              onStatus={(status) => admin.updateStatus(selectedOrder, status)}
+              onShipping={(provider, trackingNumber, packed) => admin.saveShipping(selectedOrder, provider, trackingNumber, packed)}
+              onVideo={(file) => admin.uploadVideo(selectedOrder, file)} />} />
+        </> : <>
           {ordersError && <p role="alert" className="cav3-error">{ordersError}</p>}
           <div className="cav3-filters"><input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
             aria-label="Search orders" placeholder="Search order ID, customer or tracking…" /></div>
@@ -306,11 +330,11 @@ export function AdminDashboardV3() {
               onClick={() => setOrderFilter(f.id)}>{f.label}</button>)}</div>
           <Section title="Order pipeline" extra={<span className="cav3-quiet">{orders ? currentOrders.length + " orders" : "Loading…"}</span>}>
             {orders ? currentOrders.length ? <div className="cav3-table">{currentOrders.slice(0, 60).map((order) => <OrderRow key={order.publicId} order={order}
-                onSelect={() => { setSelectedOrderId(order.publicId); window.scrollTo({ top: 0, behavior: "instant" }) }} />)}
+                onSelect={() => { setSelectedOrderId(order.publicId); window.scrollTo({ top: 0, behavior: "auto" }) }} />)}
               {currentOrders.length > 60 && <p className="cav3-state">Showing the first 60 matches. Narrow your search.</p>}
             </div> : <p className="cav3-state">No orders match this filter.</p> : <p className="cav3-state">Loading current orders…</p>}
           </Section>
-          <p className="cav3-help">To verify payments, update status, upload packing video or book Shipway, continue using the <a href="/admin">existing operational admin</a>.</p>
+          <p className="cav3-help">Open an order to use the existing guarded status, packing and shipping operations. Payment refunds still require separate provider verification.</p>
         </>)}
 
         {!["overview", "products", "orders"].includes(view) && <div className="cav3-next-phase">
