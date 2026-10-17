@@ -57,6 +57,7 @@ jobs:
           npm ci
           npm audit --omit=dev
           npm run audit
+          bash -n scripts/provision-private-redis-cache.sh
 
       - name: Package Celebration source only
         shell: bash
