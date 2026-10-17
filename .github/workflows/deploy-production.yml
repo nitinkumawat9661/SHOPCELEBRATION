@@ -157,13 +157,15 @@ jobs:
           run_as_runtime() { env HOME="/home/$RUNTIME_USER" PM2_HOME="$PM2_HOME" "$@"; }
           echo "Installing and verifying new Celebration release"
           run_as_runtime bash -c 'cd "$1" && npm ci && npm audit --omit=dev && npm run audit && npm run build' _ "$NEW_RELEASE"
-          echo "Checking loopback Redis public-cache service (no secrets shown)"
-          if command -v redis-cli >/dev/null 2>&1 && timeout 3 redis-cli -h 127.0.0.1 -p 6379 PING 2>/dev/null | grep -Fxq PONG; then
-            echo "CELEBRATION_REDIS_STATUS=ACTIVE"
+          echo "Ensuring private Celebration Redis cache is available when permitted"
+          run_as_runtime bash "$NEW_RELEASE/scripts/provision-private-redis-cache.sh"
+          echo "Verifying dedicated loopback cache without exposing any credentials"
+          if command -v redis-cli >/dev/null 2>&1 && timeout 2 redis-cli -h 127.0.0.1 -p 6390 PING 2>/dev/null | grep -Fxq PONG; then
+            echo "CELEBRATION_REDIS_HEALTH=ACTIVE_PRIVATE"
+          elif command -v redis-cli >/dev/null 2>&1 && timeout 2 redis-cli -h 127.0.0.1 -p 6379 PING 2>/dev/null | grep -Fxq PONG; then
+            echo "CELEBRATION_REDIS_HEALTH=ACTIVE_SYSTEM"
           else
-            echo "CELEBRATION_REDIS_STATUS=UNAVAILABLE; safe short-lived L1 cache plus DB fallback"
-            # Redis provisioning is a separate operation. Never expose port
-            # 6379 externally or silently alter another tenant's Redis service.
+            echo "CELEBRATION_REDIS_HEALTH=UNAVAILABLE_OR_OWNER_AUTHENTICATED"
           fi
           echo "Applying idempotent database migrations"
           run_as_runtime bash -c 'cd "$1" && node -e "const {loadEnvConfig}=require(\"@next/env\"); loadEnvConfig(process.cwd(), false); import(\"./scripts/migrate.mjs\")"' _ "$NEW_RELEASE"
