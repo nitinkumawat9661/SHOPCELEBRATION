@@ -14,7 +14,7 @@ assert.match(page, /index: false/, "Admin V3 must be noindex")
 assert.match(app, /\/api\/admin\/orders/, "Use current protected order data")
 assert.match(app, /\/api\/admin\/analytics\?days=/, "Use verified analytics endpoint")
 assert.match(app, /\/api\/catalog/, "Use live catalog, not unpublished draft")
-assert.match(app, /read-only V3 preview/, "State clearly that the V3 surface is read-only")
+assert.match(app, /Development branch only/, "Clearly label environment and mutation risk")
 assert.doesNotMatch(app, /\/api\/admin\/(?:inventory|catalog|campaigns|store-settings)["']\s*,\s*\{\s*method:\s*["'](?:POST|PATCH|PUT|DELETE)/,
   "Phase 1 must not mutate business records")
 for (const view of ["overview", "orders", "products", "inventory", "hampers", "offers", "customers", "analytics", "reviews", "settings"]) {
