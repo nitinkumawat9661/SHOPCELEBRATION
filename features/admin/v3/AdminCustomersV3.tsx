@@ -158,7 +158,7 @@ export function AdminCustomersV3({ catalog, onOpenOrder }: {
   }, [selectedId, revision])
 
   async function revealAddress() {
-    if (!selectedId || !selected?.customer.hasSavedAddress) return
+    if (!selectedId || !selected?.customer?.hasSavedAddress) return
     addressAbort.current?.abort()
     const controller = new AbortController()
     addressAbort.current = controller
