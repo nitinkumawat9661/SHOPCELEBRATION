@@ -37,7 +37,7 @@ function SafePicture({ url, alt, className, variant }: { url: string | undefined
 }
 
 /** Read-only product detail. Live catalogue values come from /api/catalog, not draft. */
-export function AdminProductDetailV3({ product, onBack }: { product: GiftProduct; onBack: () => void }) {
+export function AdminProductDetailV3({ product, onBack, onEdit }: { product: GiftProduct; onBack: () => void; onEdit?: () => void }) {
   const gallery = productImages(product)
   const [chosen, setChosen] = useState(0)
   const current = gallery[Math.min(chosen, gallery.length - 1)]
@@ -50,6 +50,7 @@ export function AdminProductDetailV3({ product, onBack }: { product: GiftProduct
     <div className="cav3-detail-heading"><div><div className="cav3-eyebrow">Live product · read-only preview</div>
       <h2>{product.name}</h2><p>SKU: <code>{product.id}</code></p></div>
       <div className="cav3-detail-actions">
+        {onEdit && <button type="button" className="cav3-detail-primary" onClick={onEdit}>Edit this product in V3</button>}
         {isRetail && product.active !== false && <a href={"/jewelry/" + encodeURIComponent(product.id)}
           rel="noreferrer" target="_blank">View storefront ↗</a>}
         <a className="cav3-detail-primary" href="/admin">Edit in current admin ↗</a>
@@ -108,7 +109,7 @@ export function AdminProductDetailV3({ product, onBack }: { product: GiftProduct
 }
 
 /** Read-only order detail. Immutable purchase snapshots are never repriced. */
-export function AdminOrderDetailV3({ order, onBack }: { order: AdminOrder; onBack: () => void }) {
+export function AdminOrderDetailV3({ order, onBack, operations }: { order: AdminOrder; onBack: () => void; operations?: React.ReactNode }) {
   const itemSummary = order.lineItems.length
     ? order.lineItems.map((item, index) => <div className="cav3-item-row" key={item.productId + index}>
       <SafePicture url={item.imageUrl} alt="" className="cav3-item-photo" variant="thumb" />
@@ -188,5 +189,10 @@ export function AdminOrderDetailV3({ order, onBack }: { order: AdminOrder; onBac
         </DetailCard>
       </div>
     </div>
+    {operations && <section className="cav3-operation-section" aria-label="Existing safeguarded order operations">
+      <h2>Order operations</h2>
+      <p>Uses Celebration's existing guarded workflow: eligible status transitions, packing video, shipping booking and refund warnings.</p>
+      {operations}
+    </section>}
   </div>
 }
