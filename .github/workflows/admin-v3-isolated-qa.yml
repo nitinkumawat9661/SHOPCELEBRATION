@@ -20,6 +20,8 @@ on:
       - 'scripts/test-admin-v3-*.mjs'
       - 'scripts/browser-admin-v3-qa.mjs'
       - 'scripts/admin-v3-*.mjs'
+      - 'scripts/admin-v3-stage-*.sh'
+      - 'lib/server/public-store-cache.ts'
       - 'scripts/browser-admin-v3-real-http-staging.mjs'
       - 'db/migrations/109_admin_inventory_adjustment_history.sql'
   workflow_dispatch:
@@ -78,6 +80,15 @@ jobs:
           done
       - name: Verify isolation guard and 14 refusal cases
         run: node scripts/admin-v3-staging-preflight.test.mjs
+      - name: Verify SSH-only VPS staging scripts and 21 unsafe configurations
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/admin-v3-stage-db-bootstrap.sh
+          bash -n scripts/admin-v3-stage-vps-loopback.sh
+          node --check scripts/admin-v3-staging-loopback-preflight.mjs
+          node --check scripts/admin-v3-stage-synthetic-seed.mjs
+          node scripts/admin-v3-staging-loopback-preflight.test.mjs
       - name: Full project TypeScript check
         run: npm run typecheck
       - name: Legacy storefront and admin regression audit
