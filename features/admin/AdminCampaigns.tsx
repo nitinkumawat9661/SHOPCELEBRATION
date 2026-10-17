@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { routes } from "../../config/routes"
 import type { CatalogConfig } from "../../lib/domain/catalog"
 import { defaultCatalog, isIndividualListing } from "../../lib/domain/catalog"
@@ -47,7 +47,11 @@ function newCampaign(): Campaign {
   }
 }
 
-export function AdminCampaigns() {
+export function AdminCampaigns({ v3 = false, onDirtyChange, onPublished }: {
+  v3?: boolean
+  onDirtyChange?: (dirty: boolean) => void
+  onPublished?: () => void
+} = {}) {
   const [config, setConfig] = useState<CampaignConfig>(emptyConfig)
   const [catalog, setCatalog] = useState<CatalogConfig>(defaultCatalog)
   const [version, setVersion] = useState(0)
@@ -55,6 +59,36 @@ export function AdminCampaigns() {
   const [dirty, setDirty] = useState(false)
   const [notice, setNotice] = useState("")
   const [error, setError] = useState("")
+  const [loaded, setLoaded] = useState(false)
+  const [search, setSearch] = useState("")
+  const [segment, setSegment] = useState<"all" | "active" | "scheduled" | "inactive" | "expired">("all")
+  const [now, setNow] = useState(() => Date.now())
+  const visible = useMemo(() => {
+    const filter = search.trim().toLowerCase()
+    return config.campaigns.map((campaign, index) => ({ campaign, index })).filter(({ campaign }) => {
+      const start = campaign.startAt ? Date.parse(campaign.startAt) : null
+      const end = campaign.endAt ? Date.parse(campaign.endAt) : null
+      const state = !campaign.active ? "inactive" : end !== null && end <= now ? "expired"
+        : start !== null && start > now ? "scheduled" : "active"
+      return (segment === "all" || state === segment) &&
+        (!filter || [campaign.id, campaign.name, campaign.couponCode, campaign.scope, campaign.badge]
+          .some(value => value.toLowerCase().includes(filter)))
+    })
+  }, [config.campaigns, search, segment, now])
+  useEffect(() => { onDirtyChange?.(dirty) }, [dirty, onDirtyChange])
+  useEffect(() => {
+    if (!v3) return
+    const warn = (event: BeforeUnloadEvent) => {
+      if (dirty) { event.preventDefault(); event.returnValue = "" }
+    }
+    window.addEventListener("beforeunload", warn)
+    return () => window.removeEventListener("beforeunload", warn)
+  }, [dirty, v3])
+  useEffect(() => {
+    if (!v3) return
+    const interval = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(interval)
+  }, [v3])
 
   async function load() {
     setError("")
@@ -69,6 +103,7 @@ export function AdminCampaigns() {
     setVersion(campaignData.version || 0)
     if (catalogResponse.ok && catalogData.ok && catalogData.catalog) setCatalog(catalogData.catalog)
     setDirty(false)
+    setLoaded(true)
   }
 
   useEffect(() => { load().catch((cause) => setError(cause instanceof Error ? cause.message : "CAMPAIGNS_LOAD_FAILED")) }, [])
@@ -88,16 +123,34 @@ export function AdminCampaigns() {
   }
 
   function add() {
+    if (!loaded || busy) return
+    setSegment("all")
+    setSearch("")
     setConfig((current) => ({ campaigns: [...current.campaigns, newCampaign()] }))
     setDirty(true)
   }
 
   function remove(index: number) {
+    if (v3 && !window.confirm("Remove this campaign from the complete offer configuration? This can affect existing quotes and reporting. The change becomes live only after publishing.")) return
     setConfig((current) => ({ campaigns: current.campaigns.filter((_, itemIndex) => itemIndex !== index) }))
     setDirty(true)
   }
 
   async function save() {
+    if (!loaded || !dirty || busy) return
+    if (v3) {
+      const enabled = config.campaigns.filter(campaign => campaign.active)
+      const couponCodes = config.campaigns.filter(campaign => campaign.mode === "coupon")
+      const details = [
+        "You are publishing ALL " + config.campaigns.length + " campaigns as a SINGLE versioned live configuration.",
+        "Active configuration flags: " + enabled.length,
+        "Coupon-mode campaigns: " + couponCodes.length,
+        "Changes apply to checkout immediately after saving. There is no persistent draft or automatic rollback.",
+        "Existing orders and offer quotes must still be reconciled using their stored records.",
+        "The individual-cart eligible product rule currently applies the discount to the entire cart if at least one eligible item matches."
+      ].join("\\n")
+      if (!window.confirm("REVIEW CAMPAIGN PUBLISH\\n\\n" + details + "\\n\\nPublish this full offer configuration?")) return
+    }
     setBusy(true)
     setNotice("")
     setError("")
@@ -116,6 +169,7 @@ export function AdminCampaigns() {
       setVersion(data.version || version + 1)
       setDirty(false)
       setNotice("Offer rules published. Checkout will use these rules immediately.")
+      onPublished?.()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "CAMPAIGNS_SAVE_FAILED")
     } finally {
@@ -123,21 +177,46 @@ export function AdminCampaigns() {
     }
   }
 
+  async function reload() {
+    if (v3 && dirty && !window.confirm("Unsaved offer changes will be discarded. Reload from server?")) return
+    await load()
+  }
+
   return (
     <section className="adminWorkspaceCard adminCampaignWorkspace">
       <div className="adminWorkspaceHead">
         <div><div className="kicker">CAMPAIGNS</div><h2>Offers & coupons</h2><p>Create automatic discounts or coupon codes with server-validated pricing. Offers never stack.</p></div>
-        <div className="adminActions"><button className="secondary" type="button" onClick={add}>+ Add offer</button><button className="secondary" type="button" onClick={() => load().catch((cause) => setError(String(cause)))}>Reload</button><button className="primary" type="button" disabled={busy || !dirty} onClick={save}>{busy ? "Publishing…" : `Publish v${version + 1}`}</button></div>
+        <div className="adminActions"><button className="secondary" type="button" onClick={add}>+ Add offer</button><button className="secondary" type="button" disabled={busy} onClick={() => reload().catch((cause) => setError(String(cause)))}>Reload</button><button className="primary" type="button" disabled={busy || !loaded || !dirty} onClick={save}>{busy ? "Publishing…" : `Publish v${version + 1}`}</button></div>
       </div>
+      {v3 && <div className="adminDraftNotice" role="note">
+        <b>Live campaign configuration · v{version}</b> — changes are local until Publish.
+        Publishing writes the entire campaign configuration immediately; no persisted draft, independent archive, or undo operation exists.
+        Eligible-products matching means any matching item qualifies the full individual-cart subtotal, not only that item's price.
+      </div>}
       {dirty && <div className="adminDraftNotice">Unpublished changes • Live checkout still uses the previous campaign rules.</div>}
       {notice && <div className="successBox adminFeedback">{notice}</div>}
       {error && <div className="errorBox adminFeedback">{error}</div>}
       <div className="adminCampaignGuide"><b>Automatic</b> offers apply at checkout. <b>Coupon</b> offers apply only when the customer enters the exact code. Hamper eligibility uses selected hamper tiers; individual-item eligibility uses selected products. Active quotes and submitted offer orders reserve usage so limited campaigns cannot be oversubscribed; cancelling an order releases its slot.</div>
 
+      {v3 && <div className="cav3-offer-filters">
+        <input type="search" aria-label="Search configured offers" placeholder="Search campaign, code, ID or scope"
+          value={search} onChange={event => setSearch(event.target.value)} />
+        <div className="cav3-chips" aria-label="Offer state filters">
+          {(["all","active","scheduled","inactive","expired"] as const).map(state =>
+            <button type="button" key={state} className={segment === state ? "is-active" : ""}
+              aria-pressed={segment === state} onClick={() => setSegment(state)}>
+              {state === "all" ? "All" : state[0].toUpperCase()+state.slice(1)}
+            </button>)}
+        </div><small>Matching: {visible.length} / {config.campaigns.length}. “Active” means enabled in its time window, not a guarantee of cart eligibility.</small>
+      </div>}
       {config.campaigns.length === 0 && <div className="trackingState">No campaigns yet. Add one when you want to run a genuine offer.</div>}
       <div className="adminCampaignList">
-        {config.campaigns.map((campaign, index) => <article className={`adminCampaignCard ${campaign.active ? "active" : ""}`} key={`${campaign.id}-${index}`}>
-          <header><div><span>{campaign.active ? "LIVE WHEN ELIGIBLE" : "DRAFT / OFF"}</span><h3>{campaign.name}</h3><small>{campaign.id}</small></div><label className="adminToggle"><input type="checkbox" checked={campaign.active} onChange={(event) => patch(index, "active", event.target.checked)} /><span>Active</span></label></header>
+        {v3 && loaded && visible.length === 0 && config.campaigns.length > 0 &&
+          <p className="trackingState">No campaigns match the current search or state filter.</p>}
+        {(v3 ? visible : config.campaigns.map((campaign, index) => ({ campaign, index })))
+          .map(({ campaign, index }) => <article className={`adminCampaignCard ${campaign.active ? "active" : ""}`} key={`${campaign.id}-${index}`}>
+          <header><div><span>{!campaign.active ? "OFF" : campaign.endAt && Date.parse(campaign.endAt) <= now ? "EXPIRED" :
+            campaign.startAt && Date.parse(campaign.startAt) > now ? "SCHEDULED" : "ENABLED IN WINDOW"}</span><h3>{campaign.name}</h3><small>{campaign.id}</small></div><label className="adminToggle"><input type="checkbox" checked={campaign.active} onChange={(event) => patch(index, "active", event.target.checked)} /><span>Active</span></label></header>
           <div className="adminSettingsGrid campaignBasics">
             <label>Campaign ID<input value={campaign.id} readOnly /><small>Generated automatically; kept stable for analytics history.</small></label>
             <label>Name<input value={campaign.name} maxLength={100} onChange={(event) => patch(index, "name", event.target.value)} /></label>
