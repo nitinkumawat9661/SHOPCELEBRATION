@@ -30,8 +30,8 @@ assert(imageCard.includes('imageVariant = "thumb"'),
   "All original listing cards must keep the same image URL variant")
 assert(imageCard.includes("catalogImageVariant(primary.url, imageVariant)"),
   "Featured image must come from its own exact SKU")
-assert(home.includes('<CatalogCard key={product.id} product={product} imageVariant="main" />'),
-  "Featured cards should use full-resolution authentic main images")
+assert(home.includes('<CatalogCard key={product.id} product={product} imageVariant="thumb" preserveFeaturedPortrait />'),
+  "Featured cards must use authentic, same-SKU 360px thumb resources, not oversized 900px main images; preserve portrait-ring treatment")
 assert(imageStyle.includes("display:grid") && imageStyle.includes("grid-template-columns:repeat(2,minmax(0,1fr))") && imageStyle.includes("grid-template-columns:repeat(4,minmax(0,1fr))") && imageStyle.includes("scroll-snap-type:none"), "Take a closer look follows owner\'s approved original grid, not swipe")
 assert(budgetStyles.includes(".celebrationFeatured .catalogCardVisual") &&
   budgetStyles.includes("object-fit:contain") &&

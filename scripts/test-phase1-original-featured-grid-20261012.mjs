@@ -42,7 +42,7 @@ assert(mediaMap.includes("category-v[123456]") &&
   ownerMediaSource.includes("catalog/editorial/category-v6/"),
   "Preserve original owner-installed category v6 assets")
 assert(home.includes("photographed.map((product)") &&
-  home.includes('imageVariant="main"') &&
+  home.includes('imageVariant="thumb" preserveFeaturedPortrait') &&
   home.includes("isIndividuallySellable(item)"),
   "Feature only four real, independently purchasable exact-photo products")
 assert(globals.includes('@import "../styles/home-phase1-original-featured-grid-20261012.css";') &&

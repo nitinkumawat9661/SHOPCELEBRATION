@@ -36,7 +36,7 @@ export function CatalogProductImage({ product, priority = false, imageVariant = 
   return <SafeCatalogImage className="catalogPhoto" src="" alt={product.name} />
 }
 
-export function CatalogCard({ product, imageVariant = "thumb" }: { product: GiftProduct; imageVariant?: "thumb" | "main" }) {
+export function CatalogCard({ product, imageVariant = "thumb", preserveFeaturedPortrait = false }: { product: GiftProduct; imageVariant?: "thumb" | "main"; preserveFeaturedPortrait?: boolean }) {
   const listed = isIndividualListing(product)
   const individual = isIndividuallySellable(product)
   const soldOut = listed && !individual
@@ -45,7 +45,7 @@ export function CatalogCard({ product, imageVariant = "thumb" }: { product: Gift
   const mrpPaise = listed ? product.retail?.mrpPaise : undefined
   const treatment = catalogCardTreatment(product)
   return (
-    <article className={`catalogCard catalogCard--${treatment}${imageVariant === "main" && product.id === "celebration-ring-001" ? " catalogCard--featuredPortraitRing" : ""}`}>
+    <article className={`catalogCard catalogCard--${treatment}${(imageVariant === "main" || preserveFeaturedPortrait) && product.id === "celebration-ring-001" ? " catalogCard--featuredPortraitRing" : ""}`}>
       <WishlistToggle productId={product.id} productName={product.name} compact />
       <Link href={`/jewelry/${encodeURIComponent(product.id)}`} className="catalogCardLink" prefetch={false}>
         <div className="catalogCardVisual"><div className="catalogCardMedia"><CatalogProductImage product={product} imageVariant={imageVariant} /></div><span className="catalogCardArrow" aria-hidden="true">→</span></div>
