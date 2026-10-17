@@ -7,6 +7,7 @@ import "../../../styles/admin-v3-details.css"
 import "../../../styles/admin-v3-inventory.css"
 import "../../../styles/admin-v3-hampers.css"
 import "../../../styles/admin-v3-offers.css"
+import "../../../styles/admin-v3-customers.css"
 import "../../../styles/admin-self-build-20261013.css"
 
 export const dynamic = "force-dynamic"
