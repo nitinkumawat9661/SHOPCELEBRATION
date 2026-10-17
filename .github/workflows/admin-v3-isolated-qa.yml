@@ -18,6 +18,7 @@ on:
       - 'app/admin/v3/**'
       - 'styles/admin-v3-*.css'
       - 'scripts/test-admin-v3-*.mjs'
+      - 'scripts/browser-admin-v3-qa.mjs'
       - 'db/migrations/109_admin_inventory_adjustment_history.sql'
   workflow_dispatch:
 
@@ -112,3 +113,84 @@ jobs:
         run: npm ci
       - name: Execute migrations and V3 database integration on ephemeral local DB
         run: node scripts/test-admin-v3-postgres.mjs
+
+  browser-layout:
+    name: Real Chromium synthetic-only 10-screen V3 responsive QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 26
+    env:
+      NEXT_PUBLIC_SITE_INDEXABLE: 'false'
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked app and ephemeral Chromium automation
+        run: |
+          set -euo pipefail
+          npm ci
+          npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Create NEVER-COMMITTED synthetic QA page on runner only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e app/__admin_v3_qa_only
+          mkdir -p app/__admin_v3_qa_only
+          cat > app/__admin_v3_qa_only/page.tsx <<'TSX'
+          import { AdminDashboardV3 } from '../../features/admin/v3/AdminDashboardV3'
+          import '../../styles/admin.css'
+          import '../../styles/admin-v2.css'
+          import '../../styles/admin-systematic.css'
+          import '../../styles/admin-shell.css'
+          import '../../styles/admin-individual-sales.css'
+          import '../../styles/admin-catalog-polish.css'
+          import '../../styles/admin-reservation-review.css'
+          import '../../styles/admin-v3.css'
+          import '../../styles/admin-v3-details.css'
+          import '../../styles/admin-v3-inventory.css'
+          import '../../styles/admin-v3-hampers.css'
+          import '../../styles/admin-v3-offers.css'
+          import '../../styles/admin-v3-customers.css'
+          import '../../styles/admin-v3-analytics.css'
+          import '../../styles/admin-v3-reviews.css'
+          import '../../styles/admin-v3-settings.css'
+          import '../../styles/admin-self-build-20261013.css'
+          export const dynamic = 'force-dynamic'
+          export const metadata = { robots: { index: false, follow: false } }
+          export default function DisposableV3BrowserQA() {
+            return <AdminDashboardV3 />
+          }
+          TSX
+      - name: Build NON-DEPLOYED ephemeral UI candidate
+        run: npm run build
+      - name: Serve locally and verify all 10 screens at 4 widths
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          export CHROME_BIN
+          ./node_modules/.bin/next start -H 127.0.0.1 -p 3288 > /tmp/admin-v3-qa-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          READY=0
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 5 http://127.0.0.1:3288/__admin_v3_qa_only -o /dev/null; then READY=1; break; fi
+            sleep 2
+          done
+          if [ "$READY" -ne 1 ]; then
+            tail -n 160 /tmp/admin-v3-qa-next.log
+            exit 1
+          fi
+          ADMIN_V3_QA_URL=http://127.0.0.1:3288/__admin_v3_qa_only node scripts/browser-admin-v3-qa.mjs
+      - name: Save synthetic layout proof (no user records)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-v3-synthetic-chromium-qa-${{ github.run_id }}
+          path: artifacts/admin-v3-browser
+          if-no-files-found: warn
+          retention-days: 7
