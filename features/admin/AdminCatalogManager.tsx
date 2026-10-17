@@ -437,8 +437,30 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
     return true
   }
 
+  async function ensureFocusedDraftFresh() {
+    if (!focusMode) return true
+    if (version < 1 || !catalog.products.some(p => p.id === focusProductId)) {
+      setError("Cannot modify a missing SKU or an unloaded catalog.")
+      return false
+    }
+    try {
+      const response = await fetch("/api/admin/catalog", { cache: "no-store" })
+      const data = await response.json() as AdminCatalogPayload
+      if (!response.ok || !data.ok || !data.catalog) throw new Error("CATALOG_RECHECK_UNAVAILABLE")
+      if (data.version !== version || Boolean(data.draftExists) !== hasDraft ||
+          (data.draftUpdatedAt || null) !== draftUpdatedAt) {
+        setError("Shared catalog changed in another tab or device. Reload and review before saving or publishing.")
+        return false
+      }
+      return true
+    } catch {
+      setError("Cannot verify the latest shared draft. Please reload and retry.")
+      return false
+    }
+  }
+
   async function saveDraft() {
-    if (!validateCatalogBeforeSave()) return
+    if (!validateCatalogBeforeSave() || !await ensureFocusedDraftFresh()) return
     setBusy("save")
     setNotice("")
     setError("")
@@ -455,7 +477,7 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
   }
 
   async function saveAndPublish() {
-    if ((!dirty && !hasDraft) || !validateCatalogBeforeSave()) return
+    if ((!dirty && !hasDraft) || !validateCatalogBeforeSave() || !await ensureFocusedDraftFresh()) return
     if (focusMode) {
       if (!publishDiff) { setError("Live catalog comparison unavailable. Reload before publishing."); return }
       const impact = [
@@ -568,7 +590,7 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
             }
           }}>Reload</button>
           {hasDraft && <a className="secondary" href="/admin/catalog-preview" target="_blank" rel="noreferrer">Preview</a>}
-          {hasDraft && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard</button>}
+          {hasDraft && !focusMode && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard</button>}
           <button className="secondary" type="button" onClick={saveDraft} disabled={Boolean(busy) || !dirty}>{busy === "save" ? "Saving…" : "Save draft"}</button>
           <button className="primary adminPublishLive" type="button" onClick={saveAndPublish} disabled={Boolean(busy) || (!dirty && !hasDraft)}>{busy === "publish-live" ? "Saving live…" : "Save live"}</button>
         </div>
@@ -623,7 +645,7 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
           const primaryImage = primaryProductImage(product)
           const imageKey = `${product.id}:${primaryImage?.url || ""}`
           const imageBroken = brokenImages[imageKey] === true
-          return <div className="adminEditorCard adminDraggableCard adminProductEditorCard" draggable key={`${product.id}-${index}`} onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragIndex !== null) edit((current) => ({ ...current, products: moveItem(current.products, dragIndex, index) })); setDragIndex(null) }}>
+          return <div className="adminEditorCard adminDraggableCard adminProductEditorCard" draggable={!focusMode} key={`${product.id}-${index}`} onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragIndex !== null) edit((current) => ({ ...current, products: moveItem(current.products, dragIndex, index) })); setDragIndex(null) }}>
           {!focusMode && <div className="adminCardHandle">⋮⋮ <span>Drag to reorder</span></div>}
           <div className="adminProductMediaRow">
             <div className="adminProductMediaFrame">
