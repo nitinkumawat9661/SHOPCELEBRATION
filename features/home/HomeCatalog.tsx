@@ -37,14 +37,14 @@ export function HomeCatalog({ catalog, categoryMedia = {} }: { catalog: CatalogC
       </div>
       <p className="celebrationCategorySwipeHint" aria-hidden="true">Swipe to explore <span>→</span></p>
       <div className="celebrationCategoryRail" role="region" tabIndex={0} aria-label="Swipe or scroll through Celebration shopping categories">
-        {categories.map((category, index) => {
+        {categories.map((category) => {
           // Keep each category photograph owned by a real product in that category.
           // Do not substitute a different SKU when media is missing.
           const photo = products.find((product) => product.category === category.id && primaryProductImage(product))
           const editorial = categoryMedia[category.id]
           return <Link className="celebrationCategory" href={`/jewelry?view=all&category=${encodeURIComponent(category.id)}`} key={category.id} prefetch={false}>
             <div className="celebrationCategoryArt">
-              {editorial ? <CategoryEditorialPhoto src={editorial} label={category.label} eager={index < 3} /> : photo ? <CatalogProductImage product={photo} /> : <span className="celebrationCategoryGlyph" aria-hidden="true">{category.label.slice(0, 1)}</span>}
+              {editorial ? <CategoryEditorialPhoto src={editorial} label={category.label} /> : photo ? <CatalogProductImage product={photo} /> : <span className="celebrationCategoryGlyph" aria-hidden="true">{category.label.slice(0, 1)}</span>}
             </div>
             <b>{category.label}</b>
             <span className="celebrationCategorySub">Browse pieces <StoreIcon name="arrow" size={13} /></span>
