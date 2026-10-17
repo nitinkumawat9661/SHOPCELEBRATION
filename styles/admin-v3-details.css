@@ -70,3 +70,33 @@
   .cav3-root .cav3-item-row strong { grid-column:2 }
   .cav3-root .cav3-detail-row { grid-template-columns:minmax(95px,42%) minmax(0,1fr) }
 }
+
+
+/* Functional integration: V3 is a thin UI on existing protected workflows. */
+.cav3-root .cav3-operation-section { background:#fff;border:1px solid var(--cav3-line);border-radius:15px;
+  padding:18px;min-width:0 }
+.cav3-root .cav3-operation-section>h2 { font-size:17px;font-weight:800;margin:0 }
+.cav3-root .cav3-operation-section>p { color:#756f6a;font-size:12px;margin:6px 0 18px;line-height:1.65 }
+.cav3-root .cav3-operation-section .adminOrderCard { margin:0;max-width:none;box-shadow:none }
+.cav3-root .cav3-success { background:#edf8f1;border:1px solid #bde4cb;color:#266846;
+  border-radius:10px;padding:13px;font-size:12px }
+.cav3-root .cav3-inline-editor { display:grid;gap:14px;min-width:0 }
+.cav3-root .cav3-inline-editor .adminWorkspaceCard { min-width:0;max-width:none }
+.cav3-root .cav3-inline-editor .adminCatalogHeader { gap:12px;align-items:flex-start }
+.cav3-root .cav3-inline-editor .adminProductEditorCard { margin:0;overflow-wrap:anywhere }
+.cav3-root .cav3-inline-editor .adminEditorGrid { min-width:0 }
+.cav3-root .cav3-inline-editor .adminEditorGrid input,
+.cav3-root .cav3-inline-editor .adminEditorGrid select,
+.cav3-root .cav3-inline-editor .adminEditorGrid textarea { min-width:0;max-width:100% }
+.cav3-root .cav3-inline-editor input[readonly] { background:#f5f2ef;color:#6b6260;cursor:not-allowed }
+.cav3-root .cav3-detail-actions button { display:inline-flex;align-items:center;justify-content:center;
+  padding:10px 13px;border-radius:9px;min-height:41px;border:1px solid var(--cav3-wine);
+  background:var(--cav3-wine);color:#fff;font-size:12px;font-weight:800;cursor:pointer }
+.cav3-root .cav3-detail-actions button:hover { background:var(--cav3-wine-dark) }
+@media(max-width:650px) {
+  .cav3-root .cav3-operation-section { padding:12px }
+  .cav3-root .cav3-inline-editor .adminCatalogActions { width:100% }
+  .cav3-root .cav3-inline-editor .adminCatalogActions button { flex:1 1 125px;min-height:43px }
+  .cav3-root .cav3-inline-editor .adminEditorGrid { grid-template-columns:minmax(0,1fr) }
+  .cav3-root .cav3-inline-editor .adminProductEditorCard { padding:12px }
+}
