@@ -15,6 +15,7 @@ import { AdminHampersV3 } from "./AdminHampersV3"
 import { AdminOffersV3 } from "./AdminOffersV3"
 import { AdminCustomersV3 } from "./AdminCustomersV3"
 import { AdminAnalyticsV3 } from "./AdminAnalyticsV3"
+import { AdminReviewsV3 } from "./AdminReviewsV3"
 import type { AdminOrderFilterId } from "../../../config/admin-orders"
 
 type View = "overview" | "orders" | "products" | "inventory" | "hampers" | "offers" | "customers" | "analytics" | "reviews" | "settings"
@@ -50,7 +51,7 @@ const headings: Record<View, { kicker: string; heading: string; description: str
   offers: { kicker: "Discount control", heading: "Offers & Coupons", description: "Manage versioned checkout campaigns and review verified paid-order offer performance." },
   customers: { kicker: "Registered customer records", heading: "Customers", description: "Account-linked paid history, saved products and privacy-limited profiles." },
   analytics: { kicker: "Commerce performance", heading: "Analytics & Customer Behaviour", description: "Verified paid orders, anonymous funnel, account wishlists and checkout inactivity indicators." },
-  reviews: { kicker: "Coming in a later phase", heading: "Reviews", description: "Genuine-review moderation remains available in the current admin." },
+  reviews: { kicker: "Authentic customer voices", heading: "Reviews", description: "Moderate verified delivered-order reviews without altering their text or ratings." },
   settings: { kicker: "Coming in phase 6", heading: "Settings & Security", description: "Existing passkeys, payment credentials and support settings remain unchanged." }
 }
 
@@ -373,8 +374,13 @@ export function AdminDashboardV3() {
             setSelectedOrderId(publicId)
           }} />}
         {view === "analytics" && <AdminAnalyticsV3 catalog={catalog} />}
+        {view === "reviews" && <AdminReviewsV3 catalog={catalog} onOpenOrder={(publicId) => {
+          navigate("orders")
+          setOrderFilter("all")
+          setSelectedOrderId(publicId)
+        }} />}
 
-        {!["overview", "products", "orders", "inventory", "hampers", "offers", "customers", "analytics"].includes(view) && <div className="cav3-next-phase">
+        {!["overview", "products", "orders", "inventory", "hampers", "offers", "customers", "analytics", "reviews"].includes(view) && <div className="cav3-next-phase">
           <span className="cav3-brand-mark">C</span><h2>{info.heading} · Planned development</h2>
           <p>{info.description} This visual shell is not yet connected to a V3 operational screen. Nothing is fabricated or editable.</p>
           <a className="cav3-primary" href="/admin">Open existing operational admin ↗</a>
