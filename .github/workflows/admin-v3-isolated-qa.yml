@@ -19,6 +19,8 @@ on:
       - 'styles/admin-v3-*.css'
       - 'scripts/test-admin-v3-*.mjs'
       - 'scripts/browser-admin-v3-qa.mjs'
+      - 'scripts/admin-v3-*.mjs'
+      - 'scripts/browser-admin-v3-real-http-staging.mjs'
       - 'db/migrations/109_admin_inventory_adjustment_history.sql'
   workflow_dispatch:
 
@@ -74,6 +76,8 @@ jobs:
             echo "=== $test ==="
             node "$test"
           done
+      - name: Verify isolation guard and 14 refusal cases
+        run: node scripts/admin-v3-staging-preflight.test.mjs
       - name: Full project TypeScript check
         run: npm run typecheck
       - name: Legacy storefront and admin regression audit
@@ -192,5 +196,108 @@ jobs:
         with:
           name: admin-v3-synthetic-chromium-qa-${{ github.run_id }}
           path: artifacts/admin-v3-browser
+          if-no-files-found: warn
+          retention-days: 7
+
+  ephemeral-private-staging:
+    name: Real passkey + HTTP on disposable isolated PostgreSQL (no VPS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: celebration_v3_staging
+          POSTGRES_PASSWORD: ci-disposable-local-only
+          POSTGRES_DB: celebration_v3_staging
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U celebration_v3_staging -d celebration_v3_staging"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      ADMIN_V3_STAGING: ephemeral-ci
+      NEXT_PUBLIC_SITE_INDEXABLE: 'false'
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+      APP_BASE_URL: http://localhost:3288
+      DATABASE_URL: postgresql://celebration_v3_staging:ci-disposable-local-only@127.0.0.1:5432/celebration_v3_staging
+      DATABASE_SSL_MODE: disable
+    steps:
+      - uses: actions/checkout@v5
+      - name: Assert no production files and exact trusted development ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = 'feat/admin-v3-phase1-20261017'
+          test ! -e .env
+          test ! -e .env.production
+          test ! -e .env.local
+          test ! -e /var/www/celebration
+          for key in CASHFREE_APP_ID CASHFREE_SECRET_KEY SHIPWAY_LICENSE_KEY TELEGRAM_BOT_TOKEN R2_SECRET_ACCESS_KEY VPS_SSH_PRIVATE_KEY; do
+            test -z "${!key:-}" || { echo "Unexpected external integration credential variable" >&2; exit 1; }
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Generate ONLY runner-local ephemeral bootstrap credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE' >> "$GITHUB_ENV"
+          const { randomBytes, scryptSync } = require('node:crypto')
+          const hex = n => randomBytes(n).toString('hex')
+          const pwd = hex(20)
+          const salt = randomBytes(16)
+          const digest = scryptSync(pwd, salt, 64, {N:16384,r:8,p:1,maxmem:67108864})
+          for (const [key,value] of Object.entries({
+            ADMIN_V3_TEST_PASSWORD: pwd,
+            ADMIN_PASSWORD_SCRYPT: salt.toString('hex') + ':' + digest.toString('hex'),
+            ADMIN_SESSION_SECRET: hex(32),
+            ADMIN_SESSION_VERSION: hex(16),
+            TRACKING_TOKEN_SECRET: hex(32),
+            PASSWORD_RESET_SECRET: hex(32)
+          })) process.stdout.write(key + '=' + value + '\\n')
+          NODE
+      - name: Install locked dependencies and virtual WebAuthn browser driver
+        run: |
+          set -euo pipefail
+          npm ci
+          npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Apply full migrations to dedicated throwaway staging database ONLY
+        run: |
+          set -euo pipefail
+          node scripts/migrate.mjs
+          node scripts/admin-v3-ephemeral-stage-seed.mjs
+      - name: Build application for REAL private HTTP staging, no deployment
+        run: npm run build
+      - name: Serve on GitHub runner loopback and test real authentication / writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          export CHROME_BIN
+          ./node_modules/.bin/next start -H 127.0.0.1 -p 3288 > /tmp/admin-v3-real-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          READY=0
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 3 http://127.0.0.1:3288/api/health -o /dev/null; then READY=1; break; fi
+            sleep 2
+          done
+          if [ "$READY" -ne 1 ]; then
+            tail -n 100 /tmp/admin-v3-real-http.log
+            exit 1
+          fi
+          node scripts/browser-admin-v3-real-http-staging.mjs
+      - name: Preserve sanitized ephemeral staging results (never passkeys or secrets)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-v3-real-http-staging-${{ github.run_id }}
+          path: artifacts/admin-v3-real-http
           if-no-files-found: warn
           retention-days: 7
