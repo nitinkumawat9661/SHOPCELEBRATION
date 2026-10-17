@@ -1,3 +1,5 @@
+> **ROLLBACK NOTICE — 17 Oct 2026:** After deploying PR #214, the owner measured **Mobile PageSpeed 76 versus previous 92**. The responsive Next/Image proxy for category-v7 R2 images has been rolled back in hotfix PR #215. The implementation below is retained as a historical attempt, **NOT the current production behavior**. Do not re-enable until measured source-level/trace tests explain the regression. Desktop 99 is the prior owner's observation; the rollback's new score requires retest.
+
 # Celebration — PSI 92 responsive category art correction (17 Oct 2026)
 
 ## Recorded evidence (owner-supplied Lighthouse image table)
