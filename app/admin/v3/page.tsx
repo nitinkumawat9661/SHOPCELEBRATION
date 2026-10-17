@@ -4,6 +4,7 @@ import { AdminPasskeySetup } from "../../../features/admin/AdminPasskeySetup"
 import { getAdminAccessState } from "../../../lib/security/admin-session"
 import "../../../styles/admin-v3.css"
 import "../../../styles/admin-v3-details.css"
+import "../../../styles/admin-v3-inventory.css"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Admin V3 Preview | Celebration", robots: { index: false, follow: false } }
