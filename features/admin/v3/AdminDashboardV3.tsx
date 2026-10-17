@@ -6,6 +6,7 @@ import { catalogImageVariant, formatMoney, primaryProductImage } from "../../../
 import { orderStatusLabels, customerPaymentStatusLabel } from "../../../lib/domain/order-status"
 import { countAdminFilter, filterAdminOrders } from "../orderFilters"
 import type { AdminOrder } from "../types"
+import { AdminOrderDetailV3, AdminProductDetailV3 } from "./AdminDetailsV3"
 import type { AdminOrderFilterId } from "../../../config/admin-orders"
 
 type View = "overview" | "orders" | "products" | "inventory" | "hampers" | "offers" | "customers" | "analytics" | "reviews" | "settings"
@@ -83,13 +84,13 @@ function ProductThumb({ product }: { product: GiftProduct }) {
     ? <img src={catalogImageVariant(source, "thumb")} alt="" loading="lazy" referrerPolicy="no-referrer" />
     : <span aria-hidden="true">◇</span>}</div>
 }
-function OrderRow({ order }: { order: AdminOrder }) {
-  return <div className="cav3-table-row cav3-order-row">
+function OrderRow({ order, onSelect }: { order: AdminOrder; onSelect: () => void }) {
+  return <button type="button" onClick={onSelect} aria-label={"View order " + order.publicId} className="cav3-table-row cav3-order-row cav3-click-row">
     <div><b>{order.publicId}</b><small>{dateTime(order.createdAt)}</small></div>
     <div><b>{order.customerName || "Customer"}</b><small>{order.orderType === "individual" ? "Jewellery" : "Hamper"}</small></div>
     <div><b>{asMoney(order.amountPaise)}</b><small>{customerPaymentStatusLabel(order.paymentStatus)}</small></div>
     <div><Badge text={orderStatusLabels[order.status] || order.status.replaceAll("_", " ")} variant={statusStyle(order.status)} /></div>
-  </div>
+  </button>
 }
 
 export function AdminDashboardV3() {
@@ -107,6 +108,8 @@ export function AdminDashboardV3() {
   const [orderFilter, setOrderFilter] = useState<AdminOrderFilterId>("active")
   const [moreOpen, setMoreOpen] = useState(false)
   const [busyLogout, setBusyLogout] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -171,6 +174,8 @@ export function AdminDashboardV3() {
     p.active !== false && p.sellIndividually === true && typeof p.stockAvailable === "number") : [], [catalog])
   const stockLow = retail.filter((p) => (p.stockAvailable || 0) > 0 && (p.stockAvailable || 0) <= 3).length
   const stockOut = retail.filter((p) => p.stockAvailable === 0).length
+  const selectedOrder = selectedOrderId ? orders?.find((order) => order.publicId === selectedOrderId) : undefined
+  const selectedProduct = selectedProductId ? catalog?.products.find((product) => product.id === selectedProductId) : undefined
   const info = headings[view]
 
   function navigate(next: View) {
@@ -178,6 +183,8 @@ export function AdminDashboardV3() {
     setMoreOpen(false)
     setQuery("")
     setCategory("all")
+    setSelectedOrderId(null)
+    setSelectedProductId(null)
     window.scrollTo({ top: 0, behavior: "instant" })
   }
   async function logout() {
@@ -252,13 +259,16 @@ export function AdminDashboardV3() {
           </div>
           <Section title="Recent orders" extra={<button type="button" className="cav3-text-link" onClick={() => { navigate("orders"); setOrderFilter("all") }}>All orders →</button>}>
             {orders ? recentOrders.length ? <div className="cav3-table">
-              {recentOrders.map((order) => <OrderRow key={order.publicId} order={order} />)}
+              {recentOrders.map((order) => <OrderRow key={order.publicId} order={order} onSelect={() => {
+                navigate("orders"); setOrderFilter("all"); setSelectedOrderId(order.publicId)
+              }} />)}
             </div> : <p className="cav3-state">No orders recorded yet.</p>
             : <p className="cav3-state">Order data unavailable or loading.</p>}
           </Section>
         </>}
 
-        {view === "products" && <>
+        {view === "products" && (selectedProduct ? <AdminProductDetailV3 key={selectedProduct.id} product={selectedProduct}
+          onBack={() => setSelectedProductId(null)} /> : <>
           {catalogError && <p role="alert" className="cav3-error">{catalogError}</p>}
           <div className="cav3-filters"><input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
             aria-label="Search live products" placeholder="Search product or SKU…" />
@@ -267,20 +277,23 @@ export function AdminDashboardV3() {
             </select></div>
           <Section title="Live product catalogue" extra={<span className="cav3-quiet">{catalog ? products.length + " matching products" : "Loading…"}</span>}>
             {catalog ? products.length ? <div className="cav3-table cav3-product-list">
-              {products.slice(0, 60).map((product) => <div className="cav3-table-row cav3-product-row" key={product.id}>
+              {products.slice(0, 60).map((product) => <button type="button" className="cav3-table-row cav3-product-row cav3-click-row" key={product.id}
+                onClick={() => { setSelectedProductId(product.id); window.scrollTo({ top: 0, behavior: "instant" }) }}
+                aria-label={"View product " + product.name}>
                 <div className="cav3-product-identity"><ProductThumb product={product} /><span><b>{product.name}</b><small>{product.id}</small></span></div>
                 <div><b>{product.category}</b><small>{product.active === false ? "Inactive" : "Active"}</small></div>
                 <div><b>{typeof product.salePricePaise === "number" ? asMoney(product.salePricePaise) : "—"}</b><small>Selling price</small></div>
                 <div><Badge text={product.sellIndividually
                   ? (product.stockAvailable === 0 ? "Out of stock" : typeof product.stockAvailable === "number" ? product.stockAvailable + " available" : "Stock unavailable")
                   : "Hamper catalogue"} variant={product.stockAvailable === 0 ? "bad" : "neutral"} /></div>
-              </div>)}
+              </button>)}
               {products.length > 60 && <p className="cav3-state">Showing the first 60 matching products. Narrow search to locate a specific SKU.</p>}
             </div> : <p className="cav3-state">No products match these filters.</p> : <p className="cav3-state">Loading live catalogue…</p>}
           </Section>
-        </>}
+        </>)}
 
-        {view === "orders" && <>
+        {view === "orders" && (selectedOrder ? <AdminOrderDetailV3 key={selectedOrder.publicId} order={selectedOrder}
+          onBack={() => setSelectedOrderId(null)} /> : <>
           {ordersError && <p role="alert" className="cav3-error">{ordersError}</p>}
           <div className="cav3-filters"><input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
             aria-label="Search orders" placeholder="Search order ID, customer or tracking…" /></div>
@@ -288,12 +301,13 @@ export function AdminDashboardV3() {
             <button key={f.id} type="button" className={orderFilter === f.id ? "is-active" : ""}
               onClick={() => setOrderFilter(f.id)}>{f.label}</button>)}</div>
           <Section title="Order pipeline" extra={<span className="cav3-quiet">{orders ? currentOrders.length + " orders" : "Loading…"}</span>}>
-            {orders ? currentOrders.length ? <div className="cav3-table">{currentOrders.slice(0, 60).map((order) => <OrderRow key={order.publicId} order={order} />)}
+            {orders ? currentOrders.length ? <div className="cav3-table">{currentOrders.slice(0, 60).map((order) => <OrderRow key={order.publicId} order={order}
+                onSelect={() => { setSelectedOrderId(order.publicId); window.scrollTo({ top: 0, behavior: "instant" }) }} />)}
               {currentOrders.length > 60 && <p className="cav3-state">Showing the first 60 matches. Narrow your search.</p>}
             </div> : <p className="cav3-state">No orders match this filter.</p> : <p className="cav3-state">Loading current orders…</p>}
           </Section>
           <p className="cav3-help">To verify payments, update status, upload packing video or book Shipway, continue using the <a href="/admin">existing operational admin</a>.</p>
-        </>}
+        </>)}
 
         {!["overview", "products", "orders"].includes(view) && <div className="cav3-next-phase">
           <span className="cav3-brand-mark">C</span><h2>{info.heading} · Planned development</h2>
