@@ -47,8 +47,8 @@ assert(card.includes('product.id === "celebration-ring-001"') &&
   "Never crop unrelated or collection listing product photographs")
 assert(styles.includes(".celebrationFeatured") && !styles.includes(".collectionPage"),
   "Keep all changes homepage-only")
-assert(home.includes('imageVariant="main"')&&home.includes("photographed.map((product)"),
-  "Use verified real-SKU source photo and product identity")
+assert(home.includes('imageVariant="thumb" preserveFeaturedPortrait')&&home.includes("photographed.map((product)"),
+  "Use the existing exact-SKU thumbnail with the preserved featured portrait treatment")
 assert(imports.includes('@import "../styles/home-phase1-original-featured-grid-20261012.css";'),
   "Owner-selected original 2/4-column featured card grid must be enabled")
 assert(imports.includes('@import "../styles/home-restore-featured-swipe-ring-fit-20261012.css";'),
