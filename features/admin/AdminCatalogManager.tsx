@@ -164,7 +164,12 @@ function importedRows(fileName: string, text: string): ImportRecord[] {
   return parseCsv(text)
 }
 
-export function AdminCatalogManager({ section }: { section: CatalogAdminSection }) {
+export function AdminCatalogManager({ section, focusProductId, onDirtyChange, onPublished }: {
+  section: CatalogAdminSection
+  focusProductId?: string
+  onDirtyChange?: (dirty: boolean) => void
+  onPublished?: () => void
+}) {
   const [catalog, setCatalog] = useState<CatalogConfig>(defaultCatalog)
   const [version, setVersion] = useState(0)
   const [busy, setBusy] = useState("")
@@ -175,6 +180,46 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
   const [error, setError] = useState("")
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({})
+  const focusMode = section === "products" && Boolean(focusProductId)
+  const [liveBaseline, setLiveBaseline] = useState<CatalogConfig | null>(null)
+  useEffect(() => { onDirtyChange?.(dirty) }, [dirty, onDirtyChange])
+
+  async function loadLiveBaseline() {
+    if (!focusMode) return
+    setLiveBaseline(null)
+    try {
+      const response = await fetch("/api/catalog", { cache: "no-store" })
+      const data = await response.json() as { ok?: boolean; catalog?: CatalogConfig }
+      if (!response.ok || !data.ok || !data.catalog) throw new Error("LIVE_CATALOG_UNAVAILABLE")
+      setLiveBaseline(data.catalog)
+    } catch {
+      setLiveBaseline(null)
+      setError("Unable to compare the live catalog. Save draft is available, but publishing from focused V3 editing is blocked until a fresh baseline loads.")
+    }
+  }
+
+  const publishDiff = focusMode && liveBaseline ? (() => {
+    // Derived stock and badge signals are not catalog changes.
+    const cleaned = (p: GiftProduct) => {
+      const { stockAvailable: _stock, badgeSignals: _signals, ...rest } = p
+      return JSON.stringify(rest)
+    }
+    const before = new Map(liveBaseline.products.map(p => [p.id, cleaned(p)]))
+    const after = new Map(catalog.products.map(p => [p.id, cleaned(p)]))
+    const productIds = Array.from(new Set([...before.keys(), ...after.keys()]))
+      .filter(id => before.get(id) !== after.get(id))
+    const tiersBefore = new Map(liveBaseline.tiers.map(t => [t.id, JSON.stringify(t)]))
+    const tiersAfter = new Map(catalog.tiers.map(t => [t.id, JSON.stringify(t)]))
+    const tierIds = Array.from(new Set([...tiersBefore.keys(), ...tiersAfter.keys()]))
+      .filter(id => tiersBefore.get(id) !== tiersAfter.get(id))
+    return {
+      productIds, tierIds,
+      productsReordered: catalog.products.map(p => p.id).join("|") !== liveBaseline.products.map(p => p.id).join("|"),
+      tiersReordered: catalog.tiers.map(t => t.id).join("|") !== liveBaseline.tiers.map(t => t.id).join("|"),
+      occasionsChanged: JSON.stringify(catalog.occasions) !== JSON.stringify(liveBaseline.occasions),
+      defaultsChanged: JSON.stringify(catalog.settings) !== JSON.stringify(liveBaseline.settings)
+    }
+  })() : null
 
   function applyPayload(data: AdminCatalogPayload) {
     if (!data.catalog) return
@@ -193,7 +238,10 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
     applyPayload(data)
   }
 
-  useEffect(() => { load().catch((caught) => setError(caught instanceof Error ? caught.message : "CATALOG_LOAD_FAILED")) }, [])
+  useEffect(() => {
+    load().catch((caught) => setError(caught instanceof Error ? caught.message : "CATALOG_LOAD_FAILED"))
+    void loadLiveBaseline()
+  }, [])
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = "" } }
     window.addEventListener("beforeunload", handler)
@@ -408,6 +456,19 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
 
   async function saveAndPublish() {
     if ((!dirty && !hasDraft) || !validateCatalogBeforeSave()) return
+    if (focusMode) {
+      if (!publishDiff) { setError("Live catalog comparison unavailable. Reload before publishing."); return }
+      const impact = [
+        "Affected products: " + (publishDiff.productIds.join(", ") || "none"),
+        "Affected hamper tiers: " + (publishDiff.tierIds.join(", ") || "none"),
+        "Product order changed: " + (publishDiff.productsReordered ? "YES" : "no"),
+        "Tier order changed: " + (publishDiff.tiersReordered ? "YES" : "no"),
+        "Occasions changed: " + (publishDiff.occasionsChanged ? "YES" : "no"),
+        "Default settings changed: " + (publishDiff.defaultsChanged ? "YES" : "no")
+      ].join("\n")
+      if (!window.confirm("REVIEW GLOBAL CATALOG PUBLISH\n\nPublishing also includes unrelated changes in the shared draft.\n\n" +
+        impact + "\n\nInventory updates are separate. Publish ALL pending catalog changes?")) return
+    }
     setBusy("publish-live")
     setNotice("")
     setError("")
@@ -418,6 +479,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
         if (!response.ok || !saved.ok || !saved.catalog) throw new Error(saved.error || "CATALOG_LIVE_SAVE_FAILED")
         applyPayload(saved)
         setNotice(`Saved live to database. Storefront is now using catalog v${saved.version}; no deployment is required.`)
+        onPublished?.()
+        void loadLiveBaseline()
         return
       }
 
@@ -426,6 +489,8 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       if (!publishResponse.ok || !published.ok || !published.catalog) throw new Error(published.error || "CATALOG_PUBLISH_FAILED")
       applyPayload(published)
       setNotice(`Saved draft published to database as catalog v${published.version}; no deployment is required.`)
+      onPublished?.()
+      void loadLiveBaseline()
     } catch (caught) {
       const code = caught instanceof Error ? caught.message : "CATALOG_LIVE_SAVE_FAILED"
       setError(code === "SALE_PRICE_REQUIRED" ? "Individual sale enabled products ke liye sale price required hai." : code)
@@ -496,7 +561,12 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       <div className="adminWorkspaceHead adminCatalogHeader">
         <div><div className="kicker">CATALOG</div><h2>{title}</h2><p>{description}</p></div>
         <div className="adminActions adminCatalogActions">
-          <button className="secondary" type="button" onClick={() => { if (!dirty || window.confirm("Unsaved edits discard karne hain?")) load().catch((caught) => setError(String(caught))) }}>Reload</button>
+          <button className="secondary" type="button" onClick={() => {
+            if (!dirty || window.confirm("Unsaved edits discard karne hain?")) {
+              load().catch((caught) => setError(String(caught)))
+              void loadLiveBaseline()
+            }
+          }}>Reload</button>
           {hasDraft && <a className="secondary" href="/admin/catalog-preview" target="_blank" rel="noreferrer">Preview</a>}
           {hasDraft && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard</button>}
           <button className="secondary" type="button" onClick={saveDraft} disabled={Boolean(busy) || !dirty}>{busy === "save" ? "Saving…" : "Save draft"}</button>
@@ -506,7 +576,22 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       {dirty && <div className="adminDraftNotice"><b>Changes ready</b> • Save live directly database update karega; code deployment required nahi hai. Storefront abhi v{version} par hai.</div>}
       {!dirty && hasDraft && <div className="adminDraftNotice"><b>Saved draft ready</b> • Save live dabate hi database publish hoga; deployment nahi lagega.{draftUpdatedAt ? ` Draft saved ${new Date(draftUpdatedAt).toLocaleString("en-IN")}.` : ""}</div>}
       {!dirty && !hasDraft && <div className="adminDraftNotice"><b>Live database catalog v{version}</b> • Edit ya bulk upload karein, phir Save live. Storefront latest DB catalog directly read karta hai.</div>}
-      {notice && <div className="successBox adminFeedback">{notice}</div>}
+      {focusMode && <div className="adminDraftNotice" role="note">
+        <b>Focused V3 editor: {focusProductId}</b>
+        <p>Save draft and Save live operate on the shared ENTIRE catalog, not only this product. SKU is locked here;
+          retail inventory saves separately. Review the impact carefully before publishing.</p>
+        {!publishDiff && <p>Live catalog comparison unavailable — publishing is blocked.</p>}
+        {publishDiff && <>
+          <p><b>Publish impact:</b> {publishDiff.productIds.length} product(s), {publishDiff.tierIds.length} hamper tier(s),
+            {publishDiff.productsReordered ? " product order changed," : ""}
+            {publishDiff.tiersReordered ? " tier order changed," : ""}
+            {publishDiff.occasionsChanged ? " occasions changed," : ""}
+            {publishDiff.defaultsChanged ? " default settings changed." : ""}</p>
+          {!!publishDiff.productIds.length && <p>Affected product IDs: {publishDiff.productIds.join(", ")}</p>}
+          {!!publishDiff.tierIds.length && <p>Affected tier IDs: {publishDiff.tierIds.join(", ")}</p>}
+        </>}
+      </div>}
+      {notice && <div className="successBox adminFeedback">{notice}</div>
       {error && <div className="errorBox adminFeedback">{error}</div>}
 
       {section === "tiers" && <>
@@ -521,21 +606,25 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
       </>}
 
       {section === "products" && <>
-        <div className="adminCatalogSimpleTools">
+        {!focusMode && <div className="adminCatalogSimpleTools">
           <div><b>Bulk catalogue</b><span>CSV ya JSON upload karein. Same ID mile to product update hoga, new ID mile to add hoga.</span></div>
           <div className="adminCatalogToolButtons">
             <button type="button" className="secondary" onClick={downloadCsvTemplate}>CSV template</button>
             <label className="secondary adminBulkFileButton">{busy === "import" ? "Importing…" : "Bulk upload"}<input type="file" accept=".csv,.json,text/csv,application/json" disabled={Boolean(busy)} onChange={(event) => { const file = event.target.files?.[0]; if (file) bulkImport(file); event.currentTarget.value = "" }} /></label>
           </div>
-        </div>
-        <div className="adminBulkBar"><span>{catalog.products.length} products</span><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: true })) }))}>Activate all</button><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: false })) }))}>Pause all</button><button type="button" className="primary" onClick={addProduct}>+ Add product</button></div>
-        <div className="adminEditorList">{catalog.products.map((product, index) => {
+        </div>}
+        {!focusMode && <div className="adminBulkBar"><span>{catalog.products.length} products</span><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: true })) }))}>Activate all</button><button type="button" className="secondary" onClick={() => edit((current) => ({ ...current, products: current.products.map((item) => ({ ...item, active: false })) }))}>Pause all</button><button type="button" className="primary" onClick={addProduct}>+ Add product</button></div>}
+        {focusMode && !catalog.products.some(p => p.id === focusProductId) &&
+          <div className="errorBox adminFeedback">Product not found in the shared draft. Use the full catalog editor to review.</div>}
+        <div className="adminEditorList">{catalog.products.map((product, index) => ({ product, index }))
+          .filter(({ product }) => !focusMode || product.id === focusProductId)
+          .map(({ product, index }) => {
           const gallery = productImages(product)
           const primaryImage = primaryProductImage(product)
           const imageKey = `${product.id}:${primaryImage?.url || ""}`
           const imageBroken = brokenImages[imageKey] === true
           return <div className="adminEditorCard adminDraggableCard adminProductEditorCard" draggable key={`${product.id}-${index}`} onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragIndex !== null) edit((current) => ({ ...current, products: moveItem(current.products, dragIndex, index) })); setDragIndex(null) }}>
-          <div className="adminCardHandle">⋮⋮ <span>Drag to reorder</span></div>
+          {!focusMode && <div className="adminCardHandle">⋮⋮ <span>Drag to reorder</span></div>}
           <div className="adminProductMediaRow">
             <div className="adminProductMediaFrame">
               {primaryImage && !imageBroken ? <img key={primaryImage.url} className="adminCatalogPreview" src={primaryImage.url} alt={primaryImage.alt || product.name} loading="lazy" referrerPolicy="no-referrer" onError={() => setBrokenImages((current) => ({ ...current, [imageKey]: true }))} /> : <div className="adminProductImageFallback"><span>{product.icon || "🎁"}</span><small>{primaryImage ? "Image unavailable" : "No image"}</small></div>}
@@ -547,7 +636,7 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
             <span>{imageIndex === 0 ? "Primary" : `Image ${imageIndex + 1}`}</span>
             <div><button type="button" className="secondary" disabled={imageIndex === 0} onClick={() => moveProductImage(index, imageIndex, imageIndex - 1)}>←</button><button type="button" className="secondary" disabled={imageIndex === gallery.length - 1} onClick={() => moveProductImage(index, imageIndex, imageIndex + 1)}>→</button><button type="button" className="secondary danger" onClick={() => removeProductImage(index, imageIndex)}>Remove</button></div>
           </div>)}</div>}
-          <div className="adminEditorGrid"><label>ID<input value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Hamper minimum ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Product badge<select value={["New", "Limited", "Bestseller"].includes(product.badge || "") ? product.badge : ""} onChange={(e) => replaceProduct(index, { badge: e.target.value || undefined })}><option value="">Automatic / no badge</option><option value="New">New — recently introduced</option><option value="Limited">Limited — stock checked</option><option value="Bestseller">Bestseller — sales verified</option></select><small>Never mark a product Bestseller without real paid sales or New unless genuinely new. Limited appears only when live stock is 1–3; promotional % comes only from actual MRP and selling price. Current public badge: {productBadge(product)?.label || "None"}</small></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label><label className="adminWide">Short card summary<input value={product.note} maxLength={validation.catalog.noteMax} onChange={(e) => replaceProduct(index, { note: e.target.value })} placeholder="Short line shown on collection cards" /></label><label className="adminWide">Full product description<textarea rows={5} value={product.description || ""} maxLength={validation.catalog.descriptionMax} onChange={(e) => replaceProduct(index, { description: e.target.value || undefined })} placeholder="Detailed product information shown after opening the product." /></label><label className="adminWide">Highlights — one per line<textarea rows={4} value={(product.highlights || []).join("\n")} onChange={(e) => replaceProduct(index, { highlights: e.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean).slice(0, validation.catalog.maxHighlights) })} placeholder={"Premium finish\nGift-ready presentation\nComfortable for daily wear"} /></label><label className="adminWide">Gallery image URLs — one per line<textarea rows={4} value={gallery.map((image) => image.url).join("\n")} onChange={(e) => { const urls=e.target.value.split(/\r?\n/).map((item)=>item.trim()).filter(Boolean).slice(0,validation.catalog.maxImages); replaceProductImages(index, urls.map((url) => ({ url, alt: product.name }))) }} placeholder="https://… or use upload below" /></label><label className="adminWide uploadControl">{busy === `image-${index}` ? "Uploading images…" : `Upload product images (max ${validation.catalog.maxImages})`}<input type="file" multiple accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" disabled={Boolean(busy)} onChange={(e) => { const files = e.target.files; if (files?.length) uploadImages(files, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")); e.currentTarget.value = "" }} /></label></div>
+          <div className="adminEditorGrid"><label>ID (SKU)<input readOnly={focusMode} value={product.id} onChange={(e) => replaceProduct(index, { id: slug(e.target.value) })} /></label><label>Name<input value={product.name} onChange={(e) => replaceProduct(index, { name: e.target.value })} /></label><label>Category<input value={product.category} onChange={(e) => replaceProduct(index, { category: e.target.value })} /></label><label>Hamper minimum ₹<input type="number" min={0} value={product.minTier} onChange={(e) => replaceProduct(index, { minTier: Number(e.target.value) })} /></label><label>Points<input type="number" min={1} value={product.points} onChange={(e) => replaceProduct(index, { points: Number(e.target.value) })} /></label><label>Product badge<select value={["New", "Limited", "Bestseller"].includes(product.badge || "") ? product.badge : ""} onChange={(e) => replaceProduct(index, { badge: e.target.value || undefined })}><option value="">Automatic / no badge</option><option value="New">New — recently introduced</option><option value="Limited">Limited — stock checked</option><option value="Bestseller">Bestseller — sales verified</option></select><small>Never mark a product Bestseller without real paid sales or New unless genuinely new. Limited appears only when live stock is 1–3; promotional % comes only from actual MRP and selling price. Current public badge: {productBadge(product)?.label || "None"}</small></label><label>Emoji / icon<input value={product.icon || ""} onChange={(e) => replaceProduct(index, { icon: e.target.value })} /></label><label className="adminCheck"><input type="checkbox" checked={product.active !== false} onChange={(e) => replaceProduct(index, { active: e.target.checked })} /> Active</label><label className="adminWide">Short card summary<input value={product.note} maxLength={validation.catalog.noteMax} onChange={(e) => replaceProduct(index, { note: e.target.value })} placeholder="Short line shown on collection cards" /></label><label className="adminWide">Full product description<textarea rows={5} value={product.description || ""} maxLength={validation.catalog.descriptionMax} onChange={(e) => replaceProduct(index, { description: e.target.value || undefined })} placeholder="Detailed product information shown after opening the product." /></label><label className="adminWide">Highlights — one per line<textarea rows={4} value={(product.highlights || []).join("\n")} onChange={(e) => replaceProduct(index, { highlights: e.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean).slice(0, validation.catalog.maxHighlights) })} placeholder={"Premium finish\nGift-ready presentation\nComfortable for daily wear"} /></label><label className="adminWide">Gallery image URLs — one per line<textarea rows={4} value={gallery.map((image) => image.url).join("\n")} onChange={(e) => { const urls=e.target.value.split(/\r?\n/).map((item)=>item.trim()).filter(Boolean).slice(0,validation.catalog.maxImages); replaceProductImages(index, urls.map((url) => ({ url, alt: product.name }))) }} placeholder="https://… or use upload below" /></label><label className="adminWide uploadControl">{busy === `image-${index}` ? "Uploading images…" : `Upload product images (max ${validation.catalog.maxImages})`}<input type="file" multiple accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" disabled={Boolean(busy)} onChange={(e) => { const files = e.target.files; if (files?.length) uploadImages(files, index).catch((caught) => setError(caught instanceof Error ? caught.message : "IMAGE_UPLOAD_FAILED")); e.currentTarget.value = "" }} /></label></div>
           <div className="adminEditorGrid">
             <label>Individual sale price ₹<input type="number" min="1" max={Math.min(validation.catalog.maxPrice, 21474836.47)} step="0.01" inputMode="decimal" value={product.salePricePaise === undefined ? "" : product.salePricePaise / 100} placeholder="Enter actual sale price" onChange={(event) => {
               const value = event.target.value
@@ -579,7 +668,7 @@ export function AdminCatalogManager({ section }: { section: CatalogAdminSection 
             </div>
             <small>Values package/label se exactly copy karein. Imported goods me importer + country of origin fill karein. Best/use-before, unit sale price aur warranty/guarantee commodity ke hisaab se applicable ho sakte hain.</small>
           </details>
-          <div className="adminEditorActions"><span>{product.category}</span><div><button type="button" className="secondary" disabled={index === 0} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index - 1) }))}>↑</button><button type="button" className="secondary" disabled={index === catalog.products.length - 1} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index + 1) }))}>↓</button><button type="button" className="secondary" onClick={() => duplicateProduct(index)}>Duplicate</button><button type="button" className="secondary danger" onClick={() => edit((current) => ({ ...current, products: current.products.filter((_, i) => i !== index) }))}>Delete</button></div></div>
+          {!focusMode && <div className="adminEditorActions"><span>{product.category}</span><div><button type="button" className="secondary" disabled={index === 0} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index - 1) }))}>↑</button><button type="button" className="secondary" disabled={index === catalog.products.length - 1} onClick={() => edit((current) => ({ ...current, products: moveItem(current.products, index, index + 1) }))}>↓</button><button type="button" className="secondary" onClick={() => duplicateProduct(index)}>Duplicate</button><button type="button" className="secondary danger" onClick={() => edit((current) => ({ ...current, products: current.products.filter((_, i) => i !== index) }))}>Delete</button></div></div>}
         </div>})}</div>
       </>}
 
