@@ -76,7 +76,7 @@ const sitemap = sitemapModule.exports.default
 assert.equal(typeof sitemap, "function")
 
 const base = "https://shopcelebration.in"
-const result = await sitemap()
+const result = JSON.parse(JSON.stringify(await sitemap()))
 const urls = result.map((item) => item.url)
 assert.equal(result.length, bootstrap.length + 7,
   "One canonical sitemap URL per active SKU + 7 approved public page URLs")
