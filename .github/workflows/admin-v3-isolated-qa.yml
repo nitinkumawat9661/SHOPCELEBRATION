@@ -1,0 +1,80 @@
+name: Admin V3 Isolated Integration QA
+
+on:
+  push:
+    branches:
+      - feat/admin-v3-phase1-20261017
+    paths:
+      - '.github/workflows/admin-v3-isolated-qa.yml'
+      - 'features/admin/v3/**'
+      - 'features/admin/AdminCatalogManager.tsx'
+      - 'features/admin/AdminCampaigns.tsx'
+      - 'features/admin/AdminSelfBuildManager.tsx'
+      - 'features/admin/AdminSelfBuildCapacity.tsx'
+      - 'lib/server/admin-*.ts'
+      - 'lib/server/store-settings.ts'
+      - 'lib/domain/admin-stock-adjustment.ts'
+      - 'app/api/admin/**'
+      - 'app/admin/v3/**'
+      - 'styles/admin-v3-*.css'
+      - 'scripts/test-admin-v3-*.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celebration-admin-v3-isolated-qa
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Static regression, typecheck, audit and nonindexable build
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    env:
+      NEXT_PUBLIC_SITE_INDEXABLE: 'false'
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+    steps:
+      - name: Check out exact development commit (never main)
+        uses: actions/checkout@v5
+      - name: Assert isolated development branch and no production settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = 'feat/admin-v3-phase1-20261017'
+          test ! -e .env
+          test ! -e .env.production
+          test ! -e .env.local
+      - name: Node 24 with cached npm packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Test every Admin V3 milestone contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in \
+            scripts/test-admin-v3-phase1.mjs \
+            scripts/test-admin-v3-phase2.mjs \
+            scripts/test-admin-v3-functional-integration.mjs \
+            scripts/test-admin-v3-inventory.mjs \
+            scripts/test-admin-v3-hampers.mjs \
+            scripts/test-admin-v3-offers.mjs \
+            scripts/test-admin-v3-customers.mjs \
+            scripts/test-admin-v3-analytics.mjs \
+            scripts/test-admin-v3-reviews.mjs \
+            scripts/test-admin-v3-settings.mjs; do
+            echo "=== $test ==="
+            node "$test"
+          done
+      - name: Full project TypeScript check
+        run: npm run typecheck
+      - name: Legacy storefront and admin regression audit
+        run: npm run audit
+      - name: Build candidate without indexing or deployment
+        run: npm run build
