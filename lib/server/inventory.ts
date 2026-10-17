@@ -3,6 +3,7 @@ import type { PoolClient } from "pg"
 import type { CatalogConfig } from "../domain/catalog"
 import type { OrderLineItem } from "../domain/order"
 import { transaction, query } from "./db"
+import { invalidatePublicSnapshot } from "./public-store-cache"
 import { reservationReviewStatus } from "../domain/reservation-review"
 
 const RESERVATION_MINUTES = 30
@@ -177,6 +178,7 @@ export async function setInventoryQuantity(productIdValue: unknown, quantityValu
   if (!/^[a-z0-9][a-z0-9-]{0,59}$/.test(productId)) throw new Error("INVALID_PRODUCT_ID")
   if (!Number.isInteger(quantity) || quantity < 0 || quantity > 10000) throw new Error("INVALID_STOCK_QUANTITY")
   const result = await queryInventoryQuantity(productId, quantity)
+  await invalidatePublicSnapshot("catalog")
   return { productId, availableQuantity: result }
 }
 

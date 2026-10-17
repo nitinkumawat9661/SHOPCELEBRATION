@@ -4,6 +4,7 @@ import { defaultCatalog, type CatalogConfig, type GiftProduct, type Tier } from 
 import { hasUnsafeText, sanitizeText } from "../validation/text"
 import { query, transaction } from "./db"
 import { applyInventoryAvailability, inventoryAvailabilityForCatalog } from "./inventory"
+import { invalidatePublicSnapshot } from "./public-store-cache"
 
 type CatalogRow = { payload: CatalogConfig; version: number }
 type DraftRow = { payload: CatalogConfig; base_version: number; updated_at: Date }
@@ -339,7 +340,7 @@ export async function discardCatalogDraft(expected: unknown) {
 export async function publishCatalogDraft(expected: unknown) {
   const expectedLiveVersion = expectedVersion(expected)
   await getCatalogConfig()
-  return transaction(async (client) => {
+  const published = await transaction(async (client) => {
     const live = await client.query<CatalogRow>("SELECT payload, version FROM catalog_config WHERE id = 'primary' FOR UPDATE")
     const current = live.rows[0]
     if (!current) throw new Error("CATALOG_NOT_INITIALIZED")
@@ -361,6 +362,8 @@ export async function publishCatalogDraft(expected: unknown) {
     await client.query("DELETE FROM catalog_drafts WHERE id = 'primary'")
     return { catalog, version: saved.rows[0].version, draftExists: false }
   })
+  await invalidatePublicSnapshot("catalog")
+  return published
 }
 
 
@@ -368,7 +371,7 @@ export async function replaceLiveCatalog(input: unknown, expected: unknown) {
   const catalog = normalizeCatalogConfig(input)
   const expectedLiveVersion = expectedVersion(expected)
   await getCatalogConfig()
-  return transaction(async (client) => {
+  const published = await transaction(async (client) => {
     const live = await client.query<CatalogRow>("SELECT payload, version FROM catalog_config WHERE id = 'primary' FOR UPDATE")
     const current = live.rows[0]
     if (!current) throw new Error("CATALOG_NOT_INITIALIZED")
@@ -386,6 +389,8 @@ export async function replaceLiveCatalog(input: unknown, expected: unknown) {
     await client.query("DELETE FROM catalog_drafts WHERE id = 'primary'")
     return { catalog, version: saved.rows[0].version, draftExists: false }
   })
+  await invalidatePublicSnapshot("catalog")
+  return published
 }
 
 export async function listCatalogRevisions(limit = 25) {
@@ -409,7 +414,7 @@ export async function listCatalogRevisions(limit = 25) {
 
 export async function rollbackCatalogRevision(revisionId: string) {
   if (!/^\d+$/.test(revisionId)) throw new CatalogValidationError("INVALID_REVISION")
-  return transaction(async (client) => {
+  const published = await transaction(async (client) => {
     const source = await client.query<RevisionRow>(`SELECT id::text, version, payload, created_at FROM catalog_revisions WHERE id = $1 LIMIT 1`, [revisionId])
     if (!source.rows[0]) throw new CatalogValidationError("REVISION_NOT_FOUND")
     const catalog = normalizeCatalogConfig(source.rows[0].payload)
@@ -422,4 +427,6 @@ export async function rollbackCatalogRevision(revisionId: string) {
     await client.query("DELETE FROM catalog_drafts WHERE id = 'primary'")
     return { catalog, version: saved.rows[0].version, restoredFromVersion: source.rows[0].version }
   })
+  await invalidatePublicSnapshot("catalog")
+  return published
 }

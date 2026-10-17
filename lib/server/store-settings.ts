@@ -2,6 +2,7 @@ import { validation } from "../../config/validation"
 import { storeContent } from "../domain/content"
 import { hasUnsafeText, sanitizeText } from "../validation/text"
 import { query } from "./db"
+import { invalidatePublicSnapshot } from "./public-store-cache"
 
 export type StoreSettings = {
   whatsapp: string
@@ -121,5 +122,6 @@ export async function saveStoreSettings(input: unknown) {
      RETURNING payload, version`,
     [JSON.stringify(settings)]
   )
+  await invalidatePublicSnapshot("store-settings")
   return { settings: normalizeStoreSettings(result.rows[0].payload), version: result.rows[0].version }
 }

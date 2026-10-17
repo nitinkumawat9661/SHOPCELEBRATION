@@ -20,9 +20,9 @@ import { CELEBRATION_ORGANIZATION_ID, celebrationOfferShippingDetails, celebrati
 import { formatMoney } from "../../../lib/domain/money"
 import { isIndividualListing, isIndividuallySellable, primaryProductImage } from "../../../lib/domain/catalog"
 import { productSavingLabel } from "../../../lib/domain/catalog-badges"
-import { getCatalogConfig } from "../../../lib/server/catalog"
 import { withVerifiedStorefrontBadges } from "../../../lib/server/product-badge-evidence"
-import { defaultStoreSettings, getStoreSettings } from "../../../lib/server/store-settings"
+import { defaultStoreSettings } from "../../../lib/server/store-settings"
+import { getPublicCatalogConfig, getPublicStoreSettings } from "../../../lib/server/public-storefront"
 
 export const dynamic = "force-dynamic"
 const siteUrl = "https://shopcelebration.in"
@@ -35,7 +35,7 @@ function productDescription(name: string, category: string, description?: string
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
-  const catalog = await getCatalogConfig().catch(() => null)
+  const catalog = await getPublicCatalogConfig().catch(() => null)
   const product = catalog?.catalog.products.find((item) => item.id === id && item.active !== false)
   if (!product) return { title: "Product not found", robots: { index: false, follow: false } }
   const image = primaryProductImage(product)?.url
@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const [{ id }, catalog, settings] = await Promise.all([params, getCatalogConfig().catch(() => null), getStoreSettings().catch(() => null)])
+  const [{ id }, catalog, settings] = await Promise.all([params, getPublicCatalogConfig().catch(() => null), getPublicStoreSettings().catch(() => null)])
   const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
   const product = storefrontCatalog?.products.find((item) => item.id === id && item.active !== false)
   const reviewsResult = product

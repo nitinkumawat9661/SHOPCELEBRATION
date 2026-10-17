@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next"
-import { getCatalogConfig } from "../lib/server/catalog"
+import { getPublicCatalogConfig } from "../lib/server/public-storefront"
 
 const base = "https://shopcelebration.in"
 
@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/compare`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/claim`, changeFrequency: "monthly", priority: 0.5 }
   ]
-  const catalog = await getCatalogConfig().catch(() => null)
+  const catalog = await getPublicCatalogConfig().catch(() => null)
   const products: MetadataRoute.Sitemap = (catalog?.catalog.products || [])
     .filter((product) => product.active !== false)
     .map((product) => ({
