@@ -47,7 +47,7 @@ export function AdminProductDetailV3({ product, onBack, onEdit }: { product: Gif
 
   return <div className="cav3-detail-page">
     <BackButton onBack={onBack} />
-    <div className="cav3-detail-heading"><div><div className="cav3-eyebrow">Live product · read-only preview</div>
+    <div className="cav3-detail-heading"><div><div className="cav3-eyebrow">Live product · detail view</div>
       <h2>{product.name}</h2><p>SKU: <code>{product.id}</code></p></div>
       <div className="cav3-detail-actions">
         {onEdit && <button type="button" className="cav3-detail-primary" onClick={onEdit}>Edit this product in V3</button>}
@@ -67,7 +67,7 @@ export function AdminProductDetailV3({ product, onBack, onEdit }: { product: Gif
                 onClick={() => setChosen(index)}>
                 <SafePicture url={image.url} alt="" className="cav3-gallery-thumb" variant="thumb" />
               </button>)}</div>}
-          <p className="cav3-detail-explainer">Images belong to the live SKU. Gallery is read-only; catalog publishing remains in the current admin.</p>
+          <p className="cav3-detail-explainer">Images belong to this live SKU. Use Edit this product in V3 to modify the shared catalog draft and review its complete publish impact.</p>
         </DetailCard>
         <DetailCard title="Description & details">
           <p className="cav3-detail-text">{product.description?.trim() || product.note?.trim() || "No description recorded."}</p>
@@ -125,7 +125,7 @@ export function AdminOrderDetailV3({ order, onBack, operations }: { order: Admin
 
   return <div className="cav3-detail-page">
     <BackButton onBack={onBack} />
-    <div className="cav3-detail-heading"><div><div className="cav3-eyebrow">Order details · read-only preview</div>
+    <div className="cav3-detail-heading"><div><div className="cav3-eyebrow">Order details · recorded snapshots</div>
       <h2>{order.publicId}</h2><p>Placed {displayDate(order.createdAt)} · {order.orderType === "individual" ? "Retail jewellery" : "Hamper order"}</p></div>
       <div className="cav3-detail-actions"><a className="cav3-detail-primary" href="/admin">Manage in current admin ↗</a></div></div>
     <div className="cav3-order-badges">
@@ -185,7 +185,7 @@ export function AdminOrderDetailV3({ order, onBack, operations }: { order: Admin
             <DetailRow label="Customer message" value={<span className="cav3-wrap">{text(order.message)}</span>} />
             <DetailRow label="Last updated" value={displayDate(order.updatedAt)} />
           </dl>
-          <p className="cav3-detail-explainer">Order mutations, packing video, customer approval, courier actions and claims remain protected by their existing workflows.</p>
+          <p className="cav3-detail-explainer">Order actions below use the existing secured workflow. Packing approval, courier rules and Cashfree refund verification remain separate.</p>
         </DetailCard>
       </div>
     </div>
