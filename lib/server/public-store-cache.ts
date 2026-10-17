@@ -7,6 +7,7 @@
  * Short bounded in-process L1 + Redis L2 reduce repeated public DB reads.
  */
 import { createConnection } from "node:net"
+import { env } from "../../config/env"
 
 type PublicCacheKey = "catalog" | "store-settings" | "home-category-media"
 type Entry = { payload: unknown; expiresAt: number }
@@ -20,7 +21,7 @@ const pending = new Map<PublicCacheKey, Promise<unknown>>()
 let redisUnavailableUntil = 0
 
 function redisTarget() {
-  const url = new URL(process.env.CELEBRATION_REDIS_URL?.trim() || "redis://127.0.0.1:6379/0")
+  const url = new URL(env.celebrationRedisUrl || "redis://127.0.0.1:6379/0")
   if (url.protocol !== "redis:" || !url.hostname || url.search || url.hash) {
     throw new Error("INVALID_REDIS_URL")
   }
