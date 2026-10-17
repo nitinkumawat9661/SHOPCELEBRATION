@@ -12,6 +12,7 @@ import { AdminOrderCard } from "../AdminOrderCard"
 import { useAdminOrders } from "../useAdminOrders"
 import { AdminInventoryV3 } from "./AdminInventoryV3"
 import { AdminHampersV3 } from "./AdminHampersV3"
+import { AdminOffersV3 } from "./AdminOffersV3"
 import type { AdminOrderFilterId } from "../../../config/admin-orders"
 
 type View = "overview" | "orders" | "products" | "inventory" | "hampers" | "offers" | "customers" | "analytics" | "reviews" | "settings"
@@ -44,7 +45,7 @@ const headings: Record<View, { kicker: string; heading: string; description: str
   products: { kicker: "Your catalogue", heading: "Products", description: "Browse live items and edit a focused SKU using the existing full-catalog draft/publish workflow." },
   inventory: { kicker: "Inventory control", heading: "Inventory", description: "Available-to-sell quantities, low stock and audited stock corrections. Reservation review is read-only." },
   hampers: { kicker: "Hamper operations", heading: "Hampers", description: "Curated tier pricing, Self-Build category settings and custom customer enquiries." },
-  offers: { kicker: "Coming in phase 4", heading: "Offers & Coupons", description: "The existing versioned campaign editor remains the operational source." },
+  offers: { kicker: "Discount control", heading: "Offers & Coupons", description: "Manage versioned checkout campaigns and review verified paid-order offer performance." },
   customers: { kicker: "Coming in phase 5", heading: "Customers", description: "Privacy-safe customer profiles require new admin-only endpoints." },
   analytics: { kicker: "Coming in phase 5", heading: "Analytics", description: "Current analytics remains available in the existing admin." },
   reviews: { kicker: "Coming in a later phase", heading: "Reviews", description: "Genuine-review moderation remains available in the current admin." },
@@ -120,6 +121,7 @@ export function AdminDashboardV3() {
   const [editingProduct, setEditingProduct] = useState(false)
   const [editorDirty, setEditorDirty] = useState(false)
   const [hamperDirty, setHamperDirty] = useState(false)
+  const [offersDirty, setOffersDirty] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -184,7 +186,10 @@ export function AdminDashboardV3() {
     if (editingProduct && editorDirty && !window.confirm("Unsaved product edits will be lost. Leave the V3 editor?")) return
     if (view === "hampers" && hamperDirty &&
         !window.confirm("Unsaved hamper settings will be discarded. Leave Hampers?")) return
+    if (view === "offers" && offersDirty &&
+        !window.confirm("Unsaved campaign edits will be discarded. Leave Offers?")) return
     setHamperDirty(false)
+    setOffersDirty(false)
     setEditingProduct(false)
     setEditorDirty(false)
     setView(next)
@@ -210,6 +215,8 @@ export function AdminDashboardV3() {
     if (editingProduct && editorDirty && !window.confirm("Unsaved product edits will be lost. Sign out?")) return
     if (view === "hampers" && hamperDirty &&
       !window.confirm("Unsaved hamper settings will be discarded. Sign out?")) return
+    if (view === "offers" && offersDirty &&
+      !window.confirm("Unsaved campaign edits will be discarded. Sign out?")) return
     setBusyLogout(true)
     try {
       const response = await fetch("/api/admin/logout", { method: "POST" })
@@ -356,8 +363,9 @@ export function AdminDashboardV3() {
 
         {view === "hampers" && <AdminHampersV3 catalog={catalog} onPublished={refreshAll}
           onDirtyChange={setHamperDirty} />}
+        {view === "offers" && <AdminOffersV3 onDirtyChange={setOffersDirty} />}
 
-        {!["overview", "products", "orders", "inventory", "hampers"].includes(view) && <div className="cav3-next-phase">
+        {!["overview", "products", "orders", "inventory", "hampers", "offers"].includes(view) && <div className="cav3-next-phase">
           <span className="cav3-brand-mark">C</span><h2>{info.heading} · Planned development</h2>
           <p>{info.description} This visual shell is not yet connected to a V3 operational screen. Nothing is fabricated or editable.</p>
           <a className="cav3-primary" href="/admin">Open existing operational admin ↗</a>
