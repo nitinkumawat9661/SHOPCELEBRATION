@@ -287,7 +287,7 @@ export function AdminInventoryV3({ catalog, catalogError, onRefresh, onOpenOrder
       </section>
       <section className="cav3-panel">
         <div className="cav3-panel-head"><h2>Recent audited adjustments</h2><span className="cav3-quiet">Last 40 records</span></div>
-        {history?.length ? history.slice(0, 25).map(adjustment =>
+        {history?.length ? history.slice(0, 40).map(adjustment =>
           <div className="cav3-inv-history" key={adjustment.id}>
             <span><b>{adjustment.productId}</b><small>{day(adjustment.createdAt)} · {adjustment.reason}</small></span>
             <span><b>{adjustment.delta > 0 ? "+" : ""}{adjustment.delta}</b><small>{adjustment.previousAvailable} → {adjustment.availableQuantity}</small></span>
