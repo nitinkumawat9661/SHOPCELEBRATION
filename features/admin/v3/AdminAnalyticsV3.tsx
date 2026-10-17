@@ -202,7 +202,7 @@ export function AdminAnalyticsV3({ catalog }: { catalog: CatalogConfig | null })
             <Stat label="Accounts with saved items" value={report.wishlist.accountsWithSavedCurrent}
               description="Registered wishlist owners" />
             <Stat label="Current saves added in period" value={report.wishlist.currentSavesCreatedInPeriod}
-              description="Still-saved entries created in last " + days + " days" />
+              description={"Still-saved entries created in last " + days + " days"} />
           </div>
           <div className="cav3-analytics-ranked">
             {report.wishlist.topProducts.length ? report.wishlist.topProducts.map((item, index) =>
