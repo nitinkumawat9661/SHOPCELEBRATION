@@ -125,3 +125,36 @@ export async function saveStoreSettings(input: unknown) {
   await invalidatePublicSnapshot("store-settings")
   return { settings: normalizeStoreSettings(result.rows[0].payload), version: result.rows[0].version }
 }
+
+/**
+ * V3-only optimistic version update: legacy store settings still save via
+ * saveStoreSettings(). This protects V3 from overwriting concurrent updates
+ * from either V3 or the existing V2 admin's version-incrementing write.
+ *
+ * Because getStoreSettings() seeds an absent row, V3 callers load the saved
+ * version through GET before calling this guarded setter. No blind insert.
+ */
+export async function saveStoreSettingsVersioned(input: unknown, expectedVersion: unknown) {
+  if (typeof expectedVersion !== "number" || !Number.isSafeInteger(expectedVersion) ||
+      expectedVersion < 1) {
+    throw new StoreSettingsError("INVALID_SETTINGS_VERSION")
+  }
+  const settings = normalizeStoreSettings(input)
+  const result = await query<SettingsRow>(
+    `UPDATE store_settings
+       SET payload = $1::jsonb,
+           version = version + 1,
+           updated_at = now()
+     WHERE id = 'primary' AND version = $2
+     RETURNING payload, version`,
+    [JSON.stringify(settings), expectedVersion]
+  )
+  if (!result.rows[0]) {
+    throw new StoreSettingsError("SETTINGS_VERSION_CONFLICT")
+  }
+  await invalidatePublicSnapshot("store-settings")
+  return {
+    settings: normalizeStoreSettings(result.rows[0].payload),
+    version: result.rows[0].version
+  }
+}
