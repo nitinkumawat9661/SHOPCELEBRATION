@@ -41,6 +41,9 @@ function command(args: string[]): Buffer {
 
 /** One short-lived loopback request per L1 miss. Handles fragmented RESP2 replies. */
 async function redisCommand(args: string[]): Promise<string | null> {
+  // Isolated Admin V3 VPS staging must NEVER touch the production Redis instance,
+  // including the implicit 127.0.0.1:6379 fallback when no URL is configured.
+  if (process.env.ADMIN_V3_STAGING === "isolated-loopback") return null
   if (Date.now() < redisUnavailableUntil) return null
   try {
     const target = redisTarget()
