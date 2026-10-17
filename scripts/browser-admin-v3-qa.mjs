@@ -150,12 +150,20 @@ try {
       if (id !== "overview") {
         if (width < 1024) {
           const bottom = page.locator(".cav3-bottom-nav")
-          await bottom.getByRole("button", { name: "More" }).click()
-          await page.locator(".cav3-more").getByRole("button", { name: {
-            orders: "Orders", products: "Products", inventory: "Inventory",
-            hampers: "Hampers", offers: "Offers & Coupons", customers: "Customers",
-            analytics: "Analytics", reviews: "Reviews", settings: "Settings"
-          }[id], exact: true }).click()
+          const menuNames = {
+            orders: "Orders", products: "Products", inventory: "Stock"
+          }
+          if (id in menuNames) {
+            await bottom.getByRole("button", {
+              name: menuNames[id], exact: true
+            }).click()
+          } else {
+            await bottom.getByRole("button", { name: "More" }).click()
+            await page.locator(".cav3-more").getByRole("button", { name: {
+              hampers: "Hampers", offers: "Offers & Coupons", customers: "Customers",
+              analytics: "Analytics", reviews: "Reviews", settings: "Settings"
+            }[id], exact: true }).click()
+          }
         } else {
           await page.locator(".cav3-sidebar").getByRole("button", { name: {
             orders: "Orders", products: "Products", inventory: "Inventory",
