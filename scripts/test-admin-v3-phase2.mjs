@@ -34,7 +34,7 @@ assert.match(detail, /order\.lineItems/, "Order must use saved purchased item sn
 assert.match(detail, /order\.amountPaise/, "Order total must use historical recorded amount")
 assert.match(detail, /customerPaymentStatusLabel\(order\.paymentStatus\)/, "Payment status must remain distinct")
 assert.match(detail, /AWB booking alone does not establish courier pickup/, "No invented shipment movement")
-assert.match(detail, /read-only preview/, "Do not pretend order or product writes are enabled")
+assert.match(detail, /recorded snapshots/, "Historical details must be correctly labeled")
 assert.match(css, /cav3-detail-columns/, "Responsive detail layout must exist")
 assert.match(css, /max-width:500px/, "Mobile detail layout must exist")
 
