@@ -14,6 +14,10 @@ for bin in sudo psql createdb node pg_isready; do
 done
 [ "$(node -p 'process.versions.node.split(".")[0]')" -ge 22 ] || fail "Node 22+ required"
 pg_isready -q -h 127.0.0.1 -p 5432 -t 3 || fail "Loopback PostgreSQL unavailable"
+[ -S /var/run/postgresql/.s.PGSQL.5432 ] || fail "Expected local PostgreSQL socket on port 5432"
+for k in PGHOST PGPORT PGDATABASE PGUSER PGPASSWORD PGSERVICE PGSSLMODE PGPASSFILE; do
+  [ -z "${!k:-}" ] || fail "Unset exported $k before staging DB bootstrap"
+done
 
 readonly ROLE="celebration_v3_staging"
 readonly DB="celebration_v3_staging"
@@ -26,9 +30,9 @@ fi
 
 printf 'Checking interactive sudo rights to create ONLY the new staging database...\n'
 sudo -v || fail "Sudo unavailable. Ask the VPS administrator to provision the dedicated DB/role; do not supply credentials in chat."
-role_exists="$(sudo -u postgres psql -X -Atq -d postgres -c "SELECT count(*) FROM pg_roles WHERE rolname = '$ROLE'")" ||
+role_exists="$(sudo -u postgres psql -h /var/run/postgresql -p 5432 -X -Atq -d postgres -c "SELECT count(*) FROM pg_roles WHERE rolname = '$ROLE'")" ||
   fail "Cannot read PostgreSQL role metadata using postgres OS role"
-db_exists="$(sudo -u postgres psql -X -Atq -d postgres -c "SELECT count(*) FROM pg_database WHERE datname = '$DB'")" ||
+db_exists="$(sudo -u postgres psql -h /var/run/postgresql -p 5432 -X -Atq -d postgres -c "SELECT count(*) FROM pg_database WHERE datname = '$DB'")" ||
   fail "Cannot read PostgreSQL DB metadata using postgres OS role"
 [ "$role_exists" = "0" ] || fail "The reserved staging role already exists; stopping rather than resetting an existing credential."
 [ "$db_exists" = "0" ] || fail "The reserved staging database already exists; stopping rather than reusing or altering it."
@@ -39,15 +43,15 @@ secret="$(node -e "process.stdout.write(require('node:crypto').randomBytes(32).t
 
 # Never echo passwords, set shell tracing, publish tokens, or target production.
 printf 'Creating new dedicated PostgreSQL role and database (no existing DB changes)...\n'
-sudo -u postgres psql -Xq -v ON_ERROR_STOP=1 -d postgres \
+sudo -u postgres psql -h /var/run/postgresql -p 5432 -Xq -v ON_ERROR_STOP=1 -d postgres \
   -c "CREATE ROLE $ROLE LOGIN PASSWORD '$secret' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION;" >/dev/null \
   || fail "Role creation failed; check PostgreSQL before retrying."
-sudo -u postgres createdb --encoding=UTF8 --template=template0 --owner="$ROLE" "$DB" \
+sudo -u postgres createdb --host=/var/run/postgresql --port=5432 --encoding=UTF8 --template=template0 --owner="$ROLE" "$DB" \
   || fail "Staging role created, but database failed; manual postgres reconciliation required. DO NOT drop any other database."
-sudo -u postgres psql -Xq -v ON_ERROR_STOP=1 -d postgres \
+sudo -u postgres psql -h /var/run/postgresql -p 5432 -Xq -v ON_ERROR_STOP=1 -d postgres \
   -c "REVOKE ALL ON DATABASE $DB FROM PUBLIC;" >/dev/null \
   || fail "Staging DB created, but restricting PUBLIC DB rights failed"
-sudo -u postgres psql -Xq -v ON_ERROR_STOP=1 -d "$DB" \
+sudo -u postgres psql -h /var/run/postgresql -p 5432 -Xq -v ON_ERROR_STOP=1 -d "$DB" \
   -c "REVOKE ALL ON SCHEMA public FROM PUBLIC;" >/dev/null \
   || fail "Staging DB created, but restricting PUBLIC schema rights failed"
 
