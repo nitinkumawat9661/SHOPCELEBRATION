@@ -5,6 +5,7 @@ const read = (key: string) => process.env[key]?.trim() || ""
 export const env = {
   isProduction: process.env.NODE_ENV === "production",
   databaseUrl: read("DATABASE_URL"),
+  celebrationRedisUrl: read("CELEBRATION_REDIS_URL"),
   databaseSsl: read("DATABASE_SSL_MODE"),
   businessTimezone: read("BUSINESS_TIMEZONE"),
   orderIdPrefix: read("ORDER_ID_PREFIX"),
