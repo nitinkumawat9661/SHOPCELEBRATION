@@ -16,6 +16,7 @@ import { AdminOffersV3 } from "./AdminOffersV3"
 import { AdminCustomersV3 } from "./AdminCustomersV3"
 import { AdminAnalyticsV3 } from "./AdminAnalyticsV3"
 import { AdminReviewsV3 } from "./AdminReviewsV3"
+import { AdminSettingsV3 } from "./AdminSettingsV3"
 import type { AdminOrderFilterId } from "../../../config/admin-orders"
 
 type View = "overview" | "orders" | "products" | "inventory" | "hampers" | "offers" | "customers" | "analytics" | "reviews" | "settings"
@@ -52,7 +53,7 @@ const headings: Record<View, { kicker: string; heading: string; description: str
   customers: { kicker: "Registered customer records", heading: "Customers", description: "Account-linked paid history, saved products and privacy-limited profiles." },
   analytics: { kicker: "Commerce performance", heading: "Analytics & Customer Behaviour", description: "Verified paid orders, anonymous funnel, account wishlists and checkout inactivity indicators." },
   reviews: { kicker: "Authentic customer voices", heading: "Reviews", description: "Moderate verified delivered-order reviews without altering their text or ratings." },
-  settings: { kicker: "Coming in phase 6", heading: "Settings & Security", description: "Existing passkeys, payment credentials and support settings remain unchanged." }
+  settings: { kicker: "Store identity and access", heading: "Settings & Security", description: "Publish version-checked store/legal details and manage backup passkey enrolment safely." }
 }
 
 const orderFilters: { id: AdminOrderFilterId; label: string }[] = [
@@ -125,6 +126,7 @@ export function AdminDashboardV3() {
   const [editorDirty, setEditorDirty] = useState(false)
   const [hamperDirty, setHamperDirty] = useState(false)
   const [offersDirty, setOffersDirty] = useState(false)
+  const [settingsDirty, setSettingsDirty] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -191,8 +193,11 @@ export function AdminDashboardV3() {
         !window.confirm("Unsaved hamper settings will be discarded. Leave Hampers?")) return
     if (view === "offers" && offersDirty &&
         !window.confirm("Unsaved campaign edits will be discarded. Leave Offers?")) return
+    if (view === "settings" && settingsDirty &&
+        !window.confirm("Unsaved store and legal settings will be discarded. Leave Settings?")) return
     setHamperDirty(false)
     setOffersDirty(false)
+    setSettingsDirty(false)
     setEditingProduct(false)
     setEditorDirty(false)
     setView(next)
@@ -220,6 +225,8 @@ export function AdminDashboardV3() {
       !window.confirm("Unsaved hamper settings will be discarded. Sign out?")) return
     if (view === "offers" && offersDirty &&
       !window.confirm("Unsaved campaign edits will be discarded. Sign out?")) return
+    if (view === "settings" && settingsDirty &&
+      !window.confirm("Unsaved store and legal settings will be discarded. Sign out?")) return
     setBusyLogout(true)
     try {
       const response = await fetch("/api/admin/logout", { method: "POST" })
@@ -379,8 +386,9 @@ export function AdminDashboardV3() {
           setOrderFilter("all")
           setSelectedOrderId(publicId)
         }} />}
+        {view === "settings" && <AdminSettingsV3 onDirtyChange={setSettingsDirty} />}
 
-        {!["overview", "products", "orders", "inventory", "hampers", "offers", "customers", "analytics", "reviews"].includes(view) && <div className="cav3-next-phase">
+        {!["overview", "products", "orders", "inventory", "hampers", "offers", "customers", "analytics", "reviews", "settings"].includes(view) && <div className="cav3-next-phase">
           <span className="cav3-brand-mark">C</span><h2>{info.heading} · Planned development</h2>
           <p>{info.description} This visual shell is not yet connected to a V3 operational screen. Nothing is fabricated or editable.</p>
           <a className="cav3-primary" href="/admin">Open existing operational admin ↗</a>
