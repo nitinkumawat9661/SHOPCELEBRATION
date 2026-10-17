@@ -164,9 +164,10 @@ function importedRows(fileName: string, text: string): ImportRecord[] {
   return parseCsv(text)
 }
 
-export function AdminCatalogManager({ section, focusProductId, onDirtyChange, onPublished }: {
+export function AdminCatalogManager({ section, focusProductId, reviewGlobalPublish = false, onDirtyChange, onPublished }: {
   section: CatalogAdminSection
   focusProductId?: string
+  reviewGlobalPublish?: boolean
   onDirtyChange?: (dirty: boolean) => void
   onPublished?: () => void
 }) {
@@ -181,11 +182,12 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({})
   const focusMode = section === "products" && Boolean(focusProductId)
+  const reviewMode = focusMode || reviewGlobalPublish
   const [liveBaseline, setLiveBaseline] = useState<CatalogConfig | null>(null)
   useEffect(() => { onDirtyChange?.(dirty) }, [dirty, onDirtyChange])
 
   async function loadLiveBaseline() {
-    if (!focusMode) return
+    if (!reviewMode) return
     setLiveBaseline(null)
     try {
       const response = await fetch("/api/catalog", { cache: "no-store" })
@@ -198,7 +200,7 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
     }
   }
 
-  const publishDiff = focusMode && liveBaseline ? (() => {
+  const publishDiff = reviewMode && liveBaseline ? (() => {
     // Derived stock and badge signals are not catalog changes.
     const cleaned = (p: GiftProduct) => {
       const { stockAvailable: _stock, badgeSignals: _signals, ...rest } = p
@@ -438,8 +440,8 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
   }
 
   async function ensureFocusedDraftFresh() {
-    if (!focusMode) return true
-    if (version < 1 || !catalog.products.some(p => p.id === focusProductId)) {
+    if (!reviewMode) return true
+    if (version < 1 || (focusMode && !catalog.products.some(p => p.id === focusProductId))) {
       setError("Cannot modify a missing SKU or an unloaded catalog.")
       return false
     }
@@ -478,7 +480,7 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
 
   async function saveAndPublish() {
     if ((!dirty && !hasDraft) || !validateCatalogBeforeSave() || !await ensureFocusedDraftFresh()) return
-    if (focusMode) {
+    if (reviewMode) {
       if (!publishDiff) { setError("Live catalog comparison unavailable. Reload before publishing."); return }
       const impact = [
         "Affected products: " + (publishDiff.productIds.join(", ") || "none"),
@@ -590,7 +592,7 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
             }
           }}>Reload</button>
           {hasDraft && <a className="secondary" href="/admin/catalog-preview" target="_blank" rel="noreferrer">Preview</a>}
-          {hasDraft && !focusMode && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard</button>}
+          {hasDraft && !reviewMode && <button className="secondary danger" type="button" onClick={discardDraft} disabled={Boolean(busy)}>Discard</button>}
           <button className="secondary" type="button" onClick={saveDraft} disabled={Boolean(busy) || !dirty}>{busy === "save" ? "Saving…" : "Save draft"}</button>
           <button className="primary adminPublishLive" type="button" onClick={saveAndPublish} disabled={Boolean(busy) || (!dirty && !hasDraft)}>{busy === "publish-live" ? "Saving live…" : "Save live"}</button>
         </div>
@@ -598,10 +600,10 @@ export function AdminCatalogManager({ section, focusProductId, onDirtyChange, on
       {dirty && <div className="adminDraftNotice"><b>Changes ready</b> • Save live directly database update karega; code deployment required nahi hai. Storefront abhi v{version} par hai.</div>}
       {!dirty && hasDraft && <div className="adminDraftNotice"><b>Saved draft ready</b> • Save live dabate hi database publish hoga; deployment nahi lagega.{draftUpdatedAt ? ` Draft saved ${new Date(draftUpdatedAt).toLocaleString("en-IN")}.` : ""}</div>}
       {!dirty && !hasDraft && <div className="adminDraftNotice"><b>Live database catalog v{version}</b> • Edit ya bulk upload karein, phir Save live. Storefront latest DB catalog directly read karta hai.</div>}
-      {focusMode && <div className="adminDraftNotice" role="note">
-        <b>Focused V3 editor: {focusProductId}</b>
-        <p>Save draft and Save live operate on the shared ENTIRE catalog, not only this product. SKU is locked here;
-          retail inventory saves separately. Review the impact carefully before publishing.</p>
+      {reviewMode && <div className="adminDraftNotice" role="note">
+        <b>{focusMode ? "Focused V3 editor: " + focusProductId : "V3 Hampers / Occasions editor · entire-catalog publish"}</b>
+        <p>Save draft and Save live operate on the shared ENTIRE catalog, not just this section.
+          Inventory saves separately. Review every pending edit before publishing.</p>
         {!publishDiff && <p>Live catalog comparison unavailable — publishing is blocked.</p>}
         {publishDiff && <>
           <p><b>Publish impact:</b> {publishDiff.productIds.length} product(s), {publishDiff.tierIds.length} hamper tier(s),
