@@ -200,6 +200,9 @@ jobs:
           retention-days: 7
 
   ephemeral-private-staging:
+    permissions:
+      contents: read
+      issues: write
     name: Real passkey + HTTP on disposable isolated PostgreSQL (no VPS)
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -301,3 +304,14 @@ jobs:
           path: artifacts/admin-v3-real-http
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Record ephemeral staging outcome in GitHub issue
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTCOME: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          gh issue comment 217 --repo nitinkumawat9661/SHOPCELEBRATION \\
+            --body "Admin V3 isolated REAL HTTP + WebAuthn + Postgres staging job: **${OUTCOME}**. Run: https://github.com/nitinkumawat9661/SHOPCELEBRATION/actions/runs/${GITHUB_RUN_ID}. Commit: \`${GITHUB_SHA}\`. This is disposable CI, **NOT deployed to the VPS or production**."
