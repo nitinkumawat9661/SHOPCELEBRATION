@@ -615,7 +615,7 @@ export function AdminCatalogManager({ section, focusProductId, reviewGlobalPubli
           {!!publishDiff.tierIds.length && <p>Affected tier IDs: {publishDiff.tierIds.join(", ")}</p>}
         </>}
       </div>}
-      {notice && <div className="successBox adminFeedback">{notice}</div>
+      {notice && <div className="successBox adminFeedback">{notice}</div>}
       {error && <div className="errorBox adminFeedback">{error}</div>}
 
       {section === "tiers" && <>
