@@ -11,14 +11,18 @@ test "$(id -un)" = "nitin"
 test -f "$PRIVATE_ENV" && test -w "$PRIVATE_ENV"
 test -d "$APP_ROOT/shared"
 
-# Never modify a preexisting owner-supplied Redis connection string.
-if grep -q '^CELEBRATION_REDIS_URL=' "$PRIVATE_ENV"; then
+# Preserve owner-managed Redis configurations. Our own dedicated cache URL
+# may already be set from a past release; still restart its daemon if needed.
+CONFIGURED_REDIS="$(grep '^CELEBRATION_REDIS_URL=' "$PRIVATE_ENV" | tail -1 | cut -d= -f2- || true)"
+if [ -n "$CONFIGURED_REDIS" ] &&
+    [ "$CONFIGURED_REDIS" != "redis://127.0.0.1:6390/0" ]; then
   echo "CELEBRATION_REDIS_STATUS=OWNER_CONFIGURED; private URL preserved"
   exit 0
 fi
 
-# An already-working loopback Redis instance needs no provisioning.
-if command -v redis-cli >/dev/null 2>&1 &&
+# An already-working loopback Redis instance needs no provisioning when
+# the owner has not previously chosen the dedicated Celebration cache.
+if [ -z "$CONFIGURED_REDIS" ] && command -v redis-cli >/dev/null 2>&1 &&
     timeout 2 redis-cli -h 127.0.0.1 -p 6379 PING 2>/dev/null | grep -Fxq PONG; then
   echo "CELEBRATION_REDIS_STATUS=ACTIVE; using existing private localhost service"
   exit 0
