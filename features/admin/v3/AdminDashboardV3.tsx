@@ -85,12 +85,14 @@ function ProductThumb({ product }: { product: GiftProduct }) {
     : <span aria-hidden="true">◇</span>}</div>
 }
 function OrderRow({ order, onSelect }: { order: AdminOrder; onSelect: () => void }) {
-  return <button type="button" onClick={onSelect} aria-label={"View order " + order.publicId} className="cav3-table-row cav3-order-row cav3-click-row">
+  return <div role="button" tabIndex={0} onClick={onSelect}
+    onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect() } }}
+    aria-label={"View order " + order.publicId} className="cav3-table-row cav3-order-row cav3-click-row">
     <div><b>{order.publicId}</b><small>{dateTime(order.createdAt)}</small></div>
     <div><b>{order.customerName || "Customer"}</b><small>{order.orderType === "individual" ? "Jewellery" : "Hamper"}</small></div>
     <div><b>{asMoney(order.amountPaise)}</b><small>{customerPaymentStatusLabel(order.paymentStatus)}</small></div>
     <div><Badge text={orderStatusLabels[order.status] || order.status.replaceAll("_", " ")} variant={statusStyle(order.status)} /></div>
-  </button>
+  </div>
 }
 
 export function AdminDashboardV3() {
@@ -277,16 +279,18 @@ export function AdminDashboardV3() {
             </select></div>
           <Section title="Live product catalogue" extra={<span className="cav3-quiet">{catalog ? products.length + " matching products" : "Loading…"}</span>}>
             {catalog ? products.length ? <div className="cav3-table cav3-product-list">
-              {products.slice(0, 60).map((product) => <button type="button" className="cav3-table-row cav3-product-row cav3-click-row" key={product.id}
+              {products.slice(0, 60).map((product) => <div role="button" tabIndex={0} className="cav3-table-row cav3-product-row cav3-click-row" key={product.id}
                 onClick={() => { setSelectedProductId(product.id); window.scrollTo({ top: 0, behavior: "instant" }) }}
-                aria-label={"View product " + product.name}>
+                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault(); setSelectedProductId(product.id); window.scrollTo({ top: 0, behavior: "instant" })
+                } }} aria-label={"View product " + product.name}>
                 <div className="cav3-product-identity"><ProductThumb product={product} /><span><b>{product.name}</b><small>{product.id}</small></span></div>
                 <div><b>{product.category}</b><small>{product.active === false ? "Inactive" : "Active"}</small></div>
                 <div><b>{typeof product.salePricePaise === "number" ? asMoney(product.salePricePaise) : "—"}</b><small>Selling price</small></div>
                 <div><Badge text={product.sellIndividually
                   ? (product.stockAvailable === 0 ? "Out of stock" : typeof product.stockAvailable === "number" ? product.stockAvailable + " available" : "Stock unavailable")
                   : "Hamper catalogue"} variant={product.stockAvailable === 0 ? "bad" : "neutral"} /></div>
-              </button>)}
+              </div>)}
               {products.length > 60 && <p className="cav3-state">Showing the first 60 matching products. Narrow search to locate a specific SKU.</p>}
             </div> : <p className="cav3-state">No products match these filters.</p> : <p className="cav3-state">Loading live catalogue…</p>}
           </Section>
