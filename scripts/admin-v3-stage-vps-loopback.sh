@@ -101,7 +101,7 @@ sanitized_npm() {
   env -i HOME="$HOME" PATH="$PATH" USER=nitin NODE_ENV=production npm "$@"
 }
 printf 'Installing staging dependencies only...\n'
-sanitized_npm ci
+sanitized_npm ci --include=dev
 
 printf 'Running staging environment preflight before any SQL migration...\n'
 sanitized_node -e 'const {loadEnvConfig}=require("@next/env");loadEnvConfig(process.cwd(),false);import("./scripts/admin-v3-staging-loopback-preflight.mjs").catch(e=>{console.error(e.message);process.exitCode=1})'
