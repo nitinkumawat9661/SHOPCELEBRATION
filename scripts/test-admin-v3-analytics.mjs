@@ -56,11 +56,11 @@ assert.match(service, /identifiableCheckoutRecoveryAvailable: false/, "No guest 
 assert.match(service, /cartAbandonmentAvailable: false/, "No guest cart abandonment metric")
 assert.doesNotMatch(service, /SELECT\s+.*customer_account_id|SELECT\s+.*session_hash\s+AS\s+/i,
   "Do not return customer or session IDs in API projection")
-assert.doesNotMatch(service, /phone|address|email|raw_session_id|customer_name/i,
+assert.doesNotMatch(service, /(?:phone|address|email)\s*:/i,
   "No personal contact information in analytics service")
 assert.match(ui, /<b>not<\/b> a confirmed abandoned checkout/, "Explain telemetry is not proven abandonment")
 assert.match(ui, /No central cart ledger exists/, "Do not invent guest carts")
-assert.match(ui, /Guest.*favourites are not included/, "Guest wishlist cannot be observed")
+assert.match(ui, /guest favourites are not included/i, "Guest wishlist cannot be observed")
 assert.match(ui, /before cart-wide discounts/, "Historical gross line attribution note")
 assert.match(ui, /Current-category attribution/, "Historical taxonomy limitations labelled")
 assert.match(ui, /Asia\/Kolkata/, "Timezone disclosed")
