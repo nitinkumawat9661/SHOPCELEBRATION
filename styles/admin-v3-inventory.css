@@ -1,0 +1,71 @@
+/* Admin V3 inventory screen. Scoped; no changes to storefront styles. */
+.cav3-root .cav3-inventory { display:grid;gap:17px;min-width:0 }
+.cav3-root .cav3-inventory-cards { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px }
+.cav3-root .cav3-inventory-cards>div { min-width:0;display:grid;gap:7px;padding:18px 19px;background:#fff;
+  border:1px solid var(--cav3-line);border-radius:13px }
+.cav3-root .cav3-inventory-cards span { font-size:11px;color:#726960;font-weight:740 }
+.cav3-root .cav3-inventory-cards b { font-size:25px;line-height:1.15;letter-spacing:-.6px }
+.cav3-root .cav3-inventory-cards small { font-size:10px;color:#91867d }
+.cav3-root .cav3-inventory-columns { display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,1fr);gap:17px;align-items:start;min-width:0 }
+.cav3-root .cav3-inventory-columns>.cav3-panel { min-width:0;margin:0 }
+.cav3-root .cav3-inv-filters { display:grid;gap:10px;padding:0 18px 15px }
+.cav3-root .cav3-inv-filters>input { min-height:43px;border:1px solid #e8e0dc;border-radius:8px;padding:9px 12px;
+  font-size:12px;min-width:0;width:100%;background:#fff }
+.cav3-root .cav3-inv-filters .cav3-chips { padding:0 }
+.cav3-root .cav3-inv-products { max-height:700px;overflow-y:auto;border-top:1px solid #eeeae7 }
+.cav3-root .cav3-inv-products>button { display:flex;align-items:center;gap:12px;min-height:65px;padding:12px 16px;
+  width:100%;border:0;border-bottom:1px solid #f1eeea;background:#fff;text-align:left;color:inherit;cursor:pointer;max-width:100% }
+.cav3-root .cav3-inv-products>button:hover { background:#fcf9f7 }
+.cav3-root .cav3-inv-products>button.is-selected { background:#f9edef;box-shadow:inset 3px 0 0 var(--cav3-wine) }
+.cav3-root .cav3-inv-image { flex:0 0 44px;width:44px;height:44px;border-radius:9px;display:grid;place-items:center;
+  background:#fbf6f4;overflow:hidden;color:var(--cav3-wine) }
+.cav3-root .cav3-inv-image img { width:100%;height:100%;object-fit:contain }
+.cav3-root .cav3-inv-identity { display:grid;min-width:0;flex:1 1 auto }
+.cav3-root .cav3-inv-identity b { font-size:11.5px;font-weight:750;overflow-wrap:anywhere }
+.cav3-root .cav3-inv-identity small { margin-top:3px;font-size:10px;color:#91867d;overflow-wrap:anywhere }
+.cav3-root .cav3-inv-count { flex:0 0 auto;display:inline-block;border-radius:8px;background:#eef8f1;color:#276b4b;
+  padding:6px 8px;font-size:10px;font-weight:800;white-space:nowrap }
+.cav3-root .cav3-inv-count.is-low { background:#fff2dc;color:#94681e }
+.cav3-root .cav3-inv-count.is-out { background:#fcecee;color:#ab3444 }
+.cav3-root .cav3-inv-editor>form { display:grid;gap:14px;padding:5px 18px 19px }
+.cav3-root .cav3-inv-editor label { display:grid;gap:6px;font-size:11px;color:#625751;font-weight:750 }
+.cav3-root .cav3-inv-editor input,.cav3-root .cav3-inv-editor select { height:42px;width:100%;
+  border:1px solid #e5dcda;border-radius:9px;padding:9px 11px;background:#fff;color:#292727;font-size:12px;min-width:0 }
+.cav3-root .cav3-inv-selected { background:#fbf7f5;border-radius:9px;padding:12px;display:grid;gap:4px }
+.cav3-root .cav3-inv-selected b { font-size:12px;overflow-wrap:anywhere }
+.cav3-root .cav3-inv-selected small { font-size:10px;color:#8d837e;overflow-wrap:anywhere }
+.cav3-root .cav3-inv-preview { display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border:1px solid #eee7e3;background:#fbfaf9;border-radius:9px;padding:12px;font-size:12px }
+.cav3-root .cav3-inv-preview>span { color:#706762 }.cav3-root .cav3-inv-preview strong { font-size:21px;white-space:nowrap }
+.cav3-root .cav3-inv-save { min-height:45px;background:var(--cav3-wine);color:#fff;border:0;border-radius:9px;
+  padding:11px 14px;font-size:12px;font-weight:800;cursor:pointer }
+.cav3-root .cav3-inv-save:hover { background:var(--cav3-wine-dark) }
+.cav3-root .cav3-inv-save:disabled { opacity:.45;cursor:not-allowed }
+.cav3-root .cav3-inv-reservation-stats { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+  padding:0 15px 14px }
+.cav3-root .cav3-inv-reservation-stats>span { display:grid;gap:2px;border-radius:8px;padding:11px;background:#faf6f3;
+  font-size:10px;color:#877b72 }
+.cav3-root .cav3-inv-reservation-stats b { font-size:19px;color:#403632 }
+.cav3-root .cav3-inv-hold,.cav3-root .cav3-inv-history { display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:59px;padding:12px 17px;border-top:1px solid #f2eeeb;font-size:12px }
+.cav3-root .cav3-inv-hold>span,.cav3-root .cav3-inv-history>span { min-width:0;display:grid;gap:3px }
+.cav3-root .cav3-inv-hold b,.cav3-root .cav3-inv-history b { font-size:11px;overflow-wrap:anywhere }
+.cav3-root .cav3-inv-hold small,.cav3-root .cav3-inv-history small { font-size:10px;color:#8c817b;overflow-wrap:anywhere }
+.cav3-root .cav3-inv-hold button { min-height:36px;padding:8px 9px;background:white;border:1px solid #e9d9d7;
+  border-radius:8px;color:var(--cav3-wine);font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap }
+.cav3-root .cav3-inv-footnote { font-size:11px;color:#7a6f69;line-height:1.6;padding:11px 16px 17px;margin:0 }
+.cav3-root .cav3-inventory .cav3-preview-notice { margin:0 }
+@media (max-width:1200px) {
+ .cav3-root .cav3-inventory-cards { grid-template-columns:repeat(2,minmax(0,1fr)) }
+ .cav3-root .cav3-inventory-columns { grid-template-columns:1fr }
+ .cav3-root .cav3-inv-products { max-height:520px }
+}
+@media (max-width:450px) {
+ .cav3-root .cav3-inventory-cards { gap:8px }
+ .cav3-root .cav3-inventory-cards>div { padding:13px }
+ .cav3-root .cav3-inventory-cards b { font-size:22px }
+ .cav3-root .cav3-inv-products>button { gap:7px;padding:10px }
+ .cav3-root .cav3-inv-identity b { font-size:10.5px }
+ .cav3-root .cav3-inv-count { font-size:9px;padding:5px }
+ .cav3-root .cav3-inv-image { width:37px;height:37px;flex-basis:37px }
+}
