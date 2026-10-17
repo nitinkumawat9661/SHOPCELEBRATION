@@ -1,7 +1,6 @@
 import { query, transaction } from "./db"
+import { nextAvailableStock, type AdjustmentMode } from "../domain/admin-stock-adjustment"
 import { invalidatePublicSnapshot } from "./public-store-cache"
-
-export type AdjustmentMode = "set" | "add" | "remove"
 
 export class InventoryAdjustmentError extends Error {
   constructor(public readonly code: string, public readonly status: number = 422) {
@@ -117,11 +116,13 @@ export async function applyAdminInventoryAdjustment(input: Input) {
     if (previous !== expected) {
       throw new InventoryAdjustmentError("STOCK_CHANGED_RELOAD", 409)
     }
-    const next = mode === "set" ? value : mode === "add" ? previous + value : previous - value
-    if (!Number.isSafeInteger(next) || next < 0 || next > 10000) {
-      throw new InventoryAdjustmentError("STOCK_OUT_OF_RANGE", 409)
+    let next: number
+    try {
+      next = nextAvailableStock(previous, mode, value)
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "STOCK_OUT_OF_RANGE"
+      throw new InventoryAdjustmentError(code, code === "NO_STOCK_CHANGE" ? 422 : 409)
     }
-    if (next === previous) throw new InventoryAdjustmentError("NO_STOCK_CHANGE")
 
     await client.query(
       "UPDATE product_inventory SET available_quantity = $2, updated_at = now() WHERE product_id = $1",
