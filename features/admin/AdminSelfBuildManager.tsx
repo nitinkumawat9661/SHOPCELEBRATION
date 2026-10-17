@@ -28,7 +28,7 @@ function slug(label: string, used: Set<string>) {
   return null
 }
 
-export function AdminSelfBuildManager() {
+export function AdminSelfBuildManager({ onDirtyChange }: { onDirtyChange?: (dirty: boolean) => void } = {}) {
   const [state, setState] = useState<SelfBuildAdminState | null>(null)
   const [baseline, setBaseline] = useState("")
   const [section, setSection] = useState<Group>("categories")
@@ -42,7 +42,20 @@ export function AdminSelfBuildManager() {
   const [newOptionLabel, setNewOptionLabel] = useState("")
   const [newOptionCost, setNewOptionCost] = useState("100")
   const [editingAmounts, setEditingAmounts] = useState<Record<string,string>>({})
+  const [capacityDirty,setCapacityDirty]=useState(false)
   const dirty = state !== null && JSON.stringify(state) !== baseline
+  const invalidDraftInput=Object.entries(editingAmounts).some(([key,raw])=>{
+    if(key==="default")return parseRupees(raw)===null
+    if(key.startsWith("c:"))return state?.categories.some(c=>c.id===key.slice(2))&&parseRupees(raw)===null
+    return state?.options.some(o=>o.id===key.slice(2))&&parseRupees(raw)===null
+  })
+  const unsaved = dirty || invalidDraftInput || capacityDirty
+  useEffect(()=>{ onDirtyChange?.(unsaved) },[unsaved,onDirtyChange])
+  useEffect(()=>{
+    const warn=(event:BeforeUnloadEvent)=>{if(unsaved){event.preventDefault();event.returnValue=""}}
+    window.addEventListener("beforeunload",warn)
+    return ()=>window.removeEventListener("beforeunload",warn)
+  },[unsaved])
   const categoryGroups = useMemo(() => state?.categories.filter(c => c.selectionKind === "group") ?? [], [state])
   const variantGroups = useMemo(() => state?.categories.filter(c => c.selectionKind === "variant") ?? [], [state])
 
@@ -146,6 +159,12 @@ export function AdminSelfBuildManager() {
     } catch(error){setFeedback({kind:"error",text:error instanceof Error?error.message:"Save failed."})}
     finally{setSaving(false)}
   }
+  function selectSection(next:Group) {
+    if(next===section)return
+    if(unsaved && !window.confirm("Unsaved Self-Build settings may be lost when switching sections. Continue?"))return
+    if(section==="capacity")setCapacityDirty(false)
+    setSection(next)
+  }
   function discard(){
     if(!dirty||window.confirm("Discard all unsaved Self-Build edits?"))void load()
   }
@@ -158,10 +177,10 @@ export function AdminSelfBuildManager() {
     {feedback && <div className={feedback.kind==="error"?"sbAdminFeedback sbAdminFeedbackError":"sbAdminFeedback sbAdminFeedbackSuccess"} role="status">{feedback.text}</div>}
     <div className="sbAdminToolbar">
       <div className="sbAdminTabs" role="group" aria-label="Self-Build editor sections">
-        <button className={section==="categories"?"active":""} onClick={()=>setSection("categories")}>Categories</button>
-        <button className={section==="options"?"active":""} onClick={()=>setSection("options")}>Sizes &amp; options</button>
-        <button className={section==="settings"?"active":""} onClick={()=>setSection("settings")}>Rules &amp; notes</button>
-        <button className={section==="capacity"?"active":""} onClick={()=>setSection("capacity")}>Availability &amp; budgets</button>
+        <button className={section==="categories"?"active":""} onClick={()=>selectSection("categories")}>Categories</button>
+        <button className={section==="options"?"active":""} onClick={()=>selectSection("options")}>Sizes &amp; options</button>
+        <button className={section==="settings"?"active":""} onClick={()=>selectSection("settings")}>Rules &amp; notes</button>
+        <button className={section==="capacity"?"active":""} onClick={()=>selectSection("capacity")}>Availability &amp; budgets</button>
       </div>
       <div className="sbAdminStatus">{loading?"Loading…":state?`DB version ${state.version}`:"Not loaded"}{dirty&&<b> · Unsaved edits</b>}</div>
     </div>
@@ -220,7 +239,7 @@ export function AdminSelfBuildManager() {
         <div className="sbAdminNotice"><strong>Safety locks:</strong> Customer Self-Build checkout: OFF · Internal prices shown to customers: NEVER. These are secured database-level protections, not admin toggles.</div>
       </div>
     </div>}
-    {section==="capacity"&&<div className="sbAdminBody"><AdminSelfBuildCapacity /></div>}
+    {section==="capacity"&&<div className="sbAdminBody"><AdminSelfBuildCapacity onDirtyChange={setCapacityDirty} /></div>}
     {state&&section!=="capacity"&&<div className="sbAdminFooter"><button type="button" className="sbAdminSave" onClick={()=>void save()} disabled={loading||saving||!dirty}>{saving?"Saving…":"Save Self-Build settings"}</button><button type="button" className="secondary" disabled={saving||loading||!dirty} onClick={discard}>Discard changes</button><span>Edits are atomic and version-protected.</span></div>}
   </section>
 }
