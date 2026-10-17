@@ -215,7 +215,8 @@ export function AdminCampaigns({ v3 = false, onDirtyChange, onPublished }: {
           <p className="trackingState">No campaigns match the current search or state filter.</p>}
         {(v3 ? visible : config.campaigns.map((campaign, index) => ({ campaign, index })))
           .map(({ campaign, index }) => <article className={`adminCampaignCard ${campaign.active ? "active" : ""}`} key={`${campaign.id}-${index}`}>
-          <header><div><span>{!campaign.active ? "OFF" : campaign.endAt && Date.parse(campaign.endAt) <= now ? "EXPIRED" :
+          <header><div><span>{!v3 ? (campaign.active ? "LIVE WHEN ELIGIBLE" : "DRAFT / OFF") :
+            !campaign.active ? "OFF" : campaign.endAt && Date.parse(campaign.endAt) <= now ? "EXPIRED" :
             campaign.startAt && Date.parse(campaign.startAt) > now ? "SCHEDULED" : "ENABLED IN WINDOW"}</span><h3>{campaign.name}</h3><small>{campaign.id}</small></div><label className="adminToggle"><input type="checkbox" checked={campaign.active} onChange={(event) => patch(index, "active", event.target.checked)} /><span>Active</span></label></header>
           <div className="adminSettingsGrid campaignBasics">
             <label>Campaign ID<input value={campaign.id} readOnly /><small>Generated automatically; kept stable for analytics history.</small></label>
