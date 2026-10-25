@@ -54,7 +54,7 @@ const mockRequire=name=>{
   if(name==="./db")return {query(){throw Error("mocked")},transaction(){throw Error("mocked")}}
   if(name==="./self-build-published-tiers")return {getSelfBuildPublishedCatalog(){throw Error("mocked")}}
   if(name==="./r2")return {deleteSelfBuildPrivatePhoto(){throw Error("mocked")}}
-  if(name==="./self-build-tier-limits")return {countSelfBuildPieces(){throw Error("mocked")},getSelfBuildTierLimits(){throw Error("mocked")}}
+  if(name==="./self-build-tier-limits")return {countSelfBuildPieces(){throw Error("mocked")},getSelfBuildTierLimits(){throw Error("mocked")},parseSelfBuildBoxId(value){if(value==null)return null;if(["kappa","corrugated","bag-clear","bag-print"].includes(value))return value;throw Error("SELF_BUILD_BOX_INVALID")}}
   if(name==="./self-build-private-budget")return {evaluatePrivateSelfBuildChoices(){throw Error("mocked")}}
   throw Error("UNEXPECTED_MOCK_IMPORT:"+name)
 }
@@ -70,6 +70,9 @@ const valid=parse({
 })
 assert.equal(valid.otherRequestText,"Please add a note.")
 assert.equal(valid.selections.length,3)
+assert.equal(valid.boxId,null,"Legacy unboxed drafts stay parseable")
+assert.equal(parse({...valid,boxId:"kappa"}).boxId,"kappa","Box choice is normalized")
+assert.throws(()=>parse({...valid,boxId:"unapproved-unknown"}),/SELF_BUILD_BOX_INVALID/)
 const invalidCases=[
   {tierId:"premium",selections:[{kind:"category",id:"product/id",quantity:1}],otherRequestText:""},
   {tierId:"premium",selections:[{kind:"product",id:"sku-1",quantity:1}],otherRequestText:""},

@@ -6,6 +6,7 @@ import { formatMoney } from "../../lib/domain/money"
 import { hamperFinalPriceRupees } from "../../config/self-build-delivery"
 
 type BoxId = "kappa" | "corrugated" | "bag-clear" | "bag-print"
+const KAPPA_MIN_HAMPER_PRICE = 1000 // Tier price before the separate ₹50 delivery fee.
 type Stage = 1 | 2 | 3
 type CategoryName = "Jewelry" | "Chocolates" | "Teddy Bear" | "Flowers" | "Customised Photos" | "Custom Requirements"
 type DeliveryDetails = {
@@ -14,7 +15,7 @@ type DeliveryDetails = {
 }
 
 const BOXES: { id: BoxId; label: string; caption: string }[] = [
-  { id: "kappa", label: "Kappa Box", caption: "Structured, elegant gifting" },
+  { id: "kappa", label: "Kappa Box", caption: "Available on hampers from ₹1,000" },
   { id: "corrugated", label: "Corrugated Normal Box", caption: "Warm, classic presentation" },
   { id: "bag-clear", label: "Hamper Bag – Translucent", caption: "A soft peek inside" },
   { id: "bag-print", label: "Hamper Bag – Printed", caption: "Personal and playful" }
@@ -83,12 +84,13 @@ function BoxArt({ kind }: { kind: BoxId }) {
   </svg>
 }
 
-function enoughForPieces(tiers: Tier[], pieces: number) {
-  const sorted = [...tiers].sort((a, b) => a.price - b.price)
-  return sorted.find(t => t.maxChoices >= Math.max(1, pieces)) ?? sorted.at(-1)
+function enoughForPieces(tiers: Tier[], pieces: number, box: BoxId | null) {
+  const eligible = tiers.filter(t => box !== "kappa" || t.price >= KAPPA_MIN_HAMPER_PRICE)
+    .sort((a, b) => a.price - b.price)
+  return eligible.find(t => t.maxChoices >= Math.max(1, pieces)) ?? eligible.at(-1)
 }
 
-export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
+export function SelfBuildThreeScreenPreview({ tiers, hasPublishedPricing }: { tiers: Tier[]; hasPublishedPricing: boolean }) {
   const [stage, setStage] = useState<Stage>(1)
   const [box, setBox] = useState<BoxId | null>(null)
   const [category, setCategory] = useState<CategoryName>("Jewelry")
@@ -101,8 +103,9 @@ export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
     .filter(([, qty]) => qty > 0)
     .map(([id, qty]) => ({ id, qty, category: id.split("::")[0] || "", label: id.split("::")[1] || id })), [selected])
   const pieces = selectedItems.reduce((sum, item) => sum + item.qty, 0)
-  const chosenTier = enoughForPieces(tiers, pieces)
-  const previewTotal = chosenTier ? formatMoney(hamperFinalPriceRupees(chosenTier.price)) : "—"
+  const chosenTier = enoughForPieces(tiers, pieces, box)
+  const kappaEligible = tiers.some(t => t.price >= KAPPA_MIN_HAMPER_PRICE)
+  const previewTotal = hasPublishedPricing && chosenTier ? formatMoney(hamperFinalPriceRupees(chosenTier.price)) : "—"
   const selectedBox = BOXES.find(entry => entry.id === box)
   const maxPieces = Math.max(0, ...tiers.map(t => t.maxChoices))
 
@@ -154,13 +157,15 @@ export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
             <h2>{choice.label}</h2>
             <p>{choice.caption}</p>
             <button type="button" className={box === choice.id ? "sb3Select active" : "sb3Select"}
-              aria-pressed={box === choice.id} onClick={() => { setBox(choice.id); jump(2) }}>
-              {box === choice.id ? "Selected" : "Select"} <span aria-hidden="true">→</span>
+              aria-pressed={box === choice.id}
+              disabled={choice.id === "kappa" && !kappaEligible}
+              onClick={() => { setBox(choice.id); jump(2) }}>
+              {choice.id === "kappa" && !kappaEligible ? "Not available for these tiers" : box === choice.id ? "Selected" : "Select"} <span aria-hidden="true">→</span>
             </button>
           </div>
         </article>)}
       </div>
-      <p className="sb3Helper">Presentation styles shown as illustrations. Exact box availability and any box-specific charges require confirmation.</p>
+      <p className="sb3Helper">Kappa Box requires a hamper tier of at least ₹1,000, excluding delivery. Box and packaging costs are reserved within the hamper budget; no extra box charge is added in this preview. Styles are illustrations.</p>
     </div>}
 
     {stage === 2 && <div className="sb3Step">
@@ -214,7 +219,9 @@ export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
             {customNote.trim() && <p className="sb3SpecialNote">Special request added</p>}
           </div>
           <div className="sb3Total"><span>Estimated hamper total</span><strong>{previewTotal}</strong></div>
-          <p className="sb3EstimateDisclaimer">Budget-tier illustration only. This is not an item-level quote. Box charges and final pricing will be confirmed before checkout.</p>
+          <p className="sb3EstimateDisclaimer">{hasPublishedPricing
+            ? "Based on current published hamper tiers, including delivery. Box and packaging are budgeted within the tier; this is not a confirmed checkout quote."
+            : "Published tier prices are temporarily unavailable. Selections are for design preview only; no quote or payment is available."}</p>
           <button type="button" className="sb3Primary" disabled={!pieces}
             onClick={() => jump(3)}>Continue <span aria-hidden="true">→</span></button>
           {pieces >= maxPieces && <p className="sb3MaxNotice">Maximum {maxPieces} selected pieces in this preview.</p>}
@@ -277,7 +284,9 @@ export function SelfBuildThreeScreenPreview({ tiers }: { tiers: Tier[] }) {
           {customNote.trim() && <p className="sb3SpecialNote">Special request: {customNote}</p>}
         </div>
         <div className="sb3Total"><span>Estimated total</span><strong>{previewTotal}</strong></div>
-        <p className="sb3EstimateDisclaimer">An illustrative tier estimate, not a confirmed payable amount. No checkout or payment will run from this preview.</p>
+        <p className="sb3EstimateDisclaimer">{hasPublishedPricing
+          ? "Based on published hamper tiers, including delivery, with box packaging budgeted inside the tier. This is not a confirmed payable amount; checkout is not connected."
+          : "Published tier prices are unavailable. No quote, checkout or payment will run from this preview."}</p>
         <span className="sb3Signature">Mharo Surprise, Thari Smile</span>
       </aside>
     </div>}

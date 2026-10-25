@@ -109,9 +109,17 @@ try{
   check(`Self-Build demo HTTP 200 @${width}`,sb?.status()===200,String(sb?.status()))
   await page.locator(".sb3BoxCard").first().waitFor({timeout:20000})
   check(`Four illustrated box choices @${width}`,await page.locator(".sb3BoxCard").count()===4)
+  check(`Kappa requires ₹1,000 base hamper tier @${width}`,
+   (await page.locator(".sb3BoxCard").first().innerText()).includes("₹1,000"))
+  check(`Kappa remains selectable in design preview with qualifying sample tiers @${width}`,
+   await page.locator(".sb3Select").first().isEnabled())
   await screenshot(page,width,"self-build-boxes")
   await page.locator(".sb3Select").first().click()
   await page.locator(".sb3Options .sb3Add").first().waitFor()
+  const kappaEstimate=(await page.locator(".sb3Total strong").first().innerText()).trim()
+  check(`Kappa never prices below ₹1,000 before delivery @${width}`,
+   kappaEstimate==="—" || Number(kappaEstimate.replace(/[^\d.]/g,""))>=1050,
+   `displayed=${kappaEstimate}`)
   check(`Gift categories navigation @${width}`,await page.locator(".sb3Categories button").count()===6)
   await page.locator(".sb3Options .sb3Add").first().click()
   check(`Selected items summary @${width}`,(await page.locator(".sb3SummarySub").innerText()).includes("1 item"))

@@ -66,9 +66,10 @@ export async function listOrders(limit = databaseConfig.adminOrderListDefault) {
     public_id: string
     selections: unknown
     other_request_text: string
+    box_id: string | null
     reservation_status: "reserved" | "committed" | "released" | null
   }>(
-    `SELECT o.public_id,s.selections,s.other_request_text,
+    `SELECT o.public_id,s.selections,s.other_request_text,s.box_id,
             b.status AS reservation_status
        FROM orders o
        JOIN self_build_order_snapshots s ON s.order_id=o.id
@@ -98,6 +99,7 @@ export async function listOrders(limit = databaseConfig.adminOrderListDefault) {
       selfBuild: {
         selections,
         otherRequestText: snapshot.other_request_text,
+        boxId: snapshot.box_id,
         reservationStatus: snapshot.reservation_status
       }
     }
