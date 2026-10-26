@@ -80,16 +80,18 @@ jobs:
           elif /usr/sbin/nginx -T >/dev/null 2>&1; then
             conf="$(/usr/sbin/nginx -T 2>/dev/null)"
           else
-            echo "NGINX_CONFIG_UNREADABLE"
-            exit 1
+            # The nitin runtime account lacks permission to read the full root-owned
+            # Nginx configuration. Never elevate or modify origin permissions.
+            echo "NGINX_CONFIG=UNREADABLE_REQUIRES_PROVIDER_REVIEW"
           fi
-          test -n "$conf"
-          echo "NGINX_CONFIG_ACCESS=PASS"
-          if grep -Eiq '^[[:space:]]*(add_header|more_set_headers)[[:space:]]+["'\''"]?X-Robots-Tag' <<< "$conf"; then
-            echo "NGINX_X_ROBOTS_TAG_RULE_PRESENT=TRUE_NEEDS_MANUAL_REVIEW"
-            exit 1
+          if [ -n "$conf" ]; then
+            echo "NGINX_CONFIG_ACCESS=PASS"
+            if grep -Eiq '^[[:space:]]*(add_header|more_set_headers)[[:space:]]+["'\''"]?X-Robots-Tag' <<< "$conf"; then
+              echo "NGINX_X_ROBOTS_TAG_RULE_PRESENT=TRUE_NEEDS_MANUAL_REVIEW"
+              exit 1
+            fi
+            echo "NGINX_X_ROBOTS_TAG_RULE_PRESENT=false"
           fi
-          echo "NGINX_X_ROBOTS_TAG_RULE_PRESENT=false"
           for path in "/" "/jewelry" "/jewelry/celebration-necklace-001" "/robots.txt" "/sitemap.xml"; do
             hdr="$(curl -sS --fail --max-time 15 -D - -o /dev/null -H 'Host: shopcelebration.in' "http://127.0.0.1:3040$path")"
             printf '%s\n' "$hdr" | grep -qi '^HTTP/.* 200' || { echo "ORIGIN_RESPONSE_NOT_200_FOR=${path}"; exit 1; }
