@@ -25,7 +25,9 @@ jobs:
         run: |
           set -euo pipefail
           npm ci
-          npm audit --omit=dev
           npm run audit
           # Build the exact combined branch before touching the VPS.
           NEXT_PUBLIC_SITE_INDEXABLE=false npm run build
+          # Keep the security gate, but run type/build checks first so existing
+          # dependency advisories do not hide new application regressions.
+          npm audit --omit=dev
