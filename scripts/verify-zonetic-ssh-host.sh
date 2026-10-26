@@ -20,3 +20,6 @@ actual="$(ssh-keygen -lf "$candidate" -E sha256 | awk 'NR==1 {print $2}')"
 }
 install -m 600 "$candidate" "$1"
 echo "SSH_HOST_IDENTITY_VERIFIED=true"
+# Publishing the verified *public* host key permits an owner to refresh the
+# existing VPS_KNOWN_HOSTS GitHub secret without revealing any private keys.
+awk 'NF >= 3 && $2 == "ssh-ed25519" {print "VERIFIED_HOST_PUBLIC_KEY=" $2 " " $3}' "$candidate"
