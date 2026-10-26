@@ -25,7 +25,107 @@ jobs:
         run: |
           set -euo pipefail
           npm ci
-          npm audit --omit=dev
           npm run audit
-          # Build the exact combined branch before touching the VPS.
-          NEXT_PUBLIC_SITE_INDEXABLE=false npm run build
+          # Build the exact combined branch with production-indexable metadata.
+          # The SEO unit audit separately checks NEXT_PUBLIC_SITE_INDEXABLE=false.
+          NEXT_PUBLIC_SITE_INDEXABLE=true npm run build
+          # Keep the security gate, but run type/build checks first so existing
+          # dependency advisories do not hide new application regressions.
+          npm audit --omit=dev
+
+  vps-readonly-preflight:
+    name: Read-only VPS origin and Nginx preflight
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+    steps:
+      - name: Check out verified SSH host-key helper
+        uses: actions/checkout@v5
+      - name: Inspect origin without modifying release or config
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_PRIVATE_KEY VPS_KNOWN_HOSTS; do
+            test -n "${!name:-}" || { echo "MISSING_REQUIRED_VPS_SECRET=${name}"; exit 1; }
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration-preflight"
+          # Replace the stale secret's host record ONLY after checking the
+          # out-of-band provider-verified ED25519 fingerprint; never trust scan alone.
+          bash scripts/verify-zonetic-ssh-host.sh "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/celebration-preflight" "$HOME/.ssh/known_hosts"
+          # Independently confirm the user-updated GitHub secret is the correct
+          # host key. This is what the unchanged production deploy will consume.
+          secret_hosts="$(mktemp)"
+          matched="$(mktemp)"
+          trap 'rm -f "$secret_hosts" "$matched"' EXIT
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$secret_hosts"
+          chmod 600 "$secret_hosts"
+          lookup="$VPS_HOST"
+          if [ "$VPS_PORT" != "22" ]; then lookup="[$VPS_HOST]:$VPS_PORT"; fi
+          ssh-keygen -F "$lookup" -f "$secret_hosts" > "$matched" || { echo "GITHUB_HOST_SECRET_MISSING_TARGET"; exit 1; }
+          if ! ssh-keygen -lf "$matched" -E sha256 | grep -Fq 'SHA256:2rrg9Yfj69KWm1VlB6vD2mIH0wklRFItgR5aHAgeMCA'; then
+            echo "GITHUB_HOST_SECRET_FINGERPRINT_MISMATCH"
+            exit 1
+          fi
+          echo "GITHUB_DEPLOY_HOST_SECRET_VERIFIED=true"
+          cp "$secret_hosts" "$HOME/.ssh/known_hosts"
+          # Keep full strict host checking enabled. No auto-acceptance.
+          ssh-keygen -y -f "$HOME/.ssh/celebration-preflight" >/dev/null
+          ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration-preflight" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=12 "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
+          set -euo pipefail
+          APP="/var/www/celebration"
+          test "$(id -un)" = "nitin"
+          test -d "$APP/releases"
+          test -f "$APP/shared/.env.production"
+          current="$(readlink -f "$APP/current")"
+          case "$current" in "$APP"/releases/*) ;; *) echo "INVALID_CURRENT_RELEASE"; exit 1;; esac
+          echo "CURRENT_RELEASE_VALID=true"
+          indexed="$(grep -c '^NEXT_PUBLIC_SITE_INDEXABLE=true$' "$APP/shared/.env.production" || true)"
+          flags="$(grep -c '^NEXT_PUBLIC_SITE_INDEXABLE=' "$APP/shared/.env.production" || true)"
+          test "$indexed" -eq 1 && test "$flags" -eq 1 || { echo "SEO_ENV_FLAG_INVALID"; exit 1; }
+          echo "PRODUCTION_SEO_ENV_ENABLED=true"
+          conf=""
+          if sudo -n /usr/sbin/nginx -T >/dev/null 2>&1; then
+            conf="$(sudo -n /usr/sbin/nginx -T 2>/dev/null)"
+          elif /usr/sbin/nginx -T >/dev/null 2>&1; then
+            conf="$(/usr/sbin/nginx -T 2>/dev/null)"
+          else
+            # The nitin runtime account lacks permission to read the full root-owned
+            # Nginx configuration. Never elevate or modify origin permissions.
+            echo "NGINX_CONFIG=UNREADABLE_REQUIRES_PROVIDER_REVIEW"
+          fi
+          if [ -n "$conf" ]; then
+            echo "NGINX_CONFIG_ACCESS=PASS"
+            if grep -Eiq '^[[:space:]]*(add_header|more_set_headers)[[:space:]]+["'\''"]?X-Robots-Tag' <<< "$conf"; then
+              echo "NGINX_X_ROBOTS_TAG_RULE_PRESENT=TRUE_NEEDS_MANUAL_REVIEW"
+              exit 1
+            fi
+            echo "NGINX_X_ROBOTS_TAG_RULE_PRESENT=false"
+          fi
+          for path in "/" "/jewelry" "/jewelry/celebration-necklace-001" "/robots.txt" "/sitemap.xml"; do
+            hdr="$(curl -sS --fail --max-time 15 -D - -o /dev/null -H 'Host: shopcelebration.in' "http://127.0.0.1:3040$path")"
+            printf '%s\n' "$hdr" | grep -qi '^HTTP/.* 200' || { echo "ORIGIN_RESPONSE_NOT_200_FOR=${path}"; exit 1; }
+            if grep -qi '^x-robots-tag:.*noindex' <<< "$hdr"; then echo "ORIGIN_NOINDEX_HEADER_FOR=${path}"; exit 1; fi
+            echo "ORIGIN_OK=${path}"
+          done
+          page="$(curl -fsS -H 'Host: shopcelebration.in' --max-time 15 http://127.0.0.1:3040/jewelry/celebration-necklace-001)"
+          if ! grep -Fq 'name="robots" content="index, follow"' <<< "$page"; then
+            echo "ORIGIN_PRODUCT_PAGE_NOINDEX_OR_MISSING"
+            exit 1
+          fi
+          if ! grep -Fq 'rel="canonical" href="https://shopcelebration.in/jewelry/celebration-necklace-001"' <<< "$page"; then
+            echo "ORIGIN_PRODUCT_CANONICAL_MISSING"
+            exit 1
+          fi
+          echo "ORIGIN_PRODUCT_INDEX_AND_CANONICAL=PASS"
+          df -Pk "$APP" | tail -1 | awk '{print "DISK_FREE_KB=" $4}'
+          echo "READ_ONLY_PREFLIGHT=PASS"
+          REMOTE
+          rm -f "$HOME/.ssh/celebration-preflight"

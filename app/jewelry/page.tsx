@@ -14,7 +14,7 @@ const siteUrl = "https://shopcelebration.in"
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
   const params = await searchParams
-  const filtered = ["q", "category", "sort", "price"].some((key) => typeof params[key] === "string" && String(params[key]).trim())
+  const filtered = ["q", "category", "sort", "price", "view"].some((key) => typeof params[key] === "string" && String(params[key]).trim())
   const title = "Affordable Jewelry Online: Rings, Necklaces & Bracelets"
   const description = "Shop affordable jewelry online at Celebration, including rings, necklaces, bangles and bracelets. Live stock checks, secure payment, order tracking and delivery included where shown."
   return {
@@ -33,10 +33,11 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export default async function JewelryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const [params, catalog, settings] = await Promise.all([searchParams, getPublicCatalogConfig().catch(() => null), getPublicStoreSettings().catch(() => null)])
+  const [params, catalog, settings] = await Promise.all([searchParams, getPublicCatalogConfig(), getPublicStoreSettings().catch(() => null)])
   const value = (key: string) => (typeof params[key] === "string" ? params[key] : "").slice(0, 100)
-  const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
-  const products = storefrontCatalog?.products.filter((product) => product.active !== false) || []
+  // A failed catalog read must not serve a misleading indexable 200 empty collection.
+  const storefrontCatalog = await withVerifiedStorefrontBadges(catalog.catalog)
+  const products = storefrontCatalog.products.filter((product) => product.active !== false)
   const itemList = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -63,7 +64,7 @@ export default async function JewelryPage({ searchParams }: { searchParams: Prom
     <SeoJsonLd data={itemList} />
     <TrustStrip />
     <StorefrontHeader settings={settings?.settings || defaultStoreSettings} searchQuery={value("q")} />
-    <CatalogCollection products={storefrontCatalog?.products || []} available={Boolean(catalog)} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} />
+    <CatalogCollection products={storefrontCatalog.products} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} />
     <SiteFooter />
   </main>
 }
