@@ -4,11 +4,11 @@ import { runInNewContext } from "node:vm"
 import ts from "typescript"
 
 const file = (path) => readFile(new URL("../" + path, import.meta.url), "utf8")
-const [sitemapSource, catalogSource, catalogJson, listing, cards, productPage, robots, hamperPage, categorySource, discoverySource, categoryPage] = await Promise.all([
+const [sitemapSource, catalogSource, catalogJson, listing, cards, productPage, robots, hamperPage, categorySource, discoverySource, categoryPage, jewelryPage] = await Promise.all([
   "app/sitemap.ts", "lib/domain/catalog.ts", "content/catalog.json",
   "features/catalog/CatalogCollection.tsx", "features/catalog/CatalogCard.tsx",
   "app/jewelry/[id]/page.tsx", "app/robots.ts", "app/curated-hampers/page.tsx",
-  "lib/domain/jewelry-seo-categories.ts", "lib/domain/catalog-discovery.ts", "app/jewelry/category/[slug]/page.tsx"
+  "lib/domain/jewelry-seo-categories.ts", "lib/domain/catalog-discovery.ts", "app/jewelry/category/[slug]/page.tsx", "app/jewelry/page.tsx"
 ].map(file))
 
 assert(sitemapSource.includes('export const dynamic = "force-dynamic"'),
@@ -32,6 +32,10 @@ assert(categoryPage.includes('robots: { index: !filtered, follow: true }'),
   "Category filter variants must remain noindex")
 assert(productPage.includes('const catalog = await getPublicCatalogConfig()'),
   "A public product DB outage must not silently emit noindex")
+assert(jewelryPage.includes("getPublicCatalogConfig()") && !jewelryPage.includes("getPublicCatalogConfig().catch"),
+  "A public jewelry DB outage must return retriable 5xx, not an indexable 200 empty page")
+assert(jewelryPage.includes("const storefrontCatalog = await withVerifiedStorefrontBadges(catalog.catalog)"),
+  "The jewelry collection must use a real resolved catalog for indexable markup")
 assert(productPage.includes('if (!product) notFound()'), "Missing products must remain 404")
 assert(listing.includes("visible.map((product)") && listing.includes("<CatalogCard"),
   "Shop page must internally link each visible product; sitemap alone is not sufficient")
