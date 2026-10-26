@@ -24,9 +24,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # TEMPORARY PR-only lockfile generator; remove after copying verified lock.
-          npm install --package-lock-only --save-exact next@16.4.3
-          node -e "const fs=require('fs'); const s=fs.readFileSync('package-lock.json').toString('base64'); for(let i=0,j=0;i<s.length;i+=3000,j++) console.log('SEO_LOCK_PART_'+String(j).padStart(3,'0')+'='+s.slice(i,i+3000));"
           npm ci
           npm run audit
           # Build the exact combined branch before touching the VPS.
