@@ -26,8 +26,9 @@ jobs:
           set -euo pipefail
           npm ci
           npm run audit
-          # Build the exact combined branch before touching the VPS.
-          NEXT_PUBLIC_SITE_INDEXABLE=false npm run build
+          # Build the exact combined branch with production-indexable metadata.
+          # The SEO unit audit separately checks NEXT_PUBLIC_SITE_INDEXABLE=false.
+          NEXT_PUBLIC_SITE_INDEXABLE=true npm run build
           # Keep the security gate, but run type/build checks first so existing
           # dependency advisories do not hide new application regressions.
           npm audit --omit=dev
