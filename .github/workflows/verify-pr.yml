@@ -45,6 +45,8 @@ jobs:
       VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
       VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
     steps:
+      - name: Check out verified SSH host-key helper
+        uses: actions/checkout@v5
       - name: Inspect origin without modifying release or config
         shell: bash
         run: |
