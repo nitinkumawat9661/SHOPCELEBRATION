@@ -132,7 +132,7 @@ assert.equal(result.length, bootstrap.length + 12,
 assert.equal(new Set(urls).size, urls.length, "Duplicate indexable canonical URL")
 const staticExpected = ["/", "/jewelry", "/curated-hampers", "/about", "/faq", "/compare", "/claim"]
 assert.deepEqual(urls.slice(0, 7), staticExpected.map((path) => base + path))
-assert.deepEqual(urls.slice(7, 12), categories.map((item) => base + "/jewelry/category/" + item.slug))
+assert.deepEqual(urls.slice(7, 12), Array.from(categories, (item) => base + "/jewelry/category/" + item.slug))
 for (const category of categories) {
   assert(bootstrap.some((item) => item.category === category.name && isJewelryProduct(item)),
     "An empty/non-jewelry category must not be indexed: " + category.name)
