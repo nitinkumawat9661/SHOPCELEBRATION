@@ -16,6 +16,7 @@ import { SiteFooter } from "../../../features/shell/SiteFooter"
 import { StorefrontHeader } from "../../../features/shell/StorefrontHeader"
 import { TrustStrip } from "../../../features/shell/TrustStrip"
 import { isJewelryProduct } from "../../../lib/domain/catalog-discovery"
+import { jewelryCategoryPath } from "../../../lib/domain/jewelry-seo-categories"
 import { CELEBRATION_ORGANIZATION_ID, celebrationOfferShippingDetails, celebrationReturnPolicyReference } from "../../../lib/domain/merchant-seo"
 import { formatMoney } from "../../../lib/domain/money"
 import { isIndividualListing, isIndividuallySellable, primaryProductImage } from "../../../lib/domain/catalog"
@@ -35,8 +36,9 @@ function productDescription(name: string, category: string, description?: string
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
-  const catalog = await getPublicCatalogConfig().catch(() => null)
-  const product = catalog?.catalog.products.find((item) => item.id === id && item.active !== false)
+  // Catalog outages must not emit an accidental noindex for an existing SKU.
+  const catalog = await getPublicCatalogConfig()
+  const product = catalog.catalog.products.find((item) => item.id === id && item.active !== false)
   if (!product) return { title: "Product not found", robots: { index: false, follow: false } }
   const image = primaryProductImage(product)?.url
   const description = productDescription(product.name, product.category, product.description)
@@ -62,7 +64,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const [{ id }, catalog, settings] = await Promise.all([params, getPublicCatalogConfig().catch(() => null), getPublicStoreSettings().catch(() => null)])
+  const [{ id }, catalog, settings] = await Promise.all([params, getPublicCatalogConfig(), getPublicStoreSettings().catch(() => null)])
   const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
   const product = storefrontCatalog?.products.find((item) => item.id === id && item.active !== false)
   const reviewsResult = product
@@ -75,8 +77,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const soldOut = Boolean(product && listed && !individual)
   const savings = product && listed ? productSavingLabel(product) : null
   const mrpPaise = product && listed ? product.retail?.mrpPaise : undefined
-  if (catalog && !product) notFound()
-  const collectionUrl = product && isJewelryProduct(product) ? "/jewelry" : "/jewelry?view=all"
+  if (!product) notFound()
+  const categoryUrl = isJewelryProduct(product) ? jewelryCategoryPath(product.category) : null
+  const collectionUrl = categoryUrl || (isJewelryProduct(product) ? "/jewelry" : "/jewelry?view=all")
   const related = storefrontCatalog?.products.filter((item) => item.active !== false && item.id !== id && item.category === product?.category).slice(0, 4) || []
   const image = product ? primaryProductImage(product)?.url : undefined
   const productUrl = product ? `${siteUrl}/jewelry/${encodeURIComponent(product.id)}` : ""
@@ -116,7 +119,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
         { "@type": "ListItem", position: 2, name: "Jewelry & Gifts", item: `${siteUrl}/jewelry` },
-        { "@type": "ListItem", position: 3, name: product.name, item: productUrl }
+        ...(categoryUrl ? [{ "@type": "ListItem", position: 3, name: product.category, item: `${siteUrl}${categoryUrl}` }] : []),
+        { "@type": "ListItem", position: categoryUrl ? 4 : 3, name: product.name, item: productUrl }
       ]
     }
   ] : null
