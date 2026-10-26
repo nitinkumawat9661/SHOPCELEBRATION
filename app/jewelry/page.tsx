@@ -14,7 +14,7 @@ const siteUrl = "https://shopcelebration.in"
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
   const params = await searchParams
-  const filtered = ["q", "category", "sort", "price"].some((key) => typeof params[key] === "string" && String(params[key]).trim())
+  const filtered = ["q", "category", "sort", "price", "view"].some((key) => typeof params[key] === "string" && String(params[key]).trim())
   const title = "Affordable Jewelry Online: Rings, Necklaces & Bracelets"
   const description = "Shop affordable jewelry online at Celebration, including rings, necklaces, bangles and bracelets. Live stock checks, secure payment, order tracking and delivery included where shown."
   return {
