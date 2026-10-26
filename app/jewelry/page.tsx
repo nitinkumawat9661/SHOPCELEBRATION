@@ -33,10 +33,11 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export default async function JewelryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const [params, catalog, settings] = await Promise.all([searchParams, getPublicCatalogConfig().catch(() => null), getPublicStoreSettings().catch(() => null)])
+  const [params, catalog, settings] = await Promise.all([searchParams, getPublicCatalogConfig(), getPublicStoreSettings().catch(() => null)])
   const value = (key: string) => (typeof params[key] === "string" ? params[key] : "").slice(0, 100)
-  const storefrontCatalog = catalog ? await withVerifiedStorefrontBadges(catalog.catalog) : null
-  const products = storefrontCatalog?.products.filter((product) => product.active !== false) || []
+  // A failed catalog read must not serve a misleading indexable 200 empty collection.
+  const storefrontCatalog = await withVerifiedStorefrontBadges(catalog.catalog)
+  const products = storefrontCatalog.products.filter((product) => product.active !== false)
   const itemList = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -63,7 +64,7 @@ export default async function JewelryPage({ searchParams }: { searchParams: Prom
     <SeoJsonLd data={itemList} />
     <TrustStrip />
     <StorefrontHeader settings={settings?.settings || defaultStoreSettings} searchQuery={value("q")} />
-    <CatalogCollection products={storefrontCatalog?.products || []} available={Boolean(catalog)} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} />
+    <CatalogCollection products={storefrontCatalog.products} filters={{ view: value("view"), q: value("q"), category: value("category"), sort: value("sort"), price: value("price") }} />
     <SiteFooter />
   </main>
 }
