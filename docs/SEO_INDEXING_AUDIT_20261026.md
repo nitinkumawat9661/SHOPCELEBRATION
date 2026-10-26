@@ -24,7 +24,7 @@ No production deployment, database writes, catalog edits or pricing/checkout cha
 - Keep existing robots restrictions, private routes, deployment controls, and intentional noindex directives.
 
 ## Verification gates
-The PR verify workflow (`verify-pr.yml`) runs `npm ci`, `npm audit --omit=dev`, `npm run audit`, and `NEXT_PUBLIC_SITE_INDEXABLE=false npm run build`. Its trigger is PR-to-main; `deploy-production.yml` only triggers on a push to `main` or an explicit manual dispatch. **Do not merge until checks pass and owner explicitly authorizes deployment.**
+The PR verify workflow (`verify-pr.yml`) runs `npm ci`, `npm audit --omit=dev`, `npm run audit`, and `NEXT_PUBLIC_SITE_INDEXABLE=true npm run build`. Its trigger is PR-to-main; `deploy-production.yml` only triggers on a push to `main` or an explicit manual dispatch. **Do not merge until checks pass and owner explicitly authorizes deployment.**
 The existing SEO audit script now tests five category paths, duplicate SKU removal, missing/added live products, catalog-outage failure, public/preview robots policies and first-party image paths.
 
 ## Required READ-ONLY VPS checks before approval
@@ -55,7 +55,7 @@ Check the active PM2 release and private env only as a boolean, **not by printin
 - Production content and behavior (no deployment performed).
 
 ## Additional review actions (26 Oct 2026)
-- Security gate uncovered a critical Next.js advisory in the original pinned dependency `next@16.3.8`. Upgraded only `next` to exact `16.4.3` in `package.json` and an npm-generated, integrity-verified `package-lock.json`; kept React, R2, PostgreSQL, payments, stock and all other direct dependencies unchanged. A PR-only ephemeral GitHub Actions test with this exact lockfile passed the full existing source audit, TypeScript, production build and `npm audit --omit=dev` (**0 vulnerabilities**). The temporary lock-generation step was removed after committing both files, so final PR verification still has to pass independently.
+- Security gate uncovered a critical Next.js advisory in the original pinned dependency `next@16.3.8`. Upgraded only `next` to exact `16.4.3` in `package.json` and an npm-generated, integrity-verified `package-lock.json`; kept React, R2, PostgreSQL, payments, stock and all other direct dependencies unchanged. A PR-only ephemeral GitHub Actions test with this exact lockfile passed the full existing source audit, TypeScript, production build and `npm audit --omit=dev` (**0 vulnerabilities**). The temporary lock-generation step was removed after committing both files, so final PR verification must pass independently with production-indexable metadata enabled.
 - Canonicalized public `/claim` to itself. Kept filtered jewelry URLs, including the `?view=all` alternate collection state, `noindex,follow` with canonical `/jewelry`; never index dynamic filter/sort/query variants as independent category landings.
-- Updated `.github/workflows/verify-pr.yml` to run source audit and production build before the unchanged mandatory npm security audit. Failures remain blocking. No changes to `.github/workflows/deploy-production.yml`.
+- Updated `.github/workflows/verify-pr.yml` to run source audit and a production-indexable build before the unchanged mandatory npm security audit. The standalone SEO test separately verifies that preview/non-production mode stays blocked. Failures remain blocking. No changes to `.github/workflows/deploy-production.yml`.
 - These changes have **not** been merged or deployed. Inspect the latest PR check before approving anything.
