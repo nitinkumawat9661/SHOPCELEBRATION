@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next"
 import { catalogImageVariant, primaryProductImage } from "../lib/domain/catalog"
+import { isJewelryProduct } from "../lib/domain/catalog-discovery"
+import { jewelrySeoCategories } from "../lib/domain/jewelry-seo-categories"
 import { getPublicCatalogConfig } from "../lib/server/public-storefront"
 
 // Admin publishes products directly to PostgreSQL, not through a code deploy.
@@ -30,9 +32,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/compare`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/claim`, changeFrequency: "monthly", priority: 0.5 }
   ]
-  const catalog = await getPublicCatalogConfig().catch(() => null)
-  const products: MetadataRoute.Sitemap = (catalog?.catalog.products || [])
-    .filter((product) => product.active !== false)
+  // Do not respond with a successful, incomplete sitemap during a DB outage.
+  // Google can retry a 5xx; a partial 200 incorrectly removes every product URL.
+  const { catalog } = await getPublicCatalogConfig()
+  const active = catalog.products.filter((product) => product.active !== false)
+  const categoryPages: MetadataRoute.Sitemap = jewelrySeoCategories
+    .filter((category) => active.some((product) => product.category === category.name && isJewelryProduct(product)))
+    .map((category) => ({
+      url: `${base}/jewelry/category/${category.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.75
+    }))
+  const seen = new Set<string>()
+  const products: MetadataRoute.Sitemap = active
+    .filter((product) => {
+      if (typeof product.id !== "string" || !product.id.trim() || seen.has(product.id)) return false
+      seen.add(product.id)
+      return true
+    })
     .map((product) => {
       const image = publicProductImage(primaryProductImage(product)?.url)
       return {
@@ -42,5 +59,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...(image ? { images: [image] } : {})
       }
     })
-  return [...staticPages, ...products]
+  return [...staticPages, ...categoryPages, ...products]
 }
