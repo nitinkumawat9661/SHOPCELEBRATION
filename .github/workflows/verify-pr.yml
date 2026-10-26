@@ -32,3 +32,38 @@ jobs:
           # Keep the security gate, but run type/build checks first so existing
           # dependency advisories do not hide new application regressions.
           npm audit --omit=dev
+
+  live-seo-baseline:
+    # Temporary read-only live-site diagnostics, performed from GitHub's runner;
+    # no VPS credentials, production writes, or deployment are involved.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect public production SEO headers and responses
+        shell: bash
+        run: |
+          set -u
+          for path in "/" "/robots.txt" "/sitemap.xml" "/jewelry" "/curated-hampers" "/jewelry/necklace-001" "/admin"; do
+            url="https://shopcelebration.in${path}"
+            headers="$(mktemp)"
+            body="$(mktemp)"
+            echo "===== SEO PROBE path=${path} ====="
+            code="$(curl --silent --show-error --location --max-time 16 --connect-timeout 8 --dump-header "${headers}" --output "${body}" --write-out '%{http_code}' "${url}")"
+            rc=$?
+            echo "http_status=${code} curl_exit=${rc} body_bytes=$(wc -c < "${body}")"
+            grep -iE '^(HTTP/|x-robots-tag:|content-type:|location:|server:|cache-control:)' "${headers}" || true
+            if [ "${path}" = "/robots.txt" ]; then
+              echo "robots_start"
+              head -c 3200 "${body}"
+              echo
+              echo "robots_end"
+            elif [ "${path}" = "/sitemap.xml" ]; then
+              echo "sitemap_start"
+              head -c 2200 "${body}"
+              echo
+              echo "sitemap_end"
+            elif [ "${path}" = "/" ] || [ "${path}" = "/jewelry" ]; then
+              grep -o -i -E '<meta[^>]+name="robots"[^>]*>|<link[^>]+rel="canonical"[^>]*>|<title>[^<]*</title>' "${body}" | head -10 || true
+            fi
+            rm -f "${headers}" "${body}"
+          done
