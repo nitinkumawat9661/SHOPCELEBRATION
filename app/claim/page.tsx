@@ -7,6 +7,7 @@ import { TrustStrip } from "../../features/shell/TrustStrip"
 export const metadata: Metadata = {
   title: "Raise a Product Claim",
   description: "Verify a Celebration order and raise an anti-tarnish or product-quality claim through official WhatsApp support.",
+  alternates: { canonical: "/claim" },
   robots: { index: true, follow: true }
 }
 
