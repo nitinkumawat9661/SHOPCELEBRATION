@@ -49,7 +49,7 @@ Check the active PM2 release and private env only as a boolean, **not by printin
 4. Monitor Pages and Sitemaps for recrawl and canonical selection, and record before/after URLs. Search indexing is Google's decision, not guaranteed by the technical fix.
 
 ## Unverified
-- Live Nginx config and response headers.
+- Live origin Nginx configuration (Cloudflare-facing public response headers were sampled on 26 Oct 2026).
 - Current Google Search Console example URL list for each exclusion reason.
 - Real-time Googlebot reachability, current sitemap, and live catalog count.
 - Production content and behavior (no deployment performed).
@@ -59,3 +59,26 @@ Check the active PM2 release and private env only as a boolean, **not by printin
 - Canonicalized public `/claim` to itself. Kept filtered jewelry URLs, including the `?view=all` alternate collection state, `noindex,follow` with canonical `/jewelry`; never index dynamic filter/sort/query variants as independent category landings.
 - Updated `.github/workflows/verify-pr.yml` to run source audit and a production-indexable build before the unchanged mandatory npm security audit. The standalone SEO test separately verifies that preview/non-production mode stays blocked. Failures remain blocking. No changes to `.github/workflows/deploy-production.yml`.
 - These changes have **not** been merged or deployed. Inspect the latest PR check before approving anything.
+
+## Read-only production baseline (26 Oct 2026)
+This is a true **pre-deployment** external baseline, executed from a GitHub-hosted Ubuntu runner in the US over HTTPS; requests reached Cloudflare successfully. The temporary read-only probing job was removed from the final PR workflow after collection. Raw results: [live baseline](https://github.com/nitinkumawat9661/SHOPCELEBRATION/actions/runs/40274306653), [SKU and sitemap probe](https://github.com/nitinkumawat9661/SHOPCELEBRATION/actions/runs/40274406855).
+
+| Live URL | HTTP | Robots / canonical / findings |
+| --- | --- | --- |
+| `/` | 200 | `index, follow`; canonical `https://shopcelebration.in` |
+| `/robots.txt` | 200 | `Allow: /`, plus public image API; retains private `Disallow` routes; not a sitewide block |
+| `/sitemap.xml` | 200 | **96** URLs total, **96** unique: 7 static pages + 89 live product URLs; **0** category landing URLs before deployment |
+| `/jewelry` | 200 | `index, follow`; canonical `/jewelry` |
+| `/jewelry/celebration-necklace-001` | 200 | `index, follow`; self-canonical |
+| `/jewelry/celebration-necklace-020` | 200 | `index, follow`; self-canonical |
+| `/curated-hampers` | 200 | Successful public response |
+| `/jewelry?category=Trending%20Necklaces` | 200 | **Intended** `noindex, follow`; canonical `/jewelry` |
+| `/cart` | 200 | **Intended** `noindex, nofollow` |
+| `/admin` | 200 | Login route; blocked by `robots.txt`, deliberately not an indexable storefront page |
+| `/jewelry/category/trending-necklaces` | 404 | Expected prior to deployment; category landing is only in this unmerged draft PR |
+| `/jewelry/necklace-001` | 404 | Invalid SKU (the actual ID is `celebration-necklace-001`); correct 404 |
+
+No `X-Robots-Tag` header appeared on sampled Cloudflare-facing successful HTTP responses; this does **not** expose hidden origin Nginx configuration or guarantee bot-specific headers are identical. The public `robots.txt` advertises a **14,400-second (4-hour)** HTTP cache lifetime, so post-deployment recrawls could initially see the cached policy. Google's own Live URL Inspection still needs to be checked against specific GSC excluded samples.
+
+**Conclusion:** The common public paths and sampled active PDPs are already crawl-permitted and indexable at the HTTP/metadata level. The reported GSC `Excluded by noindex` and `Blocked by robots.txt` counts cannot be classified as sitewide errors: at least some represent correct exclusions of filter variants, admin/cart or API. The branch fixes demonstrated failure-mode and discoverability defects, but **do not indiscriminately remove** those intended restrictions. Do not claim the GSC issue resolved until affected URL samples are tested post-deploy.
+
