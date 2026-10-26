@@ -4,10 +4,11 @@ import { runInNewContext } from "node:vm"
 import ts from "typescript"
 
 const file = (path) => readFile(new URL("../" + path, import.meta.url), "utf8")
-const [sitemapSource, catalogSource, catalogJson, listing, cards, productPage, robots, hamperPage] = await Promise.all([
+const [sitemapSource, catalogSource, catalogJson, listing, cards, productPage, robots, hamperPage, categorySource, discoverySource, categoryPage] = await Promise.all([
   "app/sitemap.ts", "lib/domain/catalog.ts", "content/catalog.json",
   "features/catalog/CatalogCollection.tsx", "features/catalog/CatalogCard.tsx",
-  "app/jewelry/[id]/page.tsx", "app/robots.ts", "app/curated-hampers/page.tsx"
+  "app/jewelry/[id]/page.tsx", "app/robots.ts", "app/curated-hampers/page.tsx",
+  "lib/domain/jewelry-seo-categories.ts", "lib/domain/catalog-discovery.ts", "app/jewelry/category/[slug]/page.tsx"
 ].map(file))
 
 assert(sitemapSource.includes('export const dynamic = "force-dynamic"'),
@@ -26,6 +27,12 @@ assert(!sitemapSource.includes("lastModified:") && !sitemapSource.includes("last
 assert(hamperPage.includes('alternates: { canonical: "/curated-hampers" }'),
   "Curated hampers public page must be canonical and eligible for sitemap")
 assert(!hamperPage.includes('index: false'), "Curated hamper should not be noindexed")
+assert(categoryPage.includes('alternates: { canonical }'), "Jewelry categories must self-canonicalize")
+assert(categoryPage.includes('robots: { index: !filtered, follow: true }'),
+  "Category filter variants must remain noindex")
+assert(productPage.includes('const catalog = await getPublicCatalogConfig()'),
+  "A public product DB outage must not silently emit noindex")
+assert(productPage.includes('if (!product) notFound()'), "Missing products must remain 404")
 assert(listing.includes("visible.map((product)") && listing.includes("<CatalogCard"),
   "Shop page must internally link each visible product; sitemap alone is not sufficient")
 assert(cards.includes('href={`/jewelry/${encodeURIComponent(product.id)}`}'),
@@ -48,7 +55,19 @@ runInNewContext(compiledVariant, {
   exports: variants.exports, URLSearchParams
 })
 const catalogImageVariant = variants.exports.catalogImageVariant
+function loadPureModule(source) {
+  const transpiled = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText
+  const module = { exports: {} }
+  runInNewContext(transpiled, { exports: module.exports })
+  return module.exports
+}
+const categories = loadPureModule(categorySource).jewelrySeoCategories
+const { isJewelryProduct } = loadPureModule(discoverySource)
+assert.equal(categories.length, 5, "Only reviewed jewelry categories should be indexable")
 let products = JSON.parse(catalogJson).products
+let catalogUnavailable = false
 const bootstrap = products.filter((product) => product.active !== false)
 
 const mockedModules = {
@@ -57,8 +76,10 @@ const mockedModules = {
     primaryProductImage: (product) => product.images?.find((item) => item?.url) ||
       (product.imageUrl ? { url: product.imageUrl } : undefined)
   },
+  "../lib/domain/catalog-discovery": { isJewelryProduct },
+  "../lib/domain/jewelry-seo-categories": { jewelrySeoCategories: categories },
   "../lib/server/public-storefront": {
-    getPublicCatalogConfig: async () => ({ catalog: { products } })
+    getPublicCatalogConfig: async () => { if (catalogUnavailable) throw Error("CATALOG_UNAVAILABLE"); return { catalog: { products } } }
   }
 }
 const transpiledSitemap = ts.transpileModule(sitemapSource, {
@@ -78,11 +99,16 @@ assert.equal(typeof sitemap, "function")
 const base = "https://shopcelebration.in"
 const result = JSON.parse(JSON.stringify(await sitemap()))
 const urls = result.map((item) => item.url)
-assert.equal(result.length, bootstrap.length + 7,
-  "One canonical sitemap URL per active SKU + 7 approved public page URLs")
+assert.equal(result.length, bootstrap.length + 12,
+  "One canonical sitemap URL per active SKU + 7 approved pages + 5 reviewed categories")
 assert.equal(new Set(urls).size, urls.length, "Duplicate indexable canonical URL")
 const staticExpected = ["/", "/jewelry", "/curated-hampers", "/about", "/faq", "/compare", "/claim"]
 assert.deepEqual(urls.slice(0, 7), staticExpected.map((path) => base + path))
+assert.deepEqual(urls.slice(7, 12), categories.map((item) => base + "/jewelry/category/" + item.slug))
+for (const category of categories) {
+  assert(bootstrap.some((item) => item.category === category.name && isJewelryProduct(item)),
+    "An empty/non-jewelry category must not be indexed: " + category.name)
+}
 for (const forbidden of ["/admin", "/cart", "/account", "/policies", "/terms", "/privacy", "/track", "/payment"]) {
   assert(!urls.includes(base + forbidden), "Sensitive/noindex route included in sitemap: " + forbidden)
 }
@@ -117,4 +143,14 @@ assert(withNew.some((entry) => entry.url === base + "/jewelry/test-new-live-sku"
 products[products.length - 1].active = false
 assert.equal((await sitemap()).length, result.length,
   "Inactive product must leave sitemap automatically")
-console.log(`PASS: ${bootstrap.length} active product canonical URLs, ${r2.length} R2 + ${local.length} local same-SKU image links, 7 static routes; live add/deactivate without redeploy; noindex pages excluded.`)
+// Duplicate DB rows should not create duplicate canonical product URLs.
+products = [...products, { ...products[0] }]
+assert.equal((await sitemap()).length, result.length, "Duplicate SKU leaked into sitemap")
+products = products.slice(0, -1)
+
+// A DB failure must never return an apparently valid sitemap containing only static pages.
+catalogUnavailable = true
+await assert.rejects(sitemap(), /CATALOG_UNAVAILABLE/, "DB outage returned partial HTTP 200 sitemap")
+catalogUnavailable = false
+
+console.log(`PASS: ${bootstrap.length} canonical active products, 5 category landings, ${r2.length} R2 + ${local.length} local same-SKU images, 7 static pages; duplicate/outage protection and live updates.`)
