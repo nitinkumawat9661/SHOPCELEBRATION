@@ -96,6 +96,34 @@ runInNewContext(transpiledSitemap, {
 const sitemap = sitemapModule.exports.default
 assert.equal(typeof sitemap, "function")
 
+// Verify actual public and non-production robots directives, not just string snippets.
+function readRobots(siteIndexable) {
+  const compiled = ts.transpileModule(robots, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText
+  const module = { exports: {} }
+  runInNewContext(compiled, {
+    exports: module.exports,
+    require: (name) => {
+      assert.equal(name, "../config/public-env")
+      return { publicEnv: { siteIndexable } }
+    }
+  })
+  return JSON.parse(JSON.stringify(module.exports.default()))
+}
+const publicRobots = readRobots(true)
+assert.equal(publicRobots.sitemap, "https://shopcelebration.in/sitemap.xml")
+assert.equal(publicRobots.host, "https://shopcelebration.in")
+for (const privatePrefix of ["/admin", "/account", "/cart", "/payment", "/track", "/api"]) {
+  assert(publicRobots.rules.disallow.includes(privatePrefix), privatePrefix + " must remain blocked")
+}
+assert(publicRobots.rules.allow.includes("/api/catalog/image?key="),
+  "Same-origin product images used in sitemap must stay crawlable")
+assert.equal(readRobots(false).rules.disallow, "/",
+  "Non-production or intentionally disabled indexing must remain blocked")
+assert((await file("app/layout.tsx")).includes("robots: publicEnv.siteIndexable"),
+  "Global indexing environment must be explicit")
+
 const base = "https://shopcelebration.in"
 const result = JSON.parse(JSON.stringify(await sitemap()))
 const urls = result.map((item) => item.url)
