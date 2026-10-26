@@ -53,3 +53,9 @@ Check the active PM2 release and private env only as a boolean, **not by printin
 - Current Google Search Console example URL list for each exclusion reason.
 - Real-time Googlebot reachability, current sitemap, and live catalog count.
 - Production content and behavior (no deployment performed).
+
+## Additional review actions (26 Oct 2026)
+- Security gate uncovered a critical Next.js advisory in the original pinned dependency `next@16.3.8`. Upgraded only `next` to exact `16.4.3` in `package.json` and an npm-generated, integrity-verified `package-lock.json`; kept React, R2, PostgreSQL, payments, stock and all other direct dependencies unchanged. A PR-only ephemeral GitHub Actions test with this exact lockfile passed the full existing source audit, TypeScript, production build and `npm audit --omit=dev` (**0 vulnerabilities**). The temporary lock-generation step was removed after committing both files, so final PR verification still has to pass independently.
+- Canonicalized public `/claim` to itself. Kept filtered jewelry URLs, including the `?view=all` alternate collection state, `noindex,follow` with canonical `/jewelry`; never index dynamic filter/sort/query variants as independent category landings.
+- Updated `.github/workflows/verify-pr.yml` to run source audit and production build before the unchanged mandatory npm security audit. Failures remain blocking. No changes to `.github/workflows/deploy-production.yml`.
+- These changes have **not** been merged or deployed. Inspect the latest PR check before approving anything.
