@@ -82,3 +82,8 @@ No `X-Robots-Tag` header appeared on sampled Cloudflare-facing successful HTTP r
 
 **Conclusion:** The common public paths and sampled active PDPs are already crawl-permitted and indexable at the HTTP/metadata level. The reported GSC `Excluded by noindex` and `Blocked by robots.txt` counts cannot be classified as sitewide errors: at least some represent correct exclusions of filter variants, admin/cart or API. The branch fixes demonstrated failure-mode and discoverability defects, but **do not indiscriminately remove** those intended restrictions. Do not claim the GSC issue resolved until affected URL samples are tested post-deploy.
 
+
+## Final jewelry collection outage hardening (26 Oct 2026)
+- Additional source review found `app/jewelry/page.tsx` still had `getPublicCatalogConfig().catch(() => null)`, which could render a public `/jewelry` HTTP 200 page with an empty collection during an outage and confuse Google's soft-404 classification. Removed that silent catch. A catalog failure now propagates as retryable HTTP 5xx while available catalogs render the **same** existing collection/filters/cards. This does not modify checkout, pricing, inventory, images or the front-end design.
+- Added a regression guard to `scripts/test-seo-automatic-discovery-20261017.mjs` so accidental reintroduction of the misleading collection response fails PR CI.
+- Both search-console exclusion groups require representative Google Search Console URL samples before claiming they are errors. Existing intentional private/filter exclusions remain unchanged.
