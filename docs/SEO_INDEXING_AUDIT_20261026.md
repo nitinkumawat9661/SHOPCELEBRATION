@@ -87,3 +87,19 @@ No `X-Robots-Tag` header appeared on sampled Cloudflare-facing successful HTTP r
 - Additional source review found `app/jewelry/page.tsx` still had `getPublicCatalogConfig().catch(() => null)`, which could render a public `/jewelry` HTTP 200 page with an empty collection during an outage and confuse Google's soft-404 classification. Removed that silent catch. A catalog failure now propagates as retryable HTTP 5xx while available catalogs render the **same** existing collection/filters/cards. This does not modify checkout, pricing, inventory, images or the front-end design.
 - Added a regression guard to `scripts/test-seo-automatic-discovery-20261017.mjs` so accidental reintroduction of the misleading collection response fails PR CI.
 - Both search-console exclusion groups require representative Google Search Console URL samples before claiming they are errors. Existing intentional private/filter exclusions remain unchanged.
+
+## Production deployment BLOCKED — SSH host identity mismatch (26 Oct 2026)
+The owner authorized release **only after comprehensive checks**. A new read-only origin/Nginx preflight was added to PR checks and tried connecting using the existing GitHub Actions VPS credentials and **StrictHostKeyChecking=yes**. The SSH server returned:
+- **`WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!`**
+- Presented ED25519 host-key fingerprint: **`SHA256:2rrg9Yfj69KWm1VlB6vD2mIH0wklRFItgR5aHAgeMCA`**.
+- GitHub secret `VPS_KNOWN_HOSTS` contains a different previously trusted key. The preflight correctly failed **before executing any remote command**, and **no production deployment was attempted**.
+- Evidence: [preflight job](https://github.com/nitinkumawat9661/SHOPCELEBRATION/actions/runs/40275844983).
+
+**Do not run `ssh-keyscan` and automatically replace the trusted key, disable host-key checking, or merge into `main`**: the production workflow uses the same SSH trust chain, and an unexpected host key can indicate an IP/server replacement, a legitimate SSH key rotation, a wrong DNS record or an active interception attempt.
+
+Recovery requires independent server identity verification via **trusted VPS provider console, not the suspicious SSH connection**. On the trusted server console, use:
+```bash
+sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256
+sudo cat /etc/ssh/ssh_host_ed25519_key.pub
+```
+Confirm this is the intended Celebration server (hostname, provider panel server ID and IP); compare the console fingerprint to the fingerprint shown by the blocked preflight. Only if both identities match, update GitHub Actions secret `VPS_KNOWN_HOSTS` to the **console-verified** appropriate host:port public known-hosts line (no private keys). Run the strict-key preflight again. Then evaluate Nginx/origin flags and pending Google Search Console URL samples. The draft PR remains **unmerged** and must not be marked ready/merged until the trust problem is resolved.
