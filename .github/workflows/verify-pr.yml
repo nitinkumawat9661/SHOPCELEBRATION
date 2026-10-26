@@ -67,3 +67,26 @@ jobs:
             fi
             rm -f "${headers}" "${body}"
           done
+
+      - name: Verify representative live SKU SEO and sitemap counts
+        shell: bash
+        run: |
+          set -u
+          xml="$(mktemp)"
+          curl -fsSL --max-time 20 https://shopcelebration.in/sitemap.xml -o "${xml}"
+          echo "total_loc_count=$(grep -o '<loc>' "${xml}" | wc -l)"
+          echo "unique_loc_count=$(grep -o '<loc>[^<]*</loc>' "${xml}" | sort -u | wc -l)"
+          echo "product_loc_count=$(grep -o '<loc>https://shopcelebration.in/jewelry/[^<]*</loc>' "${xml}" | wc -l)"
+          echo "sitemap_category_count=$(grep -o '<loc>https://shopcelebration.in/jewelry/category/[^<]*</loc>' "${xml}" | wc -l)"
+          for path in "/jewelry/celebration-necklace-001" "/jewelry/celebration-necklace-020" "/jewelry?category=Trending%20Necklaces" "/cart" "/jewelry/category/trending-necklaces"; do
+            echo "===== META CHECK ${path} ====="
+            hdr="$(mktemp)"
+            body="$(mktemp)"
+            code="$(curl --silent --show-error --max-time 18 --location --dump-header "${hdr}" --output "${body}" --write-out '%{http_code}' "https://shopcelebration.in${path}")"
+            rc=$?
+            echo "http_status=${code} curl_exit=${rc}"
+            grep -iE '^(HTTP/|x-robots-tag:|location:)' "${hdr}" || true
+            grep -o -i -E '<meta[^>]+name="robots"[^>]*>|<link[^>]+rel="canonical"[^>]*>|<title>[^<]*</title>' "${body}" | head -8 || true
+            rm -f "${hdr}" "${body}"
+          done
+          rm -f "${xml}"
