@@ -56,6 +56,12 @@ jobs:
           printf '%s\n' "$VPS_SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/celebration-preflight"
           printf '%s\n' "$VPS_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/celebration-preflight" "$HOME/.ssh/known_hosts"
+          # Public key only, derived from the EXISTING GitHub deploy secret.
+          # This can be installed by the hosting provider as an authorized_keys entry.
+          # Never log the private key or print any secret.
+          echo "DEPLOY_PUBLIC_KEY_BEGIN"
+          ssh-keygen -y -f "$HOME/.ssh/celebration-preflight" | awk '{print $1 " " $2}'
+          echo "DEPLOY_PUBLIC_KEY_END"
           ssh-keygen -y -f "$HOME/.ssh/celebration-preflight" >/dev/null
           ssh -p "$VPS_PORT" -i "$HOME/.ssh/celebration-preflight" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=12 "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE'
           set -euo pipefail
